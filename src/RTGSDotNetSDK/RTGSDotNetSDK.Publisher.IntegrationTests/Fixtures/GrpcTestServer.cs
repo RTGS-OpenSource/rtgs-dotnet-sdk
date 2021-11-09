@@ -15,15 +15,23 @@ using Xunit.Abstractions;
 
 namespace RTGSDotNetSDK.Publisher.IntegrationTests.Fixtures
 {
-
-
 	public class GivenOpenConnection : IDisposable
 	{
 		public GivenOpenConnection(ITestOutputHelper outputHelper)
 		{
 			_server = new GrpcTestServer(outputHelper);
+			
+			var httpClient = _server.Start();
 
-			// var httpClient = _server.Start();
+			var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
+				.BankDid("test-bank-did")
+				.RemoteHost("https://localhost:5001")
+				.Build();
+
+			_clientHost = Host.CreateDefaultBuilder()
+				.ConfigureServices((context, services) => 
+					services.AddRtgsPublisher(rtgsClientOptions, grpcClientBuilder => grpcClientBuilder.))
+				.Build();
 
 			// _clientHost = new object();
 			// _clientHost.AddRtgsPublisher(null, grpcClient => grpcClient.ConfigureHttpClient = httpClient);
