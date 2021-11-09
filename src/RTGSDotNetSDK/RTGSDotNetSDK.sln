@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31729.503
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RTGSDotNetSDK.Publisher", "RTGSDotNetSDK.Publisher\RTGSDotNetSDK.Publisher.csproj", "{FDE0902A-A8B1-400A-9811-3C1E4AEC8282}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RTGSDotNetSDK.Publisher.IntegrationTests", "RTGSDotNetSDK.Publisher.IntegrationTests\RTGSDotNetSDK.Publisher.IntegrationTests.csproj", "{C9C045DF-1B6A-433F-83C5-F877B8DCE20B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FF592A3E-7819-4D1F-ABAE-540CBDA79100}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FDE0902A-A8B1-400A-9811-3C1E4AEC8282}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDE0902A-A8B1-400A-9811-3C1E4AEC8282}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDE0902A-A8B1-400A-9811-3C1E4AEC8282}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDE0902A-A8B1-400A-9811-3C1E4AEC8282}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9C045DF-1B6A-433F-83C5-F877B8DCE20B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9C045DF-1B6A-433F-83C5-F877B8DCE20B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9C045DF-1B6A-433F-83C5-F877B8DCE20B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9C045DF-1B6A-433F-83C5-F877B8DCE20B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5C2DB36A-8C71-4F6F-9352-3D622B2C1E9A}
+	EndGlobalSection
+EndGlobal
