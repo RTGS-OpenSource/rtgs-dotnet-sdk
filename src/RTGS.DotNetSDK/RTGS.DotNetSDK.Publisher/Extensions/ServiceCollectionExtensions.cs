@@ -1,12 +1,12 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using RTGS.Public.Payment.V2;
-using System;
 
-namespace RTGSDotNetSDK.Publisher.DependencyInjection
+namespace RTGS.DotNetSDK.Publisher.Extensions
 {
 	public static class ServiceCollectionExtensions
 	{
-		public static IServiceCollection AddRtgsClient(
+		public static IServiceCollection AddRtgsPublisher(
 			this IServiceCollection serviceCollection,
 			RtgsClientOptions options,
 			Action<IHttpClientBuilder> configureGrpcClient = null)
@@ -19,7 +19,7 @@ namespace RTGSDotNetSDK.Publisher.DependencyInjection
 
 			configureGrpcClient?.Invoke(grpcClientBuilder);
 
-			serviceCollection.AddTransient<IRtgsPublisher, IRtgsPublisher>();
+			serviceCollection.AddTransient<IRtgsPublisher, RtgsPublisher>();
 
 			return serviceCollection;
 		}

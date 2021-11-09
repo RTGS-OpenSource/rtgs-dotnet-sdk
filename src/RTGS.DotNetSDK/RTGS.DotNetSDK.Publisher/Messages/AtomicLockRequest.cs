@@ -1,10 +1,6 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using RTGS.Public.Payment.V1.Pacs;
-using RTGS.Public.Payment.V2;
-using System;
 
-namespace RTGSDotNetSDK.Publisher.Messages
+namespace RTGS.DotNetSDK.Publisher.Messages
 {
 	public record AtomicLockRequest
 	{

@@ -1,7 +1,10 @@
+using System.Linq.Expressions;
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
-namespace RTGSDotNetSDK.Publisher.IntegrationTests
+namespace RTGS.DotNetSDK.Publisher.IntegrationTests.Logging
 {
-    internal class XUnitLoggerProvider : ILoggerProvider
+	internal class XUnitLoggerProvider : ILoggerProvider
 	{
 		private readonly ITestOutputHelper _outputHelper;
 
