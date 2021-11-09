@@ -17,6 +17,10 @@ namespace RTGSDotNetSDK.Publisher.IntegrationTests.Fixtures
 {
 	public class GivenOpenConnection : IDisposable
 	{
+		private readonly GrpcTestServer _server;
+		private readonly ITestOutputHelper _outputHelper;
+		private readonly IRtgsPublisher _rtgsPublisher;
+
 		public GivenOpenConnection(ITestOutputHelper outputHelper)
 		{
 			_server = new GrpcTestServer(outputHelper);
@@ -25,21 +29,26 @@ namespace RTGSDotNetSDK.Publisher.IntegrationTests.Fixtures
 
 			var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
 				.BankDid("test-bank-did")
-				.RemoteHost("https://localhost:5001")
+				.RemoteHost(httpClient.BaseAddress)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureServices((context, services) => 
-					services.AddRtgsPublisher(rtgsClientOptions, grpcClientBuilder => grpcClientBuilder.))
+					services.AddRtgsPublisher(rtgsClientOptions, grpcClientBuilder => grpcClientBuilder.ConfigureChannel(channel =>
+					{
+						// channel.HttpClient = httpClient;
+						// channel.HttpHandler = null;
+					})))
 				.Build();
-
-			// _clientHost = new object();
-			// _clientHost.AddRtgsPublisher(null, grpcClient => grpcClient.ConfigureHttpClient = httpClient);
+				
+			_outputHelper = outputHelper;
+			_rtgsPublisher = _clientHost.GetRequiredService<IRtgsPublisher>();
 		}
 
 		public void Dispose()
 		{
 			_server?.Dispose();
+			_clientHost?.Dispose();
 		}
 
 		[Fact]
@@ -51,15 +60,21 @@ namespace RTGSDotNetSDK.Publisher.IntegrationTests.Fixtures
 
 	public sealed class GrpcTestServer : IDisposable
 	{
+		private readonly ITestOutputHelper _outputHelper;
 		private IHost _host;
 		private TestServer _testServer;
 		private bool _disposedValue;
 
+		public GrpcTestServer(ITestOutputHelper outputHelper)
+		{
+			_outputHelper = outputHelper;
+		}
+
 		public IServiceProvider Services => _testServer.Services;
 
-		public HttpClient Start(ITestOutputHelper outputHelper)
+		public HttpClient Start()
 		{
-			_host = CreateHost(outputHelper);
+			_host = CreateHost(_outputHelper);
 			_testServer = _host.GetTestServer();
 
 			return new HttpClient(_testServer.CreateHandler())
@@ -100,19 +115,5 @@ namespace RTGSDotNetSDK.Publisher.IntegrationTests.Fixtures
 			Dispose(disposing: true);
 			GC.SuppressFinalize(this);
 		}
-	}
-
-	internal class XUnitLoggerProvider : ILoggerProvider
-	{
-		private readonly ITestOutputHelper _outputHelper;
-
-		public XUnitLoggerProvider(ITestOutputHelper outputHelper)
-		{
-			_outputHelper = outputHelper;
-		}
-
-		public ILogger CreateLogger(string categoryName) => new XUnitLogger(_outputHelper, categoryName);
-
-		public void Dispose() => Expression.Empty();
 	}
 }
