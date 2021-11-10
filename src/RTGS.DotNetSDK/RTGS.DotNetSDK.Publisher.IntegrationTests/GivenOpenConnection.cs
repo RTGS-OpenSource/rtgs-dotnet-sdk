@@ -79,10 +79,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 			await _rtgsPublisher.SendAtomicLockRequestAsync(atomicLockRequest);
 
-			// TODO: Ditch this when SendAtomicLockRequestAsync returns a acknowledgement
-			SpinWait.SpinUntil(() => _receiver.HasRequests);
-
-			var receivedMessage = _receiver.Requests.Single();
+			var receivedMessage = _receiver.Requests.Should().ContainSingle().Subject;
 			var receivedAtomicLockRequest = JsonConvert.DeserializeObject<AtomicLockRequest>(receivedMessage.Data);
 
 			using var _ = new AssertionScope();

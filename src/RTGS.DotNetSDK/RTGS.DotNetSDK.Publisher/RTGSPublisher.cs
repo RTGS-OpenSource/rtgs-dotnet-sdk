@@ -3,6 +3,7 @@ using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.Public.Payment.V2;
 using System;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RTGS.DotNetSDK.Publisher
@@ -11,6 +12,8 @@ namespace RTGS.DotNetSDK.Publisher
 	{
 		private readonly Payment.PaymentClient _paymentClient;
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
+		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new();
+		private Task _acknowledgementsTask;
 
 		public RtgsPublisher(Payment.PaymentClient paymentClient)
 		{
@@ -21,19 +24,33 @@ namespace RTGS.DotNetSDK.Publisher
 		{
 			var grpcCallHeaders = new Metadata { new("bankdid", "test") };
 
-			_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
+			if (_toRtgsCall is null)
+			{
+				_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
+				_acknowledgementsTask = StartWaitingForAcknowledgements();
+			}
 
-			var data = JsonSerializer.Serialize(message);
+			_pendingAcknowledgementEvent.Reset();
 
 			await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
 			{
-				Data = data,
+				Data = JsonSerializer.Serialize(message),
 				Header = new RtgsMessageHeader
 				{
 					InstructionType = "payment.lock.v1",
 					CorrelationId = Guid.NewGuid().ToString()
 				}
 			});
+
+			_pendingAcknowledgementEvent.Wait();
+		}
+
+		private async Task StartWaitingForAcknowledgements()
+		{
+			await foreach (var _ in _toRtgsCall.ResponseStream.ReadAllAsync())
+			{
+				_pendingAcknowledgementEvent.Set();
+			}
 		}
 
 		public async ValueTask DisposeAsync()
@@ -47,6 +64,8 @@ namespace RTGS.DotNetSDK.Publisher
 			if (_toRtgsCall is not null)
 			{
 				await _toRtgsCall.RequestStream.CompleteAsync();
+
+				await _acknowledgementsTask;
 
 				_toRtgsCall.Dispose();
 				_toRtgsCall = null;
