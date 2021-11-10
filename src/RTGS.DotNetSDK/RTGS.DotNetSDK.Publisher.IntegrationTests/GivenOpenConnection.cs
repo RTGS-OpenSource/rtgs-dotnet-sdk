@@ -12,7 +12,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 	public class GivenOpenConnection : IDisposable
 	{
 		private readonly GrpcTestServer _server;
-		private readonly ITestOutputHelper _outputHelper;
 		private readonly IRtgsPublisher _rtgsPublisher;
 		private readonly IHost _clientHost;
 
@@ -20,23 +19,17 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		{
 			_server = new GrpcTestServer(outputHelper);
 
-			var httpClient = _server.Start();
+			var address = _server.Start();
 
 			var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
 				.BankDid("test-bank-did")
-				.RemoteHost(httpClient.BaseAddress!.ToString())
+				.RemoteHost(address.ToString())
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
-				.ConfigureServices((context, services) =>
-					services.AddRtgsPublisher(rtgsClientOptions, grpcClientBuilder => grpcClientBuilder.ConfigureChannel(channel =>
-					{
-						channel.HttpClient = httpClient;
-						channel.HttpHandler = null;
-					})))
+				.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
 				.Build();
 
-			_outputHelper = outputHelper;
 			_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
 		}
 
@@ -50,6 +43,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		public async Task ThenCanSendAtomicLockRequestToRtgs()
 		{
 			var atomicLockRequest = new AtomicLockRequest();
+
+			await _rtgsPublisher.Wip();
 		}
 	}
 }

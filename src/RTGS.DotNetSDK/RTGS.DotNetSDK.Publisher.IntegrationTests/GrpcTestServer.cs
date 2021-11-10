@@ -1,10 +1,9 @@
 ﻿extern alias RTGSServer;
 using System;
-using System.Net.Http;
+using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -15,9 +14,10 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 {
 	public sealed class GrpcTestServer : IDisposable
 	{
+		private const int Port = 5100;
+
 		private readonly ITestOutputHelper _outputHelper;
 		private IHost _host;
-		private TestServer _testServer;
 		private bool _disposedValue;
 
 		public GrpcTestServer(ITestOutputHelper outputHelper)
@@ -25,26 +25,26 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			_outputHelper = outputHelper;
 		}
 
-		public IServiceProvider Services => _testServer.Services;
+		public IServiceProvider Services => _host.Services;
 
-		public HttpClient Start()
+		public Uri Start()
 		{
-			_host = CreateHost(_outputHelper);
-			_testServer = _host.GetTestServer();
+			_host = CreateHost();
 
-			return new HttpClient(_testServer.CreateHandler())
-			{
-				BaseAddress = new Uri("http://localhost")
-			};
+			return new Uri($"http://localhost:{Port}");
 		}
 
-		private static IHost CreateHost(ITestOutputHelper outputHelper)
+		private IHost CreateHost()
 		{
 			var loggerFactory = new LoggerFactory();
-			loggerFactory.AddProvider(new XUnitLoggerProvider(outputHelper));
+			loggerFactory.AddProvider(new XUnitLoggerProvider(_outputHelper));
 
 			var builder = new HostBuilder()
-				.ConfigureWebHostDefaults(webHost => webHost.UseTestServer().UseStartup<TestServerStartup>())
+				.ConfigureWebHostDefaults(webHost =>
+					webHost
+						.UseStartup<TestServerStartup>()
+						.UseKestrel(kestrelServerOptions => kestrelServerOptions.Listen(IPAddress.Any, Port,
+							listenOptions => listenOptions.Protocols = HttpProtocols.Http2)))
 				.ConfigureServices(services => services.AddSingleton<ILoggerFactory>(loggerFactory));
 
 			return builder.Start();
@@ -57,7 +57,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				if (disposing)
 				{
 					_host?.Dispose();
-					_testServer?.Dispose();
 				}
 
 				_disposedValue = true;
@@ -70,19 +69,17 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			Dispose(disposing: true);
 			GC.SuppressFinalize(this);
 		}
-	}
 
-	public class TestServerStartup
-	{
-		public IConfiguration Configuration { get; set; }
-
-		public void ConfigureServices(IServiceCollection services) =>
-			services.AddGrpc();
-
-		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+		private class TestServerStartup
 		{
-			app.UseRouting();
-			app.UseEndpoints(endpoints => endpoints.MapGrpcService<TestPaymentService>());
+			public void ConfigureServices(IServiceCollection services) =>
+				services.AddGrpc();
+
+			public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+			{
+				app.UseRouting();
+				app.UseEndpoints(endpoints => endpoints.MapGrpcService<TestPaymentService>());
+			}
 		}
 	}
 }

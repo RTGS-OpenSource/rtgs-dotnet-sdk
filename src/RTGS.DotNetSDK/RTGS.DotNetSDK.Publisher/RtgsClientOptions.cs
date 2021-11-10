@@ -1,20 +1,22 @@
-﻿namespace RTGS.DotNetSDK.Publisher
+﻿using System;
+
+namespace RTGS.DotNetSDK.Publisher
 {
 	public record RtgsClientOptions
 	{
 		private RtgsClientOptions(Builder builder)
 		{
 			BankDid = builder.BankDidValue;
-			RemoteHost = builder.RemoteHostValue;
+			RemoteHostAddress = new Uri(builder.RemoteHostAddressValue);
 		}
 
 		public string BankDid { get; }
-		public string RemoteHost { get; }
+		public Uri RemoteHostAddress { get; }
 
 		public sealed class Builder
 		{
 			internal string BankDidValue { get; private set; }
-			internal string RemoteHostValue { get; private set; }
+			internal string RemoteHostAddressValue { get; private set; }
 
 			public static Builder CreateNew() => new();
 
@@ -24,9 +26,9 @@
 				return this;
 			}
 
-			public Builder RemoteHost(string remoteHost)
+			public Builder RemoteHost(string address)
 			{
-				RemoteHostValue = remoteHost;
+				RemoteHostAddressValue = address;
 				return this;
 			}
 
