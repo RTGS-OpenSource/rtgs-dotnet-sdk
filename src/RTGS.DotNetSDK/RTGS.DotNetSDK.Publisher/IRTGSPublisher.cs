@@ -1,9 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using RTGS.DotNetSDK.Publisher.Messages;
 
 namespace RTGS.DotNetSDK.Publisher
 {
-	public interface IRtgsPublisher
+	public interface IRtgsPublisher : IAsyncDisposable
 	{
-		Task Wip();
+		Task SendAtomicLockRequestAsync(AtomicLockRequest message);
 	}
 }

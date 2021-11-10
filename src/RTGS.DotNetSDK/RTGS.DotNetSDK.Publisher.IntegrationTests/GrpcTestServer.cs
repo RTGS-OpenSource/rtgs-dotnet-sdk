@@ -72,8 +72,11 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 		private class TestServerStartup
 		{
-			public void ConfigureServices(IServiceCollection services) =>
+			public void ConfigureServices(IServiceCollection services)
+			{
 				services.AddGrpc();
+				services.AddSingleton<IToRtgsReceiver, ToRtgsReceiver>();
+			}
 
 			public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 			{
