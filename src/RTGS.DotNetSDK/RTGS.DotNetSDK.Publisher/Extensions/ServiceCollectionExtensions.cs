@@ -11,7 +11,7 @@ namespace RTGS.DotNetSDK.Publisher.Extensions
 			RtgsClientOptions options,
 			Action<IHttpClientBuilder> configureGrpcClient = null)
 		{
-			serviceCollection.AddSingleton(options);
+			//serviceCollection.AddSingleton(options);
 
 			// TODO: include ConfigurePrimaryHttpMessageHandler for keep alive?
 			var grpcClientBuilder = serviceCollection.AddGrpcClient<Payment.PaymentClient>(

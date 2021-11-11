@@ -19,34 +19,20 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		private readonly static TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 		private readonly GrpcTestServer _server;
-		private readonly IRtgsPublisher _rtgsPublisher;
-		private readonly IHost _clientHost;
+		private IRtgsPublisher _rtgsPublisher;
+		private IHost _clientHost;
 
 		public GivenOpenConnection(ITestOutputHelper outputHelper)
 		{
 			try
 			{
 				_server = new GrpcTestServer(outputHelper);
-
-				var address = _server.Start();
-
-				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
-					.BankDid("test-bank-did")
-					.RemoteHost(address.ToString())
-					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
-					.Build();
-
-				_clientHost = Host.CreateDefaultBuilder()
-					.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
-					.Build();
-
-				_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
 			}
 			catch (Exception)
 			{
 				// If an exception occurs then manually clean up the hosts
 				// as IAsyncLifetime.DisposeAsync is not called.
-				DisposeHosts();
+				//DisposeHosts();
 
 				throw;
 			}
@@ -100,7 +86,22 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			success.Should().BeFalse();
 		}
 
-		public Task InitializeAsync() => Task.CompletedTask;
+		public async Task InitializeAsync()
+		{
+			var address = await _server.StartAsync();
+
+			var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
+				.BankDid("test-bank-did")
+				.RemoteHost(address.ToString())
+				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
+				.Build();
+
+			_clientHost = Host.CreateDefaultBuilder()
+				.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
+				.Build();
+
+			_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+		}
 
 		public async Task DisposeAsync()
 		{
