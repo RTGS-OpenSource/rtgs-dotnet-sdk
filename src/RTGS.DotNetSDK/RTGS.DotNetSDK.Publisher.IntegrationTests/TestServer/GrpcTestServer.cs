@@ -29,7 +29,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 		public IServiceProvider Services => _host.Services;
 
 		public async Task<Uri> StartAsync()
-		{ 
+		{
 			_host = CreateHost();
 
 			await _host.StartAsync();
@@ -58,7 +58,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 			if (!_disposedValue)
 			{
 				if (disposing)
-				{					
+				{
 					_host?.Dispose();
 				}
 

@@ -25,10 +25,9 @@ namespace RTGS.DotNetSDK.Publisher
 
 		public async Task<bool> SendAtomicLockRequestAsync(AtomicLockRequest message)
 		{
-			var grpcCallHeaders = new Metadata { new("bankdid", "test") };
-
 			if (_toRtgsCall is null)
 			{
+				var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
 				_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
 				_acknowledgementsTask = StartWaitingForAcknowledgements();
 			}
@@ -45,9 +44,9 @@ namespace RTGS.DotNetSDK.Publisher
 				}
 			});
 
-			_pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration);
+			var acknowledgementSet = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration);
 
-			return _acknowledgement?.Success == true;
+			return acknowledgementSet && _acknowledgement?.Success == true;
 		}
 
 		private async Task StartWaitingForAcknowledgements()

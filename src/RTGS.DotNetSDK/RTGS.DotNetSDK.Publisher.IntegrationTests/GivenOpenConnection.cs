@@ -8,6 +8,8 @@ using RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer;
 using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.Public.Payment.V1.Pacs;
 using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -16,6 +18,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 {
 	public class GivenOpenConnection : IAsyncLifetime
 	{
+		private const string BankDid = "test-bank-did";
 		private readonly static TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 		private readonly GrpcTestServer _server;
@@ -33,7 +36,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
 			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
-			var receivedMessage = receiver.Requests.Should().ContainSingle().Subject;
+			var receivedMessage = receiver.Connections.Should().ContainSingle().Which.Requests.Should().ContainSingle().Subject;
 			var receivedAtomicLockRequest = JsonConvert.DeserializeObject<AtomicLockRequest>(receivedMessage.Data);
 
 			using var _ = new AssertionScope();
@@ -75,6 +78,47 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			success.Should().BeFalse();
 		}
 
+		[Fact]
+		public async Task WhenSendingMultipleMessages_ThenOnlyOneConnection()
+		{
+			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+
+			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
+
+			receiver.NumberOfConnections.Should().Be(1);
+		}
+
+		[Fact]
+		public async Task WhenSendingMultipleMessagesAndLastOneTimesOut_ThenDontSeePreviousSuccess()
+		{
+			var successfulResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+
+			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
+			messageHandler.ReturnAcknowledgementTooLate(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1)));
+
+			var failureResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+
+			using var _ = new AssertionScope();
+
+			successfulResult.Should().BeTrue();
+			failureResult.Should().BeFalse();
+		}
+
+		[Fact]
+		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader()
+		{
+			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+
+			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
+
+			var connection = receiver.Connections.SingleOrDefault();
+
+			connection.Should().NotBeNull();
+			connection.Headers.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == BankDid);
+		}
+
 		public async Task InitializeAsync()
 		{
 			try
@@ -82,7 +126,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				var address = await _server.StartAsync();
 
 				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
-					.BankDid("test-bank-did")
+					.BankDid(BankDid)
 					.RemoteHost(address.ToString())
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();

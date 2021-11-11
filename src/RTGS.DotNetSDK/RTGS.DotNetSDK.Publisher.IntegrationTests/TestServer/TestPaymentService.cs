@@ -16,7 +16,10 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 			_messageHandler = messageHandler;
 		}
 
-		public override async Task FromRtgsMessage(IAsyncStreamReader<RtgsMessageAcknowledgement> requestStream, IServerStreamWriter<RtgsMessage> responseStream, ServerCallContext context)
+		public override async Task FromRtgsMessage(
+			IAsyncStreamReader<RtgsMessageAcknowledgement> requestStream,
+			IServerStreamWriter<RtgsMessage> responseStream,
+			ServerCallContext context)
 		{
 			await foreach (var message in requestStream.ReadAllAsync(context.CancellationToken))
 			{
@@ -24,13 +27,18 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 			}
 		}
 
-		public override async Task ToRtgsMessage(IAsyncStreamReader<RtgsMessage> requestStream, IServerStreamWriter<RtgsMessageAcknowledgement> responseStream, ServerCallContext context)
+		public override async Task ToRtgsMessage(
+			IAsyncStreamReader<RtgsMessage> requestStream,
+			IServerStreamWriter<RtgsMessageAcknowledgement> responseStream,
+			ServerCallContext context)
 		{
+			var messageList = _receiver.SetupConnectionInfo(context.RequestHeaders);
+
 			await foreach (var message in requestStream.ReadAllAsync(context.CancellationToken))
 			{
-				_receiver.AddRequest(message);
-
 				await _messageHandler.Handle(message, responseStream);
+
+				messageList.Add(message);
 			}
 		}
 	}
