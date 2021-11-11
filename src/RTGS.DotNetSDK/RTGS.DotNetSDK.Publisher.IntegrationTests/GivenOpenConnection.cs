@@ -1,11 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using FluentAssertions.Execution;
-using Google.Protobuf;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
@@ -13,6 +7,8 @@ using RTGS.DotNetSDK.Publisher.Extensions;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer;
 using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.Public.Payment.V1.Pacs;
+using System;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -20,26 +16,40 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 {
 	public class GivenOpenConnection : IAsyncLifetime
 	{
+		private readonly static TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
+
 		private readonly GrpcTestServer _server;
 		private readonly IRtgsPublisher _rtgsPublisher;
 		private readonly IHost _clientHost;
 
 		public GivenOpenConnection(ITestOutputHelper outputHelper)
 		{
-			_server = new GrpcTestServer(outputHelper);
+			try
+			{
+				_server = new GrpcTestServer(outputHelper);
 
-			var address = _server.Start();
+				var address = _server.Start();
 
-			var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
-				.BankDid("test-bank-did")
-				.RemoteHost(address.ToString())
-				.Build();
+				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
+					.BankDid("test-bank-did")
+					.RemoteHost(address.ToString())
+					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
+					.Build();
 
-			_clientHost = Host.CreateDefaultBuilder()
-				.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
-				.Build();
+				_clientHost = Host.CreateDefaultBuilder()
+					.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
+					.Build();
 
-			_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+				_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+			}
+			catch (Exception)
+			{
+				// If an exception occurs then manually clean up the hosts
+				// as IAsyncLifetime.DisposeAsync is not called.
+				DisposeHosts();
+
+				throw;
+			}
 		}
 
 		[Fact]
@@ -59,11 +69,12 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 			receivedAtomicLockRequest.Should().BeEquivalentTo(ValidRequests.AtomicLockRequest, options => options.ComparingByMembers<AtomicLockRequest>());
 		}
+
 		[Fact]
 		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnTrue()
 		{
 			var success = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
-			
+
 			success.Should().BeTrue();
 		}
 
@@ -74,7 +85,18 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			messageHandler.ReturnAcknowledgementWithFailure();
 
 			var success = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
-			
+
+			success.Should().BeFalse();
+		}
+
+		[Fact]
+		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgementTooLate_ThenReturnFalse()
+		{
+			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
+			messageHandler.ReturnAcknowledgementTooLate(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1)));
+
+			var success = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+
 			success.Should().BeFalse();
 		}
 
@@ -83,6 +105,11 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		public async Task DisposeAsync()
 		{
 			await _rtgsPublisher.DisposeAsync();
+			DisposeHosts();
+		}
+
+		private void DisposeHosts()
+		{
 			_server?.Dispose();
 			_clientHost?.Dispose();
 		}

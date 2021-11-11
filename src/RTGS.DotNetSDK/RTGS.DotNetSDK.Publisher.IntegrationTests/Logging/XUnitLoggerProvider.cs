@@ -1,5 +1,5 @@
-using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
+using System.Linq.Expressions;
 using Xunit.Abstractions;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.Logging

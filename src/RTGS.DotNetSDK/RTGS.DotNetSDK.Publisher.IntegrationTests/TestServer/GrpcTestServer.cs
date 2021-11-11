@@ -1,6 +1,4 @@
 ﻿extern alias RTGSServer;
-using System;
-using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -8,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.Logging;
+using System;
+using System.Net;
 using Xunit.Abstractions;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
@@ -76,6 +76,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 			{
 				services.AddGrpc();
 				services.AddSingleton<ToRtgsReceiver>();
+				services.AddSingleton<ToRtgsMessageHandler>();
 			}
 
 			public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

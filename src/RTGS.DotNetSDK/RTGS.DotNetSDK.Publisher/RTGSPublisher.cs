@@ -11,13 +11,16 @@ namespace RTGS.DotNetSDK.Publisher
 	public class RtgsPublisher : IRtgsPublisher
 	{
 		private readonly Payment.PaymentClient _paymentClient;
-		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new();
+		private readonly RtgsClientOptions _options;
+		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _acknowledgementsTask;
+		private RtgsMessageAcknowledgement _acknowledgement;
 
-		public RtgsPublisher(Payment.PaymentClient paymentClient)
+		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options)
 		{
 			_paymentClient = paymentClient;
+			_options = options;
 		}
 
 		public async Task<bool> SendAtomicLockRequestAsync(AtomicLockRequest message)
@@ -42,15 +45,16 @@ namespace RTGS.DotNetSDK.Publisher
 				}
 			});
 
-			_pendingAcknowledgementEvent.Wait();
+			_pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration);
 
-			return true;
+			return _acknowledgement?.Success == true;
 		}
 
 		private async Task StartWaitingForAcknowledgements()
 		{
-			await foreach (var _ in _toRtgsCall.ResponseStream.ReadAllAsync())
+			await foreach (var acknowledgement in _toRtgsCall.ResponseStream.ReadAllAsync())
 			{
+				_acknowledgement = acknowledgement;
 				_pendingAcknowledgementEvent.Set();
 			}
 		}
