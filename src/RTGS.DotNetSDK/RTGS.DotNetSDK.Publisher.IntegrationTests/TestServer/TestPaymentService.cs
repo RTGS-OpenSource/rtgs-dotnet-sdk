@@ -1,17 +1,19 @@
 ﻿extern alias RTGSServer;
+using System.Threading.Tasks;
 using Grpc.Core;
 using RTGSServer::RTGS.Public.Payment.V2;
-using System.Threading.Tasks;
 
-namespace RTGS.DotNetSDK.Publisher.IntegrationTests
+namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 {
 	public class TestPaymentService : Payment.PaymentBase
 	{
-		private readonly IToRtgsReceiver _receiver;
+		private readonly ToRtgsReceiver _receiver;
+		private readonly ToRtgsMessageHandler _messageHandler;
 
-		public TestPaymentService(IToRtgsReceiver receiver)
+		public TestPaymentService(ToRtgsReceiver receiver, ToRtgsMessageHandler messageHandler)
 		{
 			_receiver = receiver;
+			_messageHandler = messageHandler;
 		}
 
 		public override async Task FromRtgsMessage(IAsyncStreamReader<RtgsMessageAcknowledgement> requestStream, IServerStreamWriter<RtgsMessage> responseStream, ServerCallContext context)
@@ -28,12 +30,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			{
 				_receiver.AddRequest(message);
 
-				await responseStream.WriteAsync(new RtgsMessageAcknowledgement
-				{
-					Code = (int)StatusCode.OK,
-					Success = true,
-					Header = message.Header
-				});
+				await _messageHandler.Handle(message, responseStream);
 			}
 		}
 	}

@@ -20,7 +20,7 @@ namespace RTGS.DotNetSDK.Publisher
 			_paymentClient = paymentClient;
 		}
 
-		public async Task SendAtomicLockRequestAsync(AtomicLockRequest message)
+		public async Task<bool> SendAtomicLockRequestAsync(AtomicLockRequest message)
 		{
 			var grpcCallHeaders = new Metadata { new("bankdid", "test") };
 
@@ -43,6 +43,8 @@ namespace RTGS.DotNetSDK.Publisher
 			});
 
 			_pendingAcknowledgementEvent.Wait();
+
+			return true;
 		}
 
 		private async Task StartWaitingForAcknowledgements()

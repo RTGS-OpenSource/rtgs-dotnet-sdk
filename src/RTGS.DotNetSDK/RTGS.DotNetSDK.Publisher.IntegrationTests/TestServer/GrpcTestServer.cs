@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.Logging;
 using Xunit.Abstractions;
 
-namespace RTGS.DotNetSDK.Publisher.IntegrationTests
+namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 {
 	public sealed class GrpcTestServer : IDisposable
 	{
@@ -75,7 +75,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			public void ConfigureServices(IServiceCollection services)
 			{
 				services.AddGrpc();
-				services.AddSingleton<IToRtgsReceiver, ToRtgsReceiver>();
+				services.AddSingleton<ToRtgsReceiver>();
 			}
 
 			public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

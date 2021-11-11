@@ -6,6 +6,6 @@ namespace RTGS.DotNetSDK.Publisher
 {
 	public interface IRtgsPublisher : IAsyncDisposable
 	{
-		Task SendAtomicLockRequestAsync(AtomicLockRequest message);
+		Task<bool> SendAtomicLockRequestAsync(AtomicLockRequest message);
 	}
 }

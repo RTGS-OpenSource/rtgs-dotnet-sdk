@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using RTGS.DotNetSDK.Publisher.Extensions;
+using RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer;
 using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.Public.Payment.V1.Pacs;
 using Xunit;
@@ -22,7 +23,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		private readonly GrpcTestServer _server;
 		private readonly IRtgsPublisher _rtgsPublisher;
 		private readonly IHost _clientHost;
-		private readonly IToRtgsReceiver _receiver;
 
 		public GivenOpenConnection(ITestOutputHelper outputHelper)
 		{
@@ -40,15 +40,56 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				.Build();
 
 			_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
-			_receiver = _server.Services.GetRequiredService<IToRtgsReceiver>();
 		}
-
-		public Task InitializeAsync() => Task.CompletedTask;
 
 		[Fact]
 		public async Task ThenCanSendAtomicLockRequestToRtgs()
 		{
-			var atomicLockRequest = new AtomicLockRequest
+			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+
+			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
+			var receivedMessage = receiver.Requests.Should().ContainSingle().Subject;
+			var receivedAtomicLockRequest = JsonConvert.DeserializeObject<AtomicLockRequest>(receivedMessage.Data);
+
+			using var _ = new AssertionScope();
+
+			receivedMessage.Header.Should().NotBeNull();
+			receivedMessage.Header?.InstructionType.Should().Be("payment.lock.v1");
+			receivedMessage.Header?.CorrelationId.Should().NotBeNullOrEmpty();
+
+			receivedAtomicLockRequest.Should().BeEquivalentTo(ValidRequests.AtomicLockRequest, options => options.ComparingByMembers<AtomicLockRequest>());
+		}
+		[Fact]
+		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnTrue()
+		{
+			var success = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			
+			success.Should().BeTrue();
+		}
+
+		[Fact]
+		public async Task WhenBankMessageApiReturnsUnsuccessfulAcknowledgement_ThenReturnFalse()
+		{
+			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
+			messageHandler.ReturnAcknowledgementWithFailure();
+
+			var success = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			
+			success.Should().BeFalse();
+		}
+
+		public Task InitializeAsync() => Task.CompletedTask;
+
+		public async Task DisposeAsync()
+		{
+			await _rtgsPublisher.DisposeAsync();
+			_server?.Dispose();
+			_clientHost?.Dispose();
+		}
+
+		private static class ValidRequests
+		{
+			public static readonly AtomicLockRequest AtomicLockRequest = new()
 			{
 				DbtrToRtgsId = new GenericFinancialIdentification1
 				{
@@ -76,26 +117,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				SplmtryData = "some-extra-data",
 				EndToEndId = "end-to-end-id"
 			};
-
-			await _rtgsPublisher.SendAtomicLockRequestAsync(atomicLockRequest);
-
-			var receivedMessage = _receiver.Requests.Should().ContainSingle().Subject;
-			var receivedAtomicLockRequest = JsonConvert.DeserializeObject<AtomicLockRequest>(receivedMessage.Data);
-
-			using var _ = new AssertionScope();
-
-			receivedMessage.Header.Should().NotBeNull();
-			receivedMessage.Header?.InstructionType.Should().Be("payment.lock.v1");
-			receivedMessage.Header?.CorrelationId.Should().NotBeNullOrEmpty();
-
-			receivedAtomicLockRequest.Should().BeEquivalentTo(atomicLockRequest, options => options.ComparingByMembers<AtomicLockRequest>());
-		}
-
-		public async Task DisposeAsync()
-		{
-			await _rtgsPublisher.DisposeAsync();
-			_server?.Dispose();
-			_clientHost?.Dispose();
 		}
 	}
 }
