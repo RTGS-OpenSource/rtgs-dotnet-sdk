@@ -24,18 +24,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 		public GivenOpenConnection(ITestOutputHelper outputHelper)
 		{
-			try
-			{
-				_server = new GrpcTestServer(outputHelper);
-			}
-			catch (Exception)
-			{
-				// If an exception occurs then manually clean up the hosts
-				// as IAsyncLifetime.DisposeAsync is not called.
-				//DisposeHosts();
-
-				throw;
-			}
+			_server = new GrpcTestServer(outputHelper);
 		}
 
 		[Fact]
@@ -88,29 +77,39 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 		public async Task InitializeAsync()
 		{
-			var address = await _server.StartAsync();
+			try
+			{
+				var address = await _server.StartAsync();
 
-			var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
-				.BankDid("test-bank-did")
-				.RemoteHost(address.ToString())
-				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
-				.Build();
+				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
+					.BankDid("test-bank-did")
+					.RemoteHost(address.ToString())
+					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
+					.Build();
 
-			_clientHost = Host.CreateDefaultBuilder()
-				.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
-				.Build();
+				_clientHost = Host.CreateDefaultBuilder()
+					.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
+					.Build();
 
-			_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+				_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+			}
+			catch (Exception)
+			{
+				// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
+				// See https://github.com/xunit/xunit/discussions/2313 for further details.
+				await DisposeAsync();
+
+				throw;
+			}
 		}
 
 		public async Task DisposeAsync()
 		{
-			await _rtgsPublisher.DisposeAsync();
-			DisposeHosts();
-		}
+			if (_rtgsPublisher is not null)
+			{
+				await _rtgsPublisher.DisposeAsync();
+			}
 
-		private void DisposeHosts()
-		{
 			_server?.Dispose();
 			_clientHost?.Dispose();
 		}

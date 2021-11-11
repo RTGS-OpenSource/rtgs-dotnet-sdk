@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.Logging;
 using System;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 
@@ -21,7 +20,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 		private readonly ITestOutputHelper _outputHelper;
 		private IHost _host;
 		private bool _disposedValue;
-		private static CancellationTokenSource _hostCancellationTokenSource;
 
 		public GrpcTestServer(ITestOutputHelper outputHelper)
 		{
@@ -31,16 +29,10 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 		public IServiceProvider Services => _host.Services;
 
 		public async Task<Uri> StartAsync()
-		{
-			_hostCancellationTokenSource?.Cancel();
-
+		{ 
 			_host = CreateHost();
 
-			_hostCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-			_hostTask = _host.RunAsync(_hostCancellationTokenSource.Token);
-			_host.StopAsync();
-
-			await _hostTask;
+			await _host.StartAsync();
 
 			return new Uri($"http://localhost:{Port}");
 		}
@@ -66,13 +58,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 			if (!_disposedValue)
 			{
 				if (disposing)
-				{
-					if (_hostCancellationTokenSource is not null)
-					{
-						_hostCancellationTokenSource.Cancel();
-						_hostCancellationTokenSource.Dispose();
-					}
-					
+				{					
 					_host?.Dispose();
 				}
 
