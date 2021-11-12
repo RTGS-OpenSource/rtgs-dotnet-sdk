@@ -46,5 +46,17 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 					Header = message.Header
 				};
 			};
+
+		public void ReturnUnexpectedSuccessfulAcknowledgement() =>
+			_generateAcknowledgement = message => Task.FromResult(new RtgsMessageAcknowledgement
+			{
+				Code = (int)StatusCode.OK,
+				Success = true,
+				Header = new RtgsMessageHeader
+				{
+					CorrelationId = Guid.NewGuid().ToString(),
+					InstructionType = message.Header.InstructionType
+				}
+			});
 	}
 }

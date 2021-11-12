@@ -119,6 +119,17 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			connection.Headers.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == BankDid);
 		}
 
+		[Fact]
+		public async Task WhenBankMessageApiOnlyReturnsUnexpectedAcknowledgement_ThenReturnFalse()
+		{
+			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
+			messageHandler.ReturnUnexpectedSuccessfulAcknowledgement();
+
+			var success = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+
+			success.Should().BeFalse();
+		}
+
 		public async Task InitializeAsync()
 		{
 			try
