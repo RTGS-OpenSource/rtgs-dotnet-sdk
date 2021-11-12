@@ -22,6 +22,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 		private readonly GrpcTestServer _server;
 		private IRtgsPublisher _rtgsPublisher;
+		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
 
 		public GivenOpenConnection(ITestOutputHelper outputHelper)
@@ -32,6 +33,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		[Fact]
 		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader()
 		{
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
+
 			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
 			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
@@ -45,6 +48,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		[Fact]
 		public async Task ThenCanSendAtomicLockRequestToRtgs()
 		{
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
+
 			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
 			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
@@ -63,6 +68,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		[Fact]
 		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnSuccess()
 		{
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
+
 			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
 			sendResult.Should().Be(SendResult.Success);
@@ -71,8 +78,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		[Fact]
 		public async Task WhenBankMessageApiReturnsUnsuccessfulAcknowledgement_ThenReturnServerError()
 		{
-			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
-			messageHandler.ReturnAcknowledgementWithFailure();
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithFailure();
 
 			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
@@ -82,8 +88,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		[Fact]
 		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgementTooLate_ThenReturnTimeout()
 		{
-			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
-			messageHandler.ReturnAcknowledgementTooLate(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1)));
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1)));
 
 			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
@@ -93,8 +98,13 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		[Fact]
 		public async Task WhenSendingMultipleMessages_ThenOnlyOneConnection()
 		{
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
 			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
 			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
 			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
 			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
@@ -105,11 +115,10 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		[Fact]
 		public async Task WhenSendingMultipleMessagesAndLastOneTimesOut_ThenDoNotSeePreviousSuccess()
 		{
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
 			var sendResult1 = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
-			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
-			messageHandler.ReturnAcknowledgementTooLate(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1)));
-
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1)));
 			var sendResult2 = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
 			using var _ = new AssertionScope();
@@ -121,8 +130,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		[Fact]
 		public async Task WhenBankMessageApiOnlyReturnsUnexpectedAcknowledgement_ThenReturnTimeout()
 		{
-			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
-			messageHandler.ReturnUnexpectedSuccessfulAcknowledgement();
+			_toRtgsMessageHandler.EnqueueUnexpectedAcknowledgementWithSuccess();
 
 			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
@@ -132,8 +140,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		[Fact]
 		public async Task WhenBankMessageApiReturnsUnexpectedAcknowledgementBeforeFailureAcknowledgement_ThenReturnServerError()
 		{
-			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
-			messageHandler.ReturnUnexpectedSuccessfulAcknowledgementThenAcknowledgementWithFailure();
+			_toRtgsMessageHandler.EnqueueUnexpectedAcknowledgementWithSuccess();
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithFailure();
 
 			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
@@ -143,8 +151,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		[Fact]
 		public async Task WhenBankMessageApiReturnsFailureAcknowledgementBeforeUnexpectedAcknowledgement_ThenReturnServerError()
 		{
-			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
-			messageHandler.ReturnAcknowledgementWithFailureThenUnexpectedSuccessfulAcknowledgement();
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithFailure();
+			_toRtgsMessageHandler.EnqueueUnexpectedAcknowledgementWithSuccess();
 
 			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
@@ -154,8 +162,9 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		[Fact]
 		public async Task WhenBankMessageApiReturnsSuccessWrappedByUnexpectedFailureAcknowledgements_ThenReturnServerError()
 		{
-			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
-			messageHandler.ReturnAcknowledgementWithSuccessBeforeAndAfterUnexpectedFailures();
+			_toRtgsMessageHandler.EnqueueUnexpectedAcknowledgementWithFailure();
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
+			_toRtgsMessageHandler.EnqueueUnexpectedAcknowledgementWithFailure();
 
 			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
@@ -179,6 +188,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 					.Build();
 
 				_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+				_toRtgsMessageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
 			}
 			catch (Exception)
 			{
