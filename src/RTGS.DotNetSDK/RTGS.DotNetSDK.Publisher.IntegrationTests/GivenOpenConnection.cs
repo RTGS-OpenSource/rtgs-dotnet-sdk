@@ -1,4 +1,7 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -7,10 +10,6 @@ using RTGS.DotNetSDK.Publisher.Extensions;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer;
 using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.Public.Payment.V1.Pacs;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -116,7 +115,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			var connection = receiver.Connections.SingleOrDefault();
 
 			connection.Should().NotBeNull();
-			connection.Headers.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == BankDid);
+			connection!.Headers.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == BankDid);
 		}
 
 		[Fact]

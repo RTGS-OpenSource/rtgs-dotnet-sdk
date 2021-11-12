@@ -1,10 +1,10 @@
-﻿using Grpc.Core;
-using RTGS.DotNetSDK.Publisher.Messages;
-using RTGS.Public.Payment.V2;
-using System;
+﻿using System;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Grpc.Core;
+using RTGS.DotNetSDK.Publisher.Messages;
+using RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Publisher
 {
@@ -34,19 +34,23 @@ namespace RTGS.DotNetSDK.Publisher
 
 			_pendingAcknowledgementEvent.Reset();
 
+			var correlationId = Guid.NewGuid().ToString();
+
 			await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
 			{
 				Data = JsonSerializer.Serialize(message),
 				Header = new RtgsMessageHeader
 				{
 					InstructionType = "payment.lock.v1",
-					CorrelationId = Guid.NewGuid().ToString()
+					CorrelationId = correlationId
 				}
 			});
 
 			var acknowledgementSet = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration);
 
-			return acknowledgementSet && _acknowledgement?.Success == true;
+			return acknowledgementSet
+				   && _acknowledgement?.Header?.CorrelationId == correlationId
+				   && _acknowledgement?.Success == true;
 		}
 
 		private async Task StartWaitingForAcknowledgements()
