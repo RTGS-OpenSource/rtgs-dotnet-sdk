@@ -30,6 +30,19 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Fact]
+		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader()
+		{
+			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+
+			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
+
+			var connection = receiver.Connections.SingleOrDefault();
+
+			connection.Should().NotBeNull();
+			connection!.Headers.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == BankDid);
+		}
+
+		[Fact]
 		public async Task ThenCanSendAtomicLockRequestToRtgs()
 		{
 			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
@@ -106,19 +119,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Fact]
-		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader()
-		{
-			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
-
-			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
-
-			var connection = receiver.Connections.SingleOrDefault();
-
-			connection.Should().NotBeNull();
-			connection!.Headers.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == BankDid);
-		}
-
-		[Fact]
 		public async Task WhenBankMessageApiOnlyReturnsUnexpectedAcknowledgement_ThenReturnTimeout()
 		{
 			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
@@ -127,6 +127,39 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
 			sendResult.Should().Be(SendResult.Timeout);
+		}
+
+		[Fact]
+		public async Task WhenBankMessageApiReturnsUnexpectedAcknowledgementBeforeFailureAcknowledgement_ThenReturnServerError()
+		{
+			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
+			messageHandler.ReturnUnexpectedSuccessfulAcknowledgementThenAcknowledgementWithFailure();
+
+			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+
+			sendResult.Should().Be(SendResult.ServerError);
+		}
+
+		[Fact]
+		public async Task WhenBankMessageApiReturnsFailureAcknowledgementBeforeUnexpectedAcknowledgement_ThenReturnServerError()
+		{
+			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
+			messageHandler.ReturnAcknowledgementWithFailureThenUnexpectedSuccessfulAcknowledgement();
+
+			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+
+			sendResult.Should().Be(SendResult.ServerError);
+		}
+
+		[Fact]
+		public async Task WhenBankMessageApiReturnsSuccessWrappedByUnexpectedFailureAcknowledgements_ThenReturnServerError()
+		{
+			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
+			messageHandler.ReturnAcknowledgementWithSuccessBeforeAndAfterUnexpectedFailures();
+
+			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+
+			sendResult.Should().Be(SendResult.Success);
 		}
 
 		public async Task InitializeAsync()

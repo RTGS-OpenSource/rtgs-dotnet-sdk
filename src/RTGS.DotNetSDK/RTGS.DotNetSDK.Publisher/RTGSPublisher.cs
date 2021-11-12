@@ -16,6 +16,7 @@ namespace RTGS.DotNetSDK.Publisher
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
 		private RtgsMessageAcknowledgement _acknowledgement;
+		private string _correlationId;
 
 		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options)
 		{
@@ -32,9 +33,10 @@ namespace RTGS.DotNetSDK.Publisher
 				_waitForAcknowledgementsTask = WaitForAcknowledgements();
 			}
 
+			// TODO: EXCLUSIVE LOCK START
 			_pendingAcknowledgementEvent.Reset();
 
-			var correlationId = Guid.NewGuid().ToString();
+			_correlationId = Guid.NewGuid().ToString();
 
 			await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
 			{
@@ -42,24 +44,30 @@ namespace RTGS.DotNetSDK.Publisher
 				Header = new RtgsMessageHeader
 				{
 					InstructionType = "payment.lock.v1",
-					CorrelationId = correlationId
+					CorrelationId = _correlationId
 				}
 			});
 
-			var acknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration);
+			var expectedAcknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration);
 
-			if (!acknowledgementReceived || _acknowledgement?.Header?.CorrelationId != correlationId)
+			if (!expectedAcknowledgementReceived)
 			{
 				return SendResult.Timeout;
 			}
 
 			return _acknowledgement?.Success == true ? SendResult.Success : SendResult.ServerError;
+			// TODO: EXCLUSIVE LOCK END
 		}
 
 		private async Task WaitForAcknowledgements()
 		{
 			await foreach (var acknowledgement in _toRtgsCall.ResponseStream.ReadAllAsync())
 			{
+				if (acknowledgement.Header.CorrelationId != _correlationId)
+				{
+					continue;
+				}
+
 				_acknowledgement = acknowledgement;
 				_pendingAcknowledgementEvent.Set();
 			}
