@@ -18,7 +18,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 	public class GivenOpenConnection : IAsyncLifetime
 	{
 		private const string BankDid = "test-bank-did";
-		private readonly static TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
+		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 		private readonly GrpcTestServer _server;
 		private IRtgsPublisher _rtgsPublisher;
@@ -48,33 +48,33 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Fact]
-		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnTrue()
+		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnSuccess()
 		{
-			var success = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
-			success.Should().BeTrue();
+			sendResult.Should().Be(SendResult.Success);
 		}
 
 		[Fact]
-		public async Task WhenBankMessageApiReturnsUnsuccessfulAcknowledgement_ThenReturnFalse()
+		public async Task WhenBankMessageApiReturnsUnsuccessfulAcknowledgement_ThenReturnServerError()
 		{
 			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
 			messageHandler.ReturnAcknowledgementWithFailure();
 
-			var success = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
-			success.Should().BeFalse();
+			sendResult.Should().Be(SendResult.ServerError);
 		}
 
 		[Fact]
-		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgementTooLate_ThenReturnFalse()
+		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgementTooLate_ThenReturnTimeout()
 		{
 			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
 			messageHandler.ReturnAcknowledgementTooLate(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1)));
 
-			var success = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
-			success.Should().BeFalse();
+			sendResult.Should().Be(SendResult.Timeout);
 		}
 
 		[Fact]
@@ -90,19 +90,19 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Fact]
-		public async Task WhenSendingMultipleMessagesAndLastOneTimesOut_ThenDontSeePreviousSuccess()
+		public async Task WhenSendingMultipleMessagesAndLastOneTimesOut_ThenDoNotSeePreviousSuccess()
 		{
-			var successfulResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			var sendResult1 = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
 			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
 			messageHandler.ReturnAcknowledgementTooLate(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1)));
 
-			var failureResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			var sendResult2 = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
 			using var _ = new AssertionScope();
 
-			successfulResult.Should().BeTrue();
-			failureResult.Should().BeFalse();
+			sendResult1.Should().Be(SendResult.Success);
+			sendResult2.Should().Be(SendResult.Timeout);
 		}
 
 		[Fact]
@@ -119,14 +119,14 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Fact]
-		public async Task WhenBankMessageApiOnlyReturnsUnexpectedAcknowledgement_ThenReturnFalse()
+		public async Task WhenBankMessageApiOnlyReturnsUnexpectedAcknowledgement_ThenReturnTimeout()
 		{
 			var messageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
 			messageHandler.ReturnUnexpectedSuccessfulAcknowledgement();
 
-			var success = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
-			success.Should().BeFalse();
+			sendResult.Should().Be(SendResult.Timeout);
 		}
 
 		public async Task InitializeAsync()

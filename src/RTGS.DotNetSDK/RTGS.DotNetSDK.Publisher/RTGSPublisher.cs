@@ -14,7 +14,7 @@ namespace RTGS.DotNetSDK.Publisher
 		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new();
 		private readonly RtgsClientOptions _options;
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
-		private Task _acknowledgementsTask;
+		private Task _waitForAcknowledgementsTask;
 		private RtgsMessageAcknowledgement _acknowledgement;
 
 		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options)
@@ -23,13 +23,13 @@ namespace RTGS.DotNetSDK.Publisher
 			_options = options;
 		}
 
-		public async Task<bool> SendAtomicLockRequestAsync(AtomicLockRequest message)
+		public async Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message)
 		{
 			if (_toRtgsCall is null)
 			{
 				var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
 				_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
-				_acknowledgementsTask = StartWaitingForAcknowledgements();
+				_waitForAcknowledgementsTask = WaitForAcknowledgements();
 			}
 
 			_pendingAcknowledgementEvent.Reset();
@@ -46,14 +46,17 @@ namespace RTGS.DotNetSDK.Publisher
 				}
 			});
 
-			var acknowledgementSet = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration);
+			var acknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration);
 
-			return acknowledgementSet
-				   && _acknowledgement?.Header?.CorrelationId == correlationId
-				   && _acknowledgement?.Success == true;
+			if (!acknowledgementReceived || _acknowledgement?.Header?.CorrelationId != correlationId)
+			{
+				return SendResult.Timeout;
+			}
+
+			return _acknowledgement?.Success == true ? SendResult.Success : SendResult.ServerError;
 		}
 
-		private async Task StartWaitingForAcknowledgements()
+		private async Task WaitForAcknowledgements()
 		{
 			await foreach (var acknowledgement in _toRtgsCall.ResponseStream.ReadAllAsync())
 			{
@@ -74,7 +77,7 @@ namespace RTGS.DotNetSDK.Publisher
 			{
 				await _toRtgsCall.RequestStream.CompleteAsync();
 
-				await _acknowledgementsTask;
+				await _waitForAcknowledgementsTask;
 
 				_toRtgsCall.Dispose();
 				_toRtgsCall = null;
