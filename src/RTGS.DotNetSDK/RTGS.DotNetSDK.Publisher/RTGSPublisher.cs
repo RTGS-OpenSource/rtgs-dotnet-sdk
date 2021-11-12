@@ -26,6 +26,7 @@ namespace RTGS.DotNetSDK.Publisher
 
 		public async Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message)
 		{
+			// TODO: EXCLUSIVE LOCK START
 			if (_toRtgsCall is null)
 			{
 				var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
@@ -33,7 +34,6 @@ namespace RTGS.DotNetSDK.Publisher
 				_waitForAcknowledgementsTask = WaitForAcknowledgements();
 			}
 
-			// TODO: EXCLUSIVE LOCK START
 			_pendingAcknowledgementEvent.Reset();
 
 			_correlationId = Guid.NewGuid().ToString();
