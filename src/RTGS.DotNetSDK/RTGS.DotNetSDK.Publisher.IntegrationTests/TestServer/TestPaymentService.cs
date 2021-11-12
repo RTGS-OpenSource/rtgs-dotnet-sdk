@@ -1,7 +1,7 @@
 ﻿extern alias RTGSServer;
+using System.Threading.Tasks;
 using Grpc.Core;
 using RTGSServer::RTGS.Public.Payment.V2;
-using System.Threading.Tasks;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 {
@@ -32,13 +32,13 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 			IServerStreamWriter<RtgsMessageAcknowledgement> responseStream,
 			ServerCallContext context)
 		{
-			var messageList = _receiver.SetupConnectionInfo(context.RequestHeaders);
+			var handledMessages = _receiver.SetupConnectionInfo(context.RequestHeaders);
 
 			await foreach (var message in requestStream.ReadAllAsync(context.CancellationToken))
 			{
 				await _messageHandler.Handle(message, responseStream);
 
-				messageList.Add(message);
+				handledMessages.Add(message);
 			}
 		}
 	}
