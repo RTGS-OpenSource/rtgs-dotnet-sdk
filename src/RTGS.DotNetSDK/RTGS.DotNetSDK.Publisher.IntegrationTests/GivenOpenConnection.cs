@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -66,13 +67,66 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Fact]
-		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnSuccess()
+		public async Task ThenCanSendAtomicTransferRequestToRtgs()
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
 
-			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			await _rtgsPublisher.SendAtomicTransferRequestAsync(ValidRequests.AtomicTransferRequest);
+
+			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
+			var receivedMessage = receiver.Connections.Should().ContainSingle().Which.Requests.Should().ContainSingle().Subject;
+			var receivedAtomicTransferRequest = JsonConvert.DeserializeObject<AtomicTransferRequest>(receivedMessage.Data);
+
+			using var _ = new AssertionScope();
+
+			receivedMessage.Header.Should().NotBeNull();
+			receivedMessage.Header?.InstructionType.Should().Be("payment.block.v1");
+			receivedMessage.Header?.CorrelationId.Should().NotBeNullOrEmpty();
+
+			receivedAtomicTransferRequest.Should().BeEquivalentTo(ValidRequests.AtomicTransferRequest, options => options.ComparingByMembers<AtomicTransferRequest>());
+		}
+
+		[Theory]
+		[MemberData(nameof(PublisherActions))]
+		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnSuccess<TRequest>(PublisherAction<TRequest> publisherAction)
+		{
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
+
+			var sendResult = await publisherAction.SendDelegate(_rtgsPublisher, publisherAction.Request);
 
 			sendResult.Should().Be(SendResult.Success);
+		}
+
+		// TODO: does this need to be public?
+		public static readonly IEnumerable<object[]> PublisherActions = new[]
+		{
+			new object[] 
+			{
+				new PublisherAction<AtomicLockRequest>
+				{
+					SendDelegate = (publisher, request) => publisher.SendAtomicLockRequestAsync(request),
+					InstructionType = "payment.lock.v1",
+					Request = ValidRequests.AtomicLockRequest
+				}
+			},
+			new object[] 
+			{
+				new PublisherAction<AtomicTransferRequest>
+				{
+					SendDelegate = (publisher, request) => publisher.SendAtomicTransferRequestAsync(request),
+					InstructionType = "payment.block.v1",
+					Request = ValidRequests.AtomicTransferRequest
+				}
+			}
+		};
+
+		public class PublisherAction<TRequest>
+		{
+			public Func<IRtgsPublisher, TRequest, Task<SendResult>> SendDelegate { get; init; }
+
+			public string InstructionType { get; init; }
+
+			public TRequest Request { get; init; }
 		}
 
 		[Fact]
@@ -217,7 +271,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			{
 				DbtrToRtgsId = new GenericFinancialIdentification1
 				{
-					Id = nameof(ThenCanSendAtomicLockRequestToRtgs)
+					Id = BankDid
 				},
 				CdtrAmt = new ActiveCurrencyAndAmount
 				{
@@ -240,6 +294,28 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				},
 				SplmtryData = "some-extra-data",
 				EndToEndId = "end-to-end-id"
+			};
+
+			public static readonly AtomicTransferRequest AtomicTransferRequest = new()
+			{
+				DbtrToRtgsId = new GenericFinancialIdentification1
+				{
+					Id = BankDid
+				},
+				FIToFICstmrCdtTrf = new FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer()
+				{
+					GrpHdr = new GroupHeader93
+					{
+						MsgId = "message-id"
+					},
+					CdtTrfTxInf = 
+					{
+						{
+							new CreditTransferTransaction39 { PoolgAdjstmntDt = "2021-01-01" }
+						}
+					}
+				},
+				LckId = "7C10048C-18E8-4A4B-B006-99B4E6C9002B"
 			};
 		}
 	}

@@ -24,7 +24,13 @@ namespace RTGS.DotNetSDK.Publisher
 			_options = options;
 		}
 
-		public async Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message)
+		public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message) =>
+			SendRequestAsync(message, "payment.lock.v1");
+
+		public Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequest message) =>
+			SendRequestAsync(message, "payment.block.v1");
+
+		private async Task<SendResult> SendRequestAsync<T>(T message, string instructionType)
 		{
 			// TODO: EXCLUSIVE LOCK START
 			if (_toRtgsCall is null)
@@ -43,7 +49,7 @@ namespace RTGS.DotNetSDK.Publisher
 				Data = JsonSerializer.Serialize(message),
 				Header = new RtgsMessageHeader
 				{
-					InstructionType = "payment.lock.v1",
+					InstructionType = instructionType,
 					CorrelationId = _correlationId
 				}
 			});
