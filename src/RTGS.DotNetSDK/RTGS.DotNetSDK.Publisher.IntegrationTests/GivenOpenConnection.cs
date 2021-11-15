@@ -14,16 +14,16 @@ using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 using RTGS.Public.Payment.V1.Pacs;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 {
-	public class GivenOpenConnection : IAsyncLifetime
+	public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 	{
 		private const string BankDid = "test-bank-did";
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(0.5);
 
-		private readonly GrpcTestServer _server;
+		private readonly GrpcServerFixture _grpcServer;
+
 		private IRtgsPublisher _rtgsPublisher;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
@@ -81,9 +81,9 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			 }
 		};
 
-		public GivenOpenConnection(ITestOutputHelper outputHelper)
+		public GivenOpenConnection(GrpcServerFixture grpcServer)
 		{
-			_server = new GrpcTestServer(outputHelper);
+			_grpcServer = grpcServer;
 		}
 
 		[Fact]
@@ -93,7 +93,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
 
-			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
+			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
 			var connection = receiver.Connections.SingleOrDefault();
 
@@ -109,7 +109,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
-			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
+			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 			var receivedMessage = receiver.Connections.Should().ContainSingle().Which.Requests.Should().ContainSingle().Subject;
 			var receivedRequest = JsonConvert.DeserializeObject<TRequest>(receivedMessage.Data);
 
@@ -168,7 +168,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
 			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
-			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
+			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
 			receiver.NumberOfConnections.Should().Be(1);
 		}
@@ -240,11 +240,9 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		{
 			try
 			{
-				var address = await _server.StartAsync();
-
 				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
 					.BankDid(BankDid)
-					.RemoteHost(address.ToString())
+					.RemoteHost(_grpcServer.ServerUri.ToString())
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
@@ -253,7 +251,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 					.Build();
 
 				_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
-				_toRtgsMessageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
+				_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
 			}
 			catch (Exception)
 			{
@@ -272,8 +270,9 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				await _rtgsPublisher.DisposeAsync();
 			}
 
-			_server?.Dispose();
 			_clientHost?.Dispose();
+
+			_grpcServer.Reset();
 		}
 
 		private static class ValidRequests

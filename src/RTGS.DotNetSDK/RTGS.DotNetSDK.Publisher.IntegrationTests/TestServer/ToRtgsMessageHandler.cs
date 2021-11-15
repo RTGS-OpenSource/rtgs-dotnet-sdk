@@ -20,6 +20,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 			}
 		}
 
+		public void Clear() => _generateAcknowledgements.Clear();
+
 		public void EnqueueExpectedAcknowledgementWithFailure() =>
 			EnqueueAcknowledgementWithFailure(true);
 

@@ -1,15 +1,12 @@
 ﻿extern alias RTGSServer;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using RTGS.DotNetSDK.Publisher.IntegrationTests.Logging;
-using System;
-using System.Net;
-using System.Threading.Tasks;
-using Xunit.Abstractions;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 {
@@ -17,14 +14,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 	{
 		private const int Port = 5100;
 
-		private readonly ITestOutputHelper _outputHelper;
 		private IHost _host;
 		private bool _disposedValue;
-
-		public GrpcTestServer(ITestOutputHelper outputHelper)
-		{
-			_outputHelper = outputHelper;
-		}
 
 		public IServiceProvider Services => _host.Services;
 
@@ -39,16 +30,12 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 
 		private IHost CreateHost()
 		{
-			var loggerFactory = new LoggerFactory();
-			loggerFactory.AddProvider(new XUnitLoggerProvider(_outputHelper));
-
 			var builder = new HostBuilder()
 				.ConfigureWebHostDefaults(webHost =>
 					webHost
 						.UseStartup<TestServerStartup>()
 						.UseKestrel(kestrelServerOptions => kestrelServerOptions.Listen(IPAddress.Any, Port,
-							listenOptions => listenOptions.Protocols = HttpProtocols.Http2)))
-				.ConfigureServices(services => services.AddSingleton<ILoggerFactory>(loggerFactory));
+							listenOptions => listenOptions.Protocols = HttpProtocols.Http2)));
 
 			return builder.Build();
 		}
