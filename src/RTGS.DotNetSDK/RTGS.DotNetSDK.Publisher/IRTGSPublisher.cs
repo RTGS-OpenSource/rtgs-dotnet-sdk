@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using RTGS.DotNetSDK.Publisher.Messages;
-using RTGS.Public.Payment.V1.Pacs;
+using RTGS.ISO20022.Messages.Camt_054_001.V09;
+using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.Publisher
 {
@@ -10,10 +11,9 @@ namespace RTGS.DotNetSDK.Publisher
 		Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message);
 		Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequest message);
 		Task<SendResult> SendEarmarkConfirmationAsync(EarmarkConfirmation message);
-		Task<SendResult> SendTransferConfirmationAsync(TransferConfirmation request);
-		Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequest request);
-		Task<SendResult> SendPayawayCreateAsync(FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer request);
-		Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotification request);
-		Task<SendResult> SendRequestAsync<T>(T message, string instructionType);
+		Task<SendResult> SendTransferConfirmationAsync(TransferConfirmation message);
+		Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequest message);
+		Task<SendResult> SendPayawayCreateAsync(FIToFICustomerCreditTransferV10 message);
+		Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message);
 	}
 }

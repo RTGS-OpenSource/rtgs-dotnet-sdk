@@ -4,7 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using RTGS.DotNetSDK.Publisher.Messages;
-using RTGS.Public.Payment.V1.Pacs;
+using RTGS.ISO20022.Messages.Camt_054_001.V09;
+using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 using RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Publisher
@@ -23,7 +24,7 @@ namespace RTGS.DotNetSDK.Publisher
 		{
 			_paymentClient = paymentClient;
 			_options = options;
-		}		
+		}
 
 		public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message) =>
 			SendRequestAsync(message, "payment.lock.v1");
@@ -40,10 +41,10 @@ namespace RTGS.DotNetSDK.Publisher
 		public Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequest message) =>
 			SendRequestAsync(message, "payment.update.ledger.v1");
 
-		public Task<SendResult> SendPayawayCreateAsync(FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer message) =>
+		public Task<SendResult> SendPayawayCreateAsync(FIToFICustomerCreditTransferV10 message) =>
 			SendRequestAsync(message, "payaway.create.v1");
 
-		public Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotification message) =>
+		public Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message) =>
 			SendRequestAsync(message, "payaway.confirmation.v1");
 
 		public async Task<SendResult> SendRequestAsync<T>(T message, string instructionType)
@@ -112,6 +113,6 @@ namespace RTGS.DotNetSDK.Publisher
 				_toRtgsCall.Dispose();
 				_toRtgsCall = null;
 			}
-		}		
+		}
 	}
 }

@@ -10,6 +10,8 @@ using Newtonsoft.Json;
 using RTGS.DotNetSDK.Publisher.Extensions;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer;
 using RTGS.DotNetSDK.Publisher.Messages;
+using RTGS.ISO20022.Messages.Camt_054_001.V09;
+using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 using RTGS.Public.Payment.V1.Pacs;
 using Xunit;
 using Xunit.Abstractions;
@@ -25,11 +27,11 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		private IRtgsPublisher _rtgsPublisher;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
-		
+
 		public static readonly IEnumerable<object[]> PublisherActions = new[]
 		{
-			new object[] 
-			{ 
+			new object[]
+			{
 				new PublisherAction<AtomicLockRequest>(
 					ValidRequests.AtomicLockRequest,
 					"payment.lock.v1",
@@ -65,14 +67,14 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			 },
 			 new object[]
 			 {
-			 	new PublisherAction<FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer>(
+			 	new PublisherAction<FIToFICustomerCreditTransferV10>(
 			 		ValidRequests.PayawayCreate,
 			 		"payaway.create.v1",
 			 		(publisher, request) => publisher.SendPayawayCreateAsync(request))
 			 },
 			 new object[]
 			 {
-			 	new PublisherAction<BankToCustomerDebitCreditNotification>(
+			 	new PublisherAction<BankToCustomerDebitCreditNotificationV09>(
 			 		ValidRequests.PayawayConfirmation,
 			 		"payaway.confirmation.v1",
 			 		(publisher, request) => publisher.SendPayawayConfirmationAsync(request))
@@ -278,11 +280,11 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		{
 			public static readonly AtomicLockRequest AtomicLockRequest = new()
 			{
-				DbtrToRtgsId = new GenericFinancialIdentification1
+				DbtrToRtgsId = new Public.Payment.V1.Pacs.GenericFinancialIdentification1
 				{
 					Id = BankDid
 				},
-				CdtrAmt = new ActiveCurrencyAndAmount
+				CdtrAmt = new Public.Payment.V1.Pacs.ActiveCurrencyAndAmount
 				{
 					Ccy = "GBP",
 					Amt = new ProtoDecimal
@@ -294,12 +296,12 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				UltmtDbtrAcct = new CashAccount38
 				{
 					Ccy = "USD",
-					Id = new AccountIdentification4Choice { IBAN = "XX00ULTIMATEDEBTORACCOUNT" }
+					Id = new Public.Payment.V1.Pacs.AccountIdentification4Choice { IBAN = "XX00ULTIMATEDEBTORACCOUNT" }
 				},
 				UltmtCdtrAcct = new CashAccount38
 				{
 					Ccy = "GBP",
-					Id = new AccountIdentification4Choice { IBAN = "XX00ULTIMATECREDITORACCOUNT" }
+					Id = new Public.Payment.V1.Pacs.AccountIdentification4Choice { IBAN = "XX00ULTIMATECREDITORACCOUNT" }
 				},
 				SplmtryData = "some-extra-data",
 				EndToEndId = "end-to-end-id"
@@ -307,7 +309,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 			public static readonly AtomicTransferRequest AtomicTransferRequest = new()
 			{
-				DbtrToRtgsId = new GenericFinancialIdentification1
+				DbtrToRtgsId = new Public.Payment.V1.Pacs.GenericFinancialIdentification1
 				{
 					Id = BankDid
 				},
@@ -317,7 +319,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 					{
 						MsgId = "message-id"
 					},
-					CdtTrfTxInf = 
+					CdtTrfTxInf =
 					{
 						{
 							new CreditTransferTransaction39 { PoolgAdjstmntDt = "2021-01-01" }
@@ -346,29 +348,37 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 					Units = 1,
 					Nanos = 230_000_000
 				},
-				BkToRtgsId = new GenericFinancialIdentification1()
+				BkToRtgsId = new Public.Payment.V1.Pacs.GenericFinancialIdentification1()
 				{
 					Id = BankDid
 				}
 			};
 
-			public static readonly FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer PayawayCreate = new()
+			public static readonly FIToFICustomerCreditTransferV10 PayawayCreate = new()
 			{
-				GrpHdr = new GroupHeader93
+				GrpHdr = new GroupHeader96
 				{
 					MsgId = "message-id"
 				},
-				CdtTrfTxInf =
+				CdtTrfTxInf = new[]
 				{
-					{
-						new CreditTransferTransaction39 { PoolgAdjstmntDt = "2021-01-01" }
-					}
+					new CreditTransferTransaction50 { PoolgAdjstmntDt = new DateTime(2021, 1, 1) }
 				}
 			};
 
-			public static readonly BankToCustomerDebitCreditNotification PayawayConfirmation = new()
+			public static readonly BankToCustomerDebitCreditNotificationV09 PayawayConfirmation = new()
 			{
-				TestProperty = "test-property"
+				GrpHdr = new GroupHeader81
+				{
+					MsgId = "message-id"
+				},
+				Ntfctn = new[]
+				{
+					new AccountNotification19
+					{
+						AddtlNtfctnInf = "additional-notification-info"
+					}
+				}
 			};
 		}
 	}
