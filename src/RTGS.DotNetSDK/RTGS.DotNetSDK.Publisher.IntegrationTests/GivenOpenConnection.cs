@@ -19,12 +19,65 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 	public class GivenOpenConnection : IAsyncLifetime
 	{
 		private const string BankDid = "test-bank-did";
-		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
+		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(0.5);
 
 		private readonly GrpcTestServer _server;
 		private IRtgsPublisher _rtgsPublisher;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
+		
+		public static readonly IEnumerable<object[]> PublisherActions = new[]
+		{
+			new object[] 
+			{ 
+				new PublisherAction<AtomicLockRequest>(
+					ValidRequests.AtomicLockRequest,
+					"payment.lock.v1",
+					(publisher, request) => publisher.SendAtomicLockRequestAsync(request))
+			},
+			new object[]
+			{
+				new PublisherAction<AtomicTransferRequest>(
+					ValidRequests.AtomicTransferRequest,
+					"payment.block.v1",
+					(publisher, request) => publisher.SendAtomicTransferRequestAsync(request))
+			},
+			new object[]
+			{
+				new PublisherAction<EarmarkConfirmation>(
+					ValidRequests.EarmarkConfirmation,
+					"payment.earmarkconfirmation.v1",
+					(publisher, request) => publisher.SendEarmarkConfirmationAsync(request))
+			},
+			 new object[]
+			 {
+			 	new PublisherAction<TransferConfirmation>(
+			 		ValidRequests.TransferConfirmation,
+			 		"payment.blockconfirmation.v1",
+			 		(publisher, request) => publisher.SendTransferConfirmationAsync(request))
+			 },
+			 new object[]
+			 {
+			 	new PublisherAction<UpdateLedgerRequest>(
+			 		ValidRequests.UpdateLedgerRequest,
+			 		"payment.update.ledger.v1",
+			 		(publisher, request) => publisher.SendUpdateLedgerRequestAsync(request))
+			 },
+			 new object[]
+			 {
+			 	new PublisherAction<FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer>(
+			 		ValidRequests.PayawayCreate,
+			 		"payaway.create.v1",
+			 		(publisher, request) => publisher.SendPayawayCreateAsync(request))
+			 },
+			 new object[]
+			 {
+			 	new PublisherAction<BankToCustomerDebitCreditNotification>(
+			 		ValidRequests.PayawayConfirmation,
+			 		"payaway.confirmation.v1",
+			 		(publisher, request) => publisher.SendPayawayConfirmationAsync(request))
+			 }
+		};
 
 		public GivenOpenConnection(ITestOutputHelper outputHelper)
 		{
@@ -46,44 +99,25 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			connection!.Headers.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == BankDid);
 		}
 
-		[Fact]
-		public async Task ThenCanSendAtomicLockRequestToRtgs()
+		[Theory]
+		[MemberData(nameof(PublisherActions))]
+		public async Task ThenCanSendRequestToRtgs<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
 
-			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
 			var receivedMessage = receiver.Connections.Should().ContainSingle().Which.Requests.Should().ContainSingle().Subject;
-			var receivedAtomicLockRequest = JsonConvert.DeserializeObject<AtomicLockRequest>(receivedMessage.Data);
+			var receivedRequest = JsonConvert.DeserializeObject<TRequest>(receivedMessage.Data);
 
 			using var _ = new AssertionScope();
 
 			receivedMessage.Header.Should().NotBeNull();
-			receivedMessage.Header?.InstructionType.Should().Be("payment.lock.v1");
+			receivedMessage.Header?.InstructionType.Should().Be(publisherAction.InstructionType);
 			receivedMessage.Header?.CorrelationId.Should().NotBeNullOrEmpty();
 
-			receivedAtomicLockRequest.Should().BeEquivalentTo(ValidRequests.AtomicLockRequest, options => options.ComparingByMembers<AtomicLockRequest>());
-		}
-
-		[Fact]
-		public async Task ThenCanSendAtomicTransferRequestToRtgs()
-		{
-			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
-
-			await _rtgsPublisher.SendAtomicTransferRequestAsync(ValidRequests.AtomicTransferRequest);
-
-			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
-			var receivedMessage = receiver.Connections.Should().ContainSingle().Which.Requests.Should().ContainSingle().Subject;
-			var receivedAtomicTransferRequest = JsonConvert.DeserializeObject<AtomicTransferRequest>(receivedMessage.Data);
-
-			using var _ = new AssertionScope();
-
-			receivedMessage.Header.Should().NotBeNull();
-			receivedMessage.Header?.InstructionType.Should().Be("payment.block.v1");
-			receivedMessage.Header?.CorrelationId.Should().NotBeNullOrEmpty();
-
-			receivedAtomicTransferRequest.Should().BeEquivalentTo(ValidRequests.AtomicTransferRequest, options => options.ComparingByMembers<AtomicTransferRequest>());
+			receivedRequest.Should().BeEquivalentTo(publisherAction.Request, options => options.ComparingByMembers<TRequest>());
 		}
 
 		[Theory]
@@ -92,135 +126,110 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
 
-			var sendResult = await publisherAction.SendDelegate(_rtgsPublisher, publisherAction.Request);
+			var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			sendResult.Should().Be(SendResult.Success);
 		}
 
-		// TODO: does this need to be public?
-		public static readonly IEnumerable<object[]> PublisherActions = new[]
-		{
-			new object[] 
-			{
-				new PublisherAction<AtomicLockRequest>
-				{
-					SendDelegate = (publisher, request) => publisher.SendAtomicLockRequestAsync(request),
-					InstructionType = "payment.lock.v1",
-					Request = ValidRequests.AtomicLockRequest
-				}
-			},
-			new object[] 
-			{
-				new PublisherAction<AtomicTransferRequest>
-				{
-					SendDelegate = (publisher, request) => publisher.SendAtomicTransferRequestAsync(request),
-					InstructionType = "payment.block.v1",
-					Request = ValidRequests.AtomicTransferRequest
-				}
-			}
-		};
-
-		public class PublisherAction<TRequest>
-		{
-			public Func<IRtgsPublisher, TRequest, Task<SendResult>> SendDelegate { get; init; }
-
-			public string InstructionType { get; init; }
-
-			public TRequest Request { get; init; }
-		}
-
-		[Fact]
-		public async Task WhenBankMessageApiReturnsUnsuccessfulAcknowledgement_ThenReturnServerError()
+		[Theory]
+		[MemberData(nameof(PublisherActions))]
+		public async Task WhenBankMessageApiReturnsUnsuccessfulAcknowledgement_ThenReturnServerError<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithFailure();
 
-			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			sendResult.Should().Be(SendResult.ServerError);
 		}
 
-		[Fact]
-		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgementTooLate_ThenReturnTimeout()
+		[Theory]
+		[MemberData(nameof(PublisherActions))]
+		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgementTooLate_ThenReturnTimeout<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1)));
 
-			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			sendResult.Should().Be(SendResult.Timeout);
 		}
 
-		[Fact]
-		public async Task WhenSendingMultipleMessages_ThenOnlyOneConnection()
+		[Theory]
+		[MemberData(nameof(PublisherActions))]
+		public async Task WhenSendingMultipleMessages_ThenOnlyOneConnection<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
-			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
-			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
-			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			var receiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
 
 			receiver.NumberOfConnections.Should().Be(1);
 		}
 
-		[Fact]
-		public async Task WhenSendingMultipleMessagesAndLastOneTimesOut_ThenDoNotSeePreviousSuccess()
+		[Theory]
+		[MemberData(nameof(PublisherActions))]
+		public async Task WhenSendingMultipleMessagesAndLastOneTimesOut_ThenDoNotSeePreviousSuccess<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
-			var sendResult1 = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			var sendResult1 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1)));
-			var sendResult2 = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
-
+			var sendResult2 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 			using var _ = new AssertionScope();
 
 			sendResult1.Should().Be(SendResult.Success);
 			sendResult2.Should().Be(SendResult.Timeout);
 		}
 
-		[Fact]
-		public async Task WhenBankMessageApiOnlyReturnsUnexpectedAcknowledgement_ThenReturnTimeout()
+		[Theory]
+		[MemberData(nameof(PublisherActions))]
+		public async Task WhenBankMessageApiOnlyReturnsUnexpectedAcknowledgement_ThenReturnTimeout<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueUnexpectedAcknowledgementWithSuccess();
 
-			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			sendResult.Should().Be(SendResult.Timeout);
 		}
 
-		[Fact]
-		public async Task WhenBankMessageApiReturnsUnexpectedAcknowledgementBeforeFailureAcknowledgement_ThenReturnServerError()
+		[Theory]
+		[MemberData(nameof(PublisherActions))]
+		public async Task WhenBankMessageApiReturnsUnexpectedAcknowledgementBeforeFailureAcknowledgement_ThenReturnServerError<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueUnexpectedAcknowledgementWithSuccess();
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithFailure();
 
-			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			sendResult.Should().Be(SendResult.ServerError);
 		}
 
-		[Fact]
-		public async Task WhenBankMessageApiReturnsFailureAcknowledgementBeforeUnexpectedAcknowledgement_ThenReturnServerError()
+		[Theory]
+		[MemberData(nameof(PublisherActions))]
+		public async Task WhenBankMessageApiReturnsFailureAcknowledgementBeforeUnexpectedAcknowledgement_ThenReturnServerError<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithFailure();
 			_toRtgsMessageHandler.EnqueueUnexpectedAcknowledgementWithSuccess();
 
-			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			sendResult.Should().Be(SendResult.ServerError);
 		}
 
-		[Fact]
-		public async Task WhenBankMessageApiReturnsSuccessWrappedByUnexpectedFailureAcknowledgements_ThenReturnServerError()
+		[Theory]
+		[MemberData(nameof(PublisherActions))]
+		public async Task WhenBankMessageApiReturnsSuccessWrappedByUnexpectedFailureAcknowledgements_ThenReturnServerError<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueUnexpectedAcknowledgementWithFailure();
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
 			_toRtgsMessageHandler.EnqueueUnexpectedAcknowledgementWithFailure();
 
-			var sendResult = await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			sendResult.Should().Be(SendResult.Success);
 		}
@@ -315,7 +324,51 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 						}
 					}
 				},
-				LckId = "7C10048C-18E8-4A4B-B006-99B4E6C9002B"
+				LckId = Guid.NewGuid().ToString()
+			};
+
+			public static readonly EarmarkConfirmation EarmarkConfirmation = new()
+			{
+				LockId = Guid.NewGuid(),
+				Success = true
+			};
+
+			public static readonly TransferConfirmation TransferConfirmation = new()
+			{
+				LockId = Guid.NewGuid(),
+				Success = true
+			};
+
+			public static readonly UpdateLedgerRequest UpdateLedgerRequest = new()
+			{
+				Amt = new ProtoDecimal()
+				{
+					Units = 1,
+					Nanos = 230_000_000
+				},
+				BkToRtgsId = new GenericFinancialIdentification1()
+				{
+					Id = BankDid
+				}
+			};
+
+			public static readonly FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer PayawayCreate = new()
+			{
+				GrpHdr = new GroupHeader93
+				{
+					MsgId = "message-id"
+				},
+				CdtTrfTxInf =
+				{
+					{
+						new CreditTransferTransaction39 { PoolgAdjstmntDt = "2021-01-01" }
+					}
+				}
+			};
+
+			public static readonly BankToCustomerDebitCreditNotification PayawayConfirmation = new()
+			{
+				TestProperty = "test-property"
 			};
 		}
 	}
