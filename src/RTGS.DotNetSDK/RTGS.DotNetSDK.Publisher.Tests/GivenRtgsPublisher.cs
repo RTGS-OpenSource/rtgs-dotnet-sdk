@@ -1,18 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
-using RTGS.DotNetSDK.Publisher
+﻿using Xunit;
 
 namespace RTGS.DotNetSDK.Publisher.Tests
 {
-    public class GivenRtgsPublisher
+	public class GivenRtgsPublisher
     {
+		private readonly FakeLogger<RtgsPublisher> _fakeLogger = new();
+		private readonly RtgsPublisher _rtgsPublisher;
+
 		public GivenRtgsPublisher()
 		{
-			var rtgsPublisher = new RtgsPublisher
+			var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
+				.BankDid("")
+				.RemoteHost("")
+				.Build();
+
+			_rtgsPublisher = new RtgsPublisher(_fakeLogger, null, rtgsClientOptions);
 		}
 
 		[Fact]
