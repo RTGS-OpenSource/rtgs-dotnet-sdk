@@ -1,0 +1,38 @@
+name: RTGS .NET SDK Nuget Package
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+
+jobs:
+  build-test-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "5.0.x"
+      - name: Dotnet Tool Manifest
+        run: dotnet new tool-manifest
+      - name: Install dotnet format
+        run: dotnet tool install dotnet-format
+      - name: Dotnet Format
+        run: dotnet format ./src/RTGS.DotNetSDK/ --check
+      - name: Build Dotnet
+        run: dotnet build --configuration Release ./src/RTGS.DotNetSDK/
+      - name: Test Dotnet
+        run: |
+          dotnet tool install dotnet-reportgenerator-globaltool --tool-path ./tools
+          dotnet test ./src/RTGS.DotNetSDK/ --no-build --results-directory "./test_results" --logger "trx;LogFilePrefix=results;" --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true
+          ./tools/reportgenerator -reports:./test_results/**/coverage.cobertura.xml -targetdir:./test_results/CodeCoverage -reporttypes:Cobertura
+      - uses: 5monkeys/cobertura-action@master
+        with:
+          path: test_results/CodeCoverage/Cobertura.xml
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          minimum_coverage: 70
+          fail_below_threshold: true
+          show_branch: true
