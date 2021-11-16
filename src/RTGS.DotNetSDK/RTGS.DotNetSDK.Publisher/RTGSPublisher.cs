@@ -10,11 +10,12 @@ using RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Publisher
 {
-	public class RtgsPublisher : IRtgsPublisher
+	internal sealed class RtgsPublisher : IRtgsPublisher
 	{
 		private readonly Payment.PaymentClient _paymentClient;
-		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new();
+		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new(); // TODO: dispose
 		private readonly RtgsClientOptions _options;
+		private readonly ManualResetEventSlim _writeInProgress = new(true);
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
 		private RtgsMessageAcknowledgement _acknowledgement;
@@ -26,29 +27,31 @@ namespace RTGS.DotNetSDK.Publisher
 			_options = options;
 		}
 
-		public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message) =>
-			SendRequestAsync(message, "payment.lock.v1");
+		public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message, CancellationToken cancellationToken) =>
+			SendRequestAsync(message, "payment.lock.v1", cancellationToken);
 
-		public Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequest message) =>
-			SendRequestAsync(message, "payment.block.v1");
+		public Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequest message, CancellationToken cancellationToken) =>
+			SendRequestAsync(message, "payment.block.v1", cancellationToken);
 
-		public Task<SendResult> SendEarmarkConfirmationAsync(EarmarkConfirmation message) =>
-			SendRequestAsync(message, "payment.earmarkconfirmation.v1");
+		public Task<SendResult> SendEarmarkConfirmationAsync(EarmarkConfirmation message, CancellationToken cancellationToken) =>
+			SendRequestAsync(message, "payment.earmarkconfirmation.v1", cancellationToken);
 
-		public Task<SendResult> SendTransferConfirmationAsync(TransferConfirmation message) =>
-			SendRequestAsync(message, "payment.blockconfirmation.v1");
+		public Task<SendResult> SendTransferConfirmationAsync(TransferConfirmation message, CancellationToken cancellationToken) =>
+			SendRequestAsync(message, "payment.blockconfirmation.v1", cancellationToken);
 
-		public Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequest message) =>
-			SendRequestAsync(message, "payment.update.ledger.v1");
+		public Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequest message, CancellationToken cancellationToken) =>
+			SendRequestAsync(message, "payment.update.ledger.v1", cancellationToken);
 
-		public Task<SendResult> SendPayawayCreateAsync(FIToFICustomerCreditTransferV10 message) =>
-			SendRequestAsync(message, "payaway.create.v1");
+		public Task<SendResult> SendPayawayCreateAsync(FIToFICustomerCreditTransferV10 message, CancellationToken cancellationToken) =>
+			SendRequestAsync(message, "payaway.create.v1", cancellationToken);
 
-		public Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message) =>
-			SendRequestAsync(message, "payaway.confirmation.v1");
+		public Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message, CancellationToken cancellationToken) =>
+			SendRequestAsync(message, "payaway.confirmation.v1", cancellationToken);
 
-		public async Task<SendResult> SendRequestAsync<T>(T message, string instructionType)
+		private async Task<SendResult> SendRequestAsync<T>(T message, string instructionType, CancellationToken cancellationToken)
 		{
+			// TODO: throw if disposed
+
 			// TODO: EXCLUSIVE LOCK START
 			if (_toRtgsCall is null)
 			{
@@ -61,6 +64,8 @@ namespace RTGS.DotNetSDK.Publisher
 
 			_correlationId = Guid.NewGuid().ToString();
 
+			_writeInProgress.Reset();
+
 			await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
 			{
 				Data = JsonSerializer.Serialize(message),
@@ -71,7 +76,9 @@ namespace RTGS.DotNetSDK.Publisher
 				}
 			});
 
-			var expectedAcknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration);
+			_writeInProgress.Set();
+
+			var expectedAcknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration, cancellationToken);
 
 			if (!expectedAcknowledgementReceived)
 			{
@@ -98,17 +105,10 @@ namespace RTGS.DotNetSDK.Publisher
 
 		public async ValueTask DisposeAsync()
 		{
-			await DisposeAsyncCore();
-
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-			GC.SuppressFinalize(this);
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-		}
-
-		protected virtual async ValueTask DisposeAsyncCore()
-		{
 			if (_toRtgsCall is not null)
 			{
+				_writeInProgress.Wait();
+
 				await _toRtgsCall.RequestStream.CompleteAsync();
 
 				await _waitForAcknowledgementsTask;
@@ -116,6 +116,10 @@ namespace RTGS.DotNetSDK.Publisher
 				_toRtgsCall.Dispose();
 				_toRtgsCall = null;
 			}
+
+#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
+			GC.SuppressFinalize(this);
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
 		}
 	}
 }

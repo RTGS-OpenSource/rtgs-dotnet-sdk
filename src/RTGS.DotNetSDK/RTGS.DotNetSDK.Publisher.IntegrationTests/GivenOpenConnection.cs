@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -35,55 +36,94 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				new PublisherAction<AtomicLockRequest>(
 					ValidRequests.AtomicLockRequest,
 					"payment.lock.v1",
-					(publisher, request) => publisher.SendAtomicLockRequestAsync(request))
+					(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, cancellationToken))
 			},
 			new object[]
 			{
 				new PublisherAction<AtomicTransferRequest>(
 					ValidRequests.AtomicTransferRequest,
 					"payment.block.v1",
-					(publisher, request) => publisher.SendAtomicTransferRequestAsync(request))
+					(publisher, request, cancellationToken) => publisher.SendAtomicTransferRequestAsync(request, cancellationToken))
 			},
 			new object[]
 			{
 				new PublisherAction<EarmarkConfirmation>(
 					ValidRequests.EarmarkConfirmation,
 					"payment.earmarkconfirmation.v1",
-					(publisher, request) => publisher.SendEarmarkConfirmationAsync(request))
+					(publisher, request, cancellationToken) => publisher.SendEarmarkConfirmationAsync(request, cancellationToken))
 			},
 			 new object[]
 			 {
 			 	new PublisherAction<TransferConfirmation>(
 			 		ValidRequests.TransferConfirmation,
 			 		"payment.blockconfirmation.v1",
-			 		(publisher, request) => publisher.SendTransferConfirmationAsync(request))
+			 		(publisher, request, cancellationToken) => publisher.SendTransferConfirmationAsync(request, cancellationToken))
 			 },
 			 new object[]
 			 {
 			 	new PublisherAction<UpdateLedgerRequest>(
 			 		ValidRequests.UpdateLedgerRequest,
 			 		"payment.update.ledger.v1",
-			 		(publisher, request) => publisher.SendUpdateLedgerRequestAsync(request))
+			 		(publisher, request, cancellationToken) => publisher.SendUpdateLedgerRequestAsync(request, cancellationToken))
 			 },
 			 new object[]
 			 {
 			 	new PublisherAction<FIToFICustomerCreditTransferV10>(
 			 		ValidRequests.PayawayCreate,
 			 		"payaway.create.v1",
-			 		(publisher, request) => publisher.SendPayawayCreateAsync(request))
+			 		(publisher, request, cancellationToken) => publisher.SendPayawayCreateAsync(request, cancellationToken))
 			 },
 			 new object[]
 			 {
 			 	new PublisherAction<BankToCustomerDebitCreditNotificationV09>(
 			 		ValidRequests.PayawayConfirmation,
 			 		"payaway.confirmation.v1",
-			 		(publisher, request) => publisher.SendPayawayConfirmationAsync(request))
+			 		(publisher, request, cancellationToken) => publisher.SendPayawayConfirmationAsync(request, cancellationToken))
 			 }
 		};
 
 		public GivenOpenConnection(GrpcServerFixture grpcServer)
 		{
 			_grpcServer = grpcServer;
+		}
+
+		public async Task InitializeAsync()
+		{
+			try
+			{
+				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
+					.BankDid(BankDid)
+					.RemoteHost(_grpcServer.ServerUri.ToString())
+					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
+					.Build();
+
+				_clientHost = Host.CreateDefaultBuilder()
+					.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
+					.Build();
+
+				_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+				_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
+			}
+			catch (Exception)
+			{
+				// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
+				// See https://github.com/xunit/xunit/discussions/2313 for further details.
+				await DisposeAsync();
+
+				throw;
+			}
+		}
+
+		public async Task DisposeAsync()
+		{
+			if (_rtgsPublisher is not null)
+			{
+				await _rtgsPublisher.DisposeAsync();
+			}
+
+			_clientHost?.Dispose();
+
+			_grpcServer.Reset();
 		}
 
 		[Fact]
@@ -236,44 +276,15 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			sendResult.Should().Be(SendResult.Success);
 		}
 
-		public async Task InitializeAsync()
-		{
-			try
-			{
-				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
-					.BankDid(BankDid)
-					.RemoteHost(_grpcServer.ServerUri.ToString())
-					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
-					.Build();
-
-				_clientHost = Host.CreateDefaultBuilder()
-					.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
-					.Build();
-
-				_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
-				_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
-			}
-			catch (Exception)
-			{
-				// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
-				// See https://github.com/xunit/xunit/discussions/2313 for further details.
-				await DisposeAsync();
-
-				throw;
-			}
-		}
-
-		public async Task DisposeAsync()
-		{
-			if (_rtgsPublisher is not null)
-			{
-				await _rtgsPublisher.DisposeAsync();
-			}
-
-			_clientHost?.Dispose();
-
-			_grpcServer.Reset();
-		}
+		[Theory]
+		[MemberData(nameof(PublisherActions))]
+		public async Task WhenCancellationTokenIsCancelled_ThenReturnOperationCancelled<TRequest>(PublisherAction<TRequest> publisherAction) =>
+			await FluentActions.Awaiting(() =>
+				{
+					using var cancellationTokenSource = new CancellationTokenSource(TestWaitForAcknowledgementDuration - TimeSpan.FromMilliseconds(100));
+					return publisherAction.InvokeSendDelegateAsync(_rtgsPublisher, cancellationTokenSource.Token);
+				})
+				.Should().ThrowAsync<OperationCanceledException>();
 
 		private static class ValidRequests
 		{
@@ -325,18 +336,18 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 						}
 					}
 				},
-				LckId = Guid.NewGuid().ToString()
+				LckId = "B27C2536-27F8-403F-ABBD-7AC4190FBBD3"
 			};
 
 			public static readonly EarmarkConfirmation EarmarkConfirmation = new()
 			{
-				LockId = Guid.NewGuid(),
+				LockId = new Guid("159C6010-82CB-4775-8C87-05E6EC203E8E"),
 				Success = true
 			};
 
 			public static readonly TransferConfirmation TransferConfirmation = new()
 			{
-				LockId = Guid.NewGuid(),
+				LockId = new Guid("B30E15E3-CD54-4FA6-B0EB-B9BAE32976F9"),
 				Success = true
 			};
 
