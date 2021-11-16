@@ -21,6 +21,7 @@ namespace RTGS.DotNetSDK.Publisher
 		private Task _waitForAcknowledgementsTask;
 		private RtgsMessageAcknowledgement _acknowledgement;
 		private string _correlationId;
+		private bool _disposed;
 
 		public RtgsPublisher(ILogger<RtgsPublisher> logger, Payment.PaymentClient paymentClient, RtgsClientOptions options)
 		{
@@ -52,7 +53,10 @@ namespace RTGS.DotNetSDK.Publisher
 
 		private async Task<SendResult> SendRequestAsync<T>(T message, string instructionType, CancellationToken cancellationToken)
 		{
-			// TODO: throw if disposed
+			if (_disposed)
+			{
+				throw new ObjectDisposedException(nameof(RtgsPublisher));
+			}
 
 			// TODO: EXCLUSIVE LOCK START
 			if (_toRtgsCall is null)
@@ -144,6 +148,8 @@ namespace RTGS.DotNetSDK.Publisher
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
 			GC.SuppressFinalize(this);
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+
+			_disposed = true;
 		}
 	}
 }

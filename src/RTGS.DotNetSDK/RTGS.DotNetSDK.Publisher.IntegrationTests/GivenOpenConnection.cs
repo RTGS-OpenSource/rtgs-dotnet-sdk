@@ -146,6 +146,18 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Fact]
+		public async Task AndDisposedPublisher_WhenSending_ThenThrow()
+		{
+			await _rtgsPublisher.DisposeAsync();
+
+			await FluentActions
+				.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest))
+				.Should()
+				.ThrowAsync<ObjectDisposedException>()
+				.WithMessage("*RtgsPublisher*");
+		}
+
+		[Fact]
 		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader()
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
