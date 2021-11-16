@@ -27,7 +27,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 			return new Uri($"http://localhost:{Port}");
 		}
 
-		private IHost CreateHost()
+		private static IHost CreateHost()
 		{
 			var builder = new HostBuilder()
 				.ConfigureWebHostDefaults(webHost =>
@@ -61,14 +61,14 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 
 		private class TestServerStartup
 		{
-			public void ConfigureServices(IServiceCollection services)
+			public static void ConfigureServices(IServiceCollection services)
 			{
 				services.AddGrpc();
 				services.AddSingleton<ToRtgsReceiver>();
 				services.AddSingleton<ToRtgsMessageHandler>();
 			}
 
-			public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+			public static void Configure(IApplicationBuilder app)
 			{
 				app.UseRouting();
 				app.UseEndpoints(endpoints => endpoints.MapGrpcService<TestPaymentService>());

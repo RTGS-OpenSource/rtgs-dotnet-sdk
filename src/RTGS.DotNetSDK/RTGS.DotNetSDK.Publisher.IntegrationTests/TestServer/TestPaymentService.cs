@@ -16,17 +16,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 			_messageHandler = messageHandler;
 		}
 
-		public override async Task FromRtgsMessage(
-			IAsyncStreamReader<RtgsMessageAcknowledgement> requestStream,
-			IServerStreamWriter<RtgsMessage> responseStream,
-			ServerCallContext context)
-		{
-			await foreach (var message in requestStream.ReadAllAsync(context.CancellationToken))
-			{
-				// TODO: code here
-			}
-		}
-
 		public override async Task ToRtgsMessage(
 			IAsyncStreamReader<RtgsMessage> requestStream,
 			IServerStreamWriter<RtgsMessageAcknowledgement> responseStream,
