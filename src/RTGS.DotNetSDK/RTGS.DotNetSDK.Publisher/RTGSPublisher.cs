@@ -1,13 +1,13 @@
-﻿using System;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Grpc.Core;
+﻿using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 using RTGS.Public.Payment.V2;
+using System;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RTGS.DotNetSDK.Publisher
 {
@@ -58,7 +58,22 @@ namespace RTGS.DotNetSDK.Publisher
 			if (_toRtgsCall is null)
 			{
 				var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
-				_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
+
+				try
+				{
+					_logger.LogInformation("Connecting to RTGS");
+
+					_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
+
+					_logger.LogInformation("Connected to RTGS");
+				}
+				catch (Exception ex)
+				{
+					_logger.LogError(ex, "Failed to connect to RTGS");
+
+					return SendResult.ConnectionError;
+				}
+
 				_waitForAcknowledgementsTask = WaitForAcknowledgements();
 			}
 
@@ -66,17 +81,28 @@ namespace RTGS.DotNetSDK.Publisher
 
 			_correlationId = Guid.NewGuid().ToString();
 
-			_logger.LogInformation("Sending {InstructionType} message", instructionType);
-
-			await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
+			try
 			{
-				Data = JsonSerializer.Serialize(message),
-				Header = new RtgsMessageHeader
+				_logger.LogInformation("Sending {messageType} to RTGS", typeof(T).Name);
+
+				await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
 				{
-					InstructionType = instructionType,
-					CorrelationId = _correlationId
-				}
-			});
+					Data = JsonSerializer.Serialize(message),
+					Header = new RtgsMessageHeader
+					{
+						InstructionType = instructionType,
+						CorrelationId = _correlationId
+					}
+				});
+
+				_logger.LogInformation("Sent {messageType} to RTGS", typeof(T).Name);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Error sending {messageType} to RTGS", typeof(T).Name);
+
+				return SendResult.ClientError;
+			}
 
 			var expectedAcknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration, cancellationToken);
 

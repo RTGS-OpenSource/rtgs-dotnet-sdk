@@ -1,6 +1,6 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using RTGS.Public.Payment.V2;
+using System;
 
 namespace RTGS.DotNetSDK.Publisher.Extensions
 {

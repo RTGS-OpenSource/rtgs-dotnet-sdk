@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using RTGS.Public.Payment.V1.Pacs;
+﻿using RTGS.Public.Payment.V1.Pacs;
 
 namespace RTGS.DotNetSDK.Publisher.Messages
 {
