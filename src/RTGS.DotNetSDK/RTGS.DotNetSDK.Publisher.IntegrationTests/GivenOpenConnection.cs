@@ -279,10 +279,10 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		[Theory]
 		[MemberData(nameof(PublisherActions))]
 		public async Task WhenCancellationTokenIsCancelled_ThenReturnOperationCancelled<TRequest>(PublisherAction<TRequest> publisherAction) =>
-			await FluentActions.Awaiting(() =>
+			await FluentActions.Awaiting( async () =>
 				{
-					using var cancellationTokenSource = new CancellationTokenSource(TestWaitForAcknowledgementDuration - TimeSpan.FromMilliseconds(100));
-					return publisherAction.InvokeSendDelegateAsync(_rtgsPublisher, cancellationTokenSource.Token);
+					using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(0.4));
+					return await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher, cancellationTokenSource.Token);
 				})
 				.Should().ThrowAsync<OperationCanceledException>();
 

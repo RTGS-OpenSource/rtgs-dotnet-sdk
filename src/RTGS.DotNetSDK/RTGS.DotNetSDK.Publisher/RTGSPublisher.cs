@@ -15,7 +15,6 @@ namespace RTGS.DotNetSDK.Publisher
 		private readonly Payment.PaymentClient _paymentClient;
 		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new(); // TODO: dispose
 		private readonly RtgsClientOptions _options;
-		private readonly ManualResetEventSlim _writeInProgress = new(true);
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
 		private RtgsMessageAcknowledgement _acknowledgement;
@@ -64,8 +63,6 @@ namespace RTGS.DotNetSDK.Publisher
 
 			_correlationId = Guid.NewGuid().ToString();
 
-			_writeInProgress.Reset();
-
 			await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
 			{
 				Data = JsonSerializer.Serialize(message),
@@ -75,8 +72,6 @@ namespace RTGS.DotNetSDK.Publisher
 					CorrelationId = _correlationId
 				}
 			});
-
-			_writeInProgress.Set();
 
 			var expectedAcknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration, cancellationToken);
 
@@ -107,8 +102,6 @@ namespace RTGS.DotNetSDK.Publisher
 		{
 			if (_toRtgsCall is not null)
 			{
-				_writeInProgress.Wait();
-
 				await _toRtgsCall.RequestStream.CompleteAsync();
 
 				await _waitForAcknowledgementsTask;
