@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
+using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
@@ -12,6 +13,7 @@ namespace RTGS.DotNetSDK.Publisher
 {
 	internal sealed class RtgsPublisher : IRtgsPublisher
 	{
+		private readonly ILogger<RtgsPublisher> _logger;
 		private readonly Payment.PaymentClient _paymentClient;
 		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new(); // TODO: dispose
 		private readonly RtgsClientOptions _options;
@@ -20,8 +22,9 @@ namespace RTGS.DotNetSDK.Publisher
 		private RtgsMessageAcknowledgement _acknowledgement;
 		private string _correlationId;
 
-		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options)
+		public RtgsPublisher(ILogger<RtgsPublisher> logger, Payment.PaymentClient paymentClient, RtgsClientOptions options)
 		{
+			_logger = logger;
 			_paymentClient = paymentClient;
 			_options = options;
 		}
@@ -62,6 +65,8 @@ namespace RTGS.DotNetSDK.Publisher
 			_pendingAcknowledgementEvent.Reset();
 
 			_correlationId = Guid.NewGuid().ToString();
+
+			_logger.LogInformation("Sending {InstructionType} message", instructionType);
 
 			await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
 			{
