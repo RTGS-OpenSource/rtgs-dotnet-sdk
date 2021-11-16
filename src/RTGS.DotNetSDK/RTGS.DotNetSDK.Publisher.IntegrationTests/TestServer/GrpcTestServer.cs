@@ -1,6 +1,5 @@
 ﻿extern alias RTGSServer;
 using System;
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -34,7 +33,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 				.ConfigureWebHostDefaults(webHost =>
 					webHost
 						.UseStartup<TestServerStartup>()
-						.UseKestrel(kestrelServerOptions => kestrelServerOptions.Listen(IPAddress.Any, Port,
+						.UseKestrel(kestrelServerOptions => kestrelServerOptions.ListenLocalhost(Port,
 							listenOptions => listenOptions.Protocols = HttpProtocols.Http2)));
 
 			return builder.Build();
