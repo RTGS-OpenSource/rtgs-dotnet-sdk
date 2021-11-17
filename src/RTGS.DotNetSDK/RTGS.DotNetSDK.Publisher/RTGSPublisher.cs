@@ -14,7 +14,7 @@ namespace RTGS.DotNetSDK.Publisher
 	internal sealed class RtgsPublisher : IRtgsPublisher
 	{
 		private readonly Payment.PaymentClient _paymentClient;
-		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new(); // TODO: dispose
+		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new();
 		private readonly RtgsClientOptions _options;
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
@@ -114,6 +114,8 @@ namespace RTGS.DotNetSDK.Publisher
 				_toRtgsCall.Dispose();
 				_toRtgsCall = null;
 			}
+
+			_pendingAcknowledgementEvent?.Dispose();
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
 			GC.SuppressFinalize(this);
