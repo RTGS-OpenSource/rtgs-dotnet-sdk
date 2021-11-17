@@ -93,13 +93,11 @@ namespace RTGS.DotNetSDK.Publisher
 		{
 			await foreach (var acknowledgement in _toRtgsCall.ResponseStream.ReadAllAsync())
 			{
-				if (acknowledgement.Header.CorrelationId != _correlationId)
+				if (acknowledgement.Header.CorrelationId == _correlationId)
 				{
-					continue;
+					_acknowledgement = acknowledgement;
+					_pendingAcknowledgementEvent.Set();
 				}
-
-				_acknowledgement = acknowledgement;
-				_pendingAcknowledgementEvent.Set();
 			}
 		}
 
