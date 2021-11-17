@@ -1,19 +1,18 @@
-﻿using Grpc.Core;
-using Microsoft.Extensions.Logging;
+﻿using System;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Grpc.Core;
 using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 using RTGS.Public.Payment.V2;
-using System;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace RTGS.DotNetSDK.Publisher
 {
 	internal sealed class RtgsPublisher : IRtgsPublisher
 	{
-		private readonly ILogger<RtgsPublisher> _logger;
 		private readonly Payment.PaymentClient _paymentClient;
 		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new(); // TODO: dispose
 		private readonly RtgsClientOptions _options;
@@ -23,9 +22,8 @@ namespace RTGS.DotNetSDK.Publisher
 		private string _correlationId;
 		private bool _disposed;
 
-		public RtgsPublisher(ILogger<RtgsPublisher> logger, Payment.PaymentClient paymentClient, RtgsClientOptions options)
+		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options)
 		{
-			_logger = logger;
 			_paymentClient = paymentClient;
 			_options = options;
 		}
@@ -51,7 +49,7 @@ namespace RTGS.DotNetSDK.Publisher
 		public Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payaway.confirmation.v1", cancellationToken);
 
-		private async Task<SendResult> SendRequestAsync<T>(T message, string instructionType, CancellationToken cancellationToken)
+		private async Task<SendResult> SendRequestAsync<T>(T message, string instructionType, CancellationToken cancellationToken, [CallerMemberName] string callingMethod = null)
 		{
 			if (_disposed)
 			{
@@ -62,22 +60,7 @@ namespace RTGS.DotNetSDK.Publisher
 			if (_toRtgsCall is null)
 			{
 				var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
-
-				try
-				{
-					_logger.LogInformation("Connecting to RTGS");
-
-					_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
-
-					_logger.LogInformation("Connected to RTGS");
-				}
-				catch (Exception ex)
-				{
-					_logger.LogError(ex, "Failed to connect to RTGS");
-
-					return SendResult.ConnectionError;
-				}
-
+				_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
 				_waitForAcknowledgementsTask = WaitForAcknowledgements();
 			}
 
@@ -85,28 +68,15 @@ namespace RTGS.DotNetSDK.Publisher
 
 			_correlationId = Guid.NewGuid().ToString();
 
-			try
+			await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
 			{
-				_logger.LogInformation("Sending {messageType} to RTGS", typeof(T).Name);
-
-				await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
+				Data = JsonSerializer.Serialize(message),
+				Header = new RtgsMessageHeader
 				{
-					Data = JsonSerializer.Serialize(message),
-					Header = new RtgsMessageHeader
-					{
-						InstructionType = instructionType,
-						CorrelationId = _correlationId
-					}
-				});
-
-				_logger.LogInformation("Sent {messageType} to RTGS", typeof(T).Name);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Error sending {messageType} to RTGS", typeof(T).Name);
-
-				return SendResult.ClientError;
-			}
+					InstructionType = instructionType,
+					CorrelationId = _correlationId
+				}
+			});
 
 			var expectedAcknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration, cancellationToken);
 
