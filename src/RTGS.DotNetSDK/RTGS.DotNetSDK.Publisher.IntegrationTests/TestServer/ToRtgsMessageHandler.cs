@@ -1,9 +1,9 @@
 ﻿extern alias RTGSServer;
-using Grpc.Core;
-using RTGSServer::RTGS.Public.Payment.V2;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Grpc.Core;
+using RTGSServer::RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 {
