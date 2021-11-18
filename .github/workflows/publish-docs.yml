@@ -7,7 +7,6 @@ on:
 jobs:
   generate-docs:
     runs-on: ubuntu-latestt
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
