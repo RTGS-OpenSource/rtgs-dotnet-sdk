@@ -6,14 +6,15 @@ on:
 
 jobs:
   generate-docs:
-    runs-on: ubuntu-latestt
+    runs-on: windows-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 5.0
+          dotnet-version: "5.0.x"
       - name: Setup DocFX
         uses: crazy-max/ghaction-chocolatey@v1
         with:
