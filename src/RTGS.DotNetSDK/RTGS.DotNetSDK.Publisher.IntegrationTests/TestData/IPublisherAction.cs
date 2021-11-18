@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 {
-	public interface IPublisherAction<TRequest>
+	public interface IPublisherAction<out TRequest>
 	{
 		TRequest Request { get; }
 

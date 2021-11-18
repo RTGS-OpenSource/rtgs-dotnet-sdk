@@ -23,10 +23,10 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(0.5);
 
 		private readonly GrpcServerFixture _grpcServer;
+		private readonly ITestCorrelatorContext _serilogContext;
 
 		private IRtgsPublisher _rtgsPublisher;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
-		private ITestCorrelatorContext _serilogContext;
 		private IHost _clientHost;
 
 		public GivenOpenConnection(GrpcServerFixture grpcServer)
@@ -41,7 +41,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		public async Task InitializeAsync()
 		{
 			try
-			{				
+			{
 				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
 					.BankDid(ValidRequests.BankDid)
 					.RemoteHost(_grpcServer.ServerUri.ToString())
@@ -55,7 +55,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 				_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
 				_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
-				
 			}
 			catch (Exception)
 			{
@@ -88,18 +87,25 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				.WriteTo.TestCorrelator()
 				.CreateLogger();
 
-		//[Theory]
-		//[ClassData(typeof(PublisherActionWithAcknowledgementLogsData))]
-		//public async Task WhenSendingMessageAndAcknowledgementReceived_ThenLogInformation<TRequest>(PublisherActionWithLogs<TRequest> publisherAction)
-		//{
-		//	_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
+		[Theory]
+		[ClassData(typeof(PublisherActionAcknowledgementLogsData))]
+		public async Task WhenSendingMessageAndAcknowledgementReceived_ThenLogInformation<TRequest>(PublisherActionWithLogs<TRequest> publisherAction)
+		{
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
 
-		//	await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
-		//	var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
+			using var _ = new AssertionScope();
 
-		//	informationLogs.Should().BeEquivalentTo(publisherAction.InformationLogs, options => options.WithStrictOrdering());
-		//}
+			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
+			informationLogs.Should().BeEquivalentTo(publisherAction.InformationLogs, options => options.WithStrictOrdering());
+
+			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
+			warningLogs.Should().BeEmpty();
+
+			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
+			errorLogs.Should().BeEmpty();
+		}
 
 		[Theory]
 		[ClassData(typeof(PublisherActionData))]

@@ -71,7 +71,7 @@ namespace RTGS.DotNetSDK.Publisher
 
 			_correlationId = Guid.NewGuid().ToString();
 
-			// log sending
+			_logger.LogInformation("Sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
 
 			await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
 			{
@@ -83,7 +83,7 @@ namespace RTGS.DotNetSDK.Publisher
 				}
 			});
 
-			// log sent
+			_logger.LogInformation("Sent {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
 
 			var expectedAcknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration, cancellationToken);
 
@@ -93,8 +93,9 @@ namespace RTGS.DotNetSDK.Publisher
 				return SendResult.Timeout;
 			}
 
-			// log send result
-			return _acknowledgement?.Success == true ? SendResult.Success : SendResult.ServerError;
+			_logger.LogInformation("Received {MessageType} acknowledgement (success: {Success}) from RTGS ({CallingMethod})", typeof(T).Name, _acknowledgement!.Success, callingMethod);
+
+			return _acknowledgement!.Success ? SendResult.Success : SendResult.ServerError;
 			// TODO: EXCLUSIVE LOCK END
 		}
 
@@ -104,7 +105,6 @@ namespace RTGS.DotNetSDK.Publisher
 			{
 				if (acknowledgement.Header.CorrelationId == _correlationId)
 				{
-					// log expected acknowledgment 
 					_acknowledgement = acknowledgement;
 					_pendingAcknowledgementEvent.Set();
 				}
