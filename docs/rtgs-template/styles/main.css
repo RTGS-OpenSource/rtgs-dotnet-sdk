@@ -123,6 +123,11 @@ article h4 {
   -webkit-box-shadow: var(--card-box-shadow);
   -moz-box-shadow: var(--card-box-shadow);
   box-shadow: var(--card-box-shadow);
+  padding: 1.5em;
+}
+
+.svg {
+  margin-right: 1em;
 }
 
 .subnav {
