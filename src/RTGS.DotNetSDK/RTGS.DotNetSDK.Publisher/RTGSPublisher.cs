@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
+using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
@@ -16,16 +17,18 @@ namespace RTGS.DotNetSDK.Publisher
 		private readonly Payment.PaymentClient _paymentClient;
 		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new();
 		private readonly RtgsClientOptions _options;
+		private readonly ILogger<RtgsPublisher> _logger;
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
 		private RtgsMessageAcknowledgement _acknowledgement;
 		private string _correlationId;
 		private bool _disposed;
 
-		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options)
+		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options, ILogger<RtgsPublisher> logger)
 		{
 			_paymentClient = paymentClient;
 			_options = options;
+			_logger = logger;
 		}
 
 		public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message, CancellationToken cancellationToken) =>
@@ -68,6 +71,8 @@ namespace RTGS.DotNetSDK.Publisher
 
 			_correlationId = Guid.NewGuid().ToString();
 
+			// log sending
+
 			await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
 			{
 				Data = JsonSerializer.Serialize(message),
@@ -78,13 +83,17 @@ namespace RTGS.DotNetSDK.Publisher
 				}
 			});
 
+			// log sent
+
 			var expectedAcknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration, cancellationToken);
 
 			if (!expectedAcknowledgementReceived)
 			{
+				//log timeout
 				return SendResult.Timeout;
 			}
 
+			// log send result
 			return _acknowledgement?.Success == true ? SendResult.Success : SendResult.ServerError;
 			// TODO: EXCLUSIVE LOCK END
 		}
@@ -95,8 +104,13 @@ namespace RTGS.DotNetSDK.Publisher
 			{
 				if (acknowledgement.Header.CorrelationId == _correlationId)
 				{
+					// log expected acknowledgment 
 					_acknowledgement = acknowledgement;
 					_pendingAcknowledgementEvent.Set();
+				}
+				else
+				{
+					// log unexpected acknowledgement
 				}
 			}
 		}
