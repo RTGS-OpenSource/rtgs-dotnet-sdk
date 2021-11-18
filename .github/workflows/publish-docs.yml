@@ -2,7 +2,9 @@ name: Docs Build and Publish
 
 on:
   push:
-    branches: [feature/*]
+    branches: [feature/**]
+  pull_request:
+    branches: [main]
 
 jobs:
   generate-docs:
@@ -21,3 +23,8 @@ jobs:
       - name: DocFX Build
         run: docfx docs/docfx.json
         continue-on-error: false
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: doc-site
+          path: "./_site"
