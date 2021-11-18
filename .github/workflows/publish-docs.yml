@@ -6,7 +6,7 @@ on:
 
 jobs:
   generate-docs:
-    runs-on: windows-latest
+    runs-on: ubuntu-latestt
 
     steps:
       - name: Checkout
