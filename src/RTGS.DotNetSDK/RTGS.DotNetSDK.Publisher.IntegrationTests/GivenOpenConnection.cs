@@ -88,8 +88,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				.CreateLogger();
 
 		[Theory]
-		[ClassData(typeof(PublisherActionAcknowledgementLogsData))]
-		public async Task WhenSendingMessageAndAcknowledgementReceived_ThenLogInformation<TRequest>(PublisherActionWithLogs<TRequest> publisherAction)
+		[ClassData(typeof(PublisherActionSuccessAcknowledgementLogsData))]
+		public async Task WhenSendingMessageAndSuccessAcknowledgementReceived_ThenLogInformation<TRequest>(PublisherActionWithLogs<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
 
@@ -103,6 +103,28 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
 			warningLogs.Should().BeEmpty();
 
+			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
+			errorLogs.Should().BeEmpty();
+		}
+
+		[Theory]
+		[ClassData(typeof(PublisherActionFailedAcknowledgementLogsData))]
+		public async Task WhenSendingMessageAndFailedAcknowledgementReceived_ThenLogInformation<TRequest>(PublisherActionWithLogs<TRequest> publisherAction)
+		{
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithFailure();
+
+			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+
+			using var _ = new AssertionScope();
+
+			// TODO don't look for information (when success = true)
+			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
+			informationLogs.Should().BeEquivalentTo(publisherAction.InformationLogs, options => options.WithStrictOrdering());
+
+			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
+			warningLogs.Should().BeEmpty();
+
+			// TODO: looks for error log (when success = false)
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
 			errorLogs.Should().BeEmpty();
 		}
