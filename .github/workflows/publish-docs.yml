@@ -27,4 +27,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: doc-site
-          path: "./_site"
+          path: "docs/_site"
