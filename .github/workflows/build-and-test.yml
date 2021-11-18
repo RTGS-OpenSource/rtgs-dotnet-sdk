@@ -27,7 +27,7 @@ jobs:
       - name: Test Dotnet
         run: |
           dotnet tool install dotnet-reportgenerator-globaltool --tool-path ./tools
-          dotnet test ./src/RTGS.DotNetSDK/ --no-build --results-directory "./test_results" --logger "trx;LogFilePrefix=results;" --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true
+          dotnet test --configuration Release ./src/RTGS.DotNetSDK/ --no-build --results-directory "./test_results" --logger "trx;LogFilePrefix=results;" --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true
           ./tools/reportgenerator -reports:./test_results/**/coverage.cobertura.xml -targetdir:./test_results/CodeCoverage -reporttypes:Cobertura
       - uses: 5monkeys/cobertura-action@master
         with:

@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
-using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
@@ -13,18 +13,17 @@ namespace RTGS.DotNetSDK.Publisher
 {
 	internal sealed class RtgsPublisher : IRtgsPublisher
 	{
-		private readonly ILogger<RtgsPublisher> _logger;
 		private readonly Payment.PaymentClient _paymentClient;
-		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new(); // TODO: dispose
+		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new();
 		private readonly RtgsClientOptions _options;
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
 		private RtgsMessageAcknowledgement _acknowledgement;
 		private string _correlationId;
+		private bool _disposed;
 
-		public RtgsPublisher(ILogger<RtgsPublisher> logger, Payment.PaymentClient paymentClient, RtgsClientOptions options)
+		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options)
 		{
-			_logger = logger;
 			_paymentClient = paymentClient;
 			_options = options;
 		}
@@ -50,9 +49,12 @@ namespace RTGS.DotNetSDK.Publisher
 		public Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payaway.confirmation.v1", cancellationToken);
 
-		private async Task<SendResult> SendRequestAsync<T>(T message, string instructionType, CancellationToken cancellationToken)
+		private async Task<SendResult> SendRequestAsync<T>(T message, string instructionType, CancellationToken cancellationToken, [CallerMemberName] string callingMethod = null)
 		{
-			// TODO: throw if disposed
+			if (_disposed)
+			{
+				throw new ObjectDisposedException(nameof(RtgsPublisher));
+			}
 
 			// TODO: EXCLUSIVE LOCK START
 			if (_toRtgsCall is null)
@@ -65,8 +67,6 @@ namespace RTGS.DotNetSDK.Publisher
 			_pendingAcknowledgementEvent.Reset();
 
 			_correlationId = Guid.NewGuid().ToString();
-
-			_logger.LogInformation("Sending {InstructionType} message", instructionType);
 
 			await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
 			{
@@ -93,13 +93,11 @@ namespace RTGS.DotNetSDK.Publisher
 		{
 			await foreach (var acknowledgement in _toRtgsCall.ResponseStream.ReadAllAsync())
 			{
-				if (acknowledgement.Header.CorrelationId != _correlationId)
+				if (acknowledgement.Header.CorrelationId == _correlationId)
 				{
-					continue;
+					_acknowledgement = acknowledgement;
+					_pendingAcknowledgementEvent.Set();
 				}
-
-				_acknowledgement = acknowledgement;
-				_pendingAcknowledgementEvent.Set();
 			}
 		}
 
@@ -115,9 +113,13 @@ namespace RTGS.DotNetSDK.Publisher
 				_toRtgsCall = null;
 			}
 
+			_pendingAcknowledgementEvent?.Dispose();
+
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
 			GC.SuppressFinalize(this);
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+
+			_disposed = true;
 		}
 	}
 }

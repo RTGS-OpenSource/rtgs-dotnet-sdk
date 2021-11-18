@@ -5,6 +5,6 @@
 		Unknown = 0,
 		Success = 1,
 		Timeout = 2,
-		ServerError = 3
+		ServerError = 3,
 	}
 }

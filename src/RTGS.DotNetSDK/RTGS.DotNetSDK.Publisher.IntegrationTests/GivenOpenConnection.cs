@@ -14,9 +14,6 @@ using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 using RTGS.Public.Payment.V1.Pacs;
-using Serilog;
-using Serilog.Events;
-using Serilog.Sinks.TestCorrelator;
 using Xunit;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests
@@ -31,7 +28,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		private IRtgsPublisher _rtgsPublisher;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
-		private ITestCorrelatorContext _serilogContext;
 
 		public static readonly IEnumerable<object[]> PublisherActions = new[]
 		{
@@ -95,8 +91,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		{
 			try
 			{
-				SetupSerilogLogger();
-
 				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
 					.BankDid(BankDid)
 					.RemoteHost(_grpcServer.ServerUri.ToString())
@@ -105,13 +99,10 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
-					.UseSerilog()
 					.Build();
 
 				_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
 				_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
-
-				_serilogContext = TestCorrelator.CreateContext();
 			}
 			catch (Exception)
 			{
@@ -123,15 +114,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			}
 		}
 
-		private static void SetupSerilogLogger() =>
-			Log.Logger = new LoggerConfiguration()
-				.MinimumLevel.Debug()
-				.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-				.Enrich.FromLogContext()
-				.WriteTo.Console()
-				.WriteTo.TestCorrelator()
-				.CreateLogger();
-
 		public async Task DisposeAsync()
 		{
 			if (_rtgsPublisher is not null)
@@ -140,9 +122,20 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			}
 
 			_clientHost?.Dispose();
-			_serilogContext?.Dispose();
 
 			_grpcServer.Reset();
+		}
+
+		[Fact]
+		public async Task AndDisposedPublisher_WhenSending_ThenThrow()
+		{
+			await _rtgsPublisher.DisposeAsync();
+
+			await FluentActions
+				.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest))
+				.Should()
+				.ThrowAsync<ObjectDisposedException>()
+				.WithMessage("*RtgsPublisher*");
 		}
 
 		[Fact]
@@ -179,9 +172,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			receivedMessage.Header?.CorrelationId.Should().NotBeNullOrEmpty();
 
 			receivedRequest.Should().BeEquivalentTo(publisherAction.Request, options => options.ComparingByMembers<TRequest>());
-
-			var infoLogEvents = TestCorrelator.GetLogEventsFromCurrentContext().Where(log => log.Level == LogEventLevel.Information).ToList();
-			infoLogEvents.Should().ContainSingle(log => log.RenderMessage(null) == $"Sending \"{publisherAction.InstructionType}\" message");
 		}
 
 		[Theory]
