@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using RTGS.DotNetSDK.Publisher.Extensions;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.Logging;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer;
+using RTGS.DotNetSDK.Publisher.Messages;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.TestCorrelator;
@@ -86,6 +88,44 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				.WriteTo.Console()
 				.WriteTo.TestCorrelator()
 				.CreateLogger();
+
+		[Fact]
+		public void WhenSendingInParallel_ThenCanSendToRtgs()
+		{
+			// TODO: setup acknowledgements
+
+			var atomicLockRequests = GenerateFiveUniqueAtomicLockRequests().ToList();
+
+			var sendRequestsSignal = new ManualResetEventSlim();
+
+			var bigMessageTasks = atomicLockRequests
+				.Select(request => Task.Run(async () =>
+				{
+					sendRequestsSignal.Wait();
+
+					await _rtgsPublisher.SendAtomicLockRequestAsync(request);
+				})).ToArray();
+			
+			sendRequestsSignal.Set();
+
+			var allCompleted = Task.WaitAll(bigMessageTasks, TimeSpan.FromSeconds(5));
+			allCompleted.Should().BeTrue();
+
+			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+			receiver.Connections[0].Requests.Select(request => JsonConvert.DeserializeObject<AtomicLockRequest>(request.Data))
+				.Should().BeEquivalentTo(atomicLockRequests, options => options.ComparingByMembers<AtomicLockRequest>());
+
+			IEnumerable<AtomicLockRequest> GenerateFiveUniqueAtomicLockRequests()
+			{
+				// We need writing to the stream to take a significant amount of time to ensure race condition.
+				// Using a long end to end id is one way of achieving this.
+				yield return new AtomicLockRequest { EndToEndId = new string('a', 100_000) };
+				yield return new AtomicLockRequest { EndToEndId = new string('b', 100_000) };
+				yield return new AtomicLockRequest { EndToEndId = new string('c', 100_000) };
+				yield return new AtomicLockRequest { EndToEndId = new string('d', 100_000) };
+				yield return new AtomicLockRequest { EndToEndId = new string('e', 100_000) };
+			}
+		}
 
 		[Theory]
 		[ClassData(typeof(PublisherActionSuccessAcknowledgementLogsData))]

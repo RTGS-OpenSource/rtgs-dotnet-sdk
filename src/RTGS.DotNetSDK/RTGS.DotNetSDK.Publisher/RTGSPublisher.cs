@@ -18,6 +18,7 @@ namespace RTGS.DotNetSDK.Publisher
 		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new();
 		private readonly RtgsClientOptions _options;
 		private readonly ILogger<RtgsPublisher> _logger;
+		private readonly SemaphoreSlim _sendingSignal = new(1);
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
 		private RtgsMessageAcknowledgement _acknowledgement;
@@ -60,45 +61,52 @@ namespace RTGS.DotNetSDK.Publisher
 				throw new ObjectDisposedException(nameof(RtgsPublisher));
 			}
 
-			// TODO: EXCLUSIVE LOCK START
-			if (_toRtgsCall is null)
+			await _sendingSignal.WaitAsync();
+
+			try
 			{
-				var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
-				_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
-				_waitForAcknowledgementsTask = WaitForAcknowledgements();
-			}
-
-			_pendingAcknowledgementEvent.Reset();
-
-			_correlationId = Guid.NewGuid().ToString();
-
-			_logger.LogInformation("Sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
-
-			await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
-			{
-				Data = JsonSerializer.Serialize(message),
-				Header = new RtgsMessageHeader
+				if (_toRtgsCall is null)
 				{
-					InstructionType = instructionType,
-					CorrelationId = _correlationId
+					var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
+					_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
+					_waitForAcknowledgementsTask = WaitForAcknowledgements();
 				}
-			});
 
-			_logger.LogInformation("Sent {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+				_pendingAcknowledgementEvent.Reset();
+				
+				_correlationId = Guid.NewGuid().ToString();
 
-			var expectedAcknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration, cancellationToken);
+				_logger.LogInformation("Sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
 
-			if (!expectedAcknowledgementReceived)
-			{
-				_logger.LogError("Timed out waiting for {MessageType} acknowledgement from RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
-				return SendResult.Timeout;
+				await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
+				{
+					Data = JsonSerializer.Serialize(message),
+					Header = new RtgsMessageHeader
+					{
+						InstructionType = instructionType,
+						CorrelationId = _correlationId
+					}
+				});
+
+				_logger.LogInformation("Sent {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+
+				var expectedAcknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration, cancellationToken);
+
+				if (!expectedAcknowledgementReceived)
+				{
+					_logger.LogError("Timed out waiting for {MessageType} acknowledgement from RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+					return SendResult.Timeout;
+				}
+
+				var logLevel = _acknowledgement!.Success ? LogLevel.Information : LogLevel.Error;
+				_logger.Log(logLevel, "Received {MessageType} acknowledgement (success: {Success}) from RTGS ({CallingMethod})", typeof(T).Name, _acknowledgement!.Success, callingMethod);
+
+				return _acknowledgement!.Success ? SendResult.Success : SendResult.ServerError;
 			}
-
-			var logLevel = _acknowledgement!.Success ? LogLevel.Information : LogLevel.Error;
-			_logger.Log(logLevel, "Received {MessageType} acknowledgement (success: {Success}) from RTGS ({CallingMethod})", typeof(T).Name, _acknowledgement!.Success, callingMethod);
-
-			return _acknowledgement!.Success ? SendResult.Success : SendResult.ServerError;
-			// TODO: EXCLUSIVE LOCK END
+			finally
+			{
+				_sendingSignal.Release();
+			}
 		}
 
 		private async Task WaitForAcknowledgements()
