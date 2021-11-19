@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
+using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
@@ -16,16 +17,18 @@ namespace RTGS.DotNetSDK.Publisher
 		private readonly Payment.PaymentClient _paymentClient;
 		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new();
 		private readonly RtgsClientOptions _options;
+		private readonly ILogger<RtgsPublisher> _logger;
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
 		private RtgsMessageAcknowledgement _acknowledgement;
 		private string _correlationId;
 		private bool _disposed;
 
-		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options)
+		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options, ILogger<RtgsPublisher> logger)
 		{
 			_paymentClient = paymentClient;
 			_options = options;
+			_logger = logger;
 		}
 
 		public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message, CancellationToken cancellationToken) =>
@@ -68,6 +71,8 @@ namespace RTGS.DotNetSDK.Publisher
 
 			_correlationId = Guid.NewGuid().ToString();
 
+			_logger.LogInformation("Sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+
 			await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
 			{
 				Data = JsonSerializer.Serialize(message),
@@ -78,14 +83,28 @@ namespace RTGS.DotNetSDK.Publisher
 				}
 			});
 
+			_logger.LogInformation("Sent {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+
 			var expectedAcknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration, cancellationToken);
 
 			if (!expectedAcknowledgementReceived)
 			{
+				_logger.LogError("Timed out waiting for {MessageType} acknowledgement from RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
 				return SendResult.Timeout;
 			}
 
-			return _acknowledgement?.Success == true ? SendResult.Success : SendResult.ServerError;
+			var logMessageTemplate = "Received {MessageType} acknowledgement (success: {Success}) from RTGS ({CallingMethod})";
+
+			if (_acknowledgement!.Success)
+			{
+				_logger.LogInformation(logMessageTemplate, typeof(T).Name, _acknowledgement!.Success, callingMethod);
+				return SendResult.Success;
+			}
+			else
+			{
+				_logger.LogError(logMessageTemplate, typeof(T).Name, _acknowledgement!.Success, callingMethod);
+				return SendResult.ServerError;
+			}
 			// TODO: EXCLUSIVE LOCK END
 		}
 

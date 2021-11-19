@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,82 +8,34 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using RTGS.DotNetSDK.Publisher.Extensions;
+using RTGS.DotNetSDK.Publisher.IntegrationTests.Logging;
+using RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer;
-using RTGS.DotNetSDK.Publisher.Messages;
-using RTGS.ISO20022.Messages.Camt_054_001.V09;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
-using RTGS.Public.Payment.V1.Pacs;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.TestCorrelator;
 using Xunit;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 {
 	public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 	{
-		private const string BankDid = "test-bank-did";
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(0.5);
 
 		private readonly GrpcServerFixture _grpcServer;
+		private readonly ITestCorrelatorContext _serilogContext;
 
 		private IRtgsPublisher _rtgsPublisher;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
 
-		public static readonly IEnumerable<object[]> PublisherActions = new[]
-		{
-			new object[]
-			{
-				new PublisherAction<AtomicLockRequest>(
-					ValidRequests.AtomicLockRequest,
-					"payment.lock.v1",
-					(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, cancellationToken))
-			},
-			new object[]
-			{
-				new PublisherAction<AtomicTransferRequest>(
-					ValidRequests.AtomicTransferRequest,
-					"payment.block.v1",
-					(publisher, request, cancellationToken) => publisher.SendAtomicTransferRequestAsync(request, cancellationToken))
-			},
-			new object[]
-			{
-				new PublisherAction<EarmarkConfirmation>(
-					ValidRequests.EarmarkConfirmation,
-					"payment.earmarkconfirmation.v1",
-					(publisher, request, cancellationToken) => publisher.SendEarmarkConfirmationAsync(request, cancellationToken))
-			},
-			 new object[]
-			 {
-			 	new PublisherAction<TransferConfirmation>(
-			 		ValidRequests.TransferConfirmation,
-			 		"payment.blockconfirmation.v1",
-			 		(publisher, request, cancellationToken) => publisher.SendTransferConfirmationAsync(request, cancellationToken))
-			 },
-			 new object[]
-			 {
-			 	new PublisherAction<UpdateLedgerRequest>(
-			 		ValidRequests.UpdateLedgerRequest,
-			 		"payment.update.ledger.v1",
-			 		(publisher, request, cancellationToken) => publisher.SendUpdateLedgerRequestAsync(request, cancellationToken))
-			 },
-			 new object[]
-			 {
-			 	new PublisherAction<FIToFICustomerCreditTransferV10>(
-			 		ValidRequests.PayawayCreate,
-			 		"payaway.create.v1",
-			 		(publisher, request, cancellationToken) => publisher.SendPayawayCreateAsync(request, cancellationToken))
-			 },
-			 new object[]
-			 {
-			 	new PublisherAction<BankToCustomerDebitCreditNotificationV09>(
-			 		ValidRequests.PayawayConfirmation,
-			 		"payaway.confirmation.v1",
-			 		(publisher, request, cancellationToken) => publisher.SendPayawayConfirmationAsync(request, cancellationToken))
-			 }
-		};
-
 		public GivenOpenConnection(GrpcServerFixture grpcServer)
 		{
 			_grpcServer = grpcServer;
+
+			SetupSerilogLogger();
+
+			_serilogContext = TestCorrelator.CreateContext();
 		}
 
 		public async Task InitializeAsync()
@@ -92,13 +43,14 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			try
 			{
 				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
-					.BankDid(BankDid)
+					.BankDid(ValidRequests.BankDid)
 					.RemoteHost(_grpcServer.ServerUri.ToString())
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
+					.UseSerilog()
 					.Build();
 
 				_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
@@ -126,36 +78,87 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			_grpcServer.Reset();
 		}
 
-		[Fact]
-		public async Task AndDisposedPublisher_WhenSending_ThenThrow()
+		private static void SetupSerilogLogger() =>
+			Log.Logger = new LoggerConfiguration()
+				.MinimumLevel.Debug()
+				.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+				.Enrich.FromLogContext()
+				.WriteTo.Console()
+				.WriteTo.TestCorrelator()
+				.CreateLogger();
+
+		[Theory]
+		[ClassData(typeof(PublisherActionSuccessAcknowledgementLogsData))]
+		public async Task WhenSendingMessageAndSuccessAcknowledgementReceived_ThenLogInformation<TRequest>(PublisherActionWithLogs<TRequest> publisherAction)
+		{
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
+
+			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+
+			using var _ = new AssertionScope();
+
+			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
+			informationLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
+
+			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
+			warningLogs.Should().BeEmpty();
+
+			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
+			errorLogs.Should().BeEmpty();
+		}
+
+		[Theory]
+		[ClassData(typeof(PublisherActionFailedAcknowledgementLogsData))]
+		public async Task WhenSendingMessageAndFailedAcknowledgementReceived_ThenLogInformation<TRequest>(PublisherActionWithLogs<TRequest> publisherAction)
+		{
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithFailure();
+
+			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+
+			using var _ = new AssertionScope();
+
+			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
+			informationLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
+
+			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
+			warningLogs.Should().BeEmpty();
+
+			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
+			errorLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Error), options => options.WithStrictOrdering());
+		}
+
+		[Theory]
+		[ClassData(typeof(PublisherActionData))]
+		public async Task AndDisposedPublisher_WhenSending_ThenThrow<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			await _rtgsPublisher.DisposeAsync();
 
 			await FluentActions
-				.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest))
+				.Awaiting(() => publisherAction.InvokeSendDelegateAsync(_rtgsPublisher))
 				.Should()
 				.ThrowAsync<ObjectDisposedException>()
 				.WithMessage("*RtgsPublisher*");
 		}
 
-		[Fact]
-		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader()
+		[Theory]
+		[ClassData(typeof(PublisherActionData))]
+		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
 
-			await _rtgsPublisher.SendAtomicLockRequestAsync(ValidRequests.AtomicLockRequest);
+			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
 			var connection = receiver.Connections.SingleOrDefault();
 
 			connection.Should().NotBeNull();
-			connection!.Headers.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == BankDid);
+			connection!.Headers.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == ValidRequests.BankDid);
 		}
 
 		[Theory]
-		[MemberData(nameof(PublisherActions))]
-		public async Task ThenCanSendRequestToRtgs<TRequest>(PublisherAction<TRequest> publisherAction)
+		[ClassData(typeof(PublisherActionWithInstructionTypeData))]
+		public async Task ThenCanSendRequestToRtgs<TRequest>(PublisherActionWithInstructionType<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
 
@@ -175,7 +178,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Theory]
-		[MemberData(nameof(PublisherActions))]
+		[ClassData(typeof(PublisherActionData))]
 		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnSuccess<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
@@ -186,7 +189,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Theory]
-		[MemberData(nameof(PublisherActions))]
+		[ClassData(typeof(PublisherActionData))]
 		public async Task WhenBankMessageApiReturnsUnsuccessfulAcknowledgement_ThenReturnServerError<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithFailure();
@@ -197,7 +200,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Theory]
-		[MemberData(nameof(PublisherActions))]
+		[ClassData(typeof(PublisherActionData))]
 		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgementTooLate_ThenReturnTimeout<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1)));
@@ -208,7 +211,19 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Theory]
-		[MemberData(nameof(PublisherActions))]
+		[ClassData(typeof(PublisherActionTimeoutAcknowledgementLogsData))]
+		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgementTooLate_ThenLogError<TRequest>(PublisherActionWithLogs<TRequest> publisherAction)
+		{
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1)));
+
+			var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+
+			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
+			errorLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Error), options => options.WithStrictOrdering());
+		}
+
+		[Theory]
+		[ClassData(typeof(PublisherActionData))]
 		public async Task WhenSendingMultipleMessages_ThenOnlyOneConnection<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
@@ -226,7 +241,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Theory]
-		[MemberData(nameof(PublisherActions))]
+		[ClassData(typeof(PublisherActionData))]
 		public async Task WhenSendingMultipleMessagesAndLastOneTimesOut_ThenDoNotSeePreviousSuccess<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithSuccess();
@@ -241,7 +256,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Theory]
-		[MemberData(nameof(PublisherActions))]
+		[ClassData(typeof(PublisherActionData))]
 		public async Task WhenBankMessageApiOnlyReturnsUnexpectedAcknowledgement_ThenReturnTimeout<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueUnexpectedAcknowledgementWithSuccess();
@@ -252,7 +267,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Theory]
-		[MemberData(nameof(PublisherActions))]
+		[ClassData(typeof(PublisherActionData))]
 		public async Task WhenBankMessageApiReturnsUnexpectedAcknowledgementBeforeFailureAcknowledgement_ThenReturnServerError<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueUnexpectedAcknowledgementWithSuccess();
@@ -264,7 +279,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Theory]
-		[MemberData(nameof(PublisherActions))]
+		[ClassData(typeof(PublisherActionData))]
 		public async Task WhenBankMessageApiReturnsFailureAcknowledgementBeforeUnexpectedAcknowledgement_ThenReturnServerError<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithFailure();
@@ -276,7 +291,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Theory]
-		[MemberData(nameof(PublisherActions))]
+		[ClassData(typeof(PublisherActionData))]
 		public async Task WhenBankMessageApiReturnsSuccessWrappedByUnexpectedFailureAcknowledgements_ThenReturnServerError<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.EnqueueUnexpectedAcknowledgementWithFailure();
@@ -289,7 +304,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Theory]
-		[MemberData(nameof(PublisherActions))]
+		[ClassData(typeof(PublisherActionData))]
 		public async Task WhenCancellationTokenIsCancelled_ThenReturnOperationCancelled<TRequest>(PublisherAction<TRequest> publisherAction) =>
 			await FluentActions.Awaiting(async () =>
 				{
@@ -297,111 +312,5 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 					return await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher, cancellationTokenSource.Token);
 				})
 				.Should().ThrowAsync<OperationCanceledException>();
-
-		private static class ValidRequests
-		{
-			public static readonly AtomicLockRequest AtomicLockRequest = new()
-			{
-				DbtrToRtgsId = new Public.Payment.V1.Pacs.GenericFinancialIdentification1
-				{
-					Id = BankDid
-				},
-				CdtrAmt = new Public.Payment.V1.Pacs.ActiveCurrencyAndAmount
-				{
-					Ccy = "GBP",
-					Amt = new ProtoDecimal
-					{
-						Units = 1,
-						Nanos = 230_000_000
-					}
-				},
-				UltmtDbtrAcct = new CashAccount38
-				{
-					Ccy = "USD",
-					Id = new Public.Payment.V1.Pacs.AccountIdentification4Choice { IBAN = "XX00ULTIMATEDEBTORACCOUNT" }
-				},
-				UltmtCdtrAcct = new CashAccount38
-				{
-					Ccy = "GBP",
-					Id = new Public.Payment.V1.Pacs.AccountIdentification4Choice { IBAN = "XX00ULTIMATECREDITORACCOUNT" }
-				},
-				SplmtryData = "some-extra-data",
-				EndToEndId = "end-to-end-id"
-			};
-
-			public static readonly AtomicTransferRequest AtomicTransferRequest = new()
-			{
-				DbtrToRtgsId = new Public.Payment.V1.Pacs.GenericFinancialIdentification1
-				{
-					Id = BankDid
-				},
-				FIToFICstmrCdtTrf = new FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer()
-				{
-					GrpHdr = new GroupHeader93
-					{
-						MsgId = "message-id"
-					},
-					CdtTrfTxInf =
-					{
-						{
-							new CreditTransferTransaction39 { PoolgAdjstmntDt = "2021-01-01" }
-						}
-					}
-				},
-				LckId = "B27C2536-27F8-403F-ABBD-7AC4190FBBD3"
-			};
-
-			public static readonly EarmarkConfirmation EarmarkConfirmation = new()
-			{
-				LockId = new Guid("159C6010-82CB-4775-8C87-05E6EC203E8E"),
-				Success = true
-			};
-
-			public static readonly TransferConfirmation TransferConfirmation = new()
-			{
-				LockId = new Guid("B30E15E3-CD54-4FA6-B0EB-B9BAE32976F9"),
-				Success = true
-			};
-
-			public static readonly UpdateLedgerRequest UpdateLedgerRequest = new()
-			{
-				Amt = new ProtoDecimal()
-				{
-					Units = 1,
-					Nanos = 230_000_000
-				},
-				BkToRtgsId = new Public.Payment.V1.Pacs.GenericFinancialIdentification1()
-				{
-					Id = BankDid
-				}
-			};
-
-			public static readonly FIToFICustomerCreditTransferV10 PayawayCreate = new()
-			{
-				GrpHdr = new GroupHeader96
-				{
-					MsgId = "message-id"
-				},
-				CdtTrfTxInf = new[]
-				{
-					new CreditTransferTransaction50 { PoolgAdjstmntDt = new DateTime(2021, 1, 1) }
-				}
-			};
-
-			public static readonly BankToCustomerDebitCreditNotificationV09 PayawayConfirmation = new()
-			{
-				GrpHdr = new GroupHeader81
-				{
-					MsgId = "message-id"
-				},
-				Ntfctn = new[]
-				{
-					new AccountNotification19
-					{
-						AddtlNtfctnInf = "additional-notification-info"
-					}
-				}
-			};
-		}
 	}
 }
