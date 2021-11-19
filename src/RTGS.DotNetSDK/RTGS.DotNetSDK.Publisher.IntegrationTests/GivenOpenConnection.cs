@@ -98,7 +98,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			using var _ = new AssertionScope();
 
 			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
-			informationLogs.Should().BeEquivalentTo(publisherAction.InformationLogs, options => options.WithStrictOrdering());
+			informationLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
 
 			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
 			warningLogs.Should().BeEmpty();
@@ -117,16 +117,14 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 			using var _ = new AssertionScope();
 
-			// TODO don't look for information (when success = true)
 			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
-			informationLogs.Should().BeEquivalentTo(publisherAction.InformationLogs, options => options.WithStrictOrdering());
+			informationLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
 
 			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
 			warningLogs.Should().BeEmpty();
 
-			// TODO: looks for error log (when success = false)
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
-			errorLogs.Should().BeEmpty();
+			errorLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Error), options => options.WithStrictOrdering());
 		}
 
 		[Theory]
@@ -210,6 +208,18 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			sendResult.Should().Be(SendResult.Timeout);
+		}
+
+		[Theory]
+		[ClassData(typeof(PublisherActionTimeoutAcknowledgementLogsData))]
+		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgementTooLate_ThenLogError<TRequest>(PublisherActionWithLogs<TRequest> publisherAction)
+		{
+			_toRtgsMessageHandler.EnqueueExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1)));
+
+			var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+
+			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
+			errorLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Error), options => options.WithStrictOrdering());
 		}
 
 		[Theory]

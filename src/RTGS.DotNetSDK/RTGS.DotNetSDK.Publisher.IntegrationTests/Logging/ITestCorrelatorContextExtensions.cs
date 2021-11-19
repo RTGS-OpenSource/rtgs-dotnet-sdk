@@ -15,7 +15,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.Logging
 				.Where(logEvent => GetSourceContext(logEvent) == "RTGS.DotNetSDK.Publisher.RtgsPublisher")
 				.Where(logEvent => logEvent.Level == logEventLevel)
 				.Select(RenderWithoutQuotes)
-				.Select(message => new LogEntry(message));
+				.Select(message => new LogEntry(message, logEventLevel));
 
 		private static string GetSourceContext(LogEvent logEvent)
 		{

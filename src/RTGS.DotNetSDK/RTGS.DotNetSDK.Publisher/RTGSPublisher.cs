@@ -89,13 +89,22 @@ namespace RTGS.DotNetSDK.Publisher
 
 			if (!expectedAcknowledgementReceived)
 			{
-				//log timeout
+				_logger.LogError("Timed out waiting for {MessageType} acknowledgement from RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
 				return SendResult.Timeout;
 			}
 
-			_logger.LogInformation("Received {MessageType} acknowledgement (success: {Success}) from RTGS ({CallingMethod})", typeof(T).Name, _acknowledgement!.Success, callingMethod);
+			var logMessageTemplate = "Received {MessageType} acknowledgement (success: {Success}) from RTGS ({CallingMethod})";
 
-			return _acknowledgement!.Success ? SendResult.Success : SendResult.ServerError;
+			if (_acknowledgement!.Success)
+			{
+				_logger.LogInformation(logMessageTemplate, typeof(T).Name, _acknowledgement!.Success, callingMethod);
+				return SendResult.Success;
+			}
+			else
+			{
+				_logger.LogError(logMessageTemplate, typeof(T).Name, _acknowledgement!.Success, callingMethod);
+				return SendResult.ServerError;
+			}
 			// TODO: EXCLUSIVE LOCK END
 		}
 
@@ -107,10 +116,6 @@ namespace RTGS.DotNetSDK.Publisher
 				{
 					_acknowledgement = acknowledgement;
 					_pendingAcknowledgementEvent.Set();
-				}
-				else
-				{
-					// log unexpected acknowledgement
 				}
 			}
 		}
