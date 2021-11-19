@@ -93,18 +93,10 @@ namespace RTGS.DotNetSDK.Publisher
 				return SendResult.Timeout;
 			}
 
-			var logMessageTemplate = "Received {MessageType} acknowledgement (success: {Success}) from RTGS ({CallingMethod})";
+			var logLevel = _acknowledgement!.Success ? LogLevel.Information : LogLevel.Error;
+			_logger.Log(logLevel, "Received {MessageType} acknowledgement (success: {Success}) from RTGS ({CallingMethod})", typeof(T).Name, _acknowledgement!.Success, callingMethod);
 
-			if (_acknowledgement!.Success)
-			{
-				_logger.LogInformation(logMessageTemplate, typeof(T).Name, _acknowledgement!.Success, callingMethod);
-				return SendResult.Success;
-			}
-			else
-			{
-				_logger.LogError(logMessageTemplate, typeof(T).Name, _acknowledgement!.Success, callingMethod);
-				return SendResult.ServerError;
-			}
+			return _acknowledgement!.Success ? SendResult.Success : SendResult.ServerError;
 			// TODO: EXCLUSIVE LOCK END
 		}
 
