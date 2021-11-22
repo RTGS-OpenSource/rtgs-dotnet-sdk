@@ -9,17 +9,26 @@
           ]
         }
       ],
+      "exclude": [
+            "**/bin/**",
+            "**/obj/**"
+          ],
       "dest": "api",
       "disableGitFeatures": false,
       "disableDefaultFilter": false
     }
   ],
   "build": {
+    "postProcessors": [ "ExtractSearchIndex" ],
     "globalMetadata": {
 			"_appTitle": "RTGS Dotnet SDK documentation",
-			"_appFooter": "RTGS Dotnet SDK documentation",
-			"_enableSearch": true
+			"_appFooter": "<span>Copyright © RTGS Global</span>"
 		},
+    "markdownEngineName": "markdig",
+    "noLangKeyword": false,
+    "keepFileLink": false,
+    "cleanupCacheHistory": false,
+    "disableGitFeatures": false,
     "content": [
       {
         "files": [
@@ -57,13 +66,7 @@
     "fileMetadataFiles": [],
 		"template": [
 			"statictoc",
-          "rtgs-template"
-		],
-    "postProcessors": [],
-    "markdownEngineName": "markdig",
-    "noLangKeyword": false,
-    "keepFileLink": false,
-    "cleanupCacheHistory": true,
-    "disableGitFeatures": false
+      "rtgs-template"
+		]
   }
 }

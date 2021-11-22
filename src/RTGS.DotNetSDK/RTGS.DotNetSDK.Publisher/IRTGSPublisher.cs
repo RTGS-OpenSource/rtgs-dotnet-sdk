@@ -9,6 +9,21 @@ namespace RTGS.DotNetSDK.Publisher
 {
 	public interface IRtgsPublisher : IAsyncDisposable
 	{
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="message"><see cref="AtomicLockRequest"/></param>
+		/// <param name="cancellationToken"><see cref="CancellationToken"/></param>
+		/// <returns><see cref="Task&lt;SendResult&gt;"/></returns>
+		/// <example>
+		/// <code>
+		/// int c = Math.Add(4, 5);
+		/// if (c > 10)
+		/// {
+		///     Console.WriteLine(c);
+		/// }
+		/// </code>
+		/// </example>
 		Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message, CancellationToken cancellationToken = default);
 		Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequest message, CancellationToken cancellationToken = default);
 		Task<SendResult> SendEarmarkConfirmationAsync(EarmarkConfirmation message, CancellationToken cancellationToken = default);
