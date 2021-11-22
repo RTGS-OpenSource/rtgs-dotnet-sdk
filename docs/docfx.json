@@ -1,0 +1,72 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "..",
+          "files": [
+            "src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/**.csproj"
+          ]
+        }
+      ],
+      "exclude": [
+            "**/bin/**",
+            "**/obj/**"
+          ],
+      "dest": "api",
+      "disableGitFeatures": false,
+      "disableDefaultFilter": false
+    }
+  ],
+  "build": {
+    "postProcessors": [ "ExtractSearchIndex" ],
+    "globalMetadata": {
+			"_appTitle": "RTGS Dotnet SDK documentation",
+			"_appFooter": "<span>Copyright © RTGS Global</span>"
+		},
+    "markdownEngineName": "markdig",
+    "noLangKeyword": false,
+    "keepFileLink": false,
+    "cleanupCacheHistory": false,
+    "disableGitFeatures": false,
+    "content": [
+      {
+        "files": [
+          "api/**.yml",
+          "api/index.md"
+        ]
+      },
+      {
+        "files": [
+          "articles/**.md",
+          "articles/**/toc.yml",
+          "guides/**.md",
+          "guides/**/toc.yml",
+          "toc.yml",
+          "*.md"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**"
+        ]
+      }
+    ],
+    "overwrite": [
+      {
+        "files": [
+          "apidoc/**.md"
+        ]
+      }
+    ],
+    "dest": "_site",
+    "globalMetadataFiles": [],
+    "fileMetadataFiles": [],
+		"template": [
+			"statictoc",
+      "rtgs-template"
+		]
+  }
+}

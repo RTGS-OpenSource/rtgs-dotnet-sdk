@@ -31,6 +31,7 @@ namespace RTGS.DotNetSDK.Publisher
 			_logger = logger;
 		}
 
+
 		public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payment.lock.v1", cancellationToken);
 
