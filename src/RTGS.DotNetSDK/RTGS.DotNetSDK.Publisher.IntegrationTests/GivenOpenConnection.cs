@@ -393,7 +393,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 		public class AndLongTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 		{
-			private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(10);
+			private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(60);
+			private static readonly TimeSpan TestWaitForSendDuration = TimeSpan.FromSeconds(15);
 
 			private readonly GrpcServerFixture _grpcServer;
 
@@ -448,7 +449,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			[ClassData(typeof(PublisherActionData))]
 			public async Task WhenCancellationTokenIsCancelledBeforeAcknowledgmentTimeout_ThenThrowOperationCancelled<TRequest>(PublisherAction<TRequest> publisherAction)
 			{
-				using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+				using var cancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
 
 				var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 				receiver.RegisterOnMessageReceived(() => cancellationTokenSource.Cancel());
@@ -468,17 +469,17 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 				// Send the first message that has no acknowledgement setup so the client
 				// will hold on to the semaphore for a long time.
-				using var firstMessageCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+				using var firstMessageCancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
 				var firstMessageTask = FluentActions
 					.Awaiting(() => publisherAction.InvokeSendDelegateAsync(_rtgsPublisher, firstMessageCancellationTokenSource.Token))
 					.Should()
 					.ThrowAsync<OperationCanceledException>();
 
 				// Once the server has received the first message we know the semaphore is in use...
-				firstMessageReceivedSignal.Wait();
+				firstMessageReceivedSignal.Wait(TestWaitForSendDuration);
 
 				// ...we can send the second message knowing it will be waiting due to the semaphore.
-				using var secondMessageCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+				using var secondMessageCancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
 				var secondMessageTask = FluentActions
 					.Awaiting(() => publisherAction.InvokeSendDelegateAsync(_rtgsPublisher, secondMessageCancellationTokenSource.Token))
 					.Should()
@@ -509,7 +510,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 					.Should()
 					.ThrowAsync<OperationCanceledException>();
 
-				messageReceivedSignal.Wait();
+				messageReceivedSignal.Wait(TestWaitForSendDuration);
 
 				await _rtgsPublisher.DisposeAsync();
 
@@ -527,17 +528,17 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 				// Send the first message that has no acknowledgement setup so the client
 				// will hold on to the semaphore for a long time.
-				using var firstMessageCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+				using var firstMessageCancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
 				var firstMessageTask = FluentActions
 					.Awaiting(() => publisherAction.InvokeSendDelegateAsync(_rtgsPublisher, firstMessageCancellationTokenSource.Token))
 					.Should()
 					.ThrowAsync<OperationCanceledException>();
 
 				// Once the server has received the first message we know the semaphore is in use...
-				firstMessageReceivedSignal.Wait();
+				firstMessageReceivedSignal.Wait(TestWaitForSendDuration);
 
 				// ...we can send the second message knowing it will be waiting due to the semaphore.
-				using var secondMessageCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+				using var secondMessageCancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
 				var secondMessageTask = FluentActions
 					.Awaiting(() => publisherAction.InvokeSendDelegateAsync(_rtgsPublisher, secondMessageCancellationTokenSource.Token))
 					.Should()
