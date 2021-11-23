@@ -16,7 +16,7 @@ namespace RTGS.DotNetSDK.Publisher
 	{
 		private readonly Payment.PaymentClient _paymentClient;
 		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new();
-		private readonly CancellationTokenSource _lifetime = new();
+		private readonly CancellationTokenSource _sharedTokenSource = new();
 		private readonly RtgsClientOptions _options;
 		private readonly ILogger<RtgsPublisher> _logger;
 		private readonly SemaphoreSlim _sendingSignal = new(1);
@@ -62,7 +62,7 @@ namespace RTGS.DotNetSDK.Publisher
 				throw new ObjectDisposedException(nameof(RtgsPublisher));
 			}
 
-			using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token, cancellationToken);
+			using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_sharedTokenSource.Token, cancellationToken);
 			await _sendingSignal.WaitAsync(linkedTokenSource.Token);
 
 			try
@@ -141,7 +141,7 @@ namespace RTGS.DotNetSDK.Publisher
 
 				_disposed = true;
 
-				_lifetime.Cancel();
+				_sharedTokenSource.Cancel();
 
 				if (_toRtgsCall is not null)
 				{
@@ -154,7 +154,7 @@ namespace RTGS.DotNetSDK.Publisher
 				}
 
 				_pendingAcknowledgementEvent.Dispose();
-				_lifetime.Dispose();
+				_sharedTokenSource.Dispose();
 			}
 			finally
 			{
