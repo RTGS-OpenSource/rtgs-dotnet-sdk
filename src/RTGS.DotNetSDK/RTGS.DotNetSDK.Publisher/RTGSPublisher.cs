@@ -61,7 +61,7 @@ namespace RTGS.DotNetSDK.Publisher
 				throw new ObjectDisposedException(nameof(RtgsPublisher));
 			}
 
-			await _sendingSignal.WaitAsync();
+			await _sendingSignal.WaitAsync(cancellationToken);
 
 			try
 			{
@@ -73,7 +73,7 @@ namespace RTGS.DotNetSDK.Publisher
 				}
 
 				_pendingAcknowledgementEvent.Reset();
-				
+
 				_correlationId = Guid.NewGuid().ToString();
 
 				_logger.LogInformation("Sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);

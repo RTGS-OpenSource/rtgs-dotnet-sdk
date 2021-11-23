@@ -21,13 +21,13 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 			IServerStreamWriter<RtgsMessageAcknowledgement> responseStream,
 			ServerCallContext context)
 		{
-			var handledMessages = _receiver.SetupConnectionInfo(context.RequestHeaders);
+			var connectionInfo = _receiver.SetupConnectionInfo(context.RequestHeaders);
 
 			await foreach (var message in requestStream.ReadAllAsync(context.CancellationToken))
 			{
 				await _messageHandler.Handle(message, responseStream);
 
-				handledMessages.Add(message);
+				connectionInfo.Add(message);
 			}
 		}
 	}
