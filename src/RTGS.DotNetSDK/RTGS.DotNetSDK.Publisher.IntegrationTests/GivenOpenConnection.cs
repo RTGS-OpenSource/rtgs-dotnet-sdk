@@ -62,6 +62,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 						.Build();
 
 					_clientHost = Host.CreateDefaultBuilder()
+						.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 						.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
 						.UseSerilog()
 						.Build();
@@ -415,6 +416,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 						.Build();
 
 					_clientHost = Host.CreateDefaultBuilder()
+						.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 						.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
 						.Build();
 

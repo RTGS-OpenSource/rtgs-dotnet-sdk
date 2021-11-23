@@ -37,6 +37,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()
+					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 					.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
 					.Build();
 
@@ -73,7 +74,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				{
 					_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-					var rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+					await using var rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
 
 					sendRequestsSignal.Wait();
 
