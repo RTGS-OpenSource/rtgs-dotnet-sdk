@@ -16,9 +16,11 @@ namespace RTGS.DotNetSDK.Publisher
 	{
 		private readonly Payment.PaymentClient _paymentClient;
 		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new();
+		private readonly CancellationTokenSource _lifetime = new();
 		private readonly RtgsClientOptions _options;
 		private readonly ILogger<RtgsPublisher> _logger;
 		private readonly SemaphoreSlim _sendingSignal = new(1);
+		private readonly SemaphoreSlim _disposingSignal = new(1);
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
 		private RtgsMessageAcknowledgement _acknowledgement;
@@ -31,7 +33,6 @@ namespace RTGS.DotNetSDK.Publisher
 			_options = options;
 			_logger = logger;
 		}
-
 
 		public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payment.lock.v1", cancellationToken);
@@ -61,7 +62,8 @@ namespace RTGS.DotNetSDK.Publisher
 				throw new ObjectDisposedException(nameof(RtgsPublisher));
 			}
 
-			await _sendingSignal.WaitAsync(cancellationToken);
+			using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token, cancellationToken);
+			await _sendingSignal.WaitAsync(linkedTokenSource.Token);
 
 			try
 			{
@@ -90,7 +92,7 @@ namespace RTGS.DotNetSDK.Publisher
 
 				_logger.LogInformation("Sent {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
 
-				var expectedAcknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration, cancellationToken);
+				var expectedAcknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
 
 				if (!expectedAcknowledgementReceived)
 				{
@@ -123,23 +125,45 @@ namespace RTGS.DotNetSDK.Publisher
 
 		public async ValueTask DisposeAsync()
 		{
-			if (_toRtgsCall is not null)
+			if (_disposed)
 			{
-				await _toRtgsCall.RequestStream.CompleteAsync();
-
-				await _waitForAcknowledgementsTask;
-
-				_toRtgsCall.Dispose();
-				_toRtgsCall = null;
+				return;
 			}
 
-			_pendingAcknowledgementEvent?.Dispose();
+			await _disposingSignal.WaitAsync();
+
+			try
+			{
+				if (_disposed)
+				{
+					return;
+				}
+
+				_disposed = true;
+
+				_lifetime.Cancel();
+
+				if (_toRtgsCall is not null)
+				{
+					await _toRtgsCall.RequestStream.CompleteAsync();
+
+					await _waitForAcknowledgementsTask;
+
+					_toRtgsCall.Dispose();
+					_toRtgsCall = null;
+				}
+
+				_pendingAcknowledgementEvent.Dispose();
+				_lifetime.Dispose();
+			}
+			finally
+			{
+				_disposingSignal.Release();
+			}
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
 			GC.SuppressFinalize(this);
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
-
-			_disposed = true;
 		}
 	}
 }

@@ -20,7 +20,7 @@ using Xunit;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 {
-	public class GivenOpenConnection //: IAsyncLifetime, IClassFixture<GrpcServerFixture>
+	public class GivenOpenConnection
 	{
 		public class AndShortTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 		{
@@ -89,6 +89,31 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				_clientHost?.Dispose();
 
 				_grpcServer.Reset();
+			}
+
+			[Fact]
+			public async Task WhenDisposingInParallel_ThenCanDispose()
+			{
+				_toRtgsMessageHandler.SetupForMessage(handler =>
+					handler.ReturnExpectedAcknowledgementWithSuccess());
+
+				await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest());
+
+				var disposeSignal = new ManualResetEventSlim();
+				const int concurrentDisposableThreads = 20;
+				var disposeTasks = Enumerable.Range(1, concurrentDisposableThreads)
+					.Select(request => Task.Run(async () =>
+					{
+						disposeSignal.Wait();
+
+						await _rtgsPublisher.DisposeAsync();
+					}))
+					.ToArray();
+
+				disposeSignal.Set();
+
+				var allCompleted = Task.WaitAll(disposeTasks, TimeSpan.FromSeconds(5));
+				allCompleted.Should().BeTrue();
 			}
 
 			[Fact]
@@ -467,6 +492,69 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				await firstMessageTask;
 
 				receiver.Connections[0].Requests.Count().Should().Be(1, "the second message should not have been sent as the semaphore should not be entered");
+			}
+
+			[Theory]
+			[ClassData(typeof(PublisherActionData))]
+			public async Task WhenDisposingBeforeAcknowledgmentTimeout_ThenThrowOperationCancelled<TRequest>(PublisherAction<TRequest> publisherAction)
+			{
+				var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+
+				using var messageReceivedSignal = new ManualResetEventSlim();
+				receiver.RegisterOnMessageReceived(() => messageReceivedSignal.Set());
+
+				var messageTask = FluentActions
+					.Awaiting(() => publisherAction.InvokeSendDelegateAsync(_rtgsPublisher))
+					.Should()
+					.ThrowAsync<OperationCanceledException>();
+
+				messageReceivedSignal.Wait();
+
+				await _rtgsPublisher.DisposeAsync();
+
+				await messageTask;
+			}
+
+			[Theory]
+			[ClassData(typeof(PublisherActionData))]
+			public async Task WhenDisposingBeforeSemaphoreIsEntered_ThenThrowOperationCancelled<TRequest>(PublisherAction<TRequest> publisherAction)
+			{
+				var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+
+				using var firstMessageReceivedSignal = new ManualResetEventSlim();
+				receiver.RegisterOnMessageReceived(() => firstMessageReceivedSignal.Set());
+
+				// Send the first message that has no acknowledgement setup so the client
+				// will hold on to the semaphore for a long time.
+				using var firstMessageCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+				var firstMessageTask = FluentActions
+					.Awaiting(() => publisherAction.InvokeSendDelegateAsync(_rtgsPublisher, firstMessageCancellationTokenSource.Token))
+					.Should()
+					.ThrowAsync<OperationCanceledException>();
+
+				// Once the server has received the first message we know the semaphore is in use...
+				firstMessageReceivedSignal.Wait();
+
+				// ...we can send the second message knowing it will be waiting due to the semaphore.
+				using var secondMessageCancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+				var secondMessageTask = FluentActions
+					.Awaiting(() => publisherAction.InvokeSendDelegateAsync(_rtgsPublisher, secondMessageCancellationTokenSource.Token))
+					.Should()
+					.ThrowAsync<OperationCanceledException>();
+
+				await _rtgsPublisher.DisposeAsync();
+
+				// Release the semaphore for other threads
+				firstMessageCancellationTokenSource.Cancel();
+
+				// Allow the test to gracefully stop.
+				await firstMessageTask;
+				await secondMessageTask;
+
+				using var _ = new AssertionScope();
+
+				receiver.Connections.Count.Should().Be(1, "the second call to send a message should not open another connection when it is being disposed");
+				receiver.Connections.SelectMany(connection => connection.Requests).Count().Should().Be(1, "the second message should not have been sent as the semaphore should not be entered");
 			}
 		}
 	}

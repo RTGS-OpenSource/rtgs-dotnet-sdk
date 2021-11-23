@@ -1,5 +1,4 @@
 ﻿extern alias RTGSServer;
-
 using System;
 using System.Collections.Generic;
 using Grpc.Core;
