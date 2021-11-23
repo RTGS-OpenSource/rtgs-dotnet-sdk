@@ -99,7 +99,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 				await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest());
 
-				var disposeSignal = new ManualResetEventSlim();
+				using var disposeSignal = new ManualResetEventSlim();
 				const int concurrentDisposableThreads = 20;
 				var disposeTasks = Enumerable.Range(1, concurrentDisposableThreads)
 					.Select(request => Task.Run(async () =>
@@ -121,9 +121,9 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			{
 				var atomicLockRequests = GenerateFiveUniqueAtomicLockRequests().ToList();
 
-				var sendRequestsSignal = new ManualResetEventSlim();
+				using var sendRequestsSignal = new ManualResetEventSlim();
 
-				var bigMessageTasks = atomicLockRequests
+				var bigRequestTasks = atomicLockRequests
 					.Select(request => Task.Run(async () =>
 					{
 						_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
@@ -135,7 +135,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 				sendRequestsSignal.Set();
 
-				var allCompleted = Task.WaitAll(bigMessageTasks, TimeSpan.FromSeconds(5));
+				var allCompleted = Task.WaitAll(bigRequestTasks, TimeSpan.FromSeconds(5));
 				allCompleted.Should().BeTrue();
 
 				var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
@@ -416,7 +416,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 					_clientHost = Host.CreateDefaultBuilder()
 						.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
-						.UseSerilog()
 						.Build();
 
 					_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
