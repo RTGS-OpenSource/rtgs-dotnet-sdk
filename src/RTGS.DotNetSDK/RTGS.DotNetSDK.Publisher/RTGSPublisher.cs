@@ -15,13 +15,15 @@ namespace RTGS.DotNetSDK.Publisher
 	internal sealed class RtgsPublisher : IRtgsPublisher
 	{
 		private readonly Payment.PaymentClient _paymentClient;
-		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new();
+		private readonly CancellationTokenSource _sharedTokenSource = new();
 		private readonly RtgsClientOptions _options;
 		private readonly ILogger<RtgsPublisher> _logger;
+		private readonly SemaphoreSlim _sendingSignal = new(1);
+		private readonly SemaphoreSlim _disposingSignal = new(1);
+		private AcknowledgementContext _acknowledgementContext;
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
 		private RtgsMessageAcknowledgement _acknowledgement;
-		private string _correlationId;
 		private bool _disposed;
 
 		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options, ILogger<RtgsPublisher> logger)
@@ -30,7 +32,6 @@ namespace RTGS.DotNetSDK.Publisher
 			_options = options;
 			_logger = logger;
 		}
-
 
 		public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payment.lock.v1", cancellationToken);
@@ -60,78 +61,135 @@ namespace RTGS.DotNetSDK.Publisher
 				throw new ObjectDisposedException(nameof(RtgsPublisher));
 			}
 
-			// TODO: EXCLUSIVE LOCK START
-			if (_toRtgsCall is null)
+			using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_sharedTokenSource.Token, cancellationToken);
+			await _sendingSignal.WaitAsync(linkedTokenSource.Token);
+
+			try
 			{
-				var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
-				_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
-				_waitForAcknowledgementsTask = WaitForAcknowledgements();
-			}
+				linkedTokenSource.Token.ThrowIfCancellationRequested();
 
-			_pendingAcknowledgementEvent.Reset();
-
-			_correlationId = Guid.NewGuid().ToString();
-
-			_logger.LogInformation("Sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
-
-			await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
-			{
-				Data = JsonSerializer.Serialize(message),
-				Header = new RtgsMessageHeader
+				if (_toRtgsCall is null)
 				{
-					InstructionType = instructionType,
-					CorrelationId = _correlationId
+					var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
+					_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
+					_waitForAcknowledgementsTask = WaitForAcknowledgements();
 				}
-			});
 
-			_logger.LogInformation("Sent {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+				_acknowledgementContext = new AcknowledgementContext();
 
-			var expectedAcknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration, cancellationToken);
+				_logger.LogInformation("Sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
 
-			if (!expectedAcknowledgementReceived)
-			{
-				_logger.LogError("Timed out waiting for {MessageType} acknowledgement from RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
-				return SendResult.Timeout;
+				await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
+				{
+					Data = JsonSerializer.Serialize(message),
+					Header = new RtgsMessageHeader
+					{
+						InstructionType = instructionType,
+						CorrelationId = _acknowledgementContext.CorrelationId
+					}
+				});
+
+				_logger.LogInformation("Sent {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+
+				var expectedAcknowledgementReceived = await _acknowledgementContext.WaitAsync(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
+
+				if (!expectedAcknowledgementReceived)
+				{
+					_logger.LogError("Timed out waiting for {MessageType} acknowledgement from RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+					return SendResult.Timeout;
+				}
+
+				var logLevel = _acknowledgement!.Success ? LogLevel.Information : LogLevel.Error;
+				_logger.Log(logLevel, "Received {MessageType} acknowledgement (success: {Success}) from RTGS ({CallingMethod})", typeof(T).Name, _acknowledgement!.Success, callingMethod);
+
+				return _acknowledgement!.Success ? SendResult.Success : SendResult.ServerError;
 			}
-
-			var logLevel = _acknowledgement!.Success ? LogLevel.Information : LogLevel.Error;
-			_logger.Log(logLevel, "Received {MessageType} acknowledgement (success: {Success}) from RTGS ({CallingMethod})", typeof(T).Name, _acknowledgement!.Success, callingMethod);
-
-			return _acknowledgement!.Success ? SendResult.Success : SendResult.ServerError;
-			// TODO: EXCLUSIVE LOCK END
+			finally
+			{
+				if (_acknowledgementContext != null)
+				{
+					_acknowledgementContext.Dispose();
+					_acknowledgementContext = null;
+				}
+				_sendingSignal.Release();
+			}
 		}
 
 		private async Task WaitForAcknowledgements()
 		{
 			await foreach (var acknowledgement in _toRtgsCall.ResponseStream.ReadAllAsync())
 			{
-				if (acknowledgement.Header.CorrelationId == _correlationId)
+				if (acknowledgement.Header.CorrelationId == _acknowledgementContext?.CorrelationId)
 				{
 					_acknowledgement = acknowledgement;
-					_pendingAcknowledgementEvent.Set();
+					_acknowledgementContext?.Release();
 				}
 			}
 		}
 
 		public async ValueTask DisposeAsync()
 		{
-			if (_toRtgsCall is not null)
+			if (_disposed)
 			{
-				await _toRtgsCall.RequestStream.CompleteAsync();
-
-				await _waitForAcknowledgementsTask;
-
-				_toRtgsCall.Dispose();
-				_toRtgsCall = null;
+				return;
 			}
 
-			_pendingAcknowledgementEvent?.Dispose();
+			await _disposingSignal.WaitAsync();
+
+			try
+			{
+				if (_disposed)
+				{
+					return;
+				}
+
+				_disposed = true;
+
+				_sharedTokenSource.Cancel();
+
+				if (_toRtgsCall is not null)
+				{
+					await _toRtgsCall.RequestStream.CompleteAsync();
+
+					await _waitForAcknowledgementsTask;
+
+					_toRtgsCall.Dispose();
+					_toRtgsCall = null;
+				}
+
+				_acknowledgementContext?.Dispose();
+				_sharedTokenSource.Dispose();
+			}
+			finally
+			{
+				_disposingSignal.Release();
+			}
 
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
 			GC.SuppressFinalize(this);
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+		}
 
-			_disposed = true;
+		private sealed class AcknowledgementContext : IDisposable
+		{
+			private readonly SemaphoreSlim _acknowledgementSignal;
+
+			public AcknowledgementContext()
+			{
+				_acknowledgementSignal = new SemaphoreSlim(0, 1);
+				CorrelationId = Guid.NewGuid().ToString();
+			}
+
+			public string CorrelationId { get; }
+
+			public Task<bool> WaitAsync(TimeSpan timeout, CancellationToken cancellationToken)
+				=> _acknowledgementSignal.WaitAsync(timeout, cancellationToken);
+
+			public void Release()
+				=> _acknowledgementSignal.Release();
+
+			public void Dispose()
+				=> _acknowledgementSignal.Dispose();
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿extern alias RTGSServer;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Grpc.Core;
@@ -9,71 +10,96 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 {
 	public class ToRtgsMessageHandler
 	{
-		private readonly Queue<Func<RtgsMessage, Task<RtgsMessageAcknowledgement>>> _generateAcknowledgements = new();
+		private readonly ConcurrentQueue<IEnumerable<Func<RtgsMessage, Task<RtgsMessageAcknowledgement>>>> _acknowledgementGeneratorsQueue = new();
 
 		public async Task Handle(RtgsMessage message, IServerStreamWriter<RtgsMessageAcknowledgement> responseStream)
 		{
-			while (_generateAcknowledgements.TryDequeue(out var generateAcknowledgement))
+			if (_acknowledgementGeneratorsQueue.TryDequeue(out var acknowledgementGenerators))
 			{
-				var acknowledgement = await generateAcknowledgement(message);
-				await responseStream.WriteAsync(acknowledgement);
+				foreach (var acknowledgementGenerator in acknowledgementGenerators)
+				{
+					var acknowledgement = await acknowledgementGenerator(message);
+					await responseStream.WriteAsync(acknowledgement);
+				}
 			}
 		}
 
-		public void Clear() => _generateAcknowledgements.Clear();
+		public void SetupForMessage(Action<ISetupForMessageOptions> configure)
+		{
+			var options = new SetupForMessageOptions();
+			configure(options);
 
-		public void EnqueueExpectedAcknowledgementWithFailure() =>
-			EnqueueAcknowledgementWithFailure(true);
+			_acknowledgementGeneratorsQueue.Enqueue(options.GenerateAcknowledgements);
+		}
 
-		public void EnqueueUnexpectedAcknowledgementWithFailure() =>
-			EnqueueAcknowledgementWithFailure(false);
+		public void Clear() => _acknowledgementGeneratorsQueue.Clear();
 
-		private void EnqueueAcknowledgementWithFailure(bool expected) =>
-			_generateAcknowledgements.Enqueue(message => Task.FromResult(
-				new RtgsMessageAcknowledgement
+		private class SetupForMessageOptions : ISetupForMessageOptions
+		{
+			public List<Func<RtgsMessage, Task<RtgsMessageAcknowledgement>>> GenerateAcknowledgements { get; } = new();
+
+			public void ReturnExpectedAcknowledgementWithFailure() =>
+				ReturnAcknowledgementWithFailure(true);
+
+			public void ReturnUnexpectedAcknowledgementWithFailure() =>
+				ReturnAcknowledgementWithFailure(false);
+
+			private void ReturnAcknowledgementWithFailure(bool expected) =>
+				GenerateAcknowledgements.Add(message => Task.FromResult(
+					new RtgsMessageAcknowledgement
+					{
+						Code = (int)StatusCode.Internal,
+						Success = false,
+						Header = expected
+							? message.Header
+							: GenerateUnexpectedMessageHeader(message.Header)
+					}));
+
+			public void ReturnExpectedAcknowledgementWithSuccess() =>
+				ReturnAcknowledgementWithSuccess(true);
+
+			public void ReturnUnexpectedAcknowledgementWithSuccess() =>
+				ReturnAcknowledgementWithSuccess(false);
+
+			private void ReturnAcknowledgementWithSuccess(bool expected) =>
+				GenerateAcknowledgements.Add(message => Task.FromResult(
+					new RtgsMessageAcknowledgement
+					{
+						Code = (int)StatusCode.OK,
+						Success = true,
+						Header = expected
+							? message.Header
+							: GenerateUnexpectedMessageHeader(message.Header)
+					}));
+
+			public void ReturnExpectedAcknowledgementWithDelay(TimeSpan timeSpan) =>
+				GenerateAcknowledgements.Add(async message =>
 				{
-					Code = (int)StatusCode.Internal,
-					Success = false,
-					Header = expected
-						? message.Header
-						: GenerateUnexpectedMessageHeader(message.Header)
-				}));
+					await Task.Delay(timeSpan);
 
-		public void EnqueueExpectedAcknowledgementWithSuccess() =>
-			EnqueueAcknowledgementWithSuccess(true);
+					return new RtgsMessageAcknowledgement
+					{
+						Code = (int)StatusCode.OK,
+						Success = true,
+						Header = message.Header
+					};
+				});
 
-		public void EnqueueUnexpectedAcknowledgementWithSuccess() =>
-			EnqueueAcknowledgementWithSuccess(false);
-
-		private void EnqueueAcknowledgementWithSuccess(bool expected) =>
-			_generateAcknowledgements.Enqueue(message => Task.FromResult(
-				new RtgsMessageAcknowledgement
+			private static RtgsMessageHeader GenerateUnexpectedMessageHeader(RtgsMessageHeader original) =>
+				new()
 				{
-					Code = (int)StatusCode.OK,
-					Success = true,
-					Header = expected
-						? message.Header
-						: GenerateUnexpectedMessageHeader(message.Header)
-				}));
-
-		public void EnqueueExpectedAcknowledgementWithDelay(TimeSpan timeSpan) =>
-			_generateAcknowledgements.Enqueue(async message =>
-			{
-				await Task.Delay(timeSpan);
-
-				return new RtgsMessageAcknowledgement
-				{
-					Code = (int)StatusCode.OK,
-					Success = true,
-					Header = message.Header
+					CorrelationId = Guid.NewGuid().ToString(),
+					InstructionType = original.InstructionType
 				};
-			});
+		}
 
-		private static RtgsMessageHeader GenerateUnexpectedMessageHeader(RtgsMessageHeader original) =>
-			new()
-			{
-				CorrelationId = Guid.NewGuid().ToString(),
-				InstructionType = original.InstructionType
-			};
+		public interface ISetupForMessageOptions
+		{
+			void ReturnExpectedAcknowledgementWithFailure();
+			void ReturnUnexpectedAcknowledgementWithFailure();
+			void ReturnExpectedAcknowledgementWithSuccess();
+			void ReturnUnexpectedAcknowledgementWithSuccess();
+			void ReturnExpectedAcknowledgementWithDelay(TimeSpan timeSpan);
+		}
 	}
 }
