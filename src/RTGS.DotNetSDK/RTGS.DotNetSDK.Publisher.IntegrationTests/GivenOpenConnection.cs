@@ -140,7 +140,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				allCompleted.Should().BeTrue();
 
 				var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-				receiver.Connections[0].Requests.Select(request => JsonConvert.DeserializeObject<AtomicLockRequest>(request.Data))
+				receiver.Connections.Single().Requests.Select(request => JsonConvert.DeserializeObject<AtomicLockRequest>(request.Data))
 					.Should().BeEquivalentTo(atomicLockRequests, options => options.ComparingByMembers<AtomicLockRequest>());
 
 				IEnumerable<AtomicLockRequest> GenerateFiveUniqueAtomicLockRequests()
@@ -508,7 +508,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				firstMessageCancellationTokenSource.Cancel();
 				await firstMessageTask;
 
-				receiver.Connections[0].Requests.Count().Should().Be(1, "the second message should not have been sent as the semaphore should not be entered");
+				receiver.Connections.Single().Requests.Count().Should().Be(1, "the second message should not have been sent as the semaphore should not be entered");
 			}
 
 			[Theory]

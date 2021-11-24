@@ -20,7 +20,7 @@ namespace RTGS.DotNetSDK.Publisher
 		private readonly ILogger<RtgsPublisher> _logger;
 		private readonly SemaphoreSlim _sendingSignal = new(1);
 		private readonly SemaphoreSlim _disposingSignal = new(1);
-		private readonly SemaphoreSlim _pendingAcknowledgementSignal = new(0, 1);
+		private SemaphoreSlim _pendingAcknowledgementSignal;
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
 		private RtgsMessageAcknowledgement _acknowledgement;
@@ -74,7 +74,7 @@ namespace RTGS.DotNetSDK.Publisher
 					_waitForAcknowledgementsTask = WaitForAcknowledgements();
 				}
 
-				//_pendingAcknowledgementSignal = new SemaphoreSlim(0, 1);
+				_pendingAcknowledgementSignal = new SemaphoreSlim(0, 1);
 
 				_correlationId = Guid.NewGuid().ToString();
 
@@ -107,11 +107,11 @@ namespace RTGS.DotNetSDK.Publisher
 			}
 			finally
 			{
-				// if (_pendingAcknowledgementSignal != null)
-				// {
-				// 	_pendingAcknowledgementSignal.Dispose();
-				// 	_pendingAcknowledgementSignal = null;
-				// }
+				if (_pendingAcknowledgementSignal != null)
+				{
+					_pendingAcknowledgementSignal.Dispose();
+					_pendingAcknowledgementSignal = null;
+				}
 
 				_correlationId = null;
 				_sendingSignal.Release();
@@ -160,7 +160,6 @@ namespace RTGS.DotNetSDK.Publisher
 					_toRtgsCall = null;
 				}
 
-				//_pendingAcknowledgementEvent.Dispose();
 				_pendingAcknowledgementSignal?.Dispose();
 				_sharedTokenSource.Dispose();
 			}

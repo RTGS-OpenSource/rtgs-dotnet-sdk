@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RTGS.DotNetSDK.Publisher.Extensions;
@@ -63,7 +64,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Fact]
-		public void WhenSendingInParallel_ThenCanSendToRtgs()
+		public async Task WhenSendingInParallel_ThenCanSendToRtgs()
 		{
 			const int PublisherCount = 5;
 
@@ -88,6 +89,39 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 			receiver.Connections.Count.Should().Be(PublisherCount);
+		}
+
+		[Fact]
+		public async Task WhenSendingSequentially_ThenCanSendToRtgs()
+		{
+			const int PublisherCount = 5;
+
+			await using var rtgsPublisher1 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+			await using var rtgsPublisher2 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+			await using var rtgsPublisher3 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+			await using var rtgsPublisher4 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+			await using var rtgsPublisher5 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+
+			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+			await rtgsPublisher1.SendAtomicLockRequestAsync(new AtomicLockRequest());
+
+			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+			await rtgsPublisher2.SendAtomicLockRequestAsync(new AtomicLockRequest());
+
+			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+			await rtgsPublisher3.SendAtomicLockRequestAsync(new AtomicLockRequest());
+
+			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+			await rtgsPublisher4.SendAtomicLockRequestAsync(new AtomicLockRequest());
+
+			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+			await rtgsPublisher5.SendAtomicLockRequestAsync(new AtomicLockRequest());
+			
+			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+
+			using var _ = new AssertionScope();
+			receiver.Connections.Count.Should().Be(PublisherCount);
+			receiver.Connections.SelectMany(connection => connection.Requests).Count().Should().Be(5);
 		}
 	}
 }
