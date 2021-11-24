@@ -116,7 +116,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 			await rtgsPublisher5.SendAtomicLockRequestAsync(new AtomicLockRequest());
-			
+
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
 			using var _ = new AssertionScope();
