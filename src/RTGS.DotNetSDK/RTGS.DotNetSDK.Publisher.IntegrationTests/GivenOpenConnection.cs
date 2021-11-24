@@ -389,6 +389,21 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 				sendResult.Should().Be(SendResult.Success);
 			}
+
+			[Theory]
+			[ClassData(typeof(PublisherActionData))]
+			public async Task WhenBankMessageApiReturnsSuccessForSecondMessageOnly_ThenSeeSuccess<TRequest>(PublisherAction<TRequest> publisherAction)
+			{
+				// TODO Name this??!?!?!?!
+
+				var sendResult1 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+				sendResult1.Should().Be(SendResult.Timeout);
+
+				_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+				var sendResult2 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+				sendResult2.Should().Be(SendResult.Success);
+			}
 		}
 
 		public class AndLongTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>
