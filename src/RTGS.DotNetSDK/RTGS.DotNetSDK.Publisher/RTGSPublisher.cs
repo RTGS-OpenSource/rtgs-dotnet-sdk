@@ -20,11 +20,10 @@ namespace RTGS.DotNetSDK.Publisher
 		private readonly ILogger<RtgsPublisher> _logger;
 		private readonly SemaphoreSlim _sendingSignal = new(1);
 		private readonly SemaphoreSlim _disposingSignal = new(1);
-		private SemaphoreSlim _pendingAcknowledgementSignal;
+		private AcknowledgementContext _acknowledgementContext;
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
 		private RtgsMessageAcknowledgement _acknowledgement;
-		private string _correlationId;
 		private bool _disposed;
 
 		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options, ILogger<RtgsPublisher> logger)
@@ -74,9 +73,7 @@ namespace RTGS.DotNetSDK.Publisher
 					_waitForAcknowledgementsTask = WaitForAcknowledgements();
 				}
 
-				_pendingAcknowledgementSignal = new SemaphoreSlim(0, 1);
-
-				_correlationId = Guid.NewGuid().ToString();
+				_acknowledgementContext = new AcknowledgementContext();
 
 				_logger.LogInformation("Sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
 
@@ -86,13 +83,13 @@ namespace RTGS.DotNetSDK.Publisher
 					Header = new RtgsMessageHeader
 					{
 						InstructionType = instructionType,
-						CorrelationId = _correlationId
+						CorrelationId = _acknowledgementContext.CorrelationId
 					}
 				});
 
 				_logger.LogInformation("Sent {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
 
-				var expectedAcknowledgementReceived = await _pendingAcknowledgementSignal.WaitAsync(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
+				var expectedAcknowledgementReceived = await _acknowledgementContext.WaitAsync(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
 
 				if (!expectedAcknowledgementReceived)
 				{
@@ -107,13 +104,11 @@ namespace RTGS.DotNetSDK.Publisher
 			}
 			finally
 			{
-				if (_pendingAcknowledgementSignal != null)
+				if (_acknowledgementContext != null)
 				{
-					_pendingAcknowledgementSignal.Dispose();
-					_pendingAcknowledgementSignal = null;
+					_acknowledgementContext.Dispose();
+					_acknowledgementContext = null;
 				}
-
-				_correlationId = null;
 				_sendingSignal.Release();
 			}
 		}
@@ -122,10 +117,10 @@ namespace RTGS.DotNetSDK.Publisher
 		{
 			await foreach (var acknowledgement in _toRtgsCall.ResponseStream.ReadAllAsync())
 			{
-				if (acknowledgement.Header.CorrelationId == _correlationId)
+				if (acknowledgement.Header.CorrelationId == _acknowledgementContext?.CorrelationId)
 				{
 					_acknowledgement = acknowledgement;
-					_pendingAcknowledgementSignal?.Release();
+					_acknowledgementContext?.Release();
 				}
 			}
 		}
@@ -160,7 +155,7 @@ namespace RTGS.DotNetSDK.Publisher
 					_toRtgsCall = null;
 				}
 
-				_pendingAcknowledgementSignal?.Dispose();
+				_acknowledgementContext?.Dispose();
 				_sharedTokenSource.Dispose();
 			}
 			finally
@@ -171,6 +166,28 @@ namespace RTGS.DotNetSDK.Publisher
 #pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
 			GC.SuppressFinalize(this);
 #pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
+		}
+
+		private sealed class AcknowledgementContext : IDisposable
+		{
+			private readonly SemaphoreSlim _acknowledgementSignal;
+
+			public AcknowledgementContext()
+			{
+				_acknowledgementSignal = new SemaphoreSlim(0, 1);
+				CorrelationId = Guid.NewGuid().ToString();
+			}
+
+			public string CorrelationId { get; }
+
+			public Task<bool> WaitAsync(TimeSpan timeout, CancellationToken cancellationToken)
+				=> _acknowledgementSignal.WaitAsync(timeout, cancellationToken);
+
+			public void Release()
+				=> _acknowledgementSignal.Release();
+
+			public void Dispose()
+				=> _acknowledgementSignal.Dispose();
 		}
 	}
 }
