@@ -337,7 +337,7 @@ csharp_prefer_simple_using_statement = true
 csharp_using_directive_placement = outside_namespace:error
 
 # https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/formatting-rules#dotnet_sort_system_directives_first
-dotnet_sort_system_directives_first = true:suggestion
+dotnet_sort_system_directives_first = true
 
 # https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/formatting-rules#dotnet_separate_import_directive_groups
 dotnet_separate_import_directive_groups = false:suggestion
