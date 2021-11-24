@@ -1,4 +1,8 @@
-﻿using FluentAssertions;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,10 +14,6 @@ using RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.TestCorrelator;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests
