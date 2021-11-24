@@ -64,7 +64,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Fact]
-		public async Task WhenSendingInParallel_ThenCanSendToRtgs()
+		public void WhenSendingInParallel_ThenCanSendToRtgs()
 		{
 			const int PublisherCount = 5;
 

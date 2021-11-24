@@ -66,6 +66,8 @@ namespace RTGS.DotNetSDK.Publisher
 
 			try
 			{
+				linkedTokenSource.Token.ThrowIfCancellationRequested();
+
 				if (_toRtgsCall is null)
 				{
 					var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
