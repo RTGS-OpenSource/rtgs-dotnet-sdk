@@ -15,12 +15,12 @@ namespace RTGS.DotNetSDK.Publisher
 	internal sealed class RtgsPublisher : IRtgsPublisher
 	{
 		private readonly Payment.PaymentClient _paymentClient;
-		private readonly ManualResetEventSlim _pendingAcknowledgementEvent = new();
 		private readonly CancellationTokenSource _sharedTokenSource = new();
 		private readonly RtgsClientOptions _options;
 		private readonly ILogger<RtgsPublisher> _logger;
 		private readonly SemaphoreSlim _sendingSignal = new(1);
 		private readonly SemaphoreSlim _disposingSignal = new(1);
+		private readonly SemaphoreSlim _pendingAcknowledgementSignal = new(0, 1);
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
 		private RtgsMessageAcknowledgement _acknowledgement;
@@ -74,7 +74,7 @@ namespace RTGS.DotNetSDK.Publisher
 					_waitForAcknowledgementsTask = WaitForAcknowledgements();
 				}
 
-				_pendingAcknowledgementEvent.Reset();
+				//_pendingAcknowledgementSignal = new SemaphoreSlim(0, 1);
 
 				_correlationId = Guid.NewGuid().ToString();
 
@@ -92,7 +92,7 @@ namespace RTGS.DotNetSDK.Publisher
 
 				_logger.LogInformation("Sent {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
 
-				var expectedAcknowledgementReceived = _pendingAcknowledgementEvent.Wait(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
+				var expectedAcknowledgementReceived = await _pendingAcknowledgementSignal.WaitAsync(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
 
 				if (!expectedAcknowledgementReceived)
 				{
@@ -107,6 +107,13 @@ namespace RTGS.DotNetSDK.Publisher
 			}
 			finally
 			{
+				// if (_pendingAcknowledgementSignal != null)
+				// {
+				// 	_pendingAcknowledgementSignal.Dispose();
+				// 	_pendingAcknowledgementSignal = null;
+				// }
+
+				_correlationId = null;
 				_sendingSignal.Release();
 			}
 		}
@@ -118,7 +125,7 @@ namespace RTGS.DotNetSDK.Publisher
 				if (acknowledgement.Header.CorrelationId == _correlationId)
 				{
 					_acknowledgement = acknowledgement;
-					_pendingAcknowledgementEvent.Set();
+					_pendingAcknowledgementSignal?.Release();
 				}
 			}
 		}
@@ -153,7 +160,8 @@ namespace RTGS.DotNetSDK.Publisher
 					_toRtgsCall = null;
 				}
 
-				_pendingAcknowledgementEvent.Dispose();
+				//_pendingAcknowledgementEvent.Dispose();
+				_pendingAcknowledgementSignal?.Dispose();
 				_sharedTokenSource.Dispose();
 			}
 			finally
