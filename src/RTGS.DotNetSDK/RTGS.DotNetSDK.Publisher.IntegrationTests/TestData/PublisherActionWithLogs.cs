@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using RTGS.DotNetSDK.Publisher.IntegrationTests.Logging;
+using Serilog.Events;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using RTGS.DotNetSDK.Publisher.IntegrationTests.Logging;
-using Serilog.Events;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 {
