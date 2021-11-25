@@ -1,27 +1,27 @@
 ﻿namespace RTGS.DotNetSDK.Publisher
 {
 	/// <summary>
-	/// The SendResult enum
+	/// Represents the result of a message sent to RTGS.
 	/// </summary>
 	public enum SendResult
 	{
 		/// <summary>
-		/// Unknown result
+		/// The result cannot be determined.
 		/// </summary>
 		Unknown = 0,
 
 		/// <summary>
-		/// Success result
+		/// The message was sent successfully.
 		/// </summary>
 		Success = 1,
 
 		/// <summary>
-		/// Timeout result
+		/// The send operation exceeded the configured duration.
 		/// </summary>
 		Timeout = 2,
 
 		/// <summary>
-		/// ServerError result
+		/// An error occurred whike sending the message.
 		/// </summary>
 		ServerError = 3,
 	}

@@ -3,7 +3,7 @@
 namespace RTGS.DotNetSDK.Publisher.Messages
 {
 	/// <summary>
-	/// The EarmarkConfirmation class
+	/// Used to represent the message sent to RTGS to indicate that the funds have been earmarked (or not if <see cref="Success"/> = <code>false</code>)
 	/// </summary>
 	public record EarmarkConfirmation
 	{

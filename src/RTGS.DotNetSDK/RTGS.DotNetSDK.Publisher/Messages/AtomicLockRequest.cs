@@ -3,7 +3,7 @@ using RTGS.Public.Payment.V1.Pacs;
 namespace RTGS.DotNetSDK.Publisher.Messages
 {
 	/// <summary>
-	/// The AtomicLockRequest class represents the initial request to ring fence funds
+	/// The AtomicLockRequest class represents the initial request to earmark funds
 	/// </summary>
 	public record AtomicLockRequest
 	{
@@ -33,7 +33,7 @@ namespace RTGS.DotNetSDK.Publisher.Messages
 		public string SplmtryData { get; init; }
 
 		/// <summary>
-		/// End to end id
+		/// End to end id, typically a GUID used to correlate an AtomicLockRequest with its LockResponse
 		/// </summary>
 		public string EndToEndId { get; init; }
 	}

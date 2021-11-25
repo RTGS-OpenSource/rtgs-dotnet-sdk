@@ -3,7 +3,7 @@
 namespace RTGS.DotNetSDK.Publisher.Messages
 {
 	/// <summary>
-	/// The UpdateLedgerRequest class
+	/// Represents the message sent to RTGS to indicate a change to the available funds of a bank.
 	/// </summary>
 	public class UpdateLedgerRequest
 	{
@@ -13,12 +13,12 @@ namespace RTGS.DotNetSDK.Publisher.Messages
 		public string IBAN { get; init; }
 
 		/// <summary>
-		/// Bank Rtgs Id
+		/// Bank Rtgs Id - Unique identifier of the bank whose available funds have changed.
 		/// </summary>
 		public GenericFinancialIdentification1 BkToRtgsId { get; init; }
 
 		/// <summary>
-		/// Amount
+		/// The amount now available, represented by units and nano units.
 		/// </summary>
 		public ProtoDecimal Amt { get; init; }
 	}

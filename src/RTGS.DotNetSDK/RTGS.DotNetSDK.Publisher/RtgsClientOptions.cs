@@ -3,7 +3,7 @@
 namespace RTGS.DotNetSDK.Publisher
 {
 	/// <summary>
-	/// The RtgsClientOptions class
+	/// Represents the options used when senging messages to RTGS via a <see cref="IRtgsPublisher"/>
 	/// </summary>
 	public record RtgsClientOptions
 	{
@@ -15,7 +15,7 @@ namespace RTGS.DotNetSDK.Publisher
 		}
 
 		/// <summary>
-		/// The bank id
+		/// Unique identifier of the bank.
 		/// </summary>
 		public string BankDid { get; }
 
@@ -25,7 +25,8 @@ namespace RTGS.DotNetSDK.Publisher
 		public Uri RemoteHostAddress { get; }
 
 		/// <summary>
-		/// The gRPC acknowledgement timeout duration (default 10 seconds)
+		/// The gRPC acknowledgement timeout duration (default 10 seconds).
+		/// If the time taken to send messages to RTGS exceeds this duration, the transaction will fail with an error.
 		/// </summary>
 		public TimeSpan WaitForAcknowledgementDuration { get; }
 
@@ -81,7 +82,7 @@ namespace RTGS.DotNetSDK.Publisher
 			/// Builds a <see cref="RtgsClientOptions"/> object.
 			/// </summary>
 			/// <returns>The built RtgsClientOptions</returns>
-			public RtgsClientOptions Build() => new RtgsClientOptions(this);
+			public RtgsClientOptions Build() => new (this);
 		}
 	}
 }
