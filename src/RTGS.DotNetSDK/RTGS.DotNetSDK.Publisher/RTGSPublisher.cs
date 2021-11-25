@@ -72,6 +72,7 @@ namespace RTGS.DotNetSDK.Publisher
 				{
 					var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
 					_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
+
 					_waitForAcknowledgementsTask = WaitForAcknowledgements();
 				}
 
@@ -117,13 +118,20 @@ namespace RTGS.DotNetSDK.Publisher
 
 		private async Task WaitForAcknowledgements()
 		{
-			await foreach (var acknowledgement in _toRtgsCall.ResponseStream.ReadAllAsync())
+			try
 			{
-				if (acknowledgement.Header.CorrelationId == _acknowledgementContext?.CorrelationId)
+				await foreach (var acknowledgement in _toRtgsCall.ResponseStream.ReadAllAsync())
 				{
-					_acknowledgement = acknowledgement;
-					_acknowledgementContext?.Release();
+					if (acknowledgement.Header.CorrelationId == _acknowledgementContext?.CorrelationId)
+					{
+						_acknowledgement = acknowledgement;
+						_acknowledgementContext?.Release();
+					}
 				}
+			}
+			catch (RpcException)
+			{
+				// Squash, this exception will be handled via RequestStream exception handling.
 			}
 		}
 
