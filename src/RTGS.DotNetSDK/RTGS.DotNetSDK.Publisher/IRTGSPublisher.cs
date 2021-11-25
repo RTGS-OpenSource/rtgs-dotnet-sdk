@@ -58,6 +58,9 @@ namespace RTGS.DotNetSDK.Publisher
 		/// <param name="message">The FIToFICustomerCreditTransferV10 message</param>
 		/// <param name="cancellationToken">A cancellation token</param>
 		/// <returns>The result of the operation</returns>
+		/// <remarks>
+		/// The <c>FIToFICustomerCreditTransferV10</c> type is from nuget package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
+		/// </remarks>
 		Task<SendResult> SendPayawayCreateAsync(FIToFICustomerCreditTransferV10 message, CancellationToken cancellationToken = default);
 
 		/// <summary>
@@ -66,6 +69,9 @@ namespace RTGS.DotNetSDK.Publisher
 		/// <param name="message">The BankToCustomerDebitCreditNotificationV09 message</param>
 		/// <param name="cancellationToken">A cancellation token</param>
 		/// <returns>The result of the operation</returns>
+		/// <remarks>
+		/// The <c>BankToCustomerDebitCreditNotificationV09</c> type is from nuget package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
+		/// </remarks>
 		Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message, CancellationToken cancellationToken = default);
 	}
 }

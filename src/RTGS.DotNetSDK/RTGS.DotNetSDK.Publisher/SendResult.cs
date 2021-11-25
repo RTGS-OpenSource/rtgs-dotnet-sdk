@@ -21,7 +21,7 @@
 		Timeout = 2,
 
 		/// <summary>
-		/// An error occurred whike sending the message.
+		/// An error occurred while sending the message.
 		/// </summary>
 		ServerError = 3,
 	}

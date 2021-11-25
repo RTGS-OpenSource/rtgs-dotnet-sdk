@@ -13,7 +13,7 @@ namespace RTGS.DotNetSDK.Publisher.Messages
 		public Guid LockId { get; init; }
 
 		/// <summary>
-		/// True when successful, false otherwise
+		/// True to confirm, false otherwise
 		/// </summary>
 		public bool Success { get; init; }
 	}

@@ -8,12 +8,12 @@ namespace RTGS.DotNetSDK.Publisher.Messages
 	public record EarmarkConfirmation
 	{
 		/// <summary>
-		/// The lock Id
+		/// The lock Id for which to initiate earmark confirmation.
 		/// </summary>
 		public Guid LockId { get; init; }
 
 		/// <summary>
-		/// True when successful, false otherwise
+		/// True to confirm, false otherwise
 		/// </summary>
 		public bool Success { get; init; }
 	}

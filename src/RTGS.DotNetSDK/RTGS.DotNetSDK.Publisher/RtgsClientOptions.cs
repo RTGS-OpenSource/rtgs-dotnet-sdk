@@ -15,7 +15,7 @@ namespace RTGS.DotNetSDK.Publisher
 		}
 
 		/// <summary>
-		/// Unique identifier of the bank.
+		/// Identifier of the bank.
 		/// </summary>
 		public string BankDid { get; }
 
@@ -26,7 +26,7 @@ namespace RTGS.DotNetSDK.Publisher
 
 		/// <summary>
 		/// The gRPC acknowledgement timeout duration (default 10 seconds).
-		/// If the time taken to send messages to RTGS exceeds this duration, the transaction will fail with an error.
+		/// If the time taken to send messages to RTGS exceeds this duration, the request will fail with an error.
 		/// </summary>
 		public TimeSpan WaitForAcknowledgementDuration { get; }
 
