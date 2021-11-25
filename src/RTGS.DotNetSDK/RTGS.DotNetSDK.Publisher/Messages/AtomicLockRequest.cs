@@ -3,17 +3,17 @@ using RTGS.Public.Payment.V1.Pacs;
 namespace RTGS.DotNetSDK.Publisher.Messages
 {
 	/// <summary>
-	/// The AtomicLockRequest class
+	/// The AtomicLockRequest class represents the initial request to ring fence funds
 	/// </summary>
 	public record AtomicLockRequest
 	{
 		/// <summary>
-		/// Bank rtgs id
+		/// Bank rtgs id, the identifier of the bank initiating the transaction.
 		/// </summary>
 		public GenericFinancialIdentification1 DbtrToRtgsId { get; init; }
 
 		/// <summary>
-		/// Creditor amount
+		/// Creditor amount - describes the value and currency of the transfer.
 		/// </summary>
 		public ActiveCurrencyAndAmount CdtrAmt { get; init; }
 

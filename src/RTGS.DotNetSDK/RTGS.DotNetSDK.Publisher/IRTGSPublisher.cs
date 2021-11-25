@@ -8,12 +8,12 @@ using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 namespace RTGS.DotNetSDK.Publisher
 {
 	/// <summary>
-	/// The IRtgsPublisher interface
+	/// The IRtgsPublisher interface, implementations of this interface are responsible for publishing messages to the RTGS platform
 	/// </summary>
 	public interface IRtgsPublisher : IAsyncDisposable
 	{
 		/// <summary>
-		/// Sends an AtomicLockRequest
+		/// Sends an <see cref="AtomicLockRequest"/> to initiate a transaction.
 		/// </summary>
 		/// <param name="message">The AtomicLockRequest message</param>
 		/// <param name="cancellationToken">A cancellation token</param>
@@ -21,7 +21,7 @@ namespace RTGS.DotNetSDK.Publisher
 		Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Sends an AtomicTransferRequest
+		/// Sends an <see cref="AtomicTransferRequest"/> to invoke transfer of funds.
 		/// </summary>
 		/// <param name="message">The AtomicTransferRequest message</param>
 		/// <param name="cancellationToken">A cancellation token</param>
@@ -29,7 +29,7 @@ namespace RTGS.DotNetSDK.Publisher
 		Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequest message, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Sends an EarmarkConfirmation request
+		/// Sends an <see cref="EarmarkConfirmation"/> to confirm funds have been earmarked.
 		/// </summary>
 		/// <param name="message">The EarmarkConfirmation message</param>
 		/// <param name="cancellationToken">A cancellation token</param>
@@ -37,7 +37,7 @@ namespace RTGS.DotNetSDK.Publisher
 		Task<SendResult> SendEarmarkConfirmationAsync(EarmarkConfirmation message, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Sends a TransferConfirmation request
+		/// Sends a <see cref="TransferConfirmation"/> request to confirm fund transfer.
 		/// </summary>
 		/// <param name="message">The TransferConfirmation message</param>
 		/// <param name="cancellationToken">A cancellation token</param>
@@ -45,7 +45,7 @@ namespace RTGS.DotNetSDK.Publisher
 		Task<SendResult> SendTransferConfirmationAsync(TransferConfirmation message, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Sends an UpdateLedgerRequest
+		/// Sends an <see cref="UpdateLedgerRequest"/> to notify RTGS of a change to available funds.
 		/// </summary>
 		/// <param name="message">The UpdateLedgerRequest message</param>
 		/// <param name="cancellationToken">A cancellation token</param>
@@ -53,7 +53,7 @@ namespace RTGS.DotNetSDK.Publisher
 		Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequest message, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Sends a FIToFICustomerCreditTransferV10 request
+		/// Sends a FIToFICustomerCreditTransferV10 (payaway) transaction request.
 		/// </summary>
 		/// <param name="message">The FIToFICustomerCreditTransferV10 message</param>
 		/// <param name="cancellationToken">A cancellation token</param>
@@ -61,7 +61,7 @@ namespace RTGS.DotNetSDK.Publisher
 		Task<SendResult> SendPayawayCreateAsync(FIToFICustomerCreditTransferV10 message, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Sends a BankToCustomerDebitCreditNotificationV09 request
+		/// Sends a BankToCustomerDebitCreditNotificationV09 (payaway) confirmation request
 		/// </summary>
 		/// <param name="message">The BankToCustomerDebitCreditNotificationV09 message</param>
 		/// <param name="cancellationToken">A cancellation token</param>

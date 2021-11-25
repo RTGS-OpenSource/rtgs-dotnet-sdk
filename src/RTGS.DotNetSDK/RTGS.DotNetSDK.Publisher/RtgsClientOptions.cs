@@ -18,12 +18,14 @@ namespace RTGS.DotNetSDK.Publisher
 		/// The bank id
 		/// </summary>
 		public string BankDid { get; }
+
 		/// <summary>
 		/// Grpc server endpoint
 		/// </summary>
 		public Uri RemoteHostAddress { get; }
+
 		/// <summary>
-		/// Acknowledgement timeout duration
+		/// The gRPC acknowledgement timeout duration (default 10 seconds)
 		/// </summary>
 		public TimeSpan WaitForAcknowledgementDuration { get; }
 
@@ -65,7 +67,7 @@ namespace RTGS.DotNetSDK.Publisher
 			}
 
 			/// <summary>
-			/// Adds acknowledgement duration
+			/// Adds gRPC acknowledgement duration
 			/// </summary>
 			/// <param name="duration">The duration</param>
 			/// <returns>The builder</returns>
@@ -76,9 +78,9 @@ namespace RTGS.DotNetSDK.Publisher
 			}
 
 			/// <summary>
-			/// Builds a client options object.
+			/// Builds a <see cref="RtgsClientOptions"/> object.
 			/// </summary>
-			/// <returns>The builder</returns>
+			/// <returns>The built RtgsClientOptions</returns>
 			public RtgsClientOptions Build() => new RtgsClientOptions(this);
 		}
 	}
