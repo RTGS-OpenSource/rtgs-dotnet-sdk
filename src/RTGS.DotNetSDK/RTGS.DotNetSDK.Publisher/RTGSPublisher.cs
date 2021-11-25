@@ -72,7 +72,6 @@ namespace RTGS.DotNetSDK.Publisher
 				{
 					var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
 					_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
-
 					_waitForAcknowledgementsTask = WaitForAcknowledgements();
 				}
 
