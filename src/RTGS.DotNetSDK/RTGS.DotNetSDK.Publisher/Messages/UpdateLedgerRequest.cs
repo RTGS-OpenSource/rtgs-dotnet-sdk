@@ -3,7 +3,8 @@
 namespace RTGS.DotNetSDK.Publisher.Messages
 {
 	/// <summary>
-	/// Represents the message sent to RTGS to indicate an update to the available funds of a bank.
+	/// Represents the message sent to RTGS to indicate a change to the available funds of a bank.
+	/// TODO : Is the amount a delta (+/-) or total 
 	/// </summary>
 	public class UpdateLedgerRequest
 	{
