@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
+using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
@@ -178,10 +179,30 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 			[Theory]
 			[ClassData(typeof(PublisherActionFailedAcknowledgementLogsData))]
-			public async Task WhenSendingMessageAndFailedAcknowledgementReceived_ThenLogInformation<TRequest>(PublisherActionWithLogs<TRequest> publisherAction)
+			public async Task WhenSendingMessageAndFailedAcknowledgementReceived_ThenLog<TRequest>(PublisherActionWithLogs<TRequest> publisherAction)
 			{
 				_toRtgsMessageHandler.SetupForMessage(handler =>
 					handler.ReturnExpectedAcknowledgementWithFailure());
+
+				await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+
+				using var _ = new AssertionScope();
+
+				var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
+				informationLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
+
+				var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
+				warningLogs.Should().BeEmpty();
+
+				var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
+				errorLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Error), options => options.WithStrictOrdering());
+			}
+
+			[Theory]
+			[ClassData(typeof(PublisherActionRpcExceptionLogsData))]
+			public async Task WhenSendingMessageAndRpcExceptionReceived_ThenLog<TRequest>(PublisherActionWithLogs<TRequest> publisherAction)
+			{
+				_toRtgsMessageHandler.SetupForMessage(handler => handler.ThrowRpcException(StatusCode.Unavailable));
 
 				await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
@@ -260,13 +281,13 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 			[Theory]
 			[ClassData(typeof(PublisherActionData))]
-			public async Task WhenBankMessageApiReturnsUnsuccessfulAcknowledgement_ThenReturnServerError<TRequest>(PublisherAction<TRequest> publisherAction)
+			public async Task WhenBankMessageApiReturnsUnsuccessfulAcknowledgement_ThenReturnRejected<TRequest>(PublisherAction<TRequest> publisherAction)
 			{
 				_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithFailure());
 
 				var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
-				sendResult.Should().Be(SendResult.ServerError);
+				sendResult.Should().Be(SendResult.Rejected);
 			}
 
 			[Theory]
@@ -346,7 +367,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 			[Theory]
 			[ClassData(typeof(PublisherActionData))]
-			public async Task WhenBankMessageApiReturnsUnexpectedAcknowledgementBeforeFailureAcknowledgement_ThenReturnServerError<TRequest>(PublisherAction<TRequest> publisherAction)
+			public async Task WhenBankMessageApiReturnsUnexpectedAcknowledgementBeforeFailureAcknowledgement_ThenReturnRejected<TRequest>(PublisherAction<TRequest> publisherAction)
 			{
 				_toRtgsMessageHandler.SetupForMessage(handler =>
 				{
@@ -356,12 +377,12 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 				var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
-				sendResult.Should().Be(SendResult.ServerError);
+				sendResult.Should().Be(SendResult.Rejected);
 			}
 
 			[Theory]
 			[ClassData(typeof(PublisherActionData))]
-			public async Task WhenBankMessageApiReturnsFailureAcknowledgementBeforeUnexpectedAcknowledgement_ThenReturnServerError<TRequest>(PublisherAction<TRequest> publisherAction)
+			public async Task WhenBankMessageApiReturnsFailureAcknowledgementBeforeUnexpectedAcknowledgement_ThenReturnRejected<TRequest>(PublisherAction<TRequest> publisherAction)
 			{
 				_toRtgsMessageHandler.SetupForMessage(handler =>
 				{
@@ -371,12 +392,12 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 				var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
-				sendResult.Should().Be(SendResult.ServerError);
+				sendResult.Should().Be(SendResult.Rejected);
 			}
 
 			[Theory]
 			[ClassData(typeof(PublisherActionData))]
-			public async Task WhenBankMessageApiReturnsSuccessWrappedByUnexpectedFailureAcknowledgements_ThenReturnServerError<TRequest>(PublisherAction<TRequest> publisherAction)
+			public async Task WhenBankMessageApiReturnsSuccessWrappedByUnexpectedFailureAcknowledgements_ThenReturnSuccess<TRequest>(PublisherAction<TRequest> publisherAction)
 			{
 				_toRtgsMessageHandler.SetupForMessage(handler =>
 				{
@@ -392,12 +413,25 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 			[Theory]
 			[ClassData(typeof(PublisherActionData))]
-			public async Task WhenBankMessageApiReturnsSuccessForSecondMessageOnly_ThenSeeSuccess<TRequest>(PublisherAction<TRequest> publisherAction)
+			public async Task WhenBankMessageApiReturnsSuccessForSecondMessageOnly_ThenDoNotTimeout<TRequest>(PublisherAction<TRequest> publisherAction)
 			{
-				// TODO Name this??!?!?!?!
-
 				var sendResult1 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 				sendResult1.Should().Be(SendResult.Timeout);
+
+				_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+				var sendResult2 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+				sendResult2.Should().Be(SendResult.Success);
+			}
+
+			[Theory]
+			[ClassData(typeof(PublisherActionData))]
+			public async Task WhenBankMessageApiThrowsExceptionForFirstMessage_ThenStillHandleSecondMessage<TRequest>(PublisherAction<TRequest> publisherAction)
+			{
+				_toRtgsMessageHandler.SetupForMessage(handler => handler.ThrowRpcException(StatusCode.Unknown));
+
+				var sendResult1 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+				sendResult1.Should().Be(SendResult.ServerError);
 
 				_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 

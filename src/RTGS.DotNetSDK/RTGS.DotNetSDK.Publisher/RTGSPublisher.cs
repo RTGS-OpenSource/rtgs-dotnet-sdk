@@ -23,7 +23,6 @@ namespace RTGS.DotNetSDK.Publisher
 		private AcknowledgementContext _acknowledgementContext;
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
-		private RtgsMessageAcknowledgement _acknowledgement;
 		private bool _disposed;
 
 		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options, ILogger<RtgsPublisher> logger)
@@ -68,41 +67,17 @@ namespace RTGS.DotNetSDK.Publisher
 			{
 				linkedTokenSource.Token.ThrowIfCancellationRequested();
 
-				if (_toRtgsCall is null)
-				{
-					var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
-					_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
-					_waitForAcknowledgementsTask = WaitForAcknowledgements();
-				}
+				await EnsureRtgsCallSetup<T>();
 
 				_acknowledgementContext = new AcknowledgementContext();
 
-				_logger.LogInformation("Sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+				await SendMessage(message, instructionType, callingMethod);
 
-				await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
-				{
-					Data = JsonSerializer.Serialize(message),
-					Header = new RtgsMessageHeader
-					{
-						InstructionType = instructionType,
-						CorrelationId = _acknowledgementContext.CorrelationId
-					}
-				});
+				await _acknowledgementContext.WaitAsync(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
 
-				_logger.LogInformation("Sent {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+				LogAcknowledgementResult<T>(callingMethod);
 
-				var expectedAcknowledgementReceived = await _acknowledgementContext.WaitAsync(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
-
-				if (!expectedAcknowledgementReceived)
-				{
-					_logger.LogError("Timed out waiting for {MessageType} acknowledgement from RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
-					return SendResult.Timeout;
-				}
-
-				var logLevel = _acknowledgement!.Success ? LogLevel.Information : LogLevel.Error;
-				_logger.Log(logLevel, "Received {MessageType} acknowledgement (success: {Success}) from RTGS ({CallingMethod})", typeof(T).Name, _acknowledgement!.Success, callingMethod);
-
-				return _acknowledgement!.Success ? SendResult.Success : SendResult.ServerError;
+				return _acknowledgementContext.Status;
 			}
 			finally
 			{
@@ -115,6 +90,22 @@ namespace RTGS.DotNetSDK.Publisher
 			}
 		}
 
+		private async Task EnsureRtgsCallSetup<T>()
+		{
+			if (_toRtgsCall is null)
+			{
+				var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
+				_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
+
+				if (_waitForAcknowledgementsTask is not null)
+				{
+					await _waitForAcknowledgementsTask;
+				}
+
+				_waitForAcknowledgementsTask = WaitForAcknowledgements();
+			}
+		}
+
 		private async Task WaitForAcknowledgements()
 		{
 			try
@@ -123,14 +114,67 @@ namespace RTGS.DotNetSDK.Publisher
 				{
 					if (acknowledgement.Header.CorrelationId == _acknowledgementContext?.CorrelationId)
 					{
-						_acknowledgement = acknowledgement;
-						_acknowledgementContext?.Release();
+						_acknowledgementContext?.Release(acknowledgement);
 					}
 				}
 			}
-			catch (RpcException)
+			catch (RpcException ex)
 			{
-				// Squash, this exception will be handled via RequestStream exception handling.
+				if (_acknowledgementContext is null)
+				{
+					// TODO: log?
+				}
+
+				await _toRtgsCall.RequestStream.CompleteAsync();
+
+				_toRtgsCall.Dispose();
+				_toRtgsCall = null;
+
+				_acknowledgementContext?.Release(ex);
+			}
+		}
+
+		private async Task SendMessage<T>(T message, string instructionType, string callingMethod)
+		{
+			_logger.LogInformation("Sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+
+			await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
+			{
+				Data = JsonSerializer.Serialize(message),
+				Header = new RtgsMessageHeader
+				{
+					InstructionType = instructionType,
+					CorrelationId = _acknowledgementContext.CorrelationId
+				}
+			});
+
+			_logger.LogInformation("Sent {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+		}
+
+		private void LogAcknowledgementResult<T>(string callingMethod)
+		{
+			switch (_acknowledgementContext.Status)
+			{
+				case SendResult.Success:
+					_logger.LogInformation("Received {MessageType} acknowledgement (acknowledged) from RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+					break;
+
+				case SendResult.Timeout:
+					_logger.LogError("Timed out waiting for {MessageType} acknowledgement from RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+					break;
+
+				case SendResult.Rejected:
+					_logger.LogError("Received {MessageType} acknowledgement (rejected) from RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+					break;
+
+				case SendResult.ServerError:
+					_logger.LogError(_acknowledgementContext.RpcException, "Error received when sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+					break;
+
+				case SendResult.Unknown:
+				default:
+					// TODO: log??
+					break;
 			}
 		}
 
@@ -188,12 +232,30 @@ namespace RTGS.DotNetSDK.Publisher
 			}
 
 			public string CorrelationId { get; }
+			public RpcException RpcException { get; private set; }
+			public SendResult Status { get; private set; }
 
-			public Task<bool> WaitAsync(TimeSpan timeout, CancellationToken cancellationToken)
-				=> _acknowledgementSignal.WaitAsync(timeout, cancellationToken);
+			public async Task WaitAsync(TimeSpan timeout, CancellationToken cancellationToken)
+			{
+				var enteredSemaphore = await _acknowledgementSignal.WaitAsync(timeout, cancellationToken);
+				if (!enteredSemaphore)
+				{
+					Status = SendResult.Timeout;
+				}
+			}
 
-			public void Release()
-				=> _acknowledgementSignal.Release();
+			public void Release(RtgsMessageAcknowledgement acknowledgement)
+			{
+				_acknowledgementSignal.Release();
+				Status = acknowledgement.Success ? SendResult.Success : SendResult.Rejected;
+			}
+
+			public void Release(RpcException exception)
+			{
+				RpcException = exception;
+				_acknowledgementSignal.Release();
+				Status = SendResult.ServerError;
+			}
 
 			public void Dispose()
 				=> _acknowledgementSignal.Dispose();

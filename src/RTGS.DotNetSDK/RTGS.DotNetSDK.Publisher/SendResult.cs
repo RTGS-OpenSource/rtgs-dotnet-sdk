@@ -19,10 +19,7 @@
 		/// The send operation exceeded the configured duration.
 		/// </summary>
 		Timeout = 2,
-
-		/// <summary>
-		/// An error occurred while sending the message.
-		/// </summary>
-		ServerError = 3,
+		Rejected = 3,
+		ServerError = 4,
 	}
 }
