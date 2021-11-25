@@ -41,6 +41,7 @@ namespace RTGS.DotNetSDK.Publisher.Messages
 
 		/// <summary>
 		/// Supplementary data
+		/// <br/>This field is optional 
 		/// </summary>
 		public string SplmtryData { get; init; }    
 
