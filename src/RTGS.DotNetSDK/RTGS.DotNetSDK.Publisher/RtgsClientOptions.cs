@@ -82,7 +82,7 @@ namespace RTGS.DotNetSDK.Publisher
 			/// Builds a <see cref="RtgsClientOptions"/> object.
 			/// </summary>
 			/// <returns>The built RtgsClientOptions</returns>
-			public RtgsClientOptions Build() => new (this);
+			public RtgsClientOptions Build() => new(this);
 		}
 	}
 }

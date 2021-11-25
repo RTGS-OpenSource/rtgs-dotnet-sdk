@@ -43,7 +43,7 @@ namespace RTGS.DotNetSDK.Publisher.Messages
 		/// Supplementary data
 		/// <br/>This field is optional 
 		/// </summary>
-		public string SplmtryData { get; init; }    
+		public string SplmtryData { get; init; }
 
 		/// <summary>
 		/// End to end id, typically a GUID used to correlate an AtomicLockRequest with its LockResponse
