@@ -36,6 +36,16 @@ jobs:
           minimum_coverage: 70
           fail_below_threshold: true
           show_branch: true
+  generate-docs:
+    needs: build-test-and-publish
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "5.0.x"
       - name: Setup DocFX
         uses: crazy-max/ghaction-chocolatey@v1
         with:
