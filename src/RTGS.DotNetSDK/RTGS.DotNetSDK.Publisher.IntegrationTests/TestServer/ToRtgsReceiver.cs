@@ -10,26 +10,29 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 	public class ToRtgsReceiver
 	{
 		private Action _messageReceivedAction;
-		private Action _connectionCreatedAction;
 
 		public ConcurrentBag<ToRtgsConnectionInfo> Connections { get; } = new();
 
 		public int NumberOfConnections => Connections.Count;
 
+		public bool ThrowOnConnection { get; set; }
+
 		public ToRtgsConnectionInfo SetupConnectionInfo(Metadata headers)
 		{
+			// TODO: Maybe queue up server side behaviour like the message handlers so this can ...
+			// ... concurrently dequeue behaviours to use so it doesn't break tests when trying to ...
+			// ... access the one instance of an action
+			if (ThrowOnConnection)
+			{
+				throw new Exception();
+			}
+
 			var connectionInfo = new ToRtgsConnectionInfo(headers, this);
 
 			Connections.Add(connectionInfo);
 
-			// TODO: Using this breaks all tests - seems like a concurrency issue
-			//_connectionCreatedAction?.Invoke();
-
 			return connectionInfo;
 		}
-
-		public void RegisterOnConnectionCreated(Action action) =>
-			_connectionCreatedAction = action;
 
 		public void RegisterOnMessageReceived(Action action) =>
 			_messageReceivedAction = action;

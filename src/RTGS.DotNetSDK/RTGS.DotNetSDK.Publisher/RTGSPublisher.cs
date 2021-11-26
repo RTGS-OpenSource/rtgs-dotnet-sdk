@@ -24,6 +24,7 @@ namespace RTGS.DotNetSDK.Publisher
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
 		private bool _disposed;
+		private bool _recycleConnection;
 
 		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options, ILogger<RtgsPublisher> logger)
 		{
@@ -92,6 +93,14 @@ namespace RTGS.DotNetSDK.Publisher
 
 		private async Task EnsureRtgsCallSetup<T>()
 		{
+			if (_recycleConnection)
+			{
+				_toRtgsCall?.Dispose();
+				_toRtgsCall = null;
+
+				_recycleConnection = false;
+			}
+
 			if (_toRtgsCall is null)
 			{
 				var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
@@ -127,8 +136,7 @@ namespace RTGS.DotNetSDK.Publisher
 
 				await _toRtgsCall.RequestStream.CompleteAsync();
 
-				_toRtgsCall.Dispose();
-				_toRtgsCall = null;
+				_recycleConnection = true;
 
 				_acknowledgementContext?.Release(ex);
 			}
@@ -223,7 +231,7 @@ namespace RTGS.DotNetSDK.Publisher
 
 		private sealed class AcknowledgementContext : IDisposable
 		{
-			private readonly SemaphoreSlim _acknowledgementSignal;
+			private SemaphoreSlim _acknowledgementSignal;
 
 			public AcknowledgementContext()
 			{
@@ -246,19 +254,22 @@ namespace RTGS.DotNetSDK.Publisher
 
 			public void Release(RtgsMessageAcknowledgement acknowledgement)
 			{
-				_acknowledgementSignal.Release();
+				_acknowledgementSignal?.Release();
 				Status = acknowledgement.Success ? SendResult.Success : SendResult.Rejected;
 			}
 
 			public void Release(RpcException exception)
 			{
 				RpcException = exception;
-				_acknowledgementSignal.Release();
+				_acknowledgementSignal?.Release();
 				Status = SendResult.ServerError;
 			}
 
 			public void Dispose()
-				=> _acknowledgementSignal.Dispose();
+			{
+				_acknowledgementSignal.Dispose();
+				_acknowledgementSignal = null;
+			}
 		}
 	}
 }

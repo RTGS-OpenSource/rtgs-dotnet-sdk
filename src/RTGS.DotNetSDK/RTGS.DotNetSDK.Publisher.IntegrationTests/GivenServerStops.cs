@@ -16,7 +16,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		[Fact]
 		public async Task WhenSendingMessage_ThenRpcExceptionThrown()
 		{
-			// TODO: This sometimes throws null reference exception when _toRtgsCall is breifly null
+			// TODO: This sometimes doesn't throw the expected RpcException
 
 			using var server = new GrpcTestServer();
 			var serverUri = await server.StartAsync();

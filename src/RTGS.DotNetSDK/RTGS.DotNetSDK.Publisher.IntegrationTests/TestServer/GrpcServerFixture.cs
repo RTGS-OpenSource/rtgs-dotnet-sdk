@@ -45,6 +45,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 		{
 			var toRtgsReceiver = _server.Services.GetRequiredService<ToRtgsReceiver>();
 			toRtgsReceiver.Connections.Clear();
+			toRtgsReceiver.ThrowOnConnection = false;
 
 			var toRtgsMessageHandler = _server.Services.GetRequiredService<ToRtgsMessageHandler>();
 			toRtgsMessageHandler.Clear();

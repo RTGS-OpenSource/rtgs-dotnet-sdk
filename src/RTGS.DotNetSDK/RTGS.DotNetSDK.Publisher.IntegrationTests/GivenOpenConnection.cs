@@ -298,7 +298,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 					handler.ReturnExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1))));
 
 				var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
-
 				sendResult.Should().Be(SendResult.Timeout);
 			}
 
@@ -439,30 +438,20 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				sendResult2.Should().Be(SendResult.Success);
 			}
 
-			[Theory]
-			[ClassData(typeof(PublisherActionData))]
-			public async Task WhenBankMessageApiThrowsExceptionOnConnectionAndSendMessage_ThenServerError<TRequest>(PublisherAction<TRequest> publisherAction)
-			{
-				var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-
-				receiver.RegisterOnConnectionCreated(() => throw new OutOfMemoryException("Something didn't work"));
-
-				var sendResult1 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
-				sendResult1.Should().Be(SendResult.ServerError);
-			}
-
 			[Fact]
 			public async Task WhenBankMessageApiThrowsExceptionOnConnectionAndSendingBigMessage_ThenSeeCancellationInRpcException()
 			{
+				// TODO: Move this test to GivenServerStops?
+
 				var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
-				receiver.RegisterOnConnectionCreated(() => throw new OutOfMemoryException("Something didn't work"));
+				receiver.ThrowOnConnection = true;
 
 				await FluentActions
 					.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest { EndToEndId = new string('e', 100_000) }))
 					.Should()
-					.ThrowAsync<RpcException>()
-					.WithMessage(new Status(StatusCode.Cancelled, string.Empty).ToString());
+					.ThrowAsync<RpcException>();
+					//.WithMessage(new Status(StatusCode.Cancelled, string.Empty).ToString());
 			}
 		}
 
