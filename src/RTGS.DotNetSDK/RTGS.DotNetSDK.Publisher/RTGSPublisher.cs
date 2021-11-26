@@ -172,7 +172,7 @@ namespace RTGS.DotNetSDK.Publisher
 
 		private sealed class AcknowledgementContext : IDisposable
 		{
-			private readonly SemaphoreSlim _acknowledgementSignal;
+			private SemaphoreSlim _acknowledgementSignal;
 
 			public AcknowledgementContext()
 			{
@@ -183,13 +183,16 @@ namespace RTGS.DotNetSDK.Publisher
 			public string CorrelationId { get; }
 
 			public Task<bool> WaitAsync(TimeSpan timeout, CancellationToken cancellationToken)
-				=> _acknowledgementSignal.WaitAsync(timeout, cancellationToken);
+				=> _acknowledgementSignal?.WaitAsync(timeout, cancellationToken);
 
 			public void Release()
-				=> _acknowledgementSignal.Release();
+				=> _acknowledgementSignal?.Release();
 
 			public void Dispose()
-				=> _acknowledgementSignal.Dispose();
+			{
+				_acknowledgementSignal.Dispose();
+				_acknowledgementSignal = null;
+			}
 		}
 	}
 }
