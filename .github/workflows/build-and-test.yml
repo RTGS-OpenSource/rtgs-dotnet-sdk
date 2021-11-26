@@ -37,7 +37,7 @@ jobs:
           fail_below_threshold: true
           show_branch: true
   generate-docs:
-    if: github.ref == ‘refs/heads/main’ && github.event_name == ‘push’
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: build-test-and-publish
     runs-on: windows-latest
     steps:
