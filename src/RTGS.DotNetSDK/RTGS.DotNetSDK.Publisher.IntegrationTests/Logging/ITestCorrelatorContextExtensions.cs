@@ -14,8 +14,11 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.Logging
 				.GetLogEventsFromContextGuid(testCorrelatorContext.Guid)
 				.Where(logEvent => GetSourceContext(logEvent) == "RTGS.DotNetSDK.Publisher.RtgsPublisher")
 				.Where(logEvent => logEvent.Level == logEventLevel)
-				.Select(RenderWithoutQuotes)
-				.Select(message => new LogEntry(message, logEventLevel));
+				.Select(logEvent =>
+				{
+					var message = RenderWithoutQuotes(logEvent);
+					return new LogEntry(message, logEventLevel, logEvent.Exception?.GetType());
+				});
 
 		private static string GetSourceContext(LogEvent logEvent)
 		{

@@ -92,8 +92,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 					InstructionType = original.InstructionType
 				};
 
-			public void ThrowRpcException(StatusCode statusCode) =>
-				GenerateAcknowledgements.Add(_ => throw new RpcException(new Status(statusCode, "test")));
+			public void ThrowRpcException(StatusCode statusCode, string detail) =>
+				GenerateAcknowledgements.Add(_ => throw new RpcException(new Status(statusCode, detail)));
 		}
 
 		public interface ISetupForMessageOptions
@@ -103,7 +103,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 			void ReturnExpectedAcknowledgementWithSuccess();
 			void ReturnUnexpectedAcknowledgementWithSuccess();
 			void ReturnExpectedAcknowledgementWithDelay(TimeSpan timeSpan);
-			void ThrowRpcException(StatusCode statusCode);
+			void ThrowRpcException(StatusCode statusCode, string detail);
 		}
 	}
 }

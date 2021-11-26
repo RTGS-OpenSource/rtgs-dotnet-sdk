@@ -202,7 +202,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			[ClassData(typeof(PublisherActionRpcExceptionLogsData))]
 			public async Task WhenSendingMessageAndRpcExceptionReceived_ThenLog<TRequest>(PublisherActionWithLogs<TRequest> publisherAction)
 			{
-				_toRtgsMessageHandler.SetupForMessage(handler => handler.ThrowRpcException(StatusCode.Unavailable));
+				_toRtgsMessageHandler.SetupForMessage(handler => handler.ThrowRpcException(StatusCode.Unavailable, "test"));
 
 				await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
@@ -428,7 +428,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			[ClassData(typeof(PublisherActionData))]
 			public async Task WhenBankMessageApiThrowsExceptionForFirstMessage_ThenStillHandleSecondMessage<TRequest>(PublisherAction<TRequest> publisherAction)
 			{
-				_toRtgsMessageHandler.SetupForMessage(handler => handler.ThrowRpcException(StatusCode.Unknown));
+				_toRtgsMessageHandler.SetupForMessage(handler => handler.ThrowRpcException(StatusCode.Unknown, "test"));
 
 				var sendResult1 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 				sendResult1.Should().Be(SendResult.ServerError);
