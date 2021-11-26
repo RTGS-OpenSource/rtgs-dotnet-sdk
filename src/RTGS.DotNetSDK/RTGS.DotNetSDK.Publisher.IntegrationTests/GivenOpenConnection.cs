@@ -59,6 +59,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 						.BankDid(ValidRequests.BankDid)
 						.RemoteHost(_grpcServer.ServerUri.ToString())
 						.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
+						.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
+						.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 						.Build();
 
 					_clientHost = Host.CreateDefaultBuilder()
