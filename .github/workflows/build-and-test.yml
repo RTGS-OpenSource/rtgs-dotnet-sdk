@@ -36,3 +36,15 @@ jobs:
           minimum_coverage: 70
           fail_below_threshold: true
           show_branch: true
+      - name: Setup DocFX
+        uses: crazy-max/ghaction-chocolatey@v1
+        with:
+          args: install docfx
+      - name: DocFX Build
+        run: docfx docs/docfx.json
+        continue-on-error: false
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: doc-site
+          path: "docs/_site"
