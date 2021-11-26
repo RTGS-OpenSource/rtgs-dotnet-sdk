@@ -9,7 +9,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 {
 	public class ToRtgsReceiver
 	{
-		private Action _action;
+		private Action _messageReceivedAction;
+		private Action _connectionCreatedAction;
 
 		public ConcurrentBag<ToRtgsConnectionInfo> Connections { get; } = new();
 
@@ -21,14 +22,20 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 
 			Connections.Add(connectionInfo);
 
+			// TODO: Using this breaks all tests - seems like a concurrency issue
+			//_connectionCreatedAction?.Invoke();
+
 			return connectionInfo;
 		}
 
+		public void RegisterOnConnectionCreated(Action action) =>
+			_connectionCreatedAction = action;
+
 		public void RegisterOnMessageReceived(Action action) =>
-			_action = action;
+			_messageReceivedAction = action;
 
 		private void MessageReceived() =>
-			_action?.Invoke();
+			_messageReceivedAction?.Invoke();
 
 		public class ToRtgsConnectionInfo
 		{

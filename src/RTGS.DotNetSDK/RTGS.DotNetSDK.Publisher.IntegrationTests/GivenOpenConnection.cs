@@ -438,6 +438,32 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				var sendResult2 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 				sendResult2.Should().Be(SendResult.Success);
 			}
+
+			[Theory]
+			[ClassData(typeof(PublisherActionData))]
+			public async Task WhenBankMessageApiThrowsExceptionOnConnectionAndSendMessage_ThenServerError<TRequest>(PublisherAction<TRequest> publisherAction)
+			{
+				var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+
+				receiver.RegisterOnConnectionCreated(() => throw new OutOfMemoryException("Something didn't work"));
+
+				var sendResult1 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+				sendResult1.Should().Be(SendResult.ServerError);
+			}
+
+			[Fact]
+			public async Task WhenBankMessageApiThrowsExceptionOnConnectionAndSendingBigMessage_ThenSeeCancellationInRpcException()
+			{
+				var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+
+				receiver.RegisterOnConnectionCreated(() => throw new OutOfMemoryException("Something didn't work"));
+
+				await FluentActions
+					.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest { EndToEndId = new string('e', 100_000) }))
+					.Should()
+					.ThrowAsync<RpcException>()
+					.WithMessage(new Status(StatusCode.Cancelled, string.Empty).ToString());
+			}
 		}
 
 		public class AndLongTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>
