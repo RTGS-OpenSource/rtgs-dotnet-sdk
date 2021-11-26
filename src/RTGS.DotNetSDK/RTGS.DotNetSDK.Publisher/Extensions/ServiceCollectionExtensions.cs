@@ -6,8 +6,18 @@ using RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Publisher.Extensions
 {
+	/// <summary>
+	/// ServiceCollection Extensions class
+	/// </summary>
 	public static class ServiceCollectionExtensions
 	{
+		/// <summary>
+		/// Adds <seealso cref="IRtgsPublisher"/> with supplied client configuration of <seealso cref="RtgsClientOptions"/>.
+		/// </summary>
+		/// <param name="serviceCollection">The service collection</param>
+		/// <param name="options">The options used to build the gRPC client</param>
+		/// <param name="configureGrpcClient">The client configure action (optional)</param>
+		/// <returns>The service collection so that additional calls can be chained.</returns>
 		public static IServiceCollection AddRtgsPublisher(
 			this IServiceCollection serviceCollection,
 			RtgsClientOptions options,
