@@ -13,6 +13,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 {
 	public class GivenServerStops
 	{
+		// TODO: Tom
 		[Fact]
 		public async Task WhenSendingMessage_ThenRpcExceptionThrown()
 		{

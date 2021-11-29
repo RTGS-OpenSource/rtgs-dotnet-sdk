@@ -24,7 +24,7 @@ namespace RTGS.DotNetSDK.Publisher
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
 		private bool _disposed;
-		private bool _recycleConnection;
+		private bool _resetConnection;
 
 		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options, ILogger<RtgsPublisher> logger)
 		{
@@ -93,12 +93,16 @@ namespace RTGS.DotNetSDK.Publisher
 
 		private async Task EnsureRtgsCallSetup<T>()
 		{
-			if (_recycleConnection)
+			if (_resetConnection)
 			{
-				_toRtgsCall?.Dispose();
-				_toRtgsCall = null;
+				if (_toRtgsCall is not null)
+				{
+					await _toRtgsCall.RequestStream.CompleteAsync();
+					_toRtgsCall.Dispose();
+					_toRtgsCall = null;
+				}
 
-				_recycleConnection = false;
+				_resetConnection = false;
 			}
 
 			if (_toRtgsCall is null)
@@ -134,9 +138,7 @@ namespace RTGS.DotNetSDK.Publisher
 					// TODO: log?
 				}
 
-				await _toRtgsCall.RequestStream.CompleteAsync();
-
-				_recycleConnection = true;
+				_resetConnection = true;
 
 				_acknowledgementContext?.Release(ex);
 			}
@@ -232,6 +234,7 @@ namespace RTGS.DotNetSDK.Publisher
 		private sealed class AcknowledgementContext : IDisposable
 		{
 			private SemaphoreSlim _acknowledgementSignal;
+			private SendResult? _status;
 
 			public AcknowledgementContext()
 			{
@@ -241,33 +244,50 @@ namespace RTGS.DotNetSDK.Publisher
 
 			public string CorrelationId { get; }
 			public RpcException RpcException { get; private set; }
-			public SendResult Status { get; private set; }
+			public SendResult Status => _status ?? SendResult.Unknown;
 
 			public async Task WaitAsync(TimeSpan timeout, CancellationToken cancellationToken)
 			{
+				if (_status.HasValue)
+				{
+					return;
+				}
+
 				var enteredSemaphore = await _acknowledgementSignal.WaitAsync(timeout, cancellationToken);
 				if (!enteredSemaphore)
 				{
-					Status = SendResult.Timeout;
+					_status = SendResult.Timeout;
 				}
 			}
 
 			public void Release(RtgsMessageAcknowledgement acknowledgement)
 			{
+				if (_status.HasValue)
+				{
+					return;
+				}
+
+				_status = acknowledgement.Success ? SendResult.Success : SendResult.Rejected;
+
 				_acknowledgementSignal?.Release();
-				Status = acknowledgement.Success ? SendResult.Success : SendResult.Rejected;
 			}
 
 			public void Release(RpcException exception)
 			{
+				if (_status.HasValue)
+				{
+					return;
+				}
+
+				_status = SendResult.ServerError;
 				RpcException = exception;
+
 				_acknowledgementSignal?.Release();
-				Status = SendResult.ServerError;
 			}
 
 			public void Dispose()
 			{
-				_acknowledgementSignal.Dispose();
+				_acknowledgementSignal?.Dispose();
 				_acknowledgementSignal = null;
 			}
 		}

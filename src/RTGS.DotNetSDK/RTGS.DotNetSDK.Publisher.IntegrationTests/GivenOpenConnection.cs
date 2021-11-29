@@ -438,6 +438,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				sendResult2.Should().Be(SendResult.Success);
 			}
 
+			// TODO: Tom
 			[Fact]
 			public async Task WhenBankMessageApiThrowsExceptionOnConnectionAndSendingBigMessage_ThenSeeCancellationInRpcException()
 			{
@@ -451,7 +452,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 					.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest { EndToEndId = new string('e', 100_000) }))
 					.Should()
 					.ThrowAsync<RpcException>();
-					//.WithMessage(new Status(StatusCode.Cancelled, string.Empty).ToString());
+				//.WithMessage(new Status(StatusCode.Cancelled, string.Empty).ToString());
 			}
 		}
 

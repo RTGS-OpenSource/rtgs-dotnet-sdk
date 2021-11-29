@@ -17,6 +17,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 
 		public bool ThrowOnConnection { get; set; }
 
+		// TODO: Tom
 		public ToRtgsConnectionInfo SetupConnectionInfo(Metadata headers)
 		{
 			// TODO: Maybe queue up server side behaviour like the message handlers so this can ...
