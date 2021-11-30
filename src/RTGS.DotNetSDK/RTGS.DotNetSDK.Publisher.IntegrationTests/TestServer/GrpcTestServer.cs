@@ -27,6 +27,11 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 			return new Uri($"http://localhost:{Port}");
 		}
 
+		public async Task StopAsync()
+		{
+			await _host.StopAsync();
+		}
+
 		private static IHost CreateHost()
 		{
 			var builder = new HostBuilder()
@@ -73,6 +78,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 				app.UseRouting();
 				app.UseEndpoints(endpoints => endpoints.MapGrpcService<TestPaymentService>());
 			}
-		}
+		}		
 	}
 }

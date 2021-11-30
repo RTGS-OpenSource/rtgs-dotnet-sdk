@@ -20,6 +20,5 @@
 		/// </summary>
 		Timeout = 2,
 		Rejected = 3,
-		ServerError = 4,
 	}
 }

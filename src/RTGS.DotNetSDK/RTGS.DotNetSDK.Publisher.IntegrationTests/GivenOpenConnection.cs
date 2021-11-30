@@ -25,7 +25,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 	{
 		public class AndShortTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 		{
-			private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(0.5);
+			private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(0.5) /*+ TimeSpan.FromMinutes(2)*/;
 
 			private readonly GrpcServerFixture _grpcServer;
 			private readonly ITestCorrelatorContext _serilogContext;
@@ -204,7 +204,9 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			{
 				_toRtgsMessageHandler.SetupForMessage(handler => handler.ThrowRpcException(StatusCode.Unavailable, "test"));
 
-				await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+				await FluentActions.Awaiting(() => publisherAction.InvokeSendDelegateAsync(_rtgsPublisher))
+					.Should()
+					.ThrowAsync<RpcException>();
 
 				using var _ = new AssertionScope();
 
@@ -429,31 +431,15 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			{
 				_toRtgsMessageHandler.SetupForMessage(handler => handler.ThrowRpcException(StatusCode.Unknown, "test"));
 
-				var sendResult1 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
-				sendResult1.Should().Be(SendResult.ServerError);
+				await FluentActions.Awaiting(() => publisherAction.InvokeSendDelegateAsync(_rtgsPublisher))
+					.Should()
+					.ThrowAsync<RpcException>();
 
 				_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-				var sendResult2 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
-				sendResult2.Should().Be(SendResult.Success);
-			}
-
-			// TODO: Tom
-			[Fact]
-			public async Task WhenBankMessageApiThrowsExceptionOnConnectionAndSendingBigMessage_ThenSeeCancellationInRpcException()
-			{
-				// TODO: Move this test to GivenServerStops?
-
-				var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-
-				receiver.ThrowOnConnection = true;
-
-				await FluentActions
-					.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest { EndToEndId = new string('e', 100_000) }))
-					.Should()
-					.ThrowAsync<RpcException>();
-				//.WithMessage(new Status(StatusCode.Cancelled, string.Empty).ToString());
-			}
+				var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+				sendResult.Should().Be(SendResult.Success);
+			}						
 		}
 
 		public class AndLongTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>

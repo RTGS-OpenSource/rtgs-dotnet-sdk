@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,12 +15,9 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 {
 	public class GivenServerStops
 	{
-		// TODO: Tom
 		[Fact]
-		public async Task WhenSendingMessage_ThenRpcExceptionThrown()
+		public async Task WhenSendingMessage_ThenRpcExceptionOrIOExceptionThrown()
 		{
-			// TODO: This sometimes doesn't throw the expected RpcException
-
 			using var server = new GrpcTestServer();
 			var serverUri = await server.StartAsync();
 
@@ -40,10 +39,16 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			var result = await rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest());
 			result.Should().Be(SendResult.Success);
 
+			await server.StopAsync();
 			server.Dispose();
 
-			await FluentActions.Awaiting(() => rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest()))
-				.Should().ThrowAsync<RpcException>();
+			var exceptionAssertions = await FluentActions.Awaiting(() => rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest()))
+				.Should().ThrowAsync<Exception>();
+
+			// One of two exceptions can be thrown depending on how far along the call is.
+			exceptionAssertions.And.GetType()
+				.Should().Match(exceptionType => exceptionType == typeof(RpcException)
+												 || exceptionType == typeof(IOException));
 		}
 	}
 }
