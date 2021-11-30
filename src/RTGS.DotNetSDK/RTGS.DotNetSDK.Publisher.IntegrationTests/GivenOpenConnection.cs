@@ -435,7 +435,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 				var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 				sendResult.Should().Be(SendResult.Success);
-			}						
+			}
 		}
 
 		public class AndLongTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>

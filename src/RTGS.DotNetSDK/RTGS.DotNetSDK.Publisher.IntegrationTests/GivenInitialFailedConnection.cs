@@ -75,7 +75,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			receiver.ThrowOnConnection = true;
 
 			await FluentActions
-				.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest ()))
+				.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest()))
 				.Should()
 				.ThrowAsync<RpcException>();
 		}
@@ -109,7 +109,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 			receiver.ThrowOnConnection = false;
 
-			var result =  await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest());
+			var result = await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest());
 
 			result.Should().Be(SendResult.Success);
 		}

@@ -78,6 +78,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 				app.UseRouting();
 				app.UseEndpoints(endpoints => endpoints.MapGrpcService<TestPaymentService>());
 			}
-		}		
+		}
 	}
 }

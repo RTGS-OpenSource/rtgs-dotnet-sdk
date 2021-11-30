@@ -19,7 +19,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 {
 	public class GivenServerStops : IAsyncLifetime
 	{
-		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(0.5) ;
+		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(0.5);
 
 		private readonly GrpcTestServer _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
@@ -110,7 +110,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		public async Task WhenNotSendingMessage_ThenLogError()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-			
+
 			await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest());
 
 			await _grpcServer.StopAsync();
@@ -118,7 +118,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			await _rtgsPublisher.DisposeAsync();
 
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
-			errorLogs.Should().BeEquivalentTo(new[] 
+			errorLogs.Should().BeEquivalentTo(new[]
 			{
 				new LogEntry("RTGS connection unexpectedly closed", LogEventLevel.Error, typeof(RpcException))
 			});

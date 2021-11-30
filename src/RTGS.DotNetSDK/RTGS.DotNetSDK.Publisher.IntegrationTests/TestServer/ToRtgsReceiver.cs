@@ -16,9 +16,9 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 		public int NumberOfConnections => Connections.Count;
 
 		public bool ThrowOnConnection { get; set; }
-				
+
 		public ToRtgsConnectionInfo SetupConnectionInfo(Metadata headers)
-		{			
+		{
 			if (ThrowOnConnection)
 			{
 				throw new InvalidOperationException("The receiver was configured to throw on connection");
