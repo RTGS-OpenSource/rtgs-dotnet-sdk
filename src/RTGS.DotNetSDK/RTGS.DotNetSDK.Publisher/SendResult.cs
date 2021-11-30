@@ -21,8 +21,8 @@
 		Timeout = 2,
 
 		/// <summary>
-		/// An error occurred while sending the message.
+		/// The message was rejected.
 		/// </summary>
-		ServerError = 3,
+		Rejected = 3,
 	}
 }

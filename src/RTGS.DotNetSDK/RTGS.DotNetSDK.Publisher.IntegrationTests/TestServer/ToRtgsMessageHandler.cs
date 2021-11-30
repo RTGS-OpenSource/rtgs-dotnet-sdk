@@ -91,6 +91,9 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 					CorrelationId = Guid.NewGuid().ToString(),
 					InstructionType = original.InstructionType
 				};
+
+			public void ThrowRpcException(StatusCode statusCode, string detail) =>
+				GenerateAcknowledgements.Add(_ => throw new RpcException(new Status(statusCode, detail)));
 		}
 
 		public interface ISetupForMessageOptions
@@ -100,6 +103,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 			void ReturnExpectedAcknowledgementWithSuccess();
 			void ReturnUnexpectedAcknowledgementWithSuccess();
 			void ReturnExpectedAcknowledgementWithDelay(TimeSpan timeSpan);
+			void ThrowRpcException(StatusCode statusCode, string detail);
 		}
 	}
 }

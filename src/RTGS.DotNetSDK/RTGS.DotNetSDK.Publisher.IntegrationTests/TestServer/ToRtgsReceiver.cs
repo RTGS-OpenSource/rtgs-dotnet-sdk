@@ -9,14 +9,21 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 {
 	public class ToRtgsReceiver
 	{
-		private Action _action;
+		private Action _messageReceivedAction;
 
 		public ConcurrentBag<ToRtgsConnectionInfo> Connections { get; } = new();
 
 		public int NumberOfConnections => Connections.Count;
 
+		public bool ThrowOnConnection { get; set; }
+
 		public ToRtgsConnectionInfo SetupConnectionInfo(Metadata headers)
 		{
+			if (ThrowOnConnection)
+			{
+				throw new InvalidOperationException("The receiver was configured to throw on connection");
+			}
+
 			var connectionInfo = new ToRtgsConnectionInfo(headers, this);
 
 			Connections.Add(connectionInfo);
@@ -25,10 +32,10 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 		}
 
 		public void RegisterOnMessageReceived(Action action) =>
-			_action = action;
+			_messageReceivedAction = action;
 
 		private void MessageReceived() =>
-			_action?.Invoke();
+			_messageReceivedAction?.Invoke();
 
 		public class ToRtgsConnectionInfo
 		{

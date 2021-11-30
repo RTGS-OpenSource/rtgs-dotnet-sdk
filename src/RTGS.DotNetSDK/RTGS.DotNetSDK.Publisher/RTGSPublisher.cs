@@ -20,11 +20,12 @@ namespace RTGS.DotNetSDK.Publisher
 		private readonly ILogger<RtgsPublisher> _logger;
 		private readonly SemaphoreSlim _sendingSignal = new(1);
 		private readonly SemaphoreSlim _disposingSignal = new(1);
+		private readonly SemaphoreSlim _writingSignal = new(1);
 		private AcknowledgementContext _acknowledgementContext;
 		private AsyncDuplexStreamingCall<RtgsMessage, RtgsMessageAcknowledgement> _toRtgsCall;
 		private Task _waitForAcknowledgementsTask;
-		private RtgsMessageAcknowledgement _acknowledgement;
 		private bool _disposed;
+		private bool _resetConnection;
 
 		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options, ILogger<RtgsPublisher> logger)
 		{
@@ -68,41 +69,22 @@ namespace RTGS.DotNetSDK.Publisher
 			{
 				linkedTokenSource.Token.ThrowIfCancellationRequested();
 
-				if (_toRtgsCall is null)
-				{
-					var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
-					_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
-					_waitForAcknowledgementsTask = WaitForAcknowledgements();
-				}
+				await EnsureRtgsCallSetup<T>(linkedTokenSource.Token);
 
 				_acknowledgementContext = new AcknowledgementContext();
 
-				_logger.LogInformation("Sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+				await SendMessage(message, instructionType, callingMethod, linkedTokenSource.Token);
 
-				await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
+				await _acknowledgementContext.WaitAsync(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
+
+				LogAcknowledgementResult<T>(callingMethod);
+
+				if (_acknowledgementContext.RpcException is not null)
 				{
-					Data = JsonSerializer.Serialize(message),
-					Header = new RtgsMessageHeader
-					{
-						InstructionType = instructionType,
-						CorrelationId = _acknowledgementContext.CorrelationId
-					}
-				});
-
-				_logger.LogInformation("Sent {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
-
-				var expectedAcknowledgementReceived = await _acknowledgementContext.WaitAsync(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
-
-				if (!expectedAcknowledgementReceived)
-				{
-					_logger.LogError("Timed out waiting for {MessageType} acknowledgement from RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
-					return SendResult.Timeout;
+					throw _acknowledgementContext.RpcException;
 				}
 
-				var logLevel = _acknowledgement!.Success ? LogLevel.Information : LogLevel.Error;
-				_logger.Log(logLevel, "Received {MessageType} acknowledgement (success: {Success}) from RTGS ({CallingMethod})", typeof(T).Name, _acknowledgement!.Success, callingMethod);
-
-				return _acknowledgement!.Success ? SendResult.Success : SendResult.ServerError;
+				return _acknowledgementContext.Status;
 			}
 			finally
 			{
@@ -115,15 +97,134 @@ namespace RTGS.DotNetSDK.Publisher
 			}
 		}
 
+		private async Task EnsureRtgsCallSetup<T>(CancellationToken cancellationToken)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+
+			if (_resetConnection)
+			{
+				if (_toRtgsCall is not null)
+				{
+					await _writingSignal.WaitAsync(cancellationToken);
+					try
+					{
+						if (_toRtgsCall is not null)
+						{
+							await _toRtgsCall.RequestStream.CompleteAsync();
+							_toRtgsCall.Dispose();
+							_toRtgsCall = null;
+						}
+					}
+					finally
+					{
+						_writingSignal.Release();
+					}
+				}
+
+				_resetConnection = false;
+			}
+
+			if (_toRtgsCall is null)
+			{
+				var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
+				_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
+
+				if (_waitForAcknowledgementsTask is not null)
+				{
+					await _waitForAcknowledgementsTask;
+				}
+
+				_waitForAcknowledgementsTask = WaitForAcknowledgements();
+			}
+		}
+
 		private async Task WaitForAcknowledgements()
 		{
-			await foreach (var acknowledgement in _toRtgsCall.ResponseStream.ReadAllAsync())
+			try
 			{
-				if (acknowledgement.Header.CorrelationId == _acknowledgementContext?.CorrelationId)
+				await foreach (var acknowledgement in _toRtgsCall.ResponseStream.ReadAllAsync())
 				{
-					_acknowledgement = acknowledgement;
-					_acknowledgementContext?.Release();
+					if (acknowledgement.Header.CorrelationId == _acknowledgementContext?.CorrelationId)
+					{
+						_acknowledgementContext?.Release(acknowledgement);
+					}
 				}
+			}
+			catch (RpcException ex)
+			{
+				if (_acknowledgementContext is null)
+				{
+					_logger.LogError(ex, "RTGS connection unexpectedly closed");
+				}
+
+				_resetConnection = true;
+
+				_acknowledgementContext?.Release(ex);
+			}
+		}
+
+		private async Task SendMessage<T>(T message, string instructionType, string callingMethod, CancellationToken cancellationToken)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+
+			var rtgsMessage = new RtgsMessage
+			{
+				Data = JsonSerializer.Serialize(message),
+				Header = new RtgsMessageHeader
+				{
+					InstructionType = instructionType,
+					CorrelationId = _acknowledgementContext.CorrelationId
+				}
+			};
+
+			await _writingSignal.WaitAsync(cancellationToken);
+
+			try
+			{
+				_logger.LogInformation("Sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+
+				await _toRtgsCall.RequestStream.WriteAsync(rtgsMessage);
+
+				_logger.LogInformation("Sent {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+			}
+			catch (RpcException)
+			{
+				_resetConnection = true;
+				throw;
+			}
+			finally
+			{
+				_writingSignal.Release();
+			}
+		}
+
+		private void LogAcknowledgementResult<T>(string callingMethod)
+		{
+			if (_acknowledgementContext.RpcException is not null)
+			{
+				_logger.LogError(_acknowledgementContext.RpcException, "Error received when sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+
+				return;
+			}
+
+			switch (_acknowledgementContext.Status)
+			{
+				case SendResult.Success:
+					_logger.LogInformation("Received {MessageType} acknowledgement (acknowledged) from RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+					break;
+
+				case SendResult.Timeout:
+					_logger.LogError("Timed out waiting for {MessageType} acknowledgement from RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+					break;
+
+				case SendResult.Rejected:
+					_logger.LogError("Received {MessageType} acknowledgement (rejected) from RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+					break;
+
+				case SendResult.Unknown:
+				default:
+					_logger.LogWarning("Received unexpected {MessageType} acknowledgement ({Status}) from RTGS ({CallingMethod})", typeof(T).Name, _acknowledgementContext.Status, callingMethod);
+					break;
 			}
 		}
 
@@ -149,12 +250,23 @@ namespace RTGS.DotNetSDK.Publisher
 
 				if (_toRtgsCall is not null)
 				{
-					await _toRtgsCall.RequestStream.CompleteAsync();
+					await _writingSignal.WaitAsync();
+					try
+					{
+						if (_toRtgsCall is not null)
+						{
+							await _toRtgsCall.RequestStream.CompleteAsync();
 
-					await _waitForAcknowledgementsTask;
+							await _waitForAcknowledgementsTask;
 
-					_toRtgsCall.Dispose();
-					_toRtgsCall = null;
+							_toRtgsCall.Dispose();
+							_toRtgsCall = null;
+						}
+					}
+					finally
+					{
+						_writingSignal.Release();
+					}
 				}
 
 				_acknowledgementContext?.Dispose();
@@ -172,7 +284,8 @@ namespace RTGS.DotNetSDK.Publisher
 
 		private sealed class AcknowledgementContext : IDisposable
 		{
-			private readonly SemaphoreSlim _acknowledgementSignal;
+			private SemaphoreSlim _acknowledgementSignal;
+			private bool _handled;
 
 			public AcknowledgementContext()
 			{
@@ -181,15 +294,68 @@ namespace RTGS.DotNetSDK.Publisher
 			}
 
 			public string CorrelationId { get; }
+			public RpcException RpcException { get; private set; }
+			public SendResult Status { get; private set; }
 
-			public Task<bool> WaitAsync(TimeSpan timeout, CancellationToken cancellationToken)
-				=> _acknowledgementSignal.WaitAsync(timeout, cancellationToken);
+			public async Task WaitAsync(TimeSpan timeout, CancellationToken cancellationToken)
+			{
+				cancellationToken.ThrowIfCancellationRequested();
 
-			public void Release()
-				=> _acknowledgementSignal.Release();
+				if (_handled)
+				{
+					return;
+				}
+
+				var enteredSemaphore = await _acknowledgementSignal.WaitAsync(timeout, cancellationToken);
+				if (!enteredSemaphore)
+				{
+					_handled = true;
+					Status = SendResult.Timeout;
+				}
+			}
+
+			public void TimedOut()
+			{
+				if (_handled)
+				{
+					return;
+				}
+
+				_handled = true;
+				Status = SendResult.Timeout;
+			}
+
+			public void Release(RtgsMessageAcknowledgement acknowledgement)
+			{
+				if (_handled)
+				{
+					return;
+				}
+
+				_handled = true;
+				Status = acknowledgement.Success ? SendResult.Success : SendResult.Rejected;
+
+				_acknowledgementSignal?.Release();
+			}
+
+			public void Release(RpcException exception)
+			{
+				if (_handled)
+				{
+					return;
+				}
+
+				_handled = true;
+				RpcException = exception;
+
+				_acknowledgementSignal?.Release();
+			}
 
 			public void Dispose()
-				=> _acknowledgementSignal.Dispose();
+			{
+				_acknowledgementSignal?.Dispose();
+				_acknowledgementSignal = null;
+			}
 		}
 	}
 }

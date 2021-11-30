@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Grpc.Core;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.Logging;
 using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
@@ -7,7 +8,7 @@ using Serilog.Events;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 {
-	public class PublisherActionSuccessAcknowledgementLogsData : BasePublisherActionData
+	public class PublisherActionRpcExceptionLogsData : BasePublisherActionData
 	{
 		public override IPublisherAction<AtomicLockRequest> AtomicLock =>
 			new PublisherActionWithLogs<AtomicLockRequest>(
@@ -16,7 +17,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 				{
 					new("Sending AtomicLockRequest to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
 					new("Sent AtomicLockRequest to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
-					new("Received AtomicLockRequest acknowledgement (acknowledged) from RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information)
+					new("Error received when sending AtomicLockRequest to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Error, typeof(RpcException))
 				});
 
 		public override IPublisherAction<AtomicTransferRequest> AtomicTransfer =>
@@ -26,7 +27,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 				{
 					new("Sending AtomicTransferRequest to RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Information),
 					new("Sent AtomicTransferRequest to RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Information),
-					new("Received AtomicTransferRequest acknowledgement (acknowledged) from RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Information)
+					new("Error received when sending AtomicTransferRequest to RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Error, typeof(RpcException))
 				});
 
 		public override IPublisherAction<EarmarkConfirmation> EarmarkConfirmation =>
@@ -36,7 +37,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 				{
 					new("Sending EarmarkConfirmation to RTGS (SendEarmarkConfirmationAsync)", LogEventLevel.Information),
 					new("Sent EarmarkConfirmation to RTGS (SendEarmarkConfirmationAsync)", LogEventLevel.Information),
-					new("Received EarmarkConfirmation acknowledgement (acknowledged) from RTGS (SendEarmarkConfirmationAsync)", LogEventLevel.Information)
+					new("Error received when sending EarmarkConfirmation to RTGS (SendEarmarkConfirmationAsync)", LogEventLevel.Error, typeof(RpcException))
 				});
 
 		public override IPublisherAction<TransferConfirmation> TransferConfirmation =>
@@ -46,7 +47,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 				{
 					new("Sending TransferConfirmation to RTGS (SendTransferConfirmationAsync)", LogEventLevel.Information),
 					new("Sent TransferConfirmation to RTGS (SendTransferConfirmationAsync)", LogEventLevel.Information),
-					new("Received TransferConfirmation acknowledgement (acknowledged) from RTGS (SendTransferConfirmationAsync)", LogEventLevel.Information)
+					new("Error received when sending TransferConfirmation to RTGS (SendTransferConfirmationAsync)", LogEventLevel.Error, typeof(RpcException))
 				});
 
 		public override IPublisherAction<UpdateLedgerRequest> UpdateLedger =>
@@ -56,7 +57,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 				{
 					new("Sending UpdateLedgerRequest to RTGS (SendUpdateLedgerRequestAsync)", LogEventLevel.Information),
 					new("Sent UpdateLedgerRequest to RTGS (SendUpdateLedgerRequestAsync)", LogEventLevel.Information),
-					new("Received UpdateLedgerRequest acknowledgement (acknowledged) from RTGS (SendUpdateLedgerRequestAsync)", LogEventLevel.Information)
+					new("Error received when sending UpdateLedgerRequest to RTGS (SendUpdateLedgerRequestAsync)", LogEventLevel.Error, typeof(RpcException))
 				});
 
 		public override IPublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate =>
@@ -66,7 +67,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 				{
 					new("Sending FIToFICustomerCreditTransferV10 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Information),
 					new("Sent FIToFICustomerCreditTransferV10 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Information),
-					new("Received FIToFICustomerCreditTransferV10 acknowledgement (acknowledged) from RTGS (SendPayawayCreateAsync)", LogEventLevel.Information)
+					new("Error received when sending FIToFICustomerCreditTransferV10 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Error, typeof(RpcException))
 				});
 
 		public override IPublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation =>
@@ -76,7 +77,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 					{
 						new("Sending BankToCustomerDebitCreditNotificationV09 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
 						new("Sent BankToCustomerDebitCreditNotificationV09 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
-						new("Received BankToCustomerDebitCreditNotificationV09 acknowledgement (acknowledged) from RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information)
+						new("Error received when sending BankToCustomerDebitCreditNotificationV09 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Error, typeof(RpcException))
 					});
 	}
 }
