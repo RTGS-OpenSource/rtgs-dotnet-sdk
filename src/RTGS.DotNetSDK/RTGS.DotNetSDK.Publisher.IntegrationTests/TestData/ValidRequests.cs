@@ -2,7 +2,6 @@
 using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
-using RTGS.Public.Payment.V1.Pacs;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 {
@@ -12,28 +11,24 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 
 		public static readonly AtomicLockRequest AtomicLockRequest = new()
 		{
-			DbtrToRtgsId = new Public.Payment.V1.Pacs.GenericFinancialIdentification1
+			DbtrToRtgsId = new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
 			{
 				Id = BankDid
 			},
-			CdtrAmt = new Public.Payment.V1.Pacs.ActiveCurrencyAndAmount
+			CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
 			{
 				Ccy = "GBP",
-				Amt = new ProtoDecimal
-				{
-					Units = 1,
-					Nanos = 230_000_000
-				}
+				Value = 1.23m
 			},
-			UltmtDbtrAcct = new CashAccount38
+			UltmtDbtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 			{
 				Ccy = "USD",
-				Id = new Public.Payment.V1.Pacs.AccountIdentification4Choice { IBAN = "XX00ULTIMATEDEBTORACCOUNT" }
+				Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00ULTIMATEDEBTORACCOUNT" }
 			},
-			UltmtCdtrAcct = new CashAccount38
+			UltmtCdtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 			{
 				Ccy = "GBP",
-				Id = new Public.Payment.V1.Pacs.AccountIdentification4Choice { IBAN = "XX00ULTIMATECREDITORACCOUNT" }
+				Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00ULTIMATECREDITORACCOUNT" }
 			},
 			SplmtryData = "some-extra-data",
 			EndToEndId = "end-to-end-id"
@@ -45,16 +40,16 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 			{
 				Id = BankDid
 			},
-			FIToFICstmrCdtTrf = new FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer()
+			FIToFICstmrCdtTrf = new Public.Payment.V1.Pacs.FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer()
 			{
-				GrpHdr = new GroupHeader93
+				GrpHdr = new Public.Payment.V1.Pacs.GroupHeader93
 				{
 					MsgId = "message-id"
 				},
 				CdtTrfTxInf =
 					{
 						{
-							new CreditTransferTransaction39 { PoolgAdjstmntDt = "2021-01-01" }
+							new Public.Payment.V1.Pacs.CreditTransferTransaction39 { PoolgAdjstmntDt = "2021-01-01" }
 						}
 					}
 			},
@@ -75,7 +70,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 
 		public static readonly UpdateLedgerRequest UpdateLedgerRequest = new()
 		{
-			Amt = new ProtoDecimal()
+			Amt = new Public.Payment.V1.Pacs.ProtoDecimal()
 			{
 				Units = 1,
 				Nanos = 230_000_000
