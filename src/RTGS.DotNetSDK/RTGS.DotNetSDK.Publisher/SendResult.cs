@@ -19,6 +19,10 @@
 		/// The send operation exceeded the configured duration.
 		/// </summary>
 		Timeout = 2,
+
+		/// <summary>
+		/// The message was rejected.
+		/// </summary>
 		Rejected = 3,
 	}
 }
