@@ -16,16 +16,12 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 		public int NumberOfConnections => Connections.Count;
 
 		public bool ThrowOnConnection { get; set; }
-
-		// TODO: Tom
+				
 		public ToRtgsConnectionInfo SetupConnectionInfo(Metadata headers)
-		{
-			// TODO: Maybe queue up server side behaviour like the message handlers so this can ...
-			// ... concurrently dequeue behaviours to use so it doesn't break tests when trying to ...
-			// ... access the one instance of an action
+		{			
 			if (ThrowOnConnection)
 			{
-				throw new Exception();
+				throw new InvalidOperationException("The receiver was configured to throw on connection");
 			}
 
 			var connectionInfo = new ToRtgsConnectionInfo(headers, this);

@@ -25,7 +25,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 	{
 		public class AndShortTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 		{
-			private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(0.5) /*+ TimeSpan.FromMinutes(2)*/;
+			private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(0.5);
 
 			private readonly GrpcServerFixture _grpcServer;
 			private readonly ITestCorrelatorContext _serilogContext;
@@ -320,10 +320,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			[ClassData(typeof(PublisherActionData))]
 			public async Task WhenSendingMultipleMessages_ThenOnlyOneConnection<TRequest>(PublisherAction<TRequest> publisherAction)
 			{
-				_toRtgsMessageHandler.SetupForMessage(handler =>
-					handler.ReturnUnexpectedAcknowledgementWithSuccess());
-				await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
-
 				_toRtgsMessageHandler.SetupForMessage(handler =>
 					handler.ReturnUnexpectedAcknowledgementWithSuccess());
 				await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);

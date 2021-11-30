@@ -108,9 +108,12 @@ namespace RTGS.DotNetSDK.Publisher
 					await _writingSignal.WaitAsync(cancellationToken);
 					try
 					{
-						await _toRtgsCall.RequestStream.CompleteAsync();
-						_toRtgsCall.Dispose();
-						_toRtgsCall = null;
+						if (_toRtgsCall is not null)
+						{
+							await _toRtgsCall.RequestStream.CompleteAsync();
+							_toRtgsCall.Dispose();
+							_toRtgsCall = null;
+						}
 					}
 					finally
 					{
@@ -151,7 +154,7 @@ namespace RTGS.DotNetSDK.Publisher
 			{
 				if (_acknowledgementContext is null)
 				{
-					// TODO: log?
+					_logger.LogError(ex, "RTGS connection unexpectedly closed");
 				}
 
 				_resetConnection = true;
@@ -164,23 +167,30 @@ namespace RTGS.DotNetSDK.Publisher
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
+			var rtgsMessage = new RtgsMessage
+			{
+				Data = JsonSerializer.Serialize(message),
+				Header = new RtgsMessageHeader
+				{
+					InstructionType = instructionType,
+					CorrelationId = _acknowledgementContext.CorrelationId
+				}
+			};
+
 			await _writingSignal.WaitAsync(cancellationToken);
 
 			try
 			{
 				_logger.LogInformation("Sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
 
-				await _toRtgsCall.RequestStream.WriteAsync(new RtgsMessage
-				{
-					Data = JsonSerializer.Serialize(message),
-					Header = new RtgsMessageHeader
-					{
-						InstructionType = instructionType,
-						CorrelationId = _acknowledgementContext.CorrelationId
-					}
-				});
+				await _toRtgsCall.RequestStream.WriteAsync(rtgsMessage);
 
 				_logger.LogInformation("Sent {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
+			}
+			catch (RpcException)
+			{
+				_resetConnection = true;
+				throw;
 			}
 			finally
 			{
@@ -213,7 +223,7 @@ namespace RTGS.DotNetSDK.Publisher
 
 				case SendResult.Unknown:
 				default:
-					// TODO: log??
+					_logger.LogWarning("Received unexpected {MessageType} acknowledgement ({Status}) from RTGS ({CallingMethod})", typeof(T).Name, _acknowledgementContext.Status, callingMethod);
 					break;
 			}
 		}
@@ -243,12 +253,15 @@ namespace RTGS.DotNetSDK.Publisher
 					await _writingSignal.WaitAsync();
 					try
 					{
-						await _toRtgsCall.RequestStream.CompleteAsync();
+						if (_toRtgsCall is not null)
+						{
+							await _toRtgsCall.RequestStream.CompleteAsync();
 
-						await _waitForAcknowledgementsTask;
+							await _waitForAcknowledgementsTask;
 
-						_toRtgsCall.Dispose();
-						_toRtgsCall = null;
+							_toRtgsCall.Dispose();
+							_toRtgsCall = null;
+						}
 					}
 					finally
 					{

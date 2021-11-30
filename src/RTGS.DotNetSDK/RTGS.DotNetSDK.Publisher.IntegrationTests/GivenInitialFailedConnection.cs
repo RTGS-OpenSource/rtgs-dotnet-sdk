@@ -67,7 +67,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			_grpcServer.Reset();
 		}
 
-		// TODO: Tom
 		[Fact]
 		public async Task WhenSending_ThenThrowRpcException()
 		{
@@ -94,8 +93,25 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				.ThrowAsync<RpcException>();
 		}
 
-		//GivenInitialFailedConnectionAndFailedFirstMessage
-		//WhenSubsequentConnectionCanBeOpened
-		//ThenCanSendSubsequentMessagesToRtgs		
+		[Fact]
+		public async Task WhenSubsequentConnectionCanBeOpened_ThenCanSendSubsequentMessagesToRtgs()
+		{
+			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+
+			receiver.ThrowOnConnection = true;
+
+			await FluentActions
+				.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest()))
+				.Should()
+				.ThrowAsync<Exception>();
+
+			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			receiver.ThrowOnConnection = false;
+
+			var result =  await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest());
+
+			result.Should().Be(SendResult.Success);
+		}
 	}
 }
