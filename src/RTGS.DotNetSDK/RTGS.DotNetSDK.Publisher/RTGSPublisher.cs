@@ -35,7 +35,7 @@ namespace RTGS.DotNetSDK.Publisher
 		}
 
 		public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message, CancellationToken cancellationToken) =>
-			SendRequestAsync(message, "payment.lock.v1", cancellationToken);
+			SendRequestAsync(message, "payment.lock.v2", cancellationToken);
 
 		public Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequest message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payment.block.v1", cancellationToken);

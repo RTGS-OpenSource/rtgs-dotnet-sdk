@@ -1,4 +1,4 @@
-using RTGS.Public.Payment.V1.Pacs;
+using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.Publisher.Messages
 {
@@ -27,17 +27,17 @@ namespace RTGS.DotNetSDK.Publisher.Messages
 		/// Ultimate debtor account
 		/// </summary>
 		/// <remarks>
-		/// The <c>CashAccount38</c> type is from nuget package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
+		/// The <c>CashAccount40</c> type is from nuget package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
 		/// </remarks>
-		public CashAccount38 UltmtDbtrAcct { get; init; }
+		public CashAccount40 UltmtDbtrAcct { get; init; }
 
 		/// <summary>
 		/// Ultimate creditor account
 		/// </summary>
 		/// <remarks>
-		/// The <c>CashAccount38</c> type is from nuget package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
+		/// The <c>CashAccount40</c> type is from nuget package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
 		/// </remarks>
-		public CashAccount38 UltmtCdtrAcct { get; init; }
+		public CashAccount40 UltmtCdtrAcct { get; init; }
 
 		/// <summary>
 		/// Supplementary data
