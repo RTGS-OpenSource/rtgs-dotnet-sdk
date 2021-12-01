@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RTGS.DotNetSDK.Publisher.Extensions;
@@ -68,7 +67,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		}
 
 		[Fact]
-		public async Task WhenSending_ThenThrowRpcException()
+		public async Task WhenSending_ThenThrowException()
 		{
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
@@ -77,11 +76,11 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			await FluentActions
 				.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest()))
 				.Should()
-				.ThrowAsync<RpcException>();
+				.ThrowAsync<Exception>();
 		}
 
 		[Fact]
-		public async Task WhenSendingBigMessage_ThenThrowRpcException()
+		public async Task WhenSendingBigMessage_ThenThrowException()
 		{
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
@@ -90,7 +89,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			await FluentActions
 				.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest { EndToEndId = new string('e', 100_000) }))
 				.Should()
-				.ThrowAsync<RpcException>();
+				.ThrowAsync<Exception>();
 		}
 
 		[Fact]
