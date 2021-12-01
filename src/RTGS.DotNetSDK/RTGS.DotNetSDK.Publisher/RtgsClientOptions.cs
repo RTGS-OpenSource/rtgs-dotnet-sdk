@@ -3,7 +3,7 @@
 namespace RTGS.DotNetSDK.Publisher
 {
 	/// <summary>
-	/// Represents the options used when senging messages to RTGS via a <see cref="IRtgsPublisher"/>
+	/// Represents the options used when sending messages to RTGS via a <see cref="IRtgsPublisher"/>
 	/// </summary>
 	public record RtgsClientOptions
 	{
@@ -12,6 +12,8 @@ namespace RTGS.DotNetSDK.Publisher
 			BankDid = builder.BankDidValue;
 			RemoteHostAddress = new Uri(builder.RemoteHostAddressValue);
 			WaitForAcknowledgementDuration = builder.WaitForAcknowledgementDurationValue;
+			KeepAlivePingDelay = builder.KeepAlivePingDelayValue;
+			KeepAlivePingTimeout = builder.KeepAlivePingTimeoutValue;
 		}
 
 		/// <summary>
@@ -31,6 +33,16 @@ namespace RTGS.DotNetSDK.Publisher
 		public TimeSpan WaitForAcknowledgementDuration { get; }
 
 		/// <summary>
+		/// The delay between each ping to keep the gRPC connection alive (default 30 seconds)
+		/// </summary>
+		public TimeSpan KeepAlivePingDelay { get; }
+
+		/// <summary>
+		/// The timeout period we expect a ping response within (default 30 seconds)
+		/// </summary>
+		public TimeSpan KeepAlivePingTimeout { get; }
+
+		/// <summary>
 		/// The Builder class
 		/// </summary>
 		public sealed class Builder
@@ -38,6 +50,8 @@ namespace RTGS.DotNetSDK.Publisher
 			internal string BankDidValue { get; private set; }
 			internal string RemoteHostAddressValue { get; private set; }
 			internal TimeSpan WaitForAcknowledgementDurationValue { get; private set; } = TimeSpan.FromSeconds(10);
+			internal TimeSpan KeepAlivePingDelayValue { get; private set; } = TimeSpan.FromSeconds(30);
+			internal TimeSpan KeepAlivePingTimeoutValue { get; private set; } = TimeSpan.FromSeconds(30);
 
 			/// <summary>
 			/// Creates a new builder
@@ -75,6 +89,27 @@ namespace RTGS.DotNetSDK.Publisher
 			public Builder WaitForAcknowledgementDuration(TimeSpan duration)
 			{
 				WaitForAcknowledgementDurationValue = duration;
+				return this;
+			}
+			/// <summary>
+			/// Specifies the delay between each ping to keep the gRPC connection alive
+			/// </summary>
+			/// <param name="duration"></param>
+			/// <returns></returns>
+			public Builder KeepAlivePingDelay(TimeSpan duration)
+			{
+				KeepAlivePingDelayValue = duration;
+				return this;
+			}
+
+			/// <summary>
+			/// Specifies the timeout period we expect a ping response within
+			/// </summary>
+			/// <param name="duration"></param>
+			/// <returns></returns>
+			public Builder KeepAlivePingTimeout(TimeSpan duration)
+			{
+				KeepAlivePingTimeoutValue = duration;
 				return this;
 			}
 

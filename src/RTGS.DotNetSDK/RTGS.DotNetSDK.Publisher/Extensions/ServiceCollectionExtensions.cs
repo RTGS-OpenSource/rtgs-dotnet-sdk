@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Net.Http;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using RTGS.Public.Payment.V2;
 
@@ -23,9 +25,15 @@ namespace RTGS.DotNetSDK.Publisher.Extensions
 		{
 			serviceCollection.AddSingleton(options);
 
-			// TODO: include ConfigurePrimaryHttpMessageHandler for keep alive?
 			var grpcClientBuilder = serviceCollection.AddGrpcClient<Payment.PaymentClient>(
-				clientOptions => clientOptions.Address = options.RemoteHostAddress);
+				clientOptions => clientOptions.Address = options.RemoteHostAddress).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+				{
+					PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
+					KeepAlivePingDelay = options.KeepAlivePingDelay,
+					KeepAlivePingTimeout = options.KeepAlivePingTimeout,
+					EnableMultipleHttp2Connections = true,
+					KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always
+				});
 
 			configureGrpcClient?.Invoke(grpcClientBuilder);
 
