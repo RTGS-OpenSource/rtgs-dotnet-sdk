@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System;
+using FluentAssertions;
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,9 +16,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		[Fact]
 		public async void WhenSending_ThenRpcExceptionThrown()
 		{
-			var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
-				.BankDid(ValidRequests.BankDid)
-				.RemoteHost("https://localhost:4567")
+			var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew(ValidRequests.BankDid, new Uri("https://localhost:4567"))
 				.Build();
 
 			using var clientHost = Host.CreateDefaultBuilder()
