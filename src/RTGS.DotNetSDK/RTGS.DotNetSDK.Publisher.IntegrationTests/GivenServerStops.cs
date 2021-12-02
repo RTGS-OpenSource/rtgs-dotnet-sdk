@@ -19,7 +19,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 {
 	public class GivenServerStops : IAsyncLifetime
 	{
-		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(0.5);
+		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 		private readonly GrpcTestServer _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
@@ -51,9 +51,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			{
 				var serverUri = await _grpcServer.StartAsync();
 
-				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
-					.BankDid(ValidRequests.BankDid)
-					.RemoteHost(serverUri.ToString())
+				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew(ValidRequests.BankDid, serverUri)
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 

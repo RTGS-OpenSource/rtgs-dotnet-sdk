@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace RTGS.DotNetSDK.Publisher
 {
@@ -10,7 +11,7 @@ namespace RTGS.DotNetSDK.Publisher
 		private RtgsClientOptions(Builder builder)
 		{
 			BankDid = builder.BankDidValue;
-			RemoteHostAddress = new Uri(builder.RemoteHostAddressValue);
+			RemoteHostAddress = builder.RemoteHostAddressValue;
 			WaitForAcknowledgementDuration = builder.WaitForAcknowledgementDurationValue;
 			KeepAlivePingDelay = builder.KeepAlivePingDelayValue;
 			KeepAlivePingTimeout = builder.KeepAlivePingTimeoutValue;
@@ -47,8 +48,29 @@ namespace RTGS.DotNetSDK.Publisher
 		/// </summary>
 		public sealed class Builder
 		{
-			internal string BankDidValue { get; private set; }
-			internal string RemoteHostAddressValue { get; private set; }
+			public Builder(string bankDid, Uri remoteHostAddress)
+			{
+				if (bankDid is null)
+				{
+					throw new ArgumentNullException(nameof(bankDid));
+				}
+
+				if (string.IsNullOrWhiteSpace(bankDid))
+				{
+					throw new ArgumentException("Value cannot be white space.", nameof(bankDid));
+				}
+
+				if (remoteHostAddress is null)
+				{
+					throw new ArgumentNullException(nameof(remoteHostAddress));
+				}
+
+				BankDidValue = bankDid;
+				RemoteHostAddressValue = remoteHostAddress;
+			}
+
+			internal string BankDidValue { get; }
+			internal Uri RemoteHostAddressValue { get; }
 			internal TimeSpan WaitForAcknowledgementDurationValue { get; private set; } = TimeSpan.FromSeconds(10);
 			internal TimeSpan KeepAlivePingDelayValue { get; private set; } = TimeSpan.FromSeconds(30);
 			internal TimeSpan KeepAlivePingTimeoutValue { get; private set; } = TimeSpan.FromSeconds(30);
@@ -56,30 +78,12 @@ namespace RTGS.DotNetSDK.Publisher
 			/// <summary>
 			/// Creates a new builder
 			/// </summary>
+			/// <param name="bankDid"></param>
+			/// <param name="remoteHostAddress"></param>
 			/// <returns>The builder</returns>
-			public static Builder CreateNew() => new();
+			public static Builder CreateNew(string bankDid, Uri remoteHostAddress) => new(bankDid, remoteHostAddress);
 
-			/// <summary>
-			/// Adds bank Id
-			/// </summary>
-			/// <param name="bankDid">The bank id</param>
-			/// <returns>The builder</returns>
-			public Builder BankDid(string bankDid)
-			{
-				BankDidValue = bankDid;
-				return this;
-			}
-
-			/// <summary>
-			/// Adds remote host
-			/// </summary>
-			/// <param name="address">The host address</param>
-			/// <returns>The builder</returns>
-			public Builder RemoteHost(string address)
-			{
-				RemoteHostAddressValue = address;
-				return this;
-			}
+			// TODO: revisit documentation
 
 			/// <summary>
 			/// Adds gRPC acknowledgement duration
@@ -88,9 +92,12 @@ namespace RTGS.DotNetSDK.Publisher
 			/// <returns>The builder</returns>
 			public Builder WaitForAcknowledgementDuration(TimeSpan duration)
 			{
+				ThrowIfLessThanOneSecondOrGreaterThanThirtySeconds(duration);
+
 				WaitForAcknowledgementDurationValue = duration;
 				return this;
 			}
+
 			/// <summary>
 			/// Specifies the delay between each ping to keep the gRPC connection alive
 			/// </summary>
@@ -98,6 +105,8 @@ namespace RTGS.DotNetSDK.Publisher
 			/// <returns></returns>
 			public Builder KeepAlivePingDelay(TimeSpan duration)
 			{
+				ThrowIfLessThanOneSecond(duration);
+
 				KeepAlivePingDelayValue = duration;
 				return this;
 			}
@@ -109,8 +118,26 @@ namespace RTGS.DotNetSDK.Publisher
 			/// <returns></returns>
 			public Builder KeepAlivePingTimeout(TimeSpan duration)
 			{
+				ThrowIfLessThanOneSecond(duration);
+
 				KeepAlivePingTimeoutValue = duration;
 				return this;
+			}
+
+			private static void ThrowIfLessThanOneSecond(TimeSpan duration)
+			{
+				if (duration < TimeSpan.FromSeconds(1) && duration != Timeout.InfiniteTimeSpan)
+				{
+					throw new ArgumentOutOfRangeException(nameof(duration), duration.TotalSeconds, "Value must be at least 1 second.");
+				}
+			}
+
+			private static void ThrowIfLessThanOneSecondOrGreaterThanThirtySeconds(TimeSpan duration)
+			{
+				if (duration < TimeSpan.FromSeconds(1) || duration > TimeSpan.FromSeconds(30))
+				{
+					throw new ArgumentOutOfRangeException(nameof(duration), duration.TotalSeconds, "Value must be between 1 and 30 seconds.");
+				}
 			}
 
 			/// <summary>

@@ -16,7 +16,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 {
 	public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 	{
-		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(0.5);
+		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 		private readonly GrpcServerFixture _grpcServer;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
@@ -31,9 +31,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		{
 			try
 			{
-				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew()
-					.BankDid(ValidRequests.BankDid)
-					.RemoteHost(_grpcServer.ServerUri.ToString())
+				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew(ValidRequests.BankDid, _grpcServer.ServerUri)
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
