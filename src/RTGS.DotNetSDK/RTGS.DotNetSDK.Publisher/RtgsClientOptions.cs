@@ -4,7 +4,7 @@ using System.Threading;
 namespace RTGS.DotNetSDK.Publisher
 {
 	/// <summary>
-	/// Represents the options used when sending messages to RTGS via a <see cref="IRtgsPublisher"/>
+	/// Represents the options used when sending messages to RTGS via a <see cref="IRtgsPublisher"/>.
 	/// </summary>
 	public record RtgsClientOptions
 	{
@@ -18,37 +18,37 @@ namespace RTGS.DotNetSDK.Publisher
 		}
 
 		/// <summary>
-		/// Identifier of the bank.
+		/// Decentralized identifier of the bank.
 		/// </summary>
 		public string BankDid { get; }
 
 		/// <summary>
-		/// Grpc server endpoint
+		/// Address of the RTGS gRPC server.
 		/// </summary>
 		public Uri RemoteHostAddress { get; }
 
 		/// <summary>
-		/// The gRPC acknowledgement timeout duration (default 10 seconds).
-		/// If the time taken to send messages to RTGS exceeds this duration, the request will fail with an error.
+		/// The acknowledgement timeout duration (default 10 seconds).
+		/// If the time taken to receive an acknowledgement from RTGS exceeds this duration, the request is assumed to have timed out.
 		/// </summary>
 		public TimeSpan WaitForAcknowledgementDuration { get; }
 
 		/// <summary>
-		/// The delay between each ping to keep the gRPC connection alive (default 30 seconds)
+		/// The delay between each ping to keep the gRPC connection alive (default 30 seconds).
 		/// </summary>
 		public TimeSpan KeepAlivePingDelay { get; }
 
 		/// <summary>
-		/// The timeout period we expect a ping response within (default 30 seconds)
+		/// The timeout period within which we expect a ping response (default 30 seconds).
 		/// </summary>
 		public TimeSpan KeepAlivePingTimeout { get; }
 
 		/// <summary>
-		/// The Builder class
+		/// A builder for <see cref="RtgsClientOptions"/>.
 		/// </summary>
 		public sealed class Builder
 		{
-			public Builder(string bankDid, Uri remoteHostAddress)
+			private Builder(string bankDid, Uri remoteHostAddress)
 			{
 				if (bankDid is null)
 				{
@@ -76,20 +76,22 @@ namespace RTGS.DotNetSDK.Publisher
 			internal TimeSpan KeepAlivePingTimeoutValue { get; private set; } = TimeSpan.FromSeconds(30);
 
 			/// <summary>
-			/// Creates a new builder
+			/// Creates a new instance of <see cref="Builder"/>.
 			/// </summary>
-			/// <param name="bankDid"></param>
-			/// <param name="remoteHostAddress"></param>
-			/// <returns>The builder</returns>
-			public static Builder CreateNew(string bankDid, Uri remoteHostAddress) => new(bankDid, remoteHostAddress);
-
-			// TODO: revisit documentation
+			/// <param name="bankDid">Decentralized identifier of the bank.</param>
+			/// <param name="remoteHostAddress">Address of the RTGS gRPC server.</param>
+			/// <returns><see cref="Builder"/></returns>
+			/// <exception cref="ArgumentNullException">Thrown if bankDid or remoteHostAddress is null.</exception>
+			/// <exception cref="ArgumentException">Thrown if bankDid is white space.</exception>
+			public static Builder CreateNew(string bankDid, Uri remoteHostAddress) => 
+				new(bankDid, remoteHostAddress);
 
 			/// <summary>
-			/// Adds gRPC acknowledgement duration
+			/// Specifies the acknowledgement timeout duration.
 			/// </summary>
-			/// <param name="duration">The duration</param>
-			/// <returns>The builder</returns>
+			/// <param name="duration">The duration.</param>
+			/// <returns><see cref="Builder"/></returns>
+			/// <exception cref="ArgumentOutOfRangeException">Thrown if duration is not between 1 and 30 seconds.</exception>
 			public Builder WaitForAcknowledgementDuration(TimeSpan duration)
 			{
 				ThrowIfLessThanOneSecondOrGreaterThanThirtySeconds(duration);
@@ -99,10 +101,11 @@ namespace RTGS.DotNetSDK.Publisher
 			}
 
 			/// <summary>
-			/// Specifies the delay between each ping to keep the gRPC connection alive
+			/// Specifies the delay between each ping to keep the gRPC connection alive.
 			/// </summary>
-			/// <param name="duration"></param>
-			/// <returns></returns>
+			/// <param name="duration">The duration.</param>
+			/// <returns><see cref="Builder"/></returns>
+			/// <exception cref="ArgumentOutOfRangeException">Thrown if duration is less than 1 second.</exception>
 			public Builder KeepAlivePingDelay(TimeSpan duration)
 			{
 				ThrowIfLessThanOneSecond(duration);
@@ -112,10 +115,11 @@ namespace RTGS.DotNetSDK.Publisher
 			}
 
 			/// <summary>
-			/// Specifies the timeout period we expect a ping response within
+			/// Specifies the timeout period within which we expect a ping response.
 			/// </summary>
-			/// <param name="duration"></param>
-			/// <returns></returns>
+			/// <param name="duration">The duration.</param>
+			/// <returns><see cref="Builder"/></returns>
+			/// <exception cref="ArgumentOutOfRangeException">Thrown if duration is less than 1 second.</exception>
 			public Builder KeepAlivePingTimeout(TimeSpan duration)
 			{
 				ThrowIfLessThanOneSecond(duration);
@@ -141,9 +145,9 @@ namespace RTGS.DotNetSDK.Publisher
 			}
 
 			/// <summary>
-			/// Builds a <see cref="RtgsClientOptions"/> object.
+			/// Builds a new <see cref="RtgsClientOptions"/> instance.
 			/// </summary>
-			/// <returns>The built RtgsClientOptions</returns>
+			/// <returns><see cref="RtgsClientOptions"/></returns>
 			public RtgsClientOptions Build() => new(this);
 		}
 	}
