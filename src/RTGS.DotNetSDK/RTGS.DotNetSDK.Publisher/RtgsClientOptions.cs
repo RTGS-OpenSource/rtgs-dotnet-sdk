@@ -83,7 +83,7 @@ namespace RTGS.DotNetSDK.Publisher
 			/// <returns><see cref="Builder"/></returns>
 			/// <exception cref="ArgumentNullException">Thrown if bankDid or remoteHostAddress is null.</exception>
 			/// <exception cref="ArgumentException">Thrown if bankDid is white space.</exception>
-			public static Builder CreateNew(string bankDid, Uri remoteHostAddress) => 
+			public static Builder CreateNew(string bankDid, Uri remoteHostAddress) =>
 				new(bankDid, remoteHostAddress);
 
 			/// <summary>
