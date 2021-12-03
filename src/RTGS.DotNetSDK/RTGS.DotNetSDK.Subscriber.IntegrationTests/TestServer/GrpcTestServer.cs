@@ -1,5 +1,4 @@
-﻿extern alias RTGSServer;
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -7,14 +6,13 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
+namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 {
 	public sealed class GrpcTestServer : IDisposable
 	{
-		private const int Port = 5100;
+		private const int Port = 5200;
 
 		private IHost _host;
-		private bool _disposedValue;
 
 		public IServiceProvider Services => _host.Services;
 
@@ -42,33 +40,15 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 			return builder.Build();
 		}
 
-		private void Dispose(bool disposing)
-		{
-			if (!_disposedValue)
-			{
-				if (disposing)
-				{
-					_host?.Dispose();
-				}
-
-				_disposedValue = true;
-			}
-		}
-
-		public void Dispose()
-		{
-			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-			Dispose(disposing: true);
-			GC.SuppressFinalize(this);
-		}
+		public void Dispose() =>
+			_host?.Dispose();
 
 		private class TestServerStartup
 		{
 			public static void ConfigureServices(IServiceCollection services)
 			{
 				services.AddGrpc();
-				services.AddSingleton<ToRtgsReceiver>();
-				services.AddSingleton<ToRtgsMessageHandler>();
+				services.AddSingleton<FromRtgsSender>();
 			}
 
 			public static void Configure(IApplicationBuilder app)

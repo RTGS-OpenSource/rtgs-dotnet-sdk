@@ -1,0 +1,36 @@
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
+using RTGS.Public.Payment.V2;
+
+namespace RTGS.DotNetSDK.Subscriber.Extensions
+{
+	/// <summary>
+	/// Extensions for implementations of <see cref="IServiceCollection"/>.
+	/// </summary>
+	public static class ServiceCollectionExtensions
+	{
+		/// <summary>
+		/// Adds <seealso cref="IRtgsSubscriber"/> with supplied client configuration of <seealso cref="RtgsSubscriberOptions"/>.
+		/// </summary>
+		/// <param name="serviceCollection">The service collection</param>
+		/// <param name="options">The options used to build the gRPC client</param>
+		/// <param name="configureGrpcClient">The client configure action (optional)</param>
+		/// <returns>The service collection so that additional calls can be chained.</returns>
+		public static IServiceCollection AddRtgsPublisher(
+			this IServiceCollection serviceCollection,
+			RtgsSubscriberOptions options,
+			Action<IHttpClientBuilder> configureGrpcClient = null)
+		{
+			serviceCollection.AddSingleton(options);
+
+			var grpcClientBuilder = serviceCollection.AddGrpcClient<Payment.PaymentClient>(
+				clientOptions => clientOptions.Address = options.RemoteHostAddress);
+
+			configureGrpcClient?.Invoke(grpcClientBuilder);
+
+			serviceCollection.AddTransient<IRtgsSubscriber, RtgsSubscriber>();
+
+			return serviceCollection;
+		}
+	}
+}

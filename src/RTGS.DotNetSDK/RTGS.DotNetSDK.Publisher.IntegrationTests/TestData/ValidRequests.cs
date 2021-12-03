@@ -5,6 +5,7 @@ using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 {
+	// TODO: rename to ValidMessages
 	public static class ValidRequests
 	{
 		public const string BankDid = "test-bank-did";
