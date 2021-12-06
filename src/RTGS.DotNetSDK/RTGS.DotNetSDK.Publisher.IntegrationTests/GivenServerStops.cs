@@ -51,7 +51,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			{
 				var serverUri = await _grpcServer.StartAsync();
 
-				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew(ValidRequests.BankDid, serverUri)
+				var rtgsClientOptions = RtgsPublisherOptions.Builder.CreateNew(ValidRequests.BankDid, serverUri)
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 

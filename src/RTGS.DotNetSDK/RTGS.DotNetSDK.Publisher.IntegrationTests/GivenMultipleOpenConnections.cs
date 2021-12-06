@@ -31,7 +31,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		{
 			try
 			{
-				var rtgsClientOptions = RtgsClientOptions.Builder.CreateNew(ValidRequests.BankDid, _grpcServer.ServerUri)
+				var rtgsClientOptions = RtgsPublisherOptions.Builder.CreateNew(ValidRequests.BankDid, _grpcServer.ServerUri)
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
