@@ -6,7 +6,7 @@ using Xunit;
 
 namespace RTGS.DotNetSDK.Publisher.Tests
 {
-	public class GivenRtgsClientOptions
+	public class GivenRtgsPublisherOptions
 	{
 		[Theory]
 		[MemberData(nameof(TimeSpansLessThanOneSecond))]
