@@ -11,7 +11,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 {
 	public class FromRtgsSender
 	{
-		private static readonly TimeSpan WaitForReadyToSendDuration = TimeSpan.FromSeconds(2);
+		private static readonly TimeSpan WaitForReadyToSendDuration = TimeSpan.FromSeconds(1);
 
 		private readonly ManualResetEventSlim _readyToSend = new(false);
 		private readonly List<RtgsMessageAcknowledgement> _acknowledgements = new();

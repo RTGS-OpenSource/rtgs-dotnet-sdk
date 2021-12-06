@@ -1,6 +1,4 @@
 using System;
-using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -9,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 using RTGS.DotNetSDK.Subscriber.Extensions;
 using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData;
 using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer;
-using RTGS.Public.Payment.V2;
 using Xunit;
 
 namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
@@ -62,15 +59,15 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 			return Task.CompletedTask;
 		}
 
-		[Fact]
-		public async Task WhenReceivedExpectedMessageType_ThenPassToHandlerAndAcknowledge()
+		[Theory]
+		[ClassData(typeof(SubscriberActionData))]
+		public async Task WhenReceivedExpectedMessageType_ThenPassToHandlerAndAcknowledge<TMessage>(SubscriberAction<TMessage> subscriberAction)
 		{
 			_fromRtgsSender.SetExpectedNumberOfAcknowledgements(1);
 
-			var testHandler = new PayawayFundsHandler();
-			_rtgsSubscriber.Start(new[] { testHandler });
+			_rtgsSubscriber.Start(new[] { subscriberAction.Handler });
 
-			var sentRtgsMessage = await _fromRtgsSender.SendAsync("PayawayFunds", ValidMessages.PayawayFunds);
+			var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
 			_fromRtgsSender.WaitForAcknowledgements();
 
@@ -80,64 +77,33 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 				.Should().ContainSingle(acknowledgement => acknowledgement.Header.CorrelationId == sentRtgsMessage.Header.CorrelationId
 														   && acknowledgement.Success);
 
-			testHandler.WaitForMessage(WaitForReceivedMessageDuration);
+			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
-			// TODO: work out how to compare client type with server type?
-			//sentRtgsMessage.Should().BeEquivalentTo(handler.ReceivedMessage);
-			var sentRtgsMessageJson = JsonSerializer.Serialize(sentRtgsMessage);
-			var receivedMessageJson = JsonSerializer.Serialize(testHandler.ReceivedMessage);
-			sentRtgsMessageJson.Should().Be(receivedMessageJson);
+			subscriberAction.Handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
 		}
 
-		[Fact]
-		public async Task WhenSubscriberIsStopped_ThenCloseConnection()
+		[Theory]
+		[ClassData(typeof(SubscriberActionData))]
+		public async Task WhenSubscriberIsStopped_ThenCloseConnection<TMessage>(SubscriberAction<TMessage> subscriberAction)
 		{
 			_fromRtgsSender.SetExpectedNumberOfAcknowledgements(1);
 
-			var testHandler = new PayawayFundsHandler();
-			_rtgsSubscriber.Start(new[] { testHandler });
+			_rtgsSubscriber.Start(new[] { subscriberAction.Handler });
 
-			await _fromRtgsSender.SendAsync("PayawayFunds", ValidMessages.PayawayFunds);
+			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
 			_fromRtgsSender.WaitForAcknowledgements();
 
-			testHandler.WaitForMessage(WaitForReceivedMessageDuration);
-			testHandler.Reset();
+			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+			subscriberAction.Handler.Reset();
 
 			await _rtgsSubscriber.StopAsync();
 
-			await _fromRtgsSender.SendAsync("PayawayFunds", ValidMessages.PayawayFunds);
+			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
-			testHandler.WaitForMessage(WaitForReceivedMessageDuration);
+			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
-			testHandler.ReceivedMessage.Should().BeNull();
-		}
-
-		// TODO: use cancellation tokens to ensure tests would eventually finish by timing out
-		private class PayawayFundsHandler : IHandler
-		{
-			private readonly ManualResetEventSlim _handleSignal = new();
-
-			public RtgsMessage ReceivedMessage { get; private set; }
-
-			public string InstructionType => "PayawayFunds";
-
-			public Task HandleMessageAsync(RtgsMessage message)
-			{
-				ReceivedMessage = message;
-				_handleSignal.Set();
-
-				return Task.CompletedTask;
-			}
-
-			public void WaitForMessage(TimeSpan timeout) =>
-				_handleSignal.Wait(timeout);
-
-			public void Reset()
-			{
-				ReceivedMessage = null;
-				_handleSignal.Reset();
-			}
+			subscriberAction.Handler.ReceivedMessage.Should().BeNull();
 		}
 	}
 }

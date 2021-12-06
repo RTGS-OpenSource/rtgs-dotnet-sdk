@@ -7,6 +7,7 @@ namespace RTGS.DotNetSDK.Subscriber
 	{
 		string InstructionType { get; } // TODO: rename to message identifier?
 
-		Task HandleMessageAsync(RtgsMessage message);
+		// TODO: use cancellation tokens to ensure tests would eventually finish by timing out
+		public Task HandleMessageAsync(RtgsMessage message);
 	}
 }

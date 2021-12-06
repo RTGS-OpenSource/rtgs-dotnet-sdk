@@ -90,8 +90,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 			},
 			CdtTrfTxInf = new[]
 			{
-					new CreditTransferTransaction50 { PoolgAdjstmntDt = new DateTime(2021, 1, 1) }
-				}
+				new CreditTransferTransaction50 { PoolgAdjstmntDt = new DateTime(2021, 1, 1) }
+			}
 		};
 
 		public static readonly BankToCustomerDebitCreditNotificationV09 PayawayConfirmation = new()
@@ -102,11 +102,11 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 			},
 			Ntfctn = new[]
 			{
-					new AccountNotification19
-					{
-						AddtlNtfctnInf = "additional-notification-info"
-					}
+				new AccountNotification19
+				{
+					AddtlNtfctnInf = "additional-notification-info"
 				}
+			}
 		};
 	}
 }

@@ -18,5 +18,53 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 				}
 			}
 		};
+
+		public static readonly ISO20022.Messages.Camt_054_001.V09.BankToCustomerDebitCreditNotificationV09 PayawayComplete = new()
+		{
+			GrpHdr = new ISO20022.Messages.Camt_054_001.V09.GroupHeader81
+			{
+				MsgId = "message-id"
+			},
+			Ntfctn = new[]
+			{
+				new ISO20022.Messages.Camt_054_001.V09.AccountNotification19
+				{
+					Ntry = new[]
+					{
+						new ISO20022.Messages.Camt_054_001.V09.ReportEntry11
+						{
+							NtryDtls = new[]
+							{
+								new ISO20022.Messages.Camt_054_001.V09.EntryDetails10
+								{
+									TxDtls = new[]
+									{
+										new ISO20022.Messages.Camt_054_001.V09.EntryTransaction11
+										{
+											Refs = new ISO20022.Messages.Camt_054_001.V09.TransactionReferences6
+											{
+												EndToEndId = "end-to-end-id"
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		};
+
+		public static readonly ISO20022.Messages.Admi_002_001.V01.Admi00200101 MessageRejected = new()
+		{
+			RltdRef = new ISO20022.Messages.Admi_002_001.V01.MessageReference
+			{
+				Ref = "reference"
+			},
+			Rsn = new ISO20022.Messages.Admi_002_001.V01.RejectionReason2
+			{
+				RjctnDtTm = new DateTime(2021, 12, 25)
+			}
+		};
 	}
 }

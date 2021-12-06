@@ -16,7 +16,7 @@ namespace RTGS.DotNetSDK.Publisher
 	{
 		private readonly Payment.PaymentClient _paymentClient;
 		private readonly CancellationTokenSource _sharedTokenSource = new();
-		private readonly RtgsClientOptions _options;
+		private readonly RtgsPublisherOptions _options;
 		private readonly ILogger<RtgsPublisher> _logger;
 		private readonly SemaphoreSlim _sendingSignal = new(1);
 		private readonly SemaphoreSlim _disposingSignal = new(1);
@@ -27,7 +27,7 @@ namespace RTGS.DotNetSDK.Publisher
 		private bool _disposed;
 		private bool _resetConnection;
 
-		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options, ILogger<RtgsPublisher> logger)
+		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsPublisherOptions options, ILogger<RtgsPublisher> logger)
 		{
 			_paymentClient = paymentClient;
 			_options = options;
