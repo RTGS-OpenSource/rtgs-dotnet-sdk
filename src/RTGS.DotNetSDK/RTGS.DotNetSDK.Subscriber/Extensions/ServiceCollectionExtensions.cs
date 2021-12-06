@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Subscriber.Extensions
@@ -16,7 +17,7 @@ namespace RTGS.DotNetSDK.Subscriber.Extensions
 		/// <param name="options">The options used to build the gRPC client</param>
 		/// <param name="configureGrpcClient">The client configure action (optional)</param>
 		/// <returns>The service collection so that additional calls can be chained.</returns>
-		public static IServiceCollection AddRtgsPublisher(
+		public static IServiceCollection AddRtgsSubscriber(
 			this IServiceCollection serviceCollection,
 			RtgsSubscriberOptions options,
 			Action<IHttpClientBuilder> configureGrpcClient = null)
@@ -29,6 +30,9 @@ namespace RTGS.DotNetSDK.Subscriber.Extensions
 			configureGrpcClient?.Invoke(grpcClientBuilder);
 
 			serviceCollection.AddTransient<IRtgsSubscriber, RtgsSubscriber>();
+			serviceCollection.AddTransient<IMessageAdapter, MessageRejectedV1MessageAdapter>();
+			serviceCollection.AddTransient<IMessageAdapter, PayawayCompleteV1MessageAdapter>();
+			serviceCollection.AddTransient<IMessageAdapter, PayawayFundsV1MessageAdapter>();
 
 			return serviceCollection;
 		}

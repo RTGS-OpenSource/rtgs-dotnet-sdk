@@ -1,4 +1,5 @@
 using System;
+using RTGS.DotNetSDK.Subscriber.Handlers;
 
 namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers
 {

@@ -1,7 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Grpc.Core;
+using RTGS.DotNetSDK.Subscriber.Adapters;
+using RTGS.DotNetSDK.Subscriber.Handlers;
+using RTGS.ISO20022.Messages.Admi_002_001.V01;
+using RTGS.ISO20022.Messages.Camt_054_001.V09;
+using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 using RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Subscriber
@@ -9,12 +15,14 @@ namespace RTGS.DotNetSDK.Subscriber
 	internal sealed class RtgsSubscriber : IRtgsSubscriber
 	{
 		private readonly Payment.PaymentClient _grpcClient;
+		private readonly IEnumerable<IMessageAdapter> _messageAdapters;
 		private Task _executingTask;
 		private AsyncDuplexStreamingCall<RtgsMessageAcknowledgement, RtgsMessage> _fromRtgsCall;
 
-		public RtgsSubscriber(Payment.PaymentClient grpcClient)
+		public RtgsSubscriber(Payment.PaymentClient grpcClient, IEnumerable<IMessageAdapter> messageAdapters)
 		{
 			_grpcClient = grpcClient;
+			_messageAdapters = messageAdapters;
 		}
 
 		// TODO: what if called twice?
@@ -25,11 +33,23 @@ namespace RTGS.DotNetSDK.Subscriber
 		{
 			_fromRtgsCall = _grpcClient.FromRtgsMessage();
 
-			var handlersLookup = handlers.ToDictionary(handler => handler.InstructionType, handler => handler);
+			var handlersLookup = new Dictionary<string, Func<RtgsMessage, Task>>();
+
+			var payawayFundsV1Handler = handlers.OfType<IPayawayFundsV1Handler>().First(); // work out how to get it...
+			var payawayFundsMessageAdapter = _messageAdapters.OfType<IMessageAdapter<FIToFICustomerCreditTransferV10>>().First();
+			handlersLookup.Add(payawayFundsMessageAdapter.InstructionType, message => payawayFundsMessageAdapter.HandleMessageAsync(message, payawayFundsV1Handler));
+
+			var payawayCompleteV1Handler = handlers.OfType<IPayawayCompleteV1Handler>().First(); // work out how to get it...
+			var payawayCompleteMessageAdapter = _messageAdapters.OfType<IMessageAdapter<BankToCustomerDebitCreditNotificationV09>>().First();
+			handlersLookup.Add(payawayCompleteMessageAdapter.InstructionType, message => payawayCompleteMessageAdapter.HandleMessageAsync(message, payawayCompleteV1Handler));
+
+			var messageRejectedV1Handler = handlers.OfType<IMessageRejectV1Handler>().First(); // work out how to get it...
+			var messageRejectedMessageAdapter = _messageAdapters.OfType<IMessageAdapter<Admi00200101>>().First();
+			handlersLookup.Add(messageRejectedMessageAdapter.InstructionType, message => messageRejectedMessageAdapter.HandleMessageAsync(message, messageRejectedV1Handler));
 
 			await foreach (var message in _fromRtgsCall.ResponseStream.ReadAllAsync())
 			{
-				handlersLookup.TryGetValue(message.Header.InstructionType, out var handler);
+				handlersLookup.TryGetValue(message.Header.InstructionType, out var handlerFunc);
 
 				var acknowledgement = new RtgsMessageAcknowledgement
 				{
@@ -43,8 +63,7 @@ namespace RTGS.DotNetSDK.Subscriber
 
 				await _fromRtgsCall.RequestStream.WriteAsync(acknowledgement);
 
-				// TODO: handler should only get strongly typed data?
-				await handler.HandleMessageAsync(message);
+				await handlerFunc(message);
 			}
 		}
 

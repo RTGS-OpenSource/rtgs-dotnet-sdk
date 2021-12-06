@@ -72,7 +72,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 		}
 
 		public void WaitForAcknowledgements() =>
-			_acknowledgementsSignal.Wait();
+			_acknowledgementsSignal.Wait(TimeSpan.FromSeconds(5)); // TODO: replace with cancellation token?
 
 		public void Clear()
 		{

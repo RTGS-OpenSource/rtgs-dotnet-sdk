@@ -34,7 +34,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
-					.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsSubscriberOptions))
+					.ConfigureServices((_, services) => services.AddRtgsSubscriber(rtgsSubscriberOptions))
 					.Build();
 
 				_fromRtgsSender = _grpcServer.Services.GetRequiredService<FromRtgsSender>();
@@ -65,7 +65,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		{
 			_fromRtgsSender.SetExpectedNumberOfAcknowledgements(1);
 
-			_rtgsSubscriber.Start(new[] { subscriberAction.Handler });
+			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
 
 			var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
@@ -88,7 +88,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		{
 			_fromRtgsSender.SetExpectedNumberOfAcknowledgements(1);
 
-			_rtgsSubscriber.Start(new[] { subscriberAction.Handler });
+			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
 
 			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
