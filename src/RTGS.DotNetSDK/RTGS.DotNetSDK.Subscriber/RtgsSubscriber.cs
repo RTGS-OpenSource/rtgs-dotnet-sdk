@@ -6,7 +6,7 @@ using RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Subscriber
 {
-	public class RtgsSubscriber : IRtgsSubscriber
+	internal sealed class RtgsSubscriber : IRtgsSubscriber
 	{
 		private readonly Payment.PaymentClient _grpcClient;
 		private Task _executingTask;
@@ -31,8 +31,6 @@ namespace RTGS.DotNetSDK.Subscriber
 			{
 				handlersLookup.TryGetValue(message.Header.InstructionType, out var handler);
 
-				await handler.HandleMessageAsync(message);
-
 				var acknowledgement = new RtgsMessageAcknowledgement
 				{
 					Header = new RtgsMessageHeader
@@ -44,6 +42,9 @@ namespace RTGS.DotNetSDK.Subscriber
 				};
 
 				await _fromRtgsCall.RequestStream.WriteAsync(acknowledgement);
+
+				// TODO: handler should only get strongly typed data?
+				await handler.HandleMessageAsync(message);
 			}
 		}
 
@@ -54,7 +55,7 @@ namespace RTGS.DotNetSDK.Subscriber
 			await CompleteAsyncEnumerables();
 		}
 
-		protected async Task CompleteAsyncEnumerables()
+		private async Task CompleteAsyncEnumerables()
 		{
 			if (_fromRtgsCall is not null)
 			{

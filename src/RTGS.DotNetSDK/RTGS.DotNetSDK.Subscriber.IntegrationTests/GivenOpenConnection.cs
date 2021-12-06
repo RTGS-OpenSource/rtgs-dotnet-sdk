@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RTGS.DotNetSDK.Subscriber.Extensions;
@@ -66,23 +67,26 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		{
 			_fromRtgsSender.SetExpectedNumberOfAcknowledgements(1);
 
-			var handler = new PayawayFundsHandler();
-			_rtgsSubscriber.Start(new[] { handler });
+			var testHandler = new PayawayFundsHandler();
+			_rtgsSubscriber.Start(new[] { testHandler });
 
 			var sentRtgsMessage = await _fromRtgsSender.SendAsync("PayawayFunds", ValidMessages.PayawayFunds);
 
-			handler.WaitForMessage(WaitForReceivedMessageDuration);
+			_fromRtgsSender.WaitForAcknowledgements();
+
+			using var _ = new AssertionScope();
+
+			_fromRtgsSender.Acknowledgements
+				.Should().ContainSingle(acknowledgement => acknowledgement.Header.CorrelationId == sentRtgsMessage.Header.CorrelationId
+														   && acknowledgement.Success);
+
+			testHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 			// TODO: work out how to compare client type with server type?
 			//sentRtgsMessage.Should().BeEquivalentTo(handler.ReceivedMessage);
 			var sentRtgsMessageJson = JsonSerializer.Serialize(sentRtgsMessage);
-			var receivedMessageJson = JsonSerializer.Serialize(handler.ReceivedMessage);
+			var receivedMessageJson = JsonSerializer.Serialize(testHandler.ReceivedMessage);
 			sentRtgsMessageJson.Should().Be(receivedMessageJson);
-
-			_fromRtgsSender.WaitForAcknowledgements();
-
-			_fromRtgsSender.Acknowledgements
-				.Should().ContainSingle(acknowledgement => acknowledgement.Header.CorrelationId == sentRtgsMessage.Header.CorrelationId);
 		}
 
 		[Fact]
@@ -90,23 +94,23 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		{
 			_fromRtgsSender.SetExpectedNumberOfAcknowledgements(1);
 
-			var handler = new PayawayFundsHandler();
-			_rtgsSubscriber.Start(new[] { handler });
+			var testHandler = new PayawayFundsHandler();
+			_rtgsSubscriber.Start(new[] { testHandler });
 
 			await _fromRtgsSender.SendAsync("PayawayFunds", ValidMessages.PayawayFunds);
 
-			handler.WaitForMessage(WaitForReceivedMessageDuration);
-			handler.Reset();
-
 			_fromRtgsSender.WaitForAcknowledgements();
+
+			testHandler.WaitForMessage(WaitForReceivedMessageDuration);
+			testHandler.Reset();
 
 			await _rtgsSubscriber.StopAsync();
 
 			await _fromRtgsSender.SendAsync("PayawayFunds", ValidMessages.PayawayFunds);
 
-			handler.WaitForMessage(WaitForReceivedMessageDuration);
+			testHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-			handler.ReceivedMessage.Should().BeNull();
+			testHandler.ReceivedMessage.Should().BeNull();
 		}
 
 		// TODO: use cancellation tokens to ensure tests would eventually finish by timing out

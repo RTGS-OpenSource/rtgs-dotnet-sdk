@@ -11,7 +11,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 {
 	public class FromRtgsSender
 	{
-		private static readonly TimeSpan WaitForReadyToSendDuration = TimeSpan.FromSeconds(3);
+		private static readonly TimeSpan WaitForReadyToSendDuration = TimeSpan.FromSeconds(2);
 
 		private readonly ManualResetEventSlim _readyToSend = new(false);
 		private readonly List<RtgsMessageAcknowledgement> _acknowledgements = new();
@@ -34,11 +34,15 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 
 		public async Task<RtgsMessage> SendAsync<T>(string instructionType, T data)
 		{
-			_readyToSend.Wait(WaitForReadyToSendDuration);
+			var messageStreamSet = _readyToSend.Wait(WaitForReadyToSendDuration);
+			if (!messageStreamSet)
+			{
+				return null;
+			}
 
 			if (_messageStream is null)
 			{
-				return null;
+				throw new InvalidOperationException("message stream not set");
 			}
 
 			var correlationId = Guid.NewGuid().ToString();
