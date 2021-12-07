@@ -23,4 +23,9 @@
 	<ItemGroup>
 		<ProjectReference Include="..\RTGS.DotNetSDK.Subscriber\RTGS.DotNetSDK.Subscriber.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+		<Content Include="xunit.runner.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 </Project>
