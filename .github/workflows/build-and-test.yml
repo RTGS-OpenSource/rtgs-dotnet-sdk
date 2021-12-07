@@ -1,12 +1,13 @@
 name: RTGS .NET SDK Nuget Package
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  release:
-    types: [published]
+  push
+  #push:
+  #  branches: [main]
+  #pull_request:
+  #  branches: [main]
+  #release:
+  #  types: [published]
 
 jobs:
   build-test-and-publish:
@@ -36,6 +37,30 @@ jobs:
           minimum_coverage: 70
           fail_below_threshold: true
           show_branch: true
+
+  publish-to-devops-artifacts:
+    #if: github.ref == 'refs/heads/main' && github.event_name == 'push'   
+    needs: build-test-and-publish
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "5.0.x"
+          source-url: https://pkgs.dev.azure.com/rtgs-global/RTGS-Global/_packaging/RTGS-Packages/nuget/v3/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }} 
+
+      - name: dotnet build and publish
+        run: |
+          dotnet restore
+          dotnet build --configuration Release
+          dotnet pack -c Release --version-suffix $GITHUB_RUN_ID
+
+      - name: 'dotnet publish'
+        run: dotnet nuget push --api-key AzureArtifacts bin/Release/*.nupkg 
+
   generate-docs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: build-test-and-publish
