@@ -38,6 +38,7 @@ namespace RTGS.DotNetSDK.Subscriber.Extensions
 			serviceCollection.AddTransient<IMessageAdapter, MessageRejectedV1MessageAdapter>();
 			serviceCollection.AddTransient<IMessageAdapter, PayawayCompleteV1MessageAdapter>();
 			serviceCollection.AddTransient<IMessageAdapter, PayawayFundsV1MessageAdapter>();
+			serviceCollection.AddTransient<IMessageAdapter, EarmarkFundsV1MessageAdapter>();
 
 			return serviceCollection;
 		}

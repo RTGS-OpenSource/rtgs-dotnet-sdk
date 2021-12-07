@@ -27,5 +27,8 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 
 		public static readonly SubscriberAction<BlockFundsV1> BlockFundsV1 =
 			new(new AllTestHandlers(), handlers => handlers.OfType<TestBlockFundsV1Handler>().Single(), "BlockFunds", ValidMessages.BlockFundsV1);
+
+		public static readonly SubscriberAction<EarmarkFundsV1> EarmarkFundsV1 =
+			new(new AllTestHandlers(), handlers => handlers.OfType<TestEarmarkFundsV1Handler>().Single(), "EarmarkFunds", ValidMessages.EarmarkFundsV1);
 	}
 }

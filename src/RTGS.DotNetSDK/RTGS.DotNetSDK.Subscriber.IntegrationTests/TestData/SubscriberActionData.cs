@@ -24,5 +24,8 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 
 		public override ISubscriberAction<BlockFundsV1> BlockFundsV1 =>
 			SubscriberActions.BlockFundsV1;
+
+		public override ISubscriberAction<EarmarkFundsV1> EarmarkFundsV1 =>
+			SubscriberActions.EarmarkFundsV1;
 	}
 }

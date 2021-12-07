@@ -107,5 +107,19 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 		{
 			PacsJson = "pacs-json"
 		};
+
+		public static readonly EarmarkFundsV1 EarmarkFundsV1 = new()
+		{
+			Amount = 1,
+			LiquidityPoolAccount = new CashAccount38
+			{
+				Nm = "name",
+				Id = new AccountIdentification4Choice
+				{
+					IBAN = "iban"
+				}
+			},
+			LockId = new Guid("ff1bee59-92ac-4183-939f-6c67e16f22fb")
+		};
 	}
 }
