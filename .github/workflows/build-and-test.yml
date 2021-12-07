@@ -55,8 +55,8 @@ jobs:
       - name: dotnet build and publish
         run: |
           dotnet restore
-          dotnet build --configuration Release
-          dotnet pack -c Release --version-suffix $GITHUB_RUN_ID
+          dotnet build --configuration Release ./src/RTGS.DotNetSDK/
+          dotnet pack -c Release ./src/RTGS.DotNetSDK/ --version-suffix $GITHUB_RUN_ID
 
       - name: 'dotnet publish'
         run: dotnet nuget push --api-key AzureArtifacts bin/Release/*.nupkg 
