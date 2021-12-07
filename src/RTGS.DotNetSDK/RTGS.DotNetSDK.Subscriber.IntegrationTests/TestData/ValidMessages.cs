@@ -102,5 +102,10 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 				}
 			}
 		};
+
+		public static readonly BlockFundsV1 BlockFundsV1 = new()
+		{
+			PacsJson = "pacs-json"
+		};
 	}
 }

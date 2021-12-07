@@ -24,5 +24,8 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 
 		public static readonly SubscriberAction<AtomicTransferResponseV1> AtomicTransferResponseV1 =
 			new(new AllTestHandlers(), handlers => handlers.OfType<TestAtomicTransferResponseV1Handler>().Single(), "BlockResponse", ValidMessages.AtomicTransferResponseV1);
+
+		public static readonly SubscriberAction<BlockFundsV1> BlockFundsV1 =
+			new(new AllTestHandlers(), handlers => handlers.OfType<TestBlockFundsV1Handler>().Single(), "BlockFunds", ValidMessages.BlockFundsV1);
 	}
 }

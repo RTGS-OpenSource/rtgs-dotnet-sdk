@@ -23,7 +23,8 @@ namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands
 				new ImplementationFactory<BankToCustomerDebitCreditNotificationV09, IPayawayCompleteV1Handler, IMessageAdapter<BankToCustomerDebitCreditNotificationV09>>(enumeratedMessageAdapters),
 				new ImplementationFactory<Admi00200101, IMessageRejectV1Handler, IMessageAdapter<Admi00200101>>(enumeratedMessageAdapters),
 				new ImplementationFactory<AtomicLockResponseV1, IAtomicLockResponseV1Handler, IMessageAdapter<AtomicLockResponseV1>>(enumeratedMessageAdapters),
-				new ImplementationFactory<AtomicTransferResponseV1, IAtomicTransferResponseV1Handler, IMessageAdapter<AtomicTransferResponseV1>>(enumeratedMessageAdapters)
+				new ImplementationFactory<AtomicTransferResponseV1, IAtomicTransferResponseV1Handler, IMessageAdapter<AtomicTransferResponseV1>>(enumeratedMessageAdapters),
+				new ImplementationFactory<BlockFundsV1, IBlockFundsV1Handler, IMessageAdapter<BlockFundsV1>>(enumeratedMessageAdapters)
 			};
 		}
 

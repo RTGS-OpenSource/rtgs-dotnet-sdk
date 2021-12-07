@@ -20,6 +20,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers
 			yield return new TestPayawayFundsV1Handler();
 			yield return new TestAtomicLockResponseV1Handler();
 			yield return new TestAtomicTransferResponseV1Handler();
+			yield return new TestBlockFundsV1Handler();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() =>
@@ -30,6 +31,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers
 		public class TestPayawayFundsV1Handler : TestHandler<FIToFICustomerCreditTransferV10>, IPayawayFundsV1Handler { }
 		public class TestAtomicLockResponseV1Handler : TestHandler<AtomicLockResponseV1>, IAtomicLockResponseV1Handler { }
 		public class TestAtomicTransferResponseV1Handler : TestHandler<AtomicTransferResponseV1>, IAtomicTransferResponseV1Handler { }
+		public class TestBlockFundsV1Handler : TestHandler<BlockFundsV1>, IBlockFundsV1Handler { }
 
 		public abstract class TestHandler<TMessage> : ITestHandler<TMessage>
 		{
