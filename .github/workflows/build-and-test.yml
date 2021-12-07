@@ -58,7 +58,7 @@ jobs:
           dotnet pack -c Release ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/RTGS.DotNetSDK.Publisher.csproj --version-suffix $GITHUB_RUN_ID
 
       - name: 'dotnet publish'
-        run: dotnet nuget push --api-key AzureArtifacts bin/Release/*.nupkg 
+        run: dotnet nuget push --api-key AzureArtifacts ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/bin/Release/*.nupkg 
 
   generate-docs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
