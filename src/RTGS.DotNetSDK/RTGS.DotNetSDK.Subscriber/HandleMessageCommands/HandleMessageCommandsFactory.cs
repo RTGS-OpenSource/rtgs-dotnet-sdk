@@ -2,6 +2,7 @@
 using System.Linq;
 using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.Handlers;
+using RTGS.DotNetSDK.Subscriber.Messages;
 using RTGS.ISO20022.Messages.Admi_002_001.V01;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
@@ -20,7 +21,9 @@ namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands
 			{
 				new ImplementationFactory<FIToFICustomerCreditTransferV10, IPayawayFundsV1Handler, IMessageAdapter<FIToFICustomerCreditTransferV10>>(enumeratedMessageAdapters),
 				new ImplementationFactory<BankToCustomerDebitCreditNotificationV09, IPayawayCompleteV1Handler, IMessageAdapter<BankToCustomerDebitCreditNotificationV09>>(enumeratedMessageAdapters),
-				new ImplementationFactory<Admi00200101, IMessageRejectV1Handler, IMessageAdapter<Admi00200101>>(enumeratedMessageAdapters)
+				new ImplementationFactory<Admi00200101, IMessageRejectV1Handler, IMessageAdapter<Admi00200101>>(enumeratedMessageAdapters),
+				new ImplementationFactory<AtomicLockResponseV1, IAtomicLockResponseV1Handler, IMessageAdapter<AtomicLockResponseV1>>(enumeratedMessageAdapters),
+				new ImplementationFactory<AtomicTransferResponseV1, IAtomicTransferResponseV1Handler, IMessageAdapter<AtomicTransferResponseV1>>(enumeratedMessageAdapters)
 			};
 		}
 

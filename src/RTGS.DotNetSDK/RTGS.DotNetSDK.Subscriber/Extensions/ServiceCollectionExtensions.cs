@@ -32,6 +32,8 @@ namespace RTGS.DotNetSDK.Subscriber.Extensions
 
 			serviceCollection.AddTransient<IRtgsSubscriber, RtgsSubscriber>();
 			serviceCollection.AddTransient<IHandleMessageCommandsFactory, HandleMessageCommandsFactory>();
+			serviceCollection.AddTransient<IMessageAdapter, AtomicLockResponseV1MessageAdapter>();
+			serviceCollection.AddTransient<IMessageAdapter, AtomicTransferResponseV1MessageAdapter>();
 			serviceCollection.AddTransient<IMessageAdapter, MessageRejectedV1MessageAdapter>();
 			serviceCollection.AddTransient<IMessageAdapter, PayawayCompleteV1MessageAdapter>();
 			serviceCollection.AddTransient<IMessageAdapter, PayawayFundsV1MessageAdapter>();

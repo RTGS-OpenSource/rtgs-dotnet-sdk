@@ -1,4 +1,6 @@
 ﻿using System;
+using RTGS.DotNetSDK.Subscriber.Messages;
+using RTGS.Public.Payment.V1.Pacs;
 
 namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 {
@@ -64,6 +66,40 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 			Rsn = new ISO20022.Messages.Admi_002_001.V01.RejectionReason2
 			{
 				RjctnDtTm = new DateTime(2021, 12, 25)
+			}
+		};
+
+		public static readonly AtomicLockResponseV1 AtomicLockResponseV1 = new()
+		{
+			LckId = "9e4d8f43-eb2e-4408-9461-0aba281792af",
+			DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
+			{
+				Ccy = "GBP",
+				Value = 1.99m
+			}
+		};
+
+		public static readonly AtomicTransferResponseV1 AtomicTransferResponseV1 = new()
+		{
+			LckId = "30fc2ac5-5f4d-4abc-b5b9-038df91b9832",
+			FullFIToFICstmrCdtTrf = new FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer
+			{
+				GrpHdr = new GroupHeader93
+				{
+					MsgId = "message-id"
+				},
+				CdtTrfTxInf =
+				{
+					{
+						new CreditTransferTransaction39
+						{
+							PmtId = new PaymentIdentification7
+							{
+								EndToEndId = "end-to-end-id"
+							}
+						}
+					}
+				}
 			}
 		};
 	}

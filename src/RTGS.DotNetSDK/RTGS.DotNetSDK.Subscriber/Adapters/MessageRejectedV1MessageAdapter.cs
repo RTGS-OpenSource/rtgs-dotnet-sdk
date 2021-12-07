@@ -12,8 +12,8 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters
 
 		public async Task HandleMessageAsync(RtgsMessage message, IHandler<Admi00200101> handler)
 		{
-			var payawayCompleteMessage = JsonSerializer.Deserialize<Admi00200101>(message.Data);
-			await handler.HandleMessageAsync(payawayCompleteMessage);
+			var messageRejectedMessage = JsonSerializer.Deserialize<Admi00200101>(message.Data);
+			await handler.HandleMessageAsync(messageRejectedMessage);
 		}
 	}
 }

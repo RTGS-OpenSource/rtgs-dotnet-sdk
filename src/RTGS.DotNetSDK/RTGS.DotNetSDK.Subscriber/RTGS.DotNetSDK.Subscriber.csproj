@@ -6,6 +6,7 @@
 	<ItemGroup>
 		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.40.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="RTGS.ISO20022.Messages" Version="1.0.61" />
 		<PackageReference Include="RTGS.Public.Payment.Client" Version="2.0.59" />
 	</ItemGroup>
