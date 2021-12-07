@@ -95,9 +95,10 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 			_fromRtgsSender.WaitForAcknowledgements();
 
 			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
-			subscriberAction.Handler.Reset();
 
 			await _rtgsSubscriber.StopAsync();
+
+			subscriberAction.Handler.Reset();
 
 			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 

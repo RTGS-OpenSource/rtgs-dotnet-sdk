@@ -6,7 +6,7 @@ using RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Subscriber.Adapters
 {
-	public class PayawayCompleteV1MessageAdapter : IMessageAdapter<BankToCustomerDebitCreditNotificationV09>
+	internal class PayawayCompleteV1MessageAdapter : IMessageAdapter<BankToCustomerDebitCreditNotificationV09>
 	{
 		public string InstructionType => "PayawayComplete";
 

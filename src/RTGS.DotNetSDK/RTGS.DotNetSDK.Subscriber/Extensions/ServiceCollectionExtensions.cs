@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using RTGS.DotNetSDK.Subscriber.Adapters;
+using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 using RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Subscriber.Extensions
@@ -30,6 +31,7 @@ namespace RTGS.DotNetSDK.Subscriber.Extensions
 			configureGrpcClient?.Invoke(grpcClientBuilder);
 
 			serviceCollection.AddTransient<IRtgsSubscriber, RtgsSubscriber>();
+			serviceCollection.AddTransient<IHandleMessageCommandsFactory, HandleMessageCommandsFactory>();
 			serviceCollection.AddTransient<IMessageAdapter, MessageRejectedV1MessageAdapter>();
 			serviceCollection.AddTransient<IMessageAdapter, PayawayCompleteV1MessageAdapter>();
 			serviceCollection.AddTransient<IMessageAdapter, PayawayFundsV1MessageAdapter>();

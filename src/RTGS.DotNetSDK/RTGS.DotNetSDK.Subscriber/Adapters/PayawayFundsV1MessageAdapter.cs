@@ -6,7 +6,7 @@ using RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Subscriber.Adapters
 {
-	public class PayawayFundsV1MessageAdapter : IMessageAdapter<FIToFICustomerCreditTransferV10>
+	internal class PayawayFundsV1MessageAdapter : IMessageAdapter<FIToFICustomerCreditTransferV10>
 	{
 		public string InstructionType => "PayawayFunds";
 

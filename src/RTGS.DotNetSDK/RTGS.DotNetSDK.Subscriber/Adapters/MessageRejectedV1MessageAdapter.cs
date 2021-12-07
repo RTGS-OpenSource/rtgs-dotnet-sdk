@@ -6,7 +6,7 @@ using RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Subscriber.Adapters
 {
-	public class MessageRejectedV1MessageAdapter : IMessageAdapter<Admi00200101>
+	internal class MessageRejectedV1MessageAdapter : IMessageAdapter<Admi00200101>
 	{
 		public string InstructionType => "MessageRejected";
 
