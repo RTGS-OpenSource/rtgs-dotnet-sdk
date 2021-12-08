@@ -1,7 +1,7 @@
 name: RTGS .NET SDK Manual Publish
 
-on:
-  workflow_dispatch 
+on: workflow_dispatch 
+
 jobs:
   publish-to-devops-artifacts:
     runs-on: ubuntu-latest
