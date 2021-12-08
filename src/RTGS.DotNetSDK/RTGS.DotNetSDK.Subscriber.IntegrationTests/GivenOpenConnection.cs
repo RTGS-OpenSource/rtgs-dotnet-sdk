@@ -10,6 +10,9 @@ using RTGS.DotNetSDK.Subscriber.Extensions;
 using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData;
 using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers;
 using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.TestCorrelator;
 using Xunit;
 
 namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
@@ -20,6 +23,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
 
 		private readonly GrpcServerFixture _grpcServer;
+		private readonly ITestCorrelatorContext _serilogContext;
 		private IHost _clientHost;
 		private FromRtgsSender _fromRtgsSender;
 		private IRtgsSubscriber _rtgsSubscriber;
@@ -27,7 +31,20 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		public GivenOpenConnection(GrpcServerFixture grpcServer)
 		{
 			_grpcServer = grpcServer;
+
+			SetupSerilogLogger();
+
+			_serilogContext = TestCorrelator.CreateContext();
 		}
+
+		private static void SetupSerilogLogger() =>
+			Log.Logger = new LoggerConfiguration()
+				.MinimumLevel.Debug()
+				.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+				.Enrich.FromLogContext()
+				.WriteTo.Console()
+				.WriteTo.TestCorrelator()
+				.CreateLogger();
 
 		public async Task InitializeAsync()
 		{
@@ -39,6 +56,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 					.ConfigureServices((_, services) => services.AddRtgsSubscriber(rtgsSubscriberOptions))
+					.UseSerilog()
 					.Build();
 
 				_fromRtgsSender = _grpcServer.Services.GetRequiredService<FromRtgsSender>();
@@ -156,6 +174,21 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 
 			var allCompleted = Task.WaitAll(disposeTasks, TimeSpan.FromSeconds(5));
 			allCompleted.Should().BeTrue();
+		}
+
+		[Theory]
+		[ClassData(typeof(SubscriberActionData))]
+		public async Task WhenMessageReceived_ThenLogInformation<TMessage>(SubscriberAction<TMessage> subscriberAction)
+		{
+			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
+
+			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+
+			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+
+			await _rtgsSubscriber.StopAsync();
+
+			// TODO: check logs
 		}
 	}
 }

@@ -30,6 +30,7 @@ namespace RTGS.DotNetSDK.Subscriber
 
 		private async Task Execute(IReadOnlyCollection<IHandler> handlers)
 		{
+			//TODO: Log starting
 			_fromRtgsCall = _grpcClient.FromRtgsMessage();
 
 			var commands = _handleMessageCommandsFactory.CreateAll(handlers)
@@ -37,6 +38,7 @@ namespace RTGS.DotNetSDK.Subscriber
 
 			await foreach (var message in _fromRtgsCall.ResponseStream.ReadAllAsync())
 			{
+				//TODO: log message received
 				// TODO: command not found
 				// TODO: message with no header/instruction type
 				commands.TryGetValue(message.Header.InstructionType, out var command);
@@ -59,8 +61,10 @@ namespace RTGS.DotNetSDK.Subscriber
 		}
 
 		// TODO: what if called without calling start?
-		public async Task StopAsync() => 
+		public async Task StopAsync() =>
+			//TODO: log stopping
 			await CompleteAsyncEnumerables();
+			//TODO: log stopped
 
 		private async Task CompleteAsyncEnumerables()
 		{
