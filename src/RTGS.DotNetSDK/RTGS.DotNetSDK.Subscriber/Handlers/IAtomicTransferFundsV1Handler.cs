@@ -2,5 +2,5 @@
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers
 {
-	public interface IBlockFundsV1Handler : IHandler<BlockFundsV1> { }
+	public interface IAtomicTransferFundsV1Handler : IHandler<AtomicTransferFundsV1> { }
 }

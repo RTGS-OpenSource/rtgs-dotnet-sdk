@@ -33,7 +33,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers
 		public class TestPayawayFundsV1Handler : TestHandler<FIToFICustomerCreditTransferV10>, IPayawayFundsV1Handler { }
 		public class TestAtomicLockResponseV1Handler : TestHandler<AtomicLockResponseV1>, IAtomicLockResponseV1Handler { }
 		public class TestAtomicTransferResponseV1Handler : TestHandler<AtomicTransferResponseV1>, IAtomicTransferResponseV1Handler { }
-		public class TestBlockFundsV1Handler : TestHandler<BlockFundsV1>, IBlockFundsV1Handler { }
+		public class TestAtomicTransferFundsV1Handler : TestHandler<AtomicTransferFundsV1>, IAtomicTransferFundsV1Handler { }
 		public class TestEarmarkFundsV1Handler : TestHandler<EarmarkFundsV1>, IEarmarkFundsV1Handler { }
 		public class TestEarmarkCompleteV1Handler : TestHandler<EarmarkCompleteV1>, IEarmarkCompleteV1Handler { }
 		public class TestEarmarkReleaseV1Handler : TestHandler<EarmarkReleaseV1>, IEarmarkReleaseV1Handler { }

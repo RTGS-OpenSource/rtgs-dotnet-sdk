@@ -22,8 +22,8 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 		public override ISubscriberAction<AtomicTransferResponseV1> AtomicTransferResponseV1 =>
 			SubscriberActions.AtomicTransferResponseV1;
 
-		public override ISubscriberAction<BlockFundsV1> BlockFundsV1 =>
-			SubscriberActions.BlockFundsV1;
+		public override ISubscriberAction<AtomicTransferFundsV1> AtomicTransferFundsV1 =>
+			SubscriberActions.AtomicTransferFundsV1;
 
 		public override ISubscriberAction<EarmarkFundsV1> EarmarkFundsV1 =>
 			SubscriberActions.EarmarkFundsV1;
