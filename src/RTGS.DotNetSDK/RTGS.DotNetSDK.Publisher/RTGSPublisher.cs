@@ -127,7 +127,7 @@ namespace RTGS.DotNetSDK.Publisher
 			if (_toRtgsCall is null)
 			{
 				var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
-				_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
+				_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders, cancellationToken: CancellationToken.None);
 
 				if (_waitForAcknowledgementsTask is not null)
 				{
