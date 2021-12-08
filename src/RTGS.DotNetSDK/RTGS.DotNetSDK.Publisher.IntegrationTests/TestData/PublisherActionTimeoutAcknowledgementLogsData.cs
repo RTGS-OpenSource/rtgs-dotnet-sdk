@@ -33,12 +33,12 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 					new("Timed out waiting for EarmarkConfirmation acknowledgement from RTGS (SendEarmarkConfirmationAsync)", LogEventLevel.Error)
 				});
 
-		public override IPublisherAction<TransferConfirmation> TransferConfirmation =>
-			new PublisherActionWithLogs<TransferConfirmation>(
-				PublisherActions.TransferConfirmation,
+		public override IPublisherAction<AtomicTransferConfirmation> AtomicTransferConfirmation =>
+			new PublisherActionWithLogs<AtomicTransferConfirmation>(
+				PublisherActions.AtomicTransferConfirmation,
 				new List<LogEntry>
 				{
-					new("Timed out waiting for TransferConfirmation acknowledgement from RTGS (SendTransferConfirmationAsync)", LogEventLevel.Error)
+					new("Timed out waiting for AtomicTransferConfirmation acknowledgement from RTGS (SendAtomicTransferConfirmationAsync)", LogEventLevel.Error)
 				});
 
 		public override IPublisherAction<UpdateLedgerRequest> UpdateLedger =>

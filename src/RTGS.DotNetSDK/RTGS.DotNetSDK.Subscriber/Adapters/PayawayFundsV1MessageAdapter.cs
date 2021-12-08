@@ -8,7 +8,7 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters
 {
 	internal class PayawayFundsV1MessageAdapter : IMessageAdapter<FIToFICustomerCreditTransferV10>
 	{
-		public string InstructionType => "PayawayFunds";
+		public string MessageIdentifier => "PayawayFunds";
 
 		public async Task HandleMessageAsync(RtgsMessage message, IHandler<FIToFICustomerCreditTransferV10> handler)
 		{

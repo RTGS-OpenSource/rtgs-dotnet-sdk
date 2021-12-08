@@ -6,9 +6,9 @@ using RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Subscriber.Adapters
 {
-	internal class BlockFundsV1MessageAdapter : IMessageAdapter<BlockFundsV1>
+	internal class AtomicTransferFundsV1MessageAdapter : IMessageAdapter<BlockFundsV1>
 	{
-		public string InstructionType => "BlockFunds";
+		public string MessageIdentifier => "BlockFunds";
 
 		public async Task HandleMessageAsync(RtgsMessage message, IHandler<BlockFundsV1> handler)
 		{

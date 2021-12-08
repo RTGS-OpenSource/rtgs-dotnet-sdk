@@ -4,9 +4,8 @@ using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
-{
-	// TODO: rename to ValidMessages
-	public static class ValidRequests
+{	
+	public static class ValidMessages
 	{
 		public const string BankDid = "test-bank-did";
 
@@ -63,7 +62,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 			Success = true
 		};
 
-		public static readonly TransferConfirmation TransferConfirmation = new()
+		public static readonly AtomicTransferConfirmation AtomicTransferConfirmation = new()
 		{
 			LockId = new Guid("B30E15E3-CD54-4FA6-B0EB-B9BAE32976F9"),
 			Success = true

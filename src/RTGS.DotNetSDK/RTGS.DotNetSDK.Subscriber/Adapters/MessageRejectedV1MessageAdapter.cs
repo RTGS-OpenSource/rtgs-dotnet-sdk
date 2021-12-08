@@ -8,7 +8,7 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters
 {
 	internal class MessageRejectedV1MessageAdapter : IMessageAdapter<Admi00200101>
 	{
-		public string InstructionType => "MessageRejected";
+		public string MessageIdentifier => "MessageRejected";
 
 		public async Task HandleMessageAsync(RtgsMessage message, IHandler<Admi00200101> handler)
 		{

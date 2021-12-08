@@ -56,7 +56,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			{
 				try
 				{
-					var rtgsClientOptions = RtgsPublisherOptions.Builder.CreateNew(ValidRequests.BankDid, _grpcServer.ServerUri)
+					var rtgsClientOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, _grpcServer.ServerUri)
 						.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 						.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 						.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
@@ -246,12 +246,12 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				var connection = receiver.Connections.SingleOrDefault();
 
 				connection.Should().NotBeNull();
-				connection!.Headers.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == ValidRequests.BankDid);
+				connection!.Headers.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == ValidMessages.BankDid);
 			}
 
 			[Theory]
-			[ClassData(typeof(PublisherActionWithInstructionTypeData))]
-			public async Task ThenCanSendRequestToRtgs<TRequest>(PublisherActionWithInstructionType<TRequest> publisherAction)
+			[ClassData(typeof(PublisherActionWithMessageIdentifierData))]
+			public async Task ThenCanSendRequestToRtgs<TRequest>(PublisherActionWithMessageIdentifier<TRequest> publisherAction)
 			{
 				_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
@@ -264,7 +264,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				using var _ = new AssertionScope();
 
 				receivedMessage.Header.Should().NotBeNull();
-				receivedMessage.Header?.InstructionType.Should().Be(publisherAction.InstructionType);
+				receivedMessage.Header?.InstructionType.Should().Be(publisherAction.MessageIdentifier);
 				receivedMessage.Header?.CorrelationId.Should().NotBeNullOrEmpty();
 
 				receivedRequest.Should().BeEquivalentTo(publisherAction.Request, options => options.ComparingByMembers<TRequest>());
@@ -457,7 +457,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			{
 				try
 				{
-					var rtgsClientOptions = RtgsPublisherOptions.Builder.CreateNew(ValidRequests.BankDid, _grpcServer.ServerUri)
+					var rtgsClientOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, _grpcServer.ServerUri)
 						.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 						.Build();
 

@@ -11,38 +11,36 @@ namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands
 {
 	internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 	{
-		private readonly IEnumerable<IImplementationFactory> _implementationFactories;
+		private readonly IEnumerable<ICommandCreator> _commandCreators;
 
 		public HandleMessageCommandsFactory(IEnumerable<IMessageAdapter> messageAdapters)
 		{
 			IEnumerable<IMessageAdapter> enumeratedMessageAdapters = messageAdapters.ToList();
 
-			_implementationFactories = new List<IImplementationFactory>
+			_commandCreators = new List<ICommandCreator>
 			{
-				new ImplementationFactory<FIToFICustomerCreditTransferV10, IPayawayFundsV1Handler, IMessageAdapter<FIToFICustomerCreditTransferV10>>(enumeratedMessageAdapters),
-				new ImplementationFactory<BankToCustomerDebitCreditNotificationV09, IPayawayCompleteV1Handler, IMessageAdapter<BankToCustomerDebitCreditNotificationV09>>(enumeratedMessageAdapters),
-				new ImplementationFactory<Admi00200101, IMessageRejectV1Handler, IMessageAdapter<Admi00200101>>(enumeratedMessageAdapters),
-				new ImplementationFactory<AtomicLockResponseV1, IAtomicLockResponseV1Handler, IMessageAdapter<AtomicLockResponseV1>>(enumeratedMessageAdapters),
-				new ImplementationFactory<AtomicTransferResponseV1, IAtomicTransferResponseV1Handler, IMessageAdapter<AtomicTransferResponseV1>>(enumeratedMessageAdapters),
-				new ImplementationFactory<BlockFundsV1, IBlockFundsV1Handler, IMessageAdapter<BlockFundsV1>>(enumeratedMessageAdapters),
-				new ImplementationFactory<EarmarkFundsV1, IEarmarkFundsV1Handler, IMessageAdapter<EarmarkFundsV1>>(enumeratedMessageAdapters),
-				new ImplementationFactory<EarmarkCompleteV1, IEarmarkCompleteV1Handler, IMessageAdapter<EarmarkCompleteV1>>(enumeratedMessageAdapters),
-				new ImplementationFactory<EarmarkReleaseV1, IEarmarkReleaseV1Handler, IMessageAdapter<EarmarkReleaseV1>>(enumeratedMessageAdapters)
+				new CommandCreator<FIToFICustomerCreditTransferV10, IPayawayFundsV1Handler, IMessageAdapter<FIToFICustomerCreditTransferV10>>(enumeratedMessageAdapters),
+				new CommandCreator<BankToCustomerDebitCreditNotificationV09, IPayawayCompleteV1Handler, IMessageAdapter<BankToCustomerDebitCreditNotificationV09>>(enumeratedMessageAdapters),
+				new CommandCreator<Admi00200101, IMessageRejectV1Handler, IMessageAdapter<Admi00200101>>(enumeratedMessageAdapters),
+				new CommandCreator<AtomicLockResponseV1, IAtomicLockResponseV1Handler, IMessageAdapter<AtomicLockResponseV1>>(enumeratedMessageAdapters),
+				new CommandCreator<AtomicTransferResponseV1, IAtomicTransferResponseV1Handler, IMessageAdapter<AtomicTransferResponseV1>>(enumeratedMessageAdapters),
+				new CommandCreator<BlockFundsV1, IBlockFundsV1Handler, IMessageAdapter<BlockFundsV1>>(enumeratedMessageAdapters),
+				new CommandCreator<EarmarkFundsV1, IEarmarkFundsV1Handler, IMessageAdapter<EarmarkFundsV1>>(enumeratedMessageAdapters),
+				new CommandCreator<EarmarkCompleteV1, IEarmarkCompleteV1Handler, IMessageAdapter<EarmarkCompleteV1>>(enumeratedMessageAdapters),
+				new CommandCreator<EarmarkReleaseV1, IEarmarkReleaseV1Handler, IMessageAdapter<EarmarkReleaseV1>>(enumeratedMessageAdapters)
 			};
 		}
 
 		public IEnumerable<IHandleMessageCommand> CreateAll(IReadOnlyCollection<IHandler> handlers) =>
-			_implementationFactories.Select(factory => factory.Create(handlers));
+			_commandCreators.Select(creator => creator.Create(handlers));
 
-
-		// TODO: HandleMessageCommandCreator?
-		private class ImplementationFactory<TMessage, THandler, TMessageAdapter> : IImplementationFactory
+		private class CommandCreator<TMessage, THandler, TMessageAdapter> : ICommandCreator
 			where THandler : IHandler<TMessage>
 			where TMessageAdapter : IMessageAdapter<TMessage>
 		{
 			private readonly TMessageAdapter _messageAdapter;
 
-			public ImplementationFactory(IEnumerable<IMessageAdapter> messageAdapters)
+			public CommandCreator(IEnumerable<IMessageAdapter> messageAdapters)
 			{
 				_messageAdapter = messageAdapters.OfType<TMessageAdapter>().Single();
 			}
@@ -55,7 +53,7 @@ namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands
 			}
 		}
 
-		private interface IImplementationFactory
+		private interface ICommandCreator
 		{
 			IHandleMessageCommand Create(IReadOnlyCollection<IHandler> handlers);
 		}

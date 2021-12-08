@@ -43,7 +43,7 @@ namespace RTGS.DotNetSDK.Publisher
 		public Task<SendResult> SendEarmarkConfirmationAsync(EarmarkConfirmation message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payment.earmarkconfirmation.v1", cancellationToken);
 
-		public Task<SendResult> SendTransferConfirmationAsync(TransferConfirmation message, CancellationToken cancellationToken) =>
+		public Task<SendResult> SendAtomicTransferConfirmationAsync(AtomicTransferConfirmation message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payment.blockconfirmation.v1", cancellationToken);
 
 		public Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequest message, CancellationToken cancellationToken) =>
@@ -55,7 +55,7 @@ namespace RTGS.DotNetSDK.Publisher
 		public Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payaway.confirmation.v1", cancellationToken);
 
-		private async Task<SendResult> SendRequestAsync<T>(T message, string instructionType, CancellationToken cancellationToken, [CallerMemberName] string callingMethod = null)
+		private async Task<SendResult> SendRequestAsync<T>(T message, string messageIdentifier, CancellationToken cancellationToken, [CallerMemberName] string callingMethod = null)
 		{
 			if (_disposed)
 			{
@@ -73,7 +73,7 @@ namespace RTGS.DotNetSDK.Publisher
 
 				_acknowledgementContext = new AcknowledgementContext();
 
-				await SendMessage(message, instructionType, callingMethod, linkedTokenSource.Token);
+				await SendMessage(message, messageIdentifier, callingMethod, linkedTokenSource.Token);
 
 				await _acknowledgementContext.WaitAsync(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
 
@@ -163,7 +163,7 @@ namespace RTGS.DotNetSDK.Publisher
 			}
 		}
 
-		private async Task SendMessage<T>(T message, string instructionType, string callingMethod, CancellationToken cancellationToken)
+		private async Task SendMessage<T>(T message, string messageIdentifier, string callingMethod, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -172,7 +172,7 @@ namespace RTGS.DotNetSDK.Publisher
 				Data = JsonSerializer.Serialize(message),
 				Header = new RtgsMessageHeader
 				{
-					InstructionType = instructionType,
+					InstructionType = messageIdentifier,
 					CorrelationId = _acknowledgementContext.CorrelationId
 				}
 			};

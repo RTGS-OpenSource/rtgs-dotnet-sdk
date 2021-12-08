@@ -16,7 +16,7 @@ namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands
 			_handler = handler;
 		}
 
-		public string InstructionType => _messageAdapter.InstructionType;
+		public string MessageIdentifier => _messageAdapter.MessageIdentifier;
 
 		public async Task HandleAsync(RtgsMessage message) =>
 			await _messageAdapter.HandleMessageAsync(message, _handler);

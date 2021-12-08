@@ -8,7 +8,7 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters
 {
 	internal class EarmarkFundsV1MessageAdapter : IMessageAdapter<EarmarkFundsV1>
 	{
-		public string InstructionType => "EarmarkFunds";
+		public string MessageIdentifier => "EarmarkFunds";
 
 		public async Task HandleMessageAsync(RtgsMessage message, IHandler<EarmarkFundsV1> handler)
 		{

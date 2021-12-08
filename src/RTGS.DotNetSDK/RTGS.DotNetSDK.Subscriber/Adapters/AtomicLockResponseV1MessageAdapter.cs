@@ -8,7 +8,7 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters
 {
 	internal class AtomicLockResponseV1MessageAdapter : IMessageAdapter<AtomicLockResponseV1>
 	{
-		public string InstructionType => "payment.lock.v2";
+		public string MessageIdentifier => "payment.lock.v2";
 
 		public async Task HandleMessageAsync(RtgsMessage message, IHandler<AtomicLockResponseV1> handler)
 		{

@@ -6,7 +6,7 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters
 {
 	public interface IMessageAdapter
 	{
-		string InstructionType { get; } // TODO: rename to message identifier?
+		string MessageIdentifier { get; }
 	}
 
 	public interface IMessageAdapter<out TMessage> : IMessageAdapter

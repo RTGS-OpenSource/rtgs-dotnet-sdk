@@ -32,7 +32,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 			_messageStream = null;
 		}
 
-		public async Task<RtgsMessage> SendAsync<T>(string instructionType, T data)
+		public async Task<RtgsMessage> SendAsync<T>(string messageIdentifier, T data)
 		{
 			var messageStreamSet = _readyToSend.Wait(WaitForReadyToSendDuration);
 			if (!messageStreamSet)
@@ -52,7 +52,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 				Header = new RtgsMessageHeader
 				{
 					CorrelationId = correlationId,
-					InstructionType = instructionType
+					InstructionType = messageIdentifier
 				},
 				Data = JsonSerializer.Serialize(data)
 			};

@@ -16,7 +16,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		[Fact]
 		public async void WhenSending_ThenRpcExceptionThrown()
 		{
-			var rtgsClientOptions = RtgsPublisherOptions.Builder.CreateNew(ValidRequests.BankDid, new Uri("https://localhost:4567"))
+			var rtgsClientOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, new Uri("https://localhost:4567"))
 				.Build();
 
 			using var clientHost = Host.CreateDefaultBuilder()

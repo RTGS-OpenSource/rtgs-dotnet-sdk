@@ -5,7 +5,7 @@ namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands
 {
 	public interface IHandleMessageCommand
 	{
-		string InstructionType { get; }
+		string MessageIdentifier { get; }
 
 		Task HandleAsync(RtgsMessage message);
 	}

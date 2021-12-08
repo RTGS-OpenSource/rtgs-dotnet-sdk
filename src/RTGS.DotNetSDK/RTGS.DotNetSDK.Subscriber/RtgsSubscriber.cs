@@ -30,7 +30,7 @@ namespace RTGS.DotNetSDK.Subscriber
 			_fromRtgsCall = _grpcClient.FromRtgsMessage();
 
 			var commands = _handleMessageCommandsFactory.CreateAll(handlers)
-				.ToDictionary(command => command.InstructionType, command => command);
+				.ToDictionary(command => command.MessageIdentifier, command => command);
 
 			await foreach (var message in _fromRtgsCall.ResponseStream.ReadAllAsync())
 			{

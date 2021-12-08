@@ -8,7 +8,7 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters
 {
 	internal class AtomicTransferResponseV1MessageAdapter : IMessageAdapter<AtomicTransferResponseV1>
 	{
-		public string InstructionType => "BlockResponse";
+		public string MessageIdentifier => "BlockResponse";
 
 		public async Task HandleMessageAsync(RtgsMessage message, IHandler<AtomicTransferResponseV1> handler)
 		{
