@@ -71,8 +71,8 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 			_acknowledgementsSignal.Signal();
 		}
 
-		public void WaitForAcknowledgements() =>
-			_acknowledgementsSignal.Wait(TimeSpan.FromSeconds(5)); // TODO: replace with cancellation token?
+		public void WaitForAcknowledgements(TimeSpan timeout) =>
+			_acknowledgementsSignal.Wait(timeout); // TODO: replace with cancellation token?
 
 		public void Clear()
 		{

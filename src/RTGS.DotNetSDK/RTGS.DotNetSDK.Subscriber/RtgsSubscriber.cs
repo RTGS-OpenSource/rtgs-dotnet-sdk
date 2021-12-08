@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
@@ -12,8 +13,10 @@ namespace RTGS.DotNetSDK.Subscriber
 	{
 		private readonly Payment.PaymentClient _grpcClient;
 		private readonly IHandleMessageCommandsFactory _handleMessageCommandsFactory;
+		private readonly SemaphoreSlim _disposingSignal = new(1);
 		private Task _executingTask;
 		private AsyncDuplexStreamingCall<RtgsMessageAcknowledgement, RtgsMessage> _fromRtgsCall;
+		private bool _disposed;
 
 		public RtgsSubscriber(Payment.PaymentClient grpcClient, IHandleMessageCommandsFactory handleMessageCommandsFactory)
 		{
@@ -56,11 +59,8 @@ namespace RTGS.DotNetSDK.Subscriber
 		}
 
 		// TODO: what if called without calling start?
-		public async Task StopAsync()
-		{
-			// TODO: timeout?
+		public async Task StopAsync() => 
 			await CompleteAsyncEnumerables();
-		}
 
 		private async Task CompleteAsyncEnumerables()
 		{
@@ -72,6 +72,32 @@ namespace RTGS.DotNetSDK.Subscriber
 
 				_fromRtgsCall.Dispose();
 				_fromRtgsCall = null;
+			}
+		}
+
+		public async ValueTask DisposeAsync()
+		{
+			if (_disposed)
+			{
+				return;
+			}
+
+			await _disposingSignal.WaitAsync();
+
+			try
+			{
+				if (_disposed)
+				{
+					return;
+				}
+
+				_disposed = true;
+
+				await StopAsync();
+			}
+			finally
+			{
+				_disposingSignal.Release();
 			}
 		}
 	}

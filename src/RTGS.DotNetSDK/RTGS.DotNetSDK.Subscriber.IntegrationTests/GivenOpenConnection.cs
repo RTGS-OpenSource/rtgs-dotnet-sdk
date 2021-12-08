@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -6,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RTGS.DotNetSDK.Subscriber.Extensions;
 using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData;
+using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers;
 using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer;
 using Xunit;
 
@@ -13,7 +16,8 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 {
 	public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 	{
-		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(500);
+		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(100);
+		private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
 
 		private readonly GrpcServerFixture _grpcServer;
 		private IHost _clientHost;
@@ -69,7 +73,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 
 			var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
-			_fromRtgsSender.WaitForAcknowledgements();
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 			using var _ = new AssertionScope();
 
@@ -92,7 +96,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 
 			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
-			_fromRtgsSender.WaitForAcknowledgements();
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
@@ -105,6 +109,53 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 			subscriberAction.Handler.ReceivedMessage.Should().BeNull();
+		}
+
+		[Theory]
+		[ClassData(typeof(SubscriberActionData))]
+		public async Task WhenSubscriberIsDisposed_ThenCloseConnection<TMessage>(SubscriberAction<TMessage> subscriberAction)
+		{
+			_fromRtgsSender.SetExpectedNumberOfAcknowledgements(1);
+
+			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
+
+			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+
+			await _rtgsSubscriber.DisposeAsync();
+
+			subscriberAction.Handler.Reset();
+
+			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+
+			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+
+			subscriberAction.Handler.ReceivedMessage.Should().BeNull();
+		}
+
+		[Fact]
+		public void WhenDisposingInParallel_ThenCanDispose()
+		{
+			_rtgsSubscriber.Start(new AllTestHandlers());
+
+			using var disposeSignal = new ManualResetEventSlim();
+			const int concurrentDisposableThreads = 20;
+			var disposeTasks = Enumerable.Range(1, concurrentDisposableThreads)
+				.Select(request => Task.Run(async () =>
+				{
+					disposeSignal.Wait();
+
+					await _rtgsSubscriber.DisposeAsync();
+				}))
+				.ToArray();
+
+			disposeSignal.Set();
+
+			var allCompleted = Task.WaitAll(disposeTasks, TimeSpan.FromSeconds(5));
+			allCompleted.Should().BeTrue();
 		}
 	}
 }
