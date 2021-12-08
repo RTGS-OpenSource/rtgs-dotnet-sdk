@@ -9,7 +9,7 @@ on:
     types: [published]
 
 jobs:
-  build-test-and-publish:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -38,8 +38,9 @@ jobs:
           show_branch: true
 
   publish-to-devops-artifacts:
-    #if: github.ref == 'refs/heads/main' && github.event_name == 'push'   
-    needs: build-test-and-publish
+    # if pushing to main or releasing from a feature branch then publish to Azure Artifacts (this is pre-release so keep private)
+    if: (github.ref == 'refs/heads/main' && github.event_name == 'push')
+    needs: build-and-test
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2
@@ -57,11 +58,31 @@ jobs:
           dotnet pack -c Release ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/RTGS.DotNetSDK.Publisher.csproj --version-suffix $GITHUB_RUN_ID
 
       - name: 'dotnet publish'
-        run: dotnet nuget push --api-key AzureArtifacts ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/bin/Release/*.nupkg 
+        run: dotnet nuget push --api-key AzureArtifacts ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/bin/Release/*.nupkg  --skip-duplicate
+
+  publish-to-nuget:
+    # if releasing on main then publish to public nuget repository
+    if: github.ref == 'refs/heads/main' && github.event_name == 'release' 
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "5.0.x"
+
+      - name: dotnet build and publish
+        run: |
+          dotnet build --configuration Release ./src/RTGS.DotNetSDK/
+          dotnet pack -c Release ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/RTGS.DotNetSDK.Publisher.csproj --version-suffix $GITHUB_RUN_ID
+
+      - name: 'dotnet publish'
+        run: dotnet nuget push ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/bin/Release/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json --skip-duplicate
 
   generate-docs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: build-test-and-publish
+    needs: build-and-test
     runs-on: windows-latest
     steps:
       - name: Checkout
