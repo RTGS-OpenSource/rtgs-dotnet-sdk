@@ -4,7 +4,6 @@ on:
   workflow_dispatch 
 jobs:
   publish-to-devops-artifacts:
-    needs: build-and-test
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2
