@@ -36,6 +36,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers
 		public class TestBlockFundsV1Handler : TestHandler<BlockFundsV1>, IBlockFundsV1Handler { }
 		public class TestEarmarkFundsV1Handler : TestHandler<EarmarkFundsV1>, IEarmarkFundsV1Handler { }
 		public class TestEarmarkCompleteV1Handler : TestHandler<EarmarkCompleteV1>, IEarmarkCompleteV1Handler { }
+		public class TestEarmarkReleaseV1Handler : TestHandler<EarmarkReleaseV1>, IEarmarkReleaseV1Handler { }
 
 
 		public abstract class TestHandler<TMessage> : ITestHandler<TMessage>
