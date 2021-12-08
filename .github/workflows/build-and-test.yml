@@ -61,8 +61,8 @@ jobs:
         run: dotnet nuget push --api-key AzureArtifacts ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/bin/Release/*.nupkg  --skip-duplicate
 
   publish-to-nuget:
-    # if releasing on main then publish to public nuget repository
-    if: github.ref == 'refs/heads/main' && github.event_name == 'release' 
+    # if releasing then publish to public nuget repository
+    if: github.event_name == 'release' 
     needs: build-and-test
     runs-on: ubuntu-latest
     steps: 
