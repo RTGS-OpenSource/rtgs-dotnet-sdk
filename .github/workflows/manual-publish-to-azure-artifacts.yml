@@ -18,7 +18,7 @@ jobs:
       - name: dotnet build and publish
         run: |
           dotnet build --configuration Release ./src/RTGS.DotNetSDK/
-          dotnet pack -c Release ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/RTGS.DotNetSDK.Publisher.csproj --version-suffix $GITHUB_RUN_ID
+          dotnet pack -c Release ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/RTGS.DotNetSDK.Publisher.csproj
 
       - name: 'dotnet publish'
         run: dotnet nuget push --api-key AzureArtifacts ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/bin/Release/*.nupkg  --skip-duplicate
