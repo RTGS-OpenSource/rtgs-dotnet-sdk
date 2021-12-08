@@ -11,7 +11,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 		public SubscriberAction(IEnumerable<IHandler> allTestHandlers, Func<IEnumerable<IHandler>, IHandler> selector, string messageIdentifier, TMessage message)
 		{
 			AllTestHandlers = allTestHandlers.ToList();
-			Handler = (ITestHandler<TMessage>)(selector(AllTestHandlers));
+			Handler = (ITestHandler<TMessage>)selector(AllTestHandlers);
 			MessageIdentifier = messageIdentifier;
 			Message = message;
 		}

@@ -38,7 +38,6 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers
 		public class TestEarmarkCompleteV1Handler : TestHandler<EarmarkCompleteV1>, IEarmarkCompleteV1Handler { }
 		public class TestEarmarkReleaseV1Handler : TestHandler<EarmarkReleaseV1>, IEarmarkReleaseV1Handler { }
 
-
 		public abstract class TestHandler<TMessage> : ITestHandler<TMessage>
 		{
 			private readonly ManualResetEventSlim _handleSignal = new();
