@@ -38,7 +38,7 @@ jobs:
           show_branch: true
 
   publish-to-devops-artifacts:
-    # if pushing to main or releasing from a feature branch then publish to Azure Artifacts (this is pre-release so keep private)
+    # if pushing to main then publish to Azure Artifacts (this is pre-release so keep private)
     if: (github.ref == 'refs/heads/main' && github.event_name == 'push')
     needs: build-and-test
     runs-on: ubuntu-latest
