@@ -1,13 +1,12 @@
 name: RTGS .NET SDK Nuget Package
 
 on:
-  push
-  #push:
-  #  branches: [main]
-  #pull_request:
-  #  branches: [main]
-  #release:
-  #  types: [published]
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
 
 jobs:
   build-test-and-publish:
