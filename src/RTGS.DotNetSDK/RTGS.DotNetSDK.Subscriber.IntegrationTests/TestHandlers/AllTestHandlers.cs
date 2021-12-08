@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using RTGS.DotNetSDK.Subscriber.Handlers;
@@ -15,13 +16,13 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers
 	{
 		public IEnumerator<IHandler> GetEnumerator()
 		{
-			yield return new TestMessageRejectedV1Handler();
-			yield return new TestPayawayCompleteV1Handler();
-			yield return new TestPayawayFundsV1Handler();
-			yield return new TestAtomicLockResponseV1Handler();
-			yield return new TestAtomicTransferResponseV1Handler();
-			yield return new TestBlockFundsV1Handler();
-			yield return new TestEarmarkFundsV1Handler();
+			var types = typeof(AllTestHandlers)
+				.GetNestedTypes()
+				.Where(type => !type.IsAbstract)
+				.Select(type => Activator.CreateInstance(type))
+				.Cast<IHandler>();
+
+			return types.GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() =>
@@ -34,6 +35,8 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers
 		public class TestAtomicTransferResponseV1Handler : TestHandler<AtomicTransferResponseV1>, IAtomicTransferResponseV1Handler { }
 		public class TestBlockFundsV1Handler : TestHandler<BlockFundsV1>, IBlockFundsV1Handler { }
 		public class TestEarmarkFundsV1Handler : TestHandler<EarmarkFundsV1>, IEarmarkFundsV1Handler { }
+		public class TestEarmarkCompleteV1Handler : TestHandler<EarmarkCompleteV1>, IEarmarkCompleteV1Handler { }
+
 
 		public abstract class TestHandler<TMessage> : ITestHandler<TMessage>
 		{

@@ -30,5 +30,8 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 
 		public static readonly SubscriberAction<EarmarkFundsV1> EarmarkFundsV1 =
 			new(new AllTestHandlers(), handlers => handlers.OfType<TestEarmarkFundsV1Handler>().Single(), "EarmarkFunds", ValidMessages.EarmarkFundsV1);
+
+		public static readonly SubscriberAction<EarmarkCompleteV1> EarmarkCompleteV1 =
+			new(new AllTestHandlers(), handlers => handlers.OfType<TestEarmarkCompleteV1Handler>().Single(), "EarmarkComplete", ValidMessages.EarmarkCompleteV1);
 	}
 }

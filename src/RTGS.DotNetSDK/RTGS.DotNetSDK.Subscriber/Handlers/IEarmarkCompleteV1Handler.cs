@@ -2,5 +2,5 @@
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers
 {
-	public interface IEarmarkFundsV1Handler : IHandler<EarmarkFundsV1> { }
+	public interface IEarmarkCompleteV1Handler : IHandler<EarmarkCompleteV1> { }
 }

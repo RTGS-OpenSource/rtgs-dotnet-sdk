@@ -121,5 +121,10 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 			},
 			LockId = new Guid("ff1bee59-92ac-4183-939f-6c67e16f22fb")
 		};
+
+		public static readonly EarmarkCompleteV1 EarmarkCompleteV1 = new()
+		{
+			LockId = new Guid("4584e888-bce6-41de-b100-8ca553ad097c")
+		};
 	}
 }

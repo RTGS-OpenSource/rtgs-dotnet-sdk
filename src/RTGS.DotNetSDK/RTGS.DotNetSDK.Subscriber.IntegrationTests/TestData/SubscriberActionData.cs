@@ -27,5 +27,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 
 		public override ISubscriberAction<EarmarkFundsV1> EarmarkFundsV1 =>
 			SubscriberActions.EarmarkFundsV1;
+		public override ISubscriberAction<EarmarkCompleteV1> EarmarkCompleteV1 =>
+			SubscriberActions.EarmarkCompleteV1;
 	}
 }

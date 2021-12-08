@@ -25,13 +25,16 @@ namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands
 				new ImplementationFactory<AtomicLockResponseV1, IAtomicLockResponseV1Handler, IMessageAdapter<AtomicLockResponseV1>>(enumeratedMessageAdapters),
 				new ImplementationFactory<AtomicTransferResponseV1, IAtomicTransferResponseV1Handler, IMessageAdapter<AtomicTransferResponseV1>>(enumeratedMessageAdapters),
 				new ImplementationFactory<BlockFundsV1, IBlockFundsV1Handler, IMessageAdapter<BlockFundsV1>>(enumeratedMessageAdapters),
-				new ImplementationFactory<EarmarkFundsV1, IEarmarkFundsV1Handler, IMessageAdapter<EarmarkFundsV1>>(enumeratedMessageAdapters)
+				new ImplementationFactory<EarmarkFundsV1, IEarmarkFundsV1Handler, IMessageAdapter<EarmarkFundsV1>>(enumeratedMessageAdapters),
+				new ImplementationFactory<EarmarkCompleteV1, IEarmarkCompleteV1Handler, IMessageAdapter<EarmarkCompleteV1>>(enumeratedMessageAdapters)
 			};
 		}
 
 		public IEnumerable<IHandleMessageCommand> CreateAll(IReadOnlyCollection<IHandler> handlers) =>
 			_implementationFactories.Select(factory => factory.Create(handlers));
 
+
+		// TODO: HandleMessageCommandCreator?
 		private class ImplementationFactory<TMessage, THandler, TMessageAdapter> : IImplementationFactory
 			where THandler : IHandler<TMessage>
 			where TMessageAdapter : IMessageAdapter<TMessage>
