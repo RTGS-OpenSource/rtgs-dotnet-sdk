@@ -1,0 +1,25 @@
+name: RTGS .NET SDK Manual Publish
+
+on:
+  workflow_dispatch 
+jobs:
+  publish-to-devops-artifacts:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: "5.0.x"
+          source-url: https://pkgs.dev.azure.com/rtgs-global/RTGS-Global/_packaging/RTGS-Packages/nuget/v3/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }} 
+
+      - name: dotnet build and publish
+        run: |
+          dotnet build --configuration Release ./src/RTGS.DotNetSDK/
+          dotnet pack -c Release ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/RTGS.DotNetSDK.Publisher.csproj --version-suffix $GITHUB_RUN_ID
+
+      - name: 'dotnet publish'
+        run: dotnet nuget push --api-key AzureArtifacts ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/bin/Release/*.nupkg  --skip-duplicate
