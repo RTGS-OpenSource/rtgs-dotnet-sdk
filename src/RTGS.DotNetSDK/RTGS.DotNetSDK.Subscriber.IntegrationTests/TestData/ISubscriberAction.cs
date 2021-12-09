@@ -1,4 +1,6 @@
-﻿using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers;
+﻿using System.Collections.Generic;
+using RTGS.DotNetSDK.Subscriber.Handlers;
+using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers;
 
 namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 {
@@ -7,5 +9,6 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 		ITestHandler<TMessage> Handler { get; }
 		string MessageIdentifier { get; }
 		TMessage Message { get; }
+		IReadOnlyCollection<IHandler> AllTestHandlers { get; }
 	}
 }

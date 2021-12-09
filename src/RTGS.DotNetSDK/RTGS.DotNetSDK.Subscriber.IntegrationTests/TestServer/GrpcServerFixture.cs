@@ -44,7 +44,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 		public void Reset()
 		{
 			var fromRtgsSender = _server.Services.GetRequiredService<FromRtgsSender>();
-			fromRtgsSender.Clear();
+			fromRtgsSender.Reset();
 		}
 	}
 }

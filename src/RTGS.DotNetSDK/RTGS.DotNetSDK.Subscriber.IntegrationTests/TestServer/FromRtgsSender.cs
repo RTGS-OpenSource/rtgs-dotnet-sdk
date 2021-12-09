@@ -62,9 +62,6 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 			return rtgsMessage;
 		}
 
-		public void SetExpectedNumberOfAcknowledgements(int count) =>
-			_acknowledgementsSignal.Reset(count);
-
 		public void AddAcknowledgement(RtgsMessageAcknowledgement acknowledgement)
 		{
 			_acknowledgements.Add(acknowledgement);
@@ -74,10 +71,11 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 		public void WaitForAcknowledgements(TimeSpan timeout) =>
 			_acknowledgementsSignal.Wait(timeout); // TODO: replace with cancellation token?
 
-		public void Clear()
+		public void Reset()
 		{
 			Unregister();
 			_acknowledgements.Clear();
+			_acknowledgementsSignal.Reset(1);
 		}
 	}
 }

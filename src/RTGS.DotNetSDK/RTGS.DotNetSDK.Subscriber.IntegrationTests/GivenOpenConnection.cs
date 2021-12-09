@@ -7,6 +7,7 @@ using FluentAssertions.Execution;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using RTGS.DotNetSDK.Subscriber.Extensions;
+using RTGS.DotNetSDK.Subscriber.IntegrationTests.Logging;
 using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData;
 using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers;
 using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer;
@@ -85,8 +86,6 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[ClassData(typeof(SubscriberActionData))]
 		public async Task WhenReceivedExpectedMessageType_ThenPassToHandlerAndAcknowledge<TMessage>(SubscriberAction<TMessage> subscriberAction)
 		{
-			_fromRtgsSender.SetExpectedNumberOfAcknowledgements(1);
-
 			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
 
 			var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
@@ -108,8 +107,6 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[ClassData(typeof(SubscriberActionData))]
 		public async Task WhenSubscriberIsStopped_ThenCloseConnection<TMessage>(SubscriberAction<TMessage> subscriberAction)
 		{
-			_fromRtgsSender.SetExpectedNumberOfAcknowledgements(1);
-
 			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
 
 			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
@@ -133,8 +130,6 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[ClassData(typeof(SubscriberActionData))]
 		public async Task WhenSubscriberIsDisposed_ThenCloseConnection<TMessage>(SubscriberAction<TMessage> subscriberAction)
 		{
-			_fromRtgsSender.SetExpectedNumberOfAcknowledgements(1);
-
 			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
 
 			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
@@ -177,18 +172,21 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		}
 
 		[Theory]
-		[ClassData(typeof(SubscriberActionData))]
-		public async Task WhenMessageReceived_ThenLogInformation<TMessage>(SubscriberAction<TMessage> subscriberAction)
+		[ClassData(typeof(SubscriberActionWithLogsData))]
+		public async Task WhenMessageReceived_ThenLogInformation<TMessage>(SubscriberActionWithLogs<TMessage> subscriberAction)
 		{
 			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
 
 			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
 			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 			await _rtgsSubscriber.StopAsync();
 
-			// TODO: check logs
+			var informationLogs = _serilogContext.SubscriberLogs(LogEventLevel.Information);
+			informationLogs.Should().BeEquivalentTo(subscriberAction.SubscriberLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
 		}
 	}
 }
