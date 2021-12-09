@@ -31,13 +31,13 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		{
 			try
 			{
-				var rtgsClientOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, _grpcServer.ServerUri)
+				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, _grpcServer.ServerUri)
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
-					.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
+					.ConfigureServices(services => services.AddRtgsPublisher(rtgsPublisherOptions))
 					.Build();
 
 				_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();

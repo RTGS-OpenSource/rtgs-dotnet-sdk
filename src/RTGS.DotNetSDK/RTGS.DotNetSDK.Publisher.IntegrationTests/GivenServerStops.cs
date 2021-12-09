@@ -51,13 +51,13 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			{
 				var serverUri = await _grpcServer.StartAsync();
 
-				var rtgsClientOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, serverUri)
+				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, serverUri)
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
-					.ConfigureServices((_, services) => services.AddRtgsPublisher(rtgsClientOptions))
+					.ConfigureServices(services => services.AddRtgsPublisher(rtgsPublisherOptions))
 					.UseSerilog()
 					.Build();
 

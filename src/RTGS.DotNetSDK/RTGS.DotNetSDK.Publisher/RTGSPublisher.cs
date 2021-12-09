@@ -14,10 +14,10 @@ namespace RTGS.DotNetSDK.Publisher
 {
 	internal sealed class RtgsPublisher : IRtgsPublisher
 	{
-		private readonly Payment.PaymentClient _paymentClient;
-		private readonly CancellationTokenSource _sharedTokenSource = new();
-		private readonly RtgsPublisherOptions _options;
 		private readonly ILogger<RtgsPublisher> _logger;
+		private readonly Payment.PaymentClient _paymentClient;
+		private readonly RtgsPublisherOptions _options;
+		private readonly CancellationTokenSource _sharedTokenSource = new();
 		private readonly SemaphoreSlim _sendingSignal = new(1);
 		private readonly SemaphoreSlim _disposingSignal = new(1);
 		private readonly SemaphoreSlim _writingSignal = new(1);
@@ -27,11 +27,11 @@ namespace RTGS.DotNetSDK.Publisher
 		private bool _disposed;
 		private bool _resetConnection;
 
-		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsPublisherOptions options, ILogger<RtgsPublisher> logger)
+		public RtgsPublisher(ILogger<RtgsPublisher> logger, Payment.PaymentClient paymentClient, RtgsPublisherOptions options)
 		{
+			_logger = logger;
 			_paymentClient = paymentClient;
 			_options = options;
-			_logger = logger;
 		}
 
 		public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message, CancellationToken cancellationToken) =>
