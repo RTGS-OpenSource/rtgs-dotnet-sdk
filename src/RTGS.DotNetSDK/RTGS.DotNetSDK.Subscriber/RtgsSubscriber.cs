@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +14,7 @@ namespace RTGS.DotNetSDK.Subscriber
 	{
 		private readonly ILogger<RtgsSubscriber> _logger;
 		private readonly Payment.PaymentClient _grpcClient;
+		private readonly RtgsSubscriberOptions _options;
 		private readonly IHandleMessageCommandsFactory _handleMessageCommandsFactory;
 		private readonly SemaphoreSlim _disposingSignal = new(1);
 		private Task _executingTask;
@@ -22,12 +22,14 @@ namespace RTGS.DotNetSDK.Subscriber
 		private bool _disposed;
 
 		public RtgsSubscriber(
-			ILogger<RtgsSubscriber> logger, 
-			Payment.PaymentClient grpcClient, 
+			ILogger<RtgsSubscriber> logger,
+			Payment.PaymentClient grpcClient,
+			RtgsSubscriberOptions options,
 			IHandleMessageCommandsFactory handleMessageCommandsFactory)
 		{
 			_logger = logger;
 			_grpcClient = grpcClient;
+			_options = options;
 			_handleMessageCommandsFactory = handleMessageCommandsFactory;
 		}
 
@@ -39,7 +41,8 @@ namespace RTGS.DotNetSDK.Subscriber
 		{
 			_logger.LogInformation("RTGS Subscriber started");
 
-			_fromRtgsCall = _grpcClient.FromRtgsMessage();
+			var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
+			_fromRtgsCall = _grpcClient.FromRtgsMessage(grpcCallHeaders);
 
 			var commands = _handleMessageCommandsFactory.CreateAll(handlers)
 				.ToDictionary(command => command.MessageIdentifier, command => command);
@@ -48,7 +51,7 @@ namespace RTGS.DotNetSDK.Subscriber
 			{
 				// TODO: message with no header/instruction type
 				_logger.LogInformation("{MessageIdentifier} message received from RTGS", message.Header.InstructionType);
-				
+
 				// TODO: command not found
 				commands.TryGetValue(message.Header.InstructionType, out var command);
 
@@ -66,7 +69,7 @@ namespace RTGS.DotNetSDK.Subscriber
 
 				// TODO: squash exceptions?
 				await command.HandleAsync(message);
-			}			
+			}
 		}
 
 		// TODO: what if called without calling start?

@@ -51,7 +51,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		{
 			try
 			{
-				var rtgsSubscriberOptions = RtgsSubscriberOptions.Builder.CreateNew(_grpcServer.ServerUri)
+				var rtgsSubscriberOptions = RtgsSubscriberOptions.Builder.CreateNew(ValidMessages.BankDid, _grpcServer.ServerUri)
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()
@@ -80,6 +80,19 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 			_grpcServer.Reset();
 
 			return Task.CompletedTask;
+		}
+
+		[Theory]
+		[ClassData(typeof(SubscriberActionData))]
+		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader<TRequest>(SubscriberAction<TRequest> subscriberAction)
+		{
+			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
+
+			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+
+			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+
+			_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == ValidMessages.BankDid);
 		}
 
 		[Theory]

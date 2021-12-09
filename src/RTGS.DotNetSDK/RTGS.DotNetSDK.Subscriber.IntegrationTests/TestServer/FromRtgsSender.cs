@@ -20,9 +20,12 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 
 		public IEnumerable<RtgsMessageAcknowledgement> Acknowledgements => _acknowledgements;
 
-		public void Register(IServerStreamWriter<RtgsMessage> messageStream)
+		public Metadata RequestHeaders { get; private set; }
+
+		public void Register(IServerStreamWriter<RtgsMessage> messageStream, Metadata requestHeaders)
 		{
 			_messageStream = messageStream;
+			RequestHeaders = requestHeaders;
 			_readyToSend.Set();
 		}
 
@@ -30,6 +33,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 		{
 			_readyToSend.Reset();
 			_messageStream = null;
+			RequestHeaders = null;
 		}
 
 		public async Task<RtgsMessage> SendAsync<T>(string messageIdentifier, T data)
@@ -69,7 +73,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 		}
 
 		public void WaitForAcknowledgements(TimeSpan timeout) =>
-			_acknowledgementsSignal.Wait(timeout); // TODO: replace with cancellation token?
+			_acknowledgementsSignal.Wait(timeout);
 
 		public void Reset()
 		{

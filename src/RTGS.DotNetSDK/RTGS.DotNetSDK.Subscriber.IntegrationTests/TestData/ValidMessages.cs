@@ -6,6 +6,8 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 {
 	public static class ValidMessages
 	{
+		public const string BankDid = "test-bank-did";
+
 		public static readonly ISO20022.Messages.Pacs_008_001.V10.FIToFICustomerCreditTransferV10 PayawayFunds = new()
 		{
 			GrpHdr = new ISO20022.Messages.Pacs_008_001.V10.GroupHeader96

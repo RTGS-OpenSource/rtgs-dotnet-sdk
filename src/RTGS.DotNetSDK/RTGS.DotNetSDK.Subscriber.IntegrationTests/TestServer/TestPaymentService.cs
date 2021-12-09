@@ -18,7 +18,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 		{
 			try
 			{
-				_fromRtgsSender.Register(responseStream);
+				_fromRtgsSender.Register(responseStream, context.RequestHeaders);
 
 				await foreach (var message in requestStream.ReadAllAsync(context.CancellationToken))
 				{

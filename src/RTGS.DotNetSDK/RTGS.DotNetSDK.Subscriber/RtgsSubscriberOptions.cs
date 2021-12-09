@@ -9,8 +9,14 @@ namespace RTGS.DotNetSDK.Subscriber
 	{
 		private RtgsSubscriberOptions(Builder builder)
 		{
+			BankDid = builder.BankDidValue;
 			RemoteHostAddress = builder.RemoteHostAddressValue;
 		}
+
+		/// <summary>
+		/// Decentralized identifier of the bank.
+		/// </summary>
+		public string BankDid { get; }
 
 		/// <summary>
 		/// Address of the RTGS gRPC server.
@@ -22,20 +28,23 @@ namespace RTGS.DotNetSDK.Subscriber
 		/// </summary>
 		public sealed class Builder
 		{
-			private Builder(Uri remoteHostAddress)
+			private Builder(string bankDid, Uri remoteHostAddress)
 			{
+				BankDidValue = bankDid;
 				RemoteHostAddressValue = remoteHostAddress;
 			}
 
+			internal string BankDidValue { get; }
 			internal Uri RemoteHostAddressValue { get; }
 
 			/// <summary>
 			/// Creates a new instance of <see cref="Builder"/>.
 			/// </summary>
+			/// <param name="bankDid">Decentralized identifier of the bank.</param>
 			/// <param name="remoteHostAddress">Address of the RTGS gRPC server.</param>
 			/// <returns><see cref="Builder"/></returns>
-			public static Builder CreateNew(Uri remoteHostAddress) =>
-				new(remoteHostAddress);
+			public static Builder CreateNew(string bankDid, Uri remoteHostAddress) =>
+				new(bankDid, remoteHostAddress);
 
 			/// <summary>
 			/// Builds a new <see cref="RtgsSubscriberOptions"/> instance.
