@@ -1,5 +1,8 @@
 name: RTGS .NET SDK Manual Publish
 
+# this workflow can only be run manually and will build and publish a nuget package to the private AzureArtifacts feed
+# Useful if you want to publish a package from a feature branch (specify the branch when you run the workflow)
+
 on: workflow_dispatch 
 
 jobs:

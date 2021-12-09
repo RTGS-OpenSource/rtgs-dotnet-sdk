@@ -1,4 +1,9 @@
-name: RTGS .NET SDK Nuget Package
+name: RTGS .NET SDK Build Test Publish
+
+# this workflow will always build and test for a PR or a push to main or a release
+# it can publish a nuget package too but only under these circumstances:
+# 1 - a push to main will cause a Nuget package to be build and published to the private AzureArtifacts
+# 2 - createing a release will cause a Nuget package to be build and published to the public Nuget.org feed
 
 on:
   push:
