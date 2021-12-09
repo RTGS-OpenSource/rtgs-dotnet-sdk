@@ -43,7 +43,8 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-latest
     steps: 
-      - uses: actions/checkout@v2
+    # require v1 here so that MinVer has access to history to determine version number to apply
+      - uses: actions/checkout@v1
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
@@ -58,7 +59,7 @@ jobs:
           dotnet pack -c Release ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/RTGS.DotNetSDK.Publisher.csproj
 
       - name: 'dotnet publish'
-        run: dotnet nuget push --api-key AzureArtifacts ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/bin/Release/*.nupkg  --skip-duplicate
+        run: dotnet nuget push --api-key AzureArtifacts ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/bin/Release/*.nupkg
 
   publish-to-nuget:
     # if releasing then publish to public nuget repository
@@ -66,7 +67,8 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-latest
     steps: 
-      - uses: actions/checkout@v2
+    # require v1 here so that MinVer has access to history to determine version number to apply
+      - uses: actions/checkout@v1
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
