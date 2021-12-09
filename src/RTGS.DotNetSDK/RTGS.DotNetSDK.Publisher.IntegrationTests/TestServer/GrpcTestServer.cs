@@ -27,10 +27,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
 			return new Uri($"http://localhost:{Port}");
 		}
 
-		public async Task StopAsync()
-		{
+		public async Task StopAsync() =>
 			await _host.StopAsync();
-		}
 
 		private static IHost CreateHost()
 		{

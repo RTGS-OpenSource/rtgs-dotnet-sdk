@@ -12,7 +12,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 		public abstract IPublisherAction<AtomicLockRequest> AtomicLock { get; }
 		public abstract IPublisherAction<AtomicTransferRequest> AtomicTransfer { get; }
 		public abstract IPublisherAction<EarmarkConfirmation> EarmarkConfirmation { get; }
-		public abstract IPublisherAction<TransferConfirmation> TransferConfirmation { get; }
+		public abstract IPublisherAction<AtomicTransferConfirmation> AtomicTransferConfirmation { get; }
 		public abstract IPublisherAction<UpdateLedgerRequest> UpdateLedger { get; }
 		public abstract IPublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate { get; }
 		public abstract IPublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation { get; }

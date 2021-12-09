@@ -6,9 +6,9 @@ namespace RTGS.DotNetSDK.Publisher
 	/// <summary>
 	/// Represents the options used when sending messages to RTGS via a <see cref="IRtgsPublisher"/>.
 	/// </summary>
-	public record RtgsClientOptions
+	public record RtgsPublisherOptions
 	{
-		private RtgsClientOptions(Builder builder)
+		private RtgsPublisherOptions(Builder builder)
 		{
 			BankDid = builder.BankDidValue;
 			RemoteHostAddress = builder.RemoteHostAddressValue;
@@ -44,7 +44,7 @@ namespace RTGS.DotNetSDK.Publisher
 		public TimeSpan KeepAlivePingTimeout { get; }
 
 		/// <summary>
-		/// A builder for <see cref="RtgsClientOptions"/>.
+		/// A builder for <see cref="RtgsPublisherOptions"/>.
 		/// </summary>
 		public sealed class Builder
 		{
@@ -145,10 +145,10 @@ namespace RTGS.DotNetSDK.Publisher
 			}
 
 			/// <summary>
-			/// Builds a new <see cref="RtgsClientOptions"/> instance.
+			/// Builds a new <see cref="RtgsPublisherOptions"/> instance.
 			/// </summary>
-			/// <returns><see cref="RtgsClientOptions"/></returns>
-			public RtgsClientOptions Build() => new(this);
+			/// <returns><see cref="RtgsPublisherOptions"/></returns>
+			public RtgsPublisherOptions Build() => new(this);
 		}
 	}
 }

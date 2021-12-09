@@ -5,7 +5,7 @@ using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 {
-	public static class ValidRequests
+	public static class ValidMessages
 	{
 		public const string BankDid = "test-bank-did";
 
@@ -62,7 +62,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 			Success = true
 		};
 
-		public static readonly TransferConfirmation TransferConfirmation = new()
+		public static readonly AtomicTransferConfirmation AtomicTransferConfirmation = new()
 		{
 			LockId = new Guid("B30E15E3-CD54-4FA6-B0EB-B9BAE32976F9"),
 			Success = true
@@ -89,8 +89,8 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 			},
 			CdtTrfTxInf = new[]
 			{
-					new CreditTransferTransaction50 { PoolgAdjstmntDt = new DateTime(2021, 1, 1) }
-				}
+				new CreditTransferTransaction50 { PoolgAdjstmntDt = new DateTime(2021, 1, 1) }
+			}
 		};
 
 		public static readonly BankToCustomerDebitCreditNotificationV09 PayawayConfirmation = new()
@@ -101,11 +101,11 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 			},
 			Ntfctn = new[]
 			{
-					new AccountNotification19
-					{
-						AddtlNtfctnInf = "additional-notification-info"
-					}
+				new AccountNotification19
+				{
+					AddtlNtfctnInf = "additional-notification-info"
 				}
+			}
 		};
 	}
 }
