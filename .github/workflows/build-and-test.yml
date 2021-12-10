@@ -65,8 +65,8 @@ jobs:
         with:
           dotnet-version: '5.0.x'
           #source-url: https://pkgs.dev.azure.com/rtgs-global/RTGS-Global/_packaging/RTGS-Packages/nuget/v3/index.json
-        env:
-          #NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
+        #env:
+        #NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
 
       - name: dotnet build and publish
         run: |
