@@ -17,8 +17,9 @@ on:
   #   types: [published]
 
 env:
-  PUBLISHER_FOLDER: ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/
-  SUBSCRIBER_FOLDER: ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Subscriber/
+  SOLUTION_FOLDER: ./src/RTGS.DotNetSDK/
+  PUBLISHER_FOLDER: ${{SOLUTION_FOLDER}}RTGS.DotNetSDK.Publisher/
+  SUBSCRIBER_FOLDER: ${{SOLUTION_FOLDER}}RTGS.DotNetSDK.Subscriber/
 
 jobs:
   build-and-test:
