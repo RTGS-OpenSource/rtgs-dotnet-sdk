@@ -64,7 +64,7 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '5.0.x'
-          #source-url: https://pkgs.dev.azure.com/rtgs-global/RTGS-Global/_packaging/RTGS-Packages/nuget/v3/index.json
+          source-url: https://pkgs.dev.azure.com/rtgs-global/RTGS-Global/_packaging/RTGS-Packages/nuget/v3/index.json
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
 
@@ -76,8 +76,8 @@ jobs:
 
       - name: 'dotnet publish'
         run: |
-          dotnet nuget push --api-key AzureArtifacts ${{env.PUBLISHER_FOLDER}}bin/Release/*.nupkg -s ${{env.AZURE_ARTIFACTS_URL}}
-          dotnet nuget push --api-key AzureArtifacts ${{env.SUBSCRIBER_FOLDER}}bin/Release/*.nupkg -s ${{env.AZURE_ARTIFACTS_URL}}
+          dotnet nuget push --api-key AzureArtifacts ${{env.PUBLISHER_FOLDER}}bin/Release/*.nupkg -s ${{env.AZURE_ARTIFACTS_URL}} -k ${{ secrets.AZURE_ARTIFACTS_PAT }}
+          dotnet nuget push --api-key AzureArtifacts ${{env.SUBSCRIBER_FOLDER}}bin/Release/*.nupkg -s ${{env.AZURE_ARTIFACTS_URL}} -k ${{ secrets.AZURE_ARTIFACTS_PAT }}
 
   publish-to-nuget:
     # if releasing then publish to public nuget repository
