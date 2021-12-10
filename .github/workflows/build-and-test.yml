@@ -36,13 +36,13 @@ jobs:
       - name: Install dotnet format
         run: dotnet tool install dotnet-format
       - name: Dotnet Format
-        run: dotnet format ${{SOLUTION_FOLDER}} --check
+        run: dotnet format ${{env.SOLUTION_FOLDER}} --check
       - name: Build Dotnet
-        run: dotnet build --configuration Release ${{SOLUTION_FOLDER}}
+        run: dotnet build --configuration Release ${{env.SOLUTION_FOLDER}}
       - name: Test Dotnet
         run: |
           dotnet tool install dotnet-reportgenerator-globaltool --tool-path ./tools
-          dotnet test --configuration Release ${{SOLUTION_FOLDER}} --no-build --results-directory "./test_results" --logger "trx;LogFilePrefix=results;" --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true
+          dotnet test --configuration Release ${{env.SOLUTION_FOLDER}} --no-build --results-directory "./test_results" --logger "trx;LogFilePrefix=results;" --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true
           ./tools/reportgenerator -reports:./test_results/**/coverage.cobertura.xml -targetdir:./test_results/CodeCoverage -reporttypes:Cobertura
       - uses: 5monkeys/cobertura-action@master
         with:
@@ -76,8 +76,8 @@ jobs:
 
       - name: 'dotnet publish'
         run: |
-          dotnet nuget push --api-key AzureArtifacts ${{env.PUBLISHER_FOLDER}}bin/Release/*.nupkg -s ${{AZURE_ARTIFACTS_URL}}
-          dotnet nuget push --api-key AzureArtifacts ${{env.SUBSCRIBER_FOLDER}}bin/Release/*.nupkg -s ${{AZURE_ARTIFACTS_URL}}
+          dotnet nuget push --api-key AzureArtifacts ${{env.PUBLISHER_FOLDER}}bin/Release/*.nupkg -s ${{env.AZURE_ARTIFACTS_URL}}
+          dotnet nuget push --api-key AzureArtifacts ${{env.SUBSCRIBER_FOLDER}}bin/Release/*.nupkg -s ${{env.AZURE_ARTIFACTS_URL}}
 
   publish-to-nuget:
     # if releasing then publish to public nuget repository
@@ -100,8 +100,8 @@ jobs:
 
       - name: 'dotnet publish'
         run: |
-          dotnet nuget push ${{env.PUBLISHER_FOLDER}}bin/Release/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -s ${{NUGET_URL}}
-          dotnet nuget push ${{env.SUBSCRIBER_FOLDER}}bin/Release/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -s ${{NUGET_URL}}
+          dotnet nuget push ${{env.PUBLISHER_FOLDER}}bin/Release/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -s ${{env.NUGET_URL}}
+          dotnet nuget push ${{env.SUBSCRIBER_FOLDER}}bin/Release/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -s ${{env.NUGET_URL}}
 
   generate-docs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
