@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using RTGS.DotNetSDK.Subscriber.Exceptions;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.Public.Payment.V2;
@@ -41,7 +42,7 @@ namespace RTGS.DotNetSDK.Subscriber
 			// TODO: thread safety?
 			if (_executingTask is not null)
 			{
-				throw new InvalidOperationException("RTGS Subscriber has already been started");
+				throw new InvalidOperationException("RTGS Subscriber is already running");
 			}
 
 			_executingTask = Execute(handlers.ToList());
@@ -61,26 +62,41 @@ namespace RTGS.DotNetSDK.Subscriber
 
 				await foreach (var message in _fromRtgsCall.ResponseStream.ReadAllAsync())
 				{
-					// TODO: message with no header/instruction type
-					_logger.LogInformation("{MessageIdentifier} message received from RTGS", message.Header.InstructionType);
-
-					// TODO: command not found
-					commands.TryGetValue(message.Header.InstructionType, out var command);
-
-					var acknowledgement = new RtgsMessageAcknowledgement
+					try
 					{
-						Header = new RtgsMessageHeader
+						if (message.Header is null)
 						{
-							CorrelationId = message.Header.CorrelationId,
-							InstructionType = message.Header.InstructionType
-						},
-						Success = true
-					};
+							await SendFailureAcknowledgement(message.Header);
+							throw new RtgsSubscriberException("Message with no header received");
+						}
 
-					await _fromRtgsCall.RequestStream.WriteAsync(acknowledgement);
+						if (string.IsNullOrWhiteSpace(message.Header.InstructionType))
+						{
+							await SendFailureAcknowledgement(message.Header);
+							throw new RtgsSubscriberException("Message with no identifier received");
+						}
 
-					// TODO: squash exceptions?
-					await command.HandleAsync(message);
+						_logger.LogInformation("{MessageIdentifier} message received from RTGS", message.Header.InstructionType);
+
+						if (!commands.TryGetValue(message.Header.InstructionType, out var command))
+						{
+							await SendFailureAcknowledgement(message.Header);
+							throw new RtgsSubscriberException("No handler found for message", message.Header.InstructionType);
+						}
+
+						await SendSuccessAcknowledgement(message.Header);
+
+						// TODO: squash exceptions?
+						await command.HandleAsync(message);
+					}
+					catch (RtgsSubscriberException ex)
+					{
+						_logger.LogError(ex, "An error occurred while processing a message (MessageIdentifier: {MessageIdentifier})", ex.MessageIdentifier);
+
+						// TODO: what if event handler throws?
+						var eventHandler = OnExceptionOccurred;
+						eventHandler?.Invoke(this, new ExceptionEventArgs(ex));
+					}
 				}
 			}
 			catch (RpcException ex)
@@ -99,9 +115,30 @@ namespace RTGS.DotNetSDK.Subscriber
 			}
 		}
 
-		// TODO: what if called without calling start?
+		private Task SendSuccessAcknowledgement(RtgsMessageHeader header) =>
+			SendAcknowledgement(header, true);
+
+		private Task SendFailureAcknowledgement(RtgsMessageHeader header) =>
+			SendAcknowledgement(header, false);
+
+		private async Task SendAcknowledgement(RtgsMessageHeader header, bool success)
+		{
+			var acknowledgement = new RtgsMessageAcknowledgement
+			{
+				Header = header ?? new RtgsMessageHeader(),
+				Success = success
+			};
+
+			await _fromRtgsCall.RequestStream.WriteAsync(acknowledgement);
+		}
+
 		public async Task StopAsync()
 		{
+			if (_executingTask is null)
+			{
+				throw new InvalidOperationException("RTGS Subscriber is not running");
+			}
+
 			_logger.LogInformation("RTGS Subscriber stopping");
 
 			await CompleteAsyncEnumerables();
@@ -140,7 +177,10 @@ namespace RTGS.DotNetSDK.Subscriber
 
 				_disposed = true;
 
-				await StopAsync();
+				if (_executingTask is not null)
+				{
+					await StopAsync();
+				}
 			}
 			finally
 			{

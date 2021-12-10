@@ -6,6 +6,7 @@ using FluentAssertions;
 using FluentAssertions.Execution;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RTGS.DotNetSDK.Subscriber.Exceptions;
 using RTGS.DotNetSDK.Subscriber.Extensions;
 using RTGS.DotNetSDK.Subscriber.IntegrationTests.Logging;
 using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData;
@@ -87,7 +88,6 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader<TRequest>(SubscriberAction<TRequest> subscriberAction)
 		{
 			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
-
 
 			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
@@ -201,6 +201,177 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 
 			var informationLogs = _serilogContext.SubscriberLogs(LogEventLevel.Information);
 			informationLogs.Should().BeEquivalentTo(subscriberAction.SubscriberLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
+		}
+
+		[Fact]
+		public async Task WhenMessageWithNoHeaderReceived_ThenLogError()
+		{
+			_rtgsSubscriber.Start(new AllTestHandlers());
+
+			await _fromRtgsSender.SendAsync(
+				"will not be used as the header is being set to null",
+				ValidMessages.AtomicLockResponseV1,
+				message => message.Header = null);
+
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+			await _rtgsSubscriber.StopAsync();
+
+			var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
+			errorLogs.Should().BeEquivalentTo(new[] { new LogEntry("An error occurred while processing a message (MessageIdentifier: null)", LogEventLevel.Error, typeof(RtgsSubscriberException)) });
+		}
+
+		[Fact]
+		public async Task WhenMessageWithNoHeaderReceived_ThenRaiseExceptionEvent()
+		{
+			Exception raisedException = null;
+
+			_rtgsSubscriber.Start(new AllTestHandlers());
+			_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
+
+			await _fromRtgsSender.SendAsync(
+				"will not be used as the header is being set to null",
+				ValidMessages.AtomicLockResponseV1,
+				message => message.Header = null);
+
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+			await _rtgsSubscriber.StopAsync();
+
+			raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should().Be("Message with no header received");
+		}
+
+		[Fact]
+		public async Task WhenMessageWithNoHeaderReceived_ThenAcknowledgeAsFailure()
+		{
+			_rtgsSubscriber.Start(new AllTestHandlers());
+
+			await _fromRtgsSender.SendAsync(
+				"will not be used as the header is being set to null",
+				ValidMessages.AtomicLockResponseV1,
+				message => message.Header = null);
+
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+			await _rtgsSubscriber.StopAsync();
+
+			_fromRtgsSender.Acknowledgements
+				.Should().ContainSingle(acknowledgement => acknowledgement.Header != null
+														   && acknowledgement.Header.CorrelationId == string.Empty
+														   && acknowledgement.Header.InstructionType == string.Empty
+														   && !acknowledgement.Success);
+		}
+
+		[Fact]
+		public async Task WhenMessageWithNoMessageIdentifierReceived_ThenLogError()
+		{
+			_rtgsSubscriber.Start(new AllTestHandlers());
+
+			await _fromRtgsSender.SendAsync(
+				string.Empty,
+				ValidMessages.AtomicLockResponseV1);
+
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+			await _rtgsSubscriber.StopAsync();
+
+			var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
+			errorLogs.Should().BeEquivalentTo(new[] { new LogEntry("An error occurred while processing a message (MessageIdentifier: null)", LogEventLevel.Error, typeof(RtgsSubscriberException)) });
+		}
+
+		[Fact]
+		public async Task WhenMessageWithNoMessageIdentifierReceived_ThenRaiseExceptionEvent()
+		{
+			Exception raisedException = null;
+
+			_rtgsSubscriber.Start(new AllTestHandlers());
+			_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
+
+			await _fromRtgsSender.SendAsync(
+				string.Empty,
+				ValidMessages.AtomicLockResponseV1);
+
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+			await _rtgsSubscriber.StopAsync();
+
+			raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should().Be("Message with no identifier received");
+		}
+
+		[Fact]
+		public async Task WhenMessageWithNoMessageIdentifierReceived_ThenAcknowledgeAsFailure()
+		{
+			_rtgsSubscriber.Start(new AllTestHandlers());
+
+			var sentRtgsMessage = await _fromRtgsSender.SendAsync(
+				string.Empty,
+				ValidMessages.AtomicLockResponseV1);
+
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+			await _rtgsSubscriber.StopAsync();
+
+			_fromRtgsSender.Acknowledgements
+				.Should().ContainSingle(acknowledgement => acknowledgement.Header != null
+														   && acknowledgement.Header.CorrelationId == sentRtgsMessage.Header.CorrelationId
+														   && acknowledgement.Header.InstructionType == string.Empty
+														   && !acknowledgement.Success);
+		}
+
+		[Fact]
+		public async Task WhenMessageWithIdentifierThatCannotBeHandledReceived_ThenLogError()
+		{
+			_rtgsSubscriber.Start(new AllTestHandlers());
+
+			await _fromRtgsSender.SendAsync(
+				"cannot be handled",
+				ValidMessages.AtomicLockResponseV1);
+
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+			await _rtgsSubscriber.StopAsync();
+
+			var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
+			errorLogs.Should().BeEquivalentTo(new[] { new LogEntry("An error occurred while processing a message (MessageIdentifier: cannot be handled)", LogEventLevel.Error, typeof(RtgsSubscriberException)) });
+		}
+
+		[Fact]
+		public async Task WhenMessageWithIdentifierThatCannotBeHandledReceived_ThenRaiseExceptionEvent()
+		{
+			Exception raisedException = null;
+
+			_rtgsSubscriber.Start(new AllTestHandlers());
+			_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
+
+			await _fromRtgsSender.SendAsync(
+				"cannot be handled",
+				ValidMessages.AtomicLockResponseV1);
+
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+			await _rtgsSubscriber.StopAsync();
+
+			raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should().Be("No handler found for message");
+		}
+
+		[Fact]
+		public async Task WhenMessageWithIdentifierThatCannotBeHandledReceived_ThenAcknowledgeAsFailure()
+		{
+			_rtgsSubscriber.Start(new AllTestHandlers());
+
+			var sentRtgsMessage = await _fromRtgsSender.SendAsync(
+				"cannot be handled",
+				ValidMessages.AtomicLockResponseV1);
+
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+			await _rtgsSubscriber.StopAsync();
+
+			_fromRtgsSender.Acknowledgements
+				.Should().ContainSingle(acknowledgement => acknowledgement.Header != null
+														   && acknowledgement.Header.CorrelationId == sentRtgsMessage.Header.CorrelationId
+														   && acknowledgement.Header.InstructionType == "cannot be handled"
+														   && !acknowledgement.Success);
 		}
 	}
 }

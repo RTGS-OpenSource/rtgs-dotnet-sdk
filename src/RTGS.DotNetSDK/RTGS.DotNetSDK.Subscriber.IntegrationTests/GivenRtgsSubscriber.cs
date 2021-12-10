@@ -46,13 +46,13 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 			}
 		}
 
-		public Task DisposeAsync()
+		public async Task DisposeAsync()
 		{
+			await _rtgsSubscriber.DisposeAsync();
+
 			_clientHost?.Dispose();
 
 			_grpcServer.Reset();
-
-			return Task.CompletedTask;
 		}
 
 		[Fact]
@@ -62,7 +62,13 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 
 			FluentActions.Invoking(() => _rtgsSubscriber.Start(new AllTestHandlers()))
 				.Should().ThrowExactly<InvalidOperationException>()
-				.WithMessage("RTGS Subscriber has already been started");
+				.WithMessage("RTGS Subscriber is already running");
 		}
+
+		[Fact]
+		public async Task WhenStopIsCalledButSubscriberNotRunning_ThenThrowInvalidOperationExcpetion() =>
+			await FluentActions.Awaiting(() => _rtgsSubscriber.StopAsync())
+				.Should().ThrowExactlyAsync<InvalidOperationException>()
+				.WithMessage("RTGS Subscriber is not running");
 	}
 }
