@@ -62,6 +62,11 @@ namespace RTGS.DotNetSDK.Publisher
 				throw new ObjectDisposedException(nameof(RtgsPublisher));
 			}
 
+			if (message == null)
+			{
+				throw new ArgumentNullException(nameof(message));
+			}
+
 			using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_sharedTokenSource.Token, cancellationToken);
 			await _sendingSignal.WaitAsync(linkedTokenSource.Token);
 
