@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +15,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 	public class GivenWrongRemoteHostAddress
 	{
 		[Fact]
-		public async void WhenSending_ThenRpcExceptionThrown()
+		public async Task WhenSending_ThenRpcExceptionThrown()
 		{
 			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, new Uri("https://localhost:4567"))
 				.Build();

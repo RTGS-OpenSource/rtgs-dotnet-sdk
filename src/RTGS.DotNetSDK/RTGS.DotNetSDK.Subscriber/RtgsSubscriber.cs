@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,8 @@ namespace RTGS.DotNetSDK.Subscriber
 		private AsyncDuplexStreamingCall<RtgsMessageAcknowledgement, RtgsMessage> _fromRtgsCall;
 		private bool _disposed;
 
+		public event EventHandler<ExceptionEventArgs> OnExceptionOccurred;
+
 		public RtgsSubscriber(
 			ILogger<RtgsSubscriber> logger,
 			Payment.PaymentClient grpcClient,
@@ -33,42 +36,66 @@ namespace RTGS.DotNetSDK.Subscriber
 			_handleMessageCommandsFactory = handleMessageCommandsFactory;
 		}
 
-		// TODO: what if called twice?
-		public void Start(IEnumerable<IHandler> handlers) =>
+		public void Start(IEnumerable<IHandler> handlers)
+		{
+			// TODO: thread safety?
+			if (_executingTask is not null)
+			{
+				throw new InvalidOperationException("RTGS Subscriber has already been started");
+			}
+
 			_executingTask = Execute(handlers.ToList());
+		}
 
 		private async Task Execute(IReadOnlyCollection<IHandler> handlers)
 		{
 			_logger.LogInformation("RTGS Subscriber started");
 
-			var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
-			_fromRtgsCall = _grpcClient.FromRtgsMessage(grpcCallHeaders);
-
-			var commands = _handleMessageCommandsFactory.CreateAll(handlers)
-				.ToDictionary(command => command.MessageIdentifier, command => command);
-
-			await foreach (var message in _fromRtgsCall.ResponseStream.ReadAllAsync())
+			try
 			{
-				// TODO: message with no header/instruction type
-				_logger.LogInformation("{MessageIdentifier} message received from RTGS", message.Header.InstructionType);
+				var commands = _handleMessageCommandsFactory.CreateAll(handlers)
+					.ToDictionary(command => command.MessageIdentifier, command => command);
 
-				// TODO: command not found
-				commands.TryGetValue(message.Header.InstructionType, out var command);
+				var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
+				_fromRtgsCall = _grpcClient.FromRtgsMessage(grpcCallHeaders);
 
-				var acknowledgement = new RtgsMessageAcknowledgement
+				await foreach (var message in _fromRtgsCall.ResponseStream.ReadAllAsync())
 				{
-					Header = new RtgsMessageHeader
+					// TODO: message with no header/instruction type
+					_logger.LogInformation("{MessageIdentifier} message received from RTGS", message.Header.InstructionType);
+
+					// TODO: command not found
+					commands.TryGetValue(message.Header.InstructionType, out var command);
+
+					var acknowledgement = new RtgsMessageAcknowledgement
 					{
-						CorrelationId = message.Header.CorrelationId,
-						InstructionType = message.Header.InstructionType
-					},
-					Success = true
-				};
+						Header = new RtgsMessageHeader
+						{
+							CorrelationId = message.Header.CorrelationId,
+							InstructionType = message.Header.InstructionType
+						},
+						Success = true
+					};
 
-				await _fromRtgsCall.RequestStream.WriteAsync(acknowledgement);
+					await _fromRtgsCall.RequestStream.WriteAsync(acknowledgement);
 
-				// TODO: squash exceptions?
-				await command.HandleAsync(message);
+					// TODO: squash exceptions?
+					await command.HandleAsync(message);
+				}
+			}
+			catch (RpcException ex)
+			{
+				_logger.LogError(ex, "An error occurred while communicating with RTGS");
+
+				var eventHandler = OnExceptionOccurred;
+				eventHandler?.Invoke(this, new ExceptionEventArgs(ex));
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "An unknown error occurred");
+
+				var eventHandler = OnExceptionOccurred;
+				eventHandler?.Invoke(this, new ExceptionEventArgs(ex));
 			}
 		}
 

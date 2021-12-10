@@ -88,6 +88,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		{
 			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
 
+
 			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
 			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
