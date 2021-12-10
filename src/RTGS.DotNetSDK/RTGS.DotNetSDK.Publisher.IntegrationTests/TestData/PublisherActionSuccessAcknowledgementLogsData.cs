@@ -39,14 +39,14 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 					new("Received EarmarkConfirmation acknowledgement (acknowledged) from RTGS (SendEarmarkConfirmationAsync)", LogEventLevel.Information)
 				});
 
-		public override IPublisherAction<TransferConfirmation> TransferConfirmation =>
-			new PublisherActionWithLogs<TransferConfirmation>(
-				PublisherActions.TransferConfirmation,
+		public override IPublisherAction<AtomicTransferConfirmation> AtomicTransferConfirmation =>
+			new PublisherActionWithLogs<AtomicTransferConfirmation>(
+				PublisherActions.AtomicTransferConfirmation,
 				new List<LogEntry>
 				{
-					new("Sending TransferConfirmation to RTGS (SendTransferConfirmationAsync)", LogEventLevel.Information),
-					new("Sent TransferConfirmation to RTGS (SendTransferConfirmationAsync)", LogEventLevel.Information),
-					new("Received TransferConfirmation acknowledgement (acknowledged) from RTGS (SendTransferConfirmationAsync)", LogEventLevel.Information)
+					new("Sending AtomicTransferConfirmation to RTGS (SendAtomicTransferConfirmationAsync)", LogEventLevel.Information),
+					new("Sent AtomicTransferConfirmation to RTGS (SendAtomicTransferConfirmationAsync)", LogEventLevel.Information),
+					new("Received AtomicTransferConfirmation acknowledgement (acknowledged) from RTGS (SendAtomicTransferConfirmationAsync)", LogEventLevel.Information)
 				});
 
 		public override IPublisherAction<UpdateLedgerRequest> UpdateLedger =>

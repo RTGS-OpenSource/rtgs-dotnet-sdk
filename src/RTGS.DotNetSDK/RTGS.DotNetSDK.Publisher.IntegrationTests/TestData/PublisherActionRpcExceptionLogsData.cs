@@ -40,14 +40,14 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 					new("Error received when sending EarmarkConfirmation to RTGS (SendEarmarkConfirmationAsync)", LogEventLevel.Error, typeof(RpcException))
 				});
 
-		public override IPublisherAction<TransferConfirmation> TransferConfirmation =>
-			new PublisherActionWithLogs<TransferConfirmation>(
-				PublisherActions.TransferConfirmation,
+		public override IPublisherAction<AtomicTransferConfirmation> AtomicTransferConfirmation =>
+			new PublisherActionWithLogs<AtomicTransferConfirmation>(
+				PublisherActions.AtomicTransferConfirmation,
 				new List<LogEntry>
 				{
-					new("Sending TransferConfirmation to RTGS (SendTransferConfirmationAsync)", LogEventLevel.Information),
-					new("Sent TransferConfirmation to RTGS (SendTransferConfirmationAsync)", LogEventLevel.Information),
-					new("Error received when sending TransferConfirmation to RTGS (SendTransferConfirmationAsync)", LogEventLevel.Error, typeof(RpcException))
+					new("Sending AtomicTransferConfirmation to RTGS (SendAtomicTransferConfirmationAsync)", LogEventLevel.Information),
+					new("Sent AtomicTransferConfirmation to RTGS (SendAtomicTransferConfirmationAsync)", LogEventLevel.Information),
+					new("Error received when sending AtomicTransferConfirmation to RTGS (SendAtomicTransferConfirmationAsync)", LogEventLevel.Error, typeof(RpcException))
 				});
 
 		public override IPublisherAction<UpdateLedgerRequest> UpdateLedger =>

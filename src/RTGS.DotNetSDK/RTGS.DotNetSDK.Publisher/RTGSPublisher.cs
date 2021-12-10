@@ -14,10 +14,10 @@ namespace RTGS.DotNetSDK.Publisher
 {
 	internal sealed class RtgsPublisher : IRtgsPublisher
 	{
-		private readonly Payment.PaymentClient _paymentClient;
-		private readonly CancellationTokenSource _sharedTokenSource = new();
-		private readonly RtgsClientOptions _options;
 		private readonly ILogger<RtgsPublisher> _logger;
+		private readonly Payment.PaymentClient _paymentClient;
+		private readonly RtgsPublisherOptions _options;
+		private readonly CancellationTokenSource _sharedTokenSource = new();
 		private readonly SemaphoreSlim _sendingSignal = new(1);
 		private readonly SemaphoreSlim _disposingSignal = new(1);
 		private readonly SemaphoreSlim _writingSignal = new(1);
@@ -27,11 +27,11 @@ namespace RTGS.DotNetSDK.Publisher
 		private bool _disposed;
 		private bool _resetConnection;
 
-		public RtgsPublisher(Payment.PaymentClient paymentClient, RtgsClientOptions options, ILogger<RtgsPublisher> logger)
+		public RtgsPublisher(ILogger<RtgsPublisher> logger, Payment.PaymentClient paymentClient, RtgsPublisherOptions options)
 		{
+			_logger = logger;
 			_paymentClient = paymentClient;
 			_options = options;
-			_logger = logger;
 		}
 
 		public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message, CancellationToken cancellationToken) =>
@@ -43,7 +43,7 @@ namespace RTGS.DotNetSDK.Publisher
 		public Task<SendResult> SendEarmarkConfirmationAsync(EarmarkConfirmation message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payment.earmarkconfirmation.v1", cancellationToken);
 
-		public Task<SendResult> SendTransferConfirmationAsync(TransferConfirmation message, CancellationToken cancellationToken) =>
+		public Task<SendResult> SendAtomicTransferConfirmationAsync(AtomicTransferConfirmation message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payment.blockconfirmation.v1", cancellationToken);
 
 		public Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequest message, CancellationToken cancellationToken) =>
@@ -55,7 +55,7 @@ namespace RTGS.DotNetSDK.Publisher
 		public Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payaway.confirmation.v1", cancellationToken);
 
-		private async Task<SendResult> SendRequestAsync<T>(T message, string instructionType, CancellationToken cancellationToken, [CallerMemberName] string callingMethod = null)
+		private async Task<SendResult> SendRequestAsync<T>(T message, string messageIdentifier, CancellationToken cancellationToken, [CallerMemberName] string callingMethod = null)
 		{
 			if (_disposed)
 			{
@@ -73,7 +73,7 @@ namespace RTGS.DotNetSDK.Publisher
 
 				_acknowledgementContext = new AcknowledgementContext();
 
-				await SendMessage(message, instructionType, callingMethod, linkedTokenSource.Token);
+				await SendMessage(message, messageIdentifier, callingMethod, linkedTokenSource.Token);
 
 				await _acknowledgementContext.WaitAsync(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
 
@@ -127,7 +127,7 @@ namespace RTGS.DotNetSDK.Publisher
 			if (_toRtgsCall is null)
 			{
 				var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
-				_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders);
+				_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders, cancellationToken: CancellationToken.None);
 
 				if (_waitForAcknowledgementsTask is not null)
 				{
@@ -163,7 +163,7 @@ namespace RTGS.DotNetSDK.Publisher
 			}
 		}
 
-		private async Task SendMessage<T>(T message, string instructionType, string callingMethod, CancellationToken cancellationToken)
+		private async Task SendMessage<T>(T message, string messageIdentifier, string callingMethod, CancellationToken cancellationToken)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -172,7 +172,7 @@ namespace RTGS.DotNetSDK.Publisher
 				Data = JsonSerializer.Serialize(message),
 				Header = new RtgsMessageHeader
 				{
-					InstructionType = instructionType,
+					InstructionType = messageIdentifier,
 					CorrelationId = _acknowledgementContext.CorrelationId
 				}
 			};
@@ -276,10 +276,6 @@ namespace RTGS.DotNetSDK.Publisher
 			{
 				_disposingSignal.Release();
 			}
-
-#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
-			GC.SuppressFinalize(this);
-#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
 		}
 
 		private sealed class AcknowledgementContext : IDisposable

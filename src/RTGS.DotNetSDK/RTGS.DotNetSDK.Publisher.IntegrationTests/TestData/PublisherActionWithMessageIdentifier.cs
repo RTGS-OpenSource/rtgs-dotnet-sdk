@@ -3,14 +3,14 @@ using System.Threading.Tasks;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 {
-	public class PublisherActionWithInstructionType<TRequest> : IPublisherAction<TRequest>
+	public class PublisherActionWithMessageIdentifier<TRequest> : IPublisherAction<TRequest>
 	{
 		private readonly IPublisherAction<TRequest> _publisherAction;
 
-		public PublisherActionWithInstructionType(IPublisherAction<TRequest> publisherAction, string instructionType)
+		public PublisherActionWithMessageIdentifier(IPublisherAction<TRequest> publisherAction, string messageIdentifier)
 		{
 			_publisherAction = publisherAction;
-			InstructionType = instructionType;
+			MessageIdentifier = messageIdentifier;
 		}
 
 		public TRequest Request => _publisherAction.Request;
@@ -18,6 +18,6 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 		public Task<SendResult> InvokeSendDelegateAsync(IRtgsPublisher publisher, CancellationToken cancellationToken = default) =>
 			_publisherAction.InvokeSendDelegateAsync(publisher, cancellationToken);
 
-		public string InstructionType { get; }
+		public string MessageIdentifier { get; }
 	}
 }
