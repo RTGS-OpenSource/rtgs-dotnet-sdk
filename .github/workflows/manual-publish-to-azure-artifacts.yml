@@ -3,26 +3,29 @@ name: RTGS .NET SDK Manual Publish
 # this workflow can only be run manually and will build and publish a nuget package to the private AzureArtifacts feed
 # Useful if you want to publish a package from a feature branch (specify the branch when you run the workflow)
 
-on: workflow_dispatch 
+on: workflow_dispatch
 
 jobs:
   publish-to-devops-artifacts:
     runs-on: ubuntu-latest
-    steps: 
-    # require v1 here so that MinVer has access to history to determine version number to apply      
+    steps:
+      # require v1 here so that MinVer has access to history to determine version number to apply
       - uses: actions/checkout@v1
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: "5.0.x"
+          dotnet-version: '5.0.x'
           source-url: https://pkgs.dev.azure.com/rtgs-global/RTGS-Global/_packaging/RTGS-Packages/nuget/v3/index.json
         env:
-          NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }} 
+          NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
 
       - name: dotnet build and publish
         run: |
           dotnet build --configuration Release ./src/RTGS.DotNetSDK/
           dotnet pack -c Release ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/RTGS.DotNetSDK.Publisher.csproj
+          dotnet pack -c Release ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Subscriber/RTGS.DotNetSDK.Subscriber.csproj
 
       - name: 'dotnet publish'
-        run: dotnet nuget push --api-key AzureArtifacts ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/bin/Release/*.nupkg
+        run: |
+          dotnet nuget push --api-key AzureArtifacts ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/bin/Release/*.nupkg
+          dotnet nuget push --api-key AzureArtifacts ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Subscriber/bin/Release/*.nupkg
