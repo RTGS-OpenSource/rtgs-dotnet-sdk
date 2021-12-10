@@ -76,8 +76,8 @@ jobs:
 
       - name: 'dotnet publish'
         run: |
-          dotnet nuget push --api-key AzureArtifacts ${{env.PUBLISHER_FOLDER}}bin/Release/*.nupkg -s ${{env.AZURE_ARTIFACTS_URL}} -k ${{ secrets.AZURE_ARTIFACTS_PAT }}
-          dotnet nuget push --api-key AzureArtifacts ${{env.SUBSCRIBER_FOLDER}}bin/Release/*.nupkg -s ${{env.AZURE_ARTIFACTS_URL}} -k ${{ secrets.AZURE_ARTIFACTS_PAT }}
+          dotnet nuget push ${{env.PUBLISHER_FOLDER}}bin/Release/*.nupkg -s ${{env.AZURE_ARTIFACTS_URL}} -k ${{ secrets.AZURE_ARTIFACTS_PAT }}
+          dotnet nuget push ${{env.SUBSCRIBER_FOLDER}}bin/Release/*.nupkg -s ${{env.AZURE_ARTIFACTS_URL}} -k ${{ secrets.AZURE_ARTIFACTS_PAT }}
 
   publish-to-nuget:
     # if releasing then publish to public nuget repository
