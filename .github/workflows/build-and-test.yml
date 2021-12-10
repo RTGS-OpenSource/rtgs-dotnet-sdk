@@ -70,7 +70,7 @@ jobs:
 
       - name: dotnet build and publish
         run: |
-          dotnet build --configuration Release ${{SOLUTION_FOLDER}}
+          dotnet build --configuration Release ${{env.SOLUTION_FOLDER}}
           dotnet pack -c Release ${{env.PUBLISHER_FOLDER}}RTGS.DotNetSDK.Publisher.csproj
           dotnet pack -c Release ${{env.SUBSCRIBER_FOLDER}}RTGS.DotNetSDK.Subscriber.csproj
 
@@ -94,7 +94,7 @@ jobs:
 
       - name: dotnet build and publish
         run: |
-          dotnet build --configuration Release ${{SOLUTION_FOLDER}}
+          dotnet build --configuration Release ${{env.SOLUTION_FOLDER}}
           dotnet pack -c Release ${{env.PUBLISHER_FOLDER}}RTGS.DotNetSDK.Publisher.csproj
           dotnet pack -c Release ${{env.SUBSCRIBER_FOLDER}}RTGS.DotNetSDK.Subscriber.csproj
 
