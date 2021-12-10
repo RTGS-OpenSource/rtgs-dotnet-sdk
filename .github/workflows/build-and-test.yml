@@ -16,6 +16,10 @@ on:
   # release:
   #   types: [published]
 
+env:
+  PUBLISHER_FOLDER: ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/
+  SUBSCRIBER_FOLDER: ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Subscriber/
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -64,13 +68,13 @@ jobs:
       - name: dotnet build and publish
         run: |
           dotnet build --configuration Release ./src/RTGS.DotNetSDK/
-          dotnet pack -c Release ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/RTGS.DotNetSDK.Publisher.csproj
-          dotnet pack -c Release ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Subscriber/RTGS.DotNetSDK.Subscriber.csproj
+          dotnet pack -c Release ${env.PUBLISHER_FOLDER}RTGS.DotNetSDK.Publisher.csproj
+          dotnet pack -c Release ${env.SUBSCRIBER_FOLDER}RTGS.DotNetSDK.Subscriber.csproj
 
       - name: 'dotnet publish'
         run: |
-          dotnet nuget push --api-key AzureArtifacts ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/bin/Release/*.nupkg
-          dotnet nuget push --api-key AzureArtifacts ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Subscriber/bin/Release/*.nupkg
+          dotnet nuget push --api-key AzureArtifacts ${env.PUBLISHER_FOLDER}bin/Release/*.nupkg
+          dotnet nuget push --api-key AzureArtifacts ${env.SUBSCRIBER_FOLDER}bin/Release/*.nupkg
 
   publish-to-nuget:
     # if releasing then publish to public nuget repository
@@ -88,13 +92,13 @@ jobs:
       - name: dotnet build and publish
         run: |
           dotnet build --configuration Release ./src/RTGS.DotNetSDK/
-          dotnet pack -c Release ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/RTGS.DotNetSDK.Publisher.csproj
-          dotnet pack -c Release ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Subscriber/RTGS.DotNetSDK.Subscriber.csproj
+          dotnet pack -c Release ${env.PUBLISHER_FOLDER}RTGS.DotNetSDK.Publisher.csproj
+          dotnet pack -c Release ${env.SUBSCRIBER_FOLDER}RTGS.DotNetSDK.Subscriber.csproj
 
       - name: 'dotnet publish'
         run: |
-          dotnet nuget push ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/bin/Release/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json
-          dotnet nuget push ./src/RTGS.DotNetSDK/RTGS.DotNetSDK.Subscriber/bin/Release/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json
+          dotnet nuget push ${env.PUBLISHER_FOLDER}bin/Release/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json
+          dotnet nuget push ${env.SUBSCRIBER_FOLDER}bin/Release/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -s https://api.nuget.org/v3/index.json
 
   generate-docs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
