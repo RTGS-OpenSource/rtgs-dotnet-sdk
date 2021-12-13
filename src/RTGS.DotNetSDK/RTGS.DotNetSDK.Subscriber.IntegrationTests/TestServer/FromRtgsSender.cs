@@ -36,7 +36,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 			RequestHeaders = null;
 		}
 
-		public async Task<RtgsMessage> SendAsync<T>(string messageIdentifier, T data)
+		public async Task<RtgsMessage> SendAsync<T>(string messageIdentifier, T data, Action<RtgsMessage> customiseRtgsMessage = null)
 		{
 			var messageStreamSet = _readyToSend.Wait(WaitForReadyToSendDuration);
 			if (!messageStreamSet)
@@ -61,10 +61,18 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 				Data = JsonSerializer.Serialize(data)
 			};
 
+			if (customiseRtgsMessage is not null)
+			{
+				customiseRtgsMessage(rtgsMessage);
+			}
+
 			await _messageStream.WriteAsync(rtgsMessage);
 
 			return rtgsMessage;
 		}
+
+		public void SetExpectedAcknowledgementCount(int count) =>
+			_acknowledgementsSignal.Reset(count);
 
 		public void AddAcknowledgement(RtgsMessageAcknowledgement acknowledgement)
 		{

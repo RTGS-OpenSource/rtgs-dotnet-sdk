@@ -10,9 +10,9 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters
 	{
 		public string MessageIdentifier => "PayawayFunds";
 
-		public async Task HandleMessageAsync(RtgsMessage message, IHandler<FIToFICustomerCreditTransferV10> handler)
+		public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<FIToFICustomerCreditTransferV10> handler)
 		{
-			var payawayFundsMessage = JsonSerializer.Deserialize<FIToFICustomerCreditTransferV10>(message.Data);
+			var payawayFundsMessage = JsonSerializer.Deserialize<FIToFICustomerCreditTransferV10>(rtgsMessage.Data);
 			await handler.HandleMessageAsync(payawayFundsMessage);
 		}
 	}

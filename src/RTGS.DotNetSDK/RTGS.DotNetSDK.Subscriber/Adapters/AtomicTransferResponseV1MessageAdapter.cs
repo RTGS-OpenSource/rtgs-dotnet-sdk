@@ -10,9 +10,9 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters
 	{
 		public string MessageIdentifier => "BlockResponse";
 
-		public async Task HandleMessageAsync(RtgsMessage message, IHandler<AtomicTransferResponseV1> handler)
+		public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<AtomicTransferResponseV1> handler)
 		{
-			var atomicTransferResponseMessage = JsonConvert.DeserializeObject<AtomicTransferResponseV1>(message.Data);
+			var atomicTransferResponseMessage = JsonConvert.DeserializeObject<AtomicTransferResponseV1>(rtgsMessage.Data);
 			await handler.HandleMessageAsync(atomicTransferResponseMessage);
 		}
 	}
