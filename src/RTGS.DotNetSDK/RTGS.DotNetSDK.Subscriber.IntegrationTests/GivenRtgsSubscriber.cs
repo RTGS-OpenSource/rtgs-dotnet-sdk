@@ -70,5 +70,29 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 			await FluentActions.Awaiting(() => _rtgsSubscriber.StopAsync())
 				.Should().ThrowExactlyAsync<InvalidOperationException>()
 				.WithMessage("RTGS Subscriber is not running");
+
+		[Fact]
+		public async Task AndSubscriberHasBeenDisposed_WhenStarting_ThenThrow()
+		{
+			_rtgsSubscriber.Start(new AllTestHandlers());
+
+			await _rtgsSubscriber.DisposeAsync();
+
+			FluentActions.Invoking(() => _rtgsSubscriber.Start(new AllTestHandlers()))
+				.Should().ThrowExactly<ObjectDisposedException>()
+				.WithMessage("*RtgsSubscriber*");
+		}
+
+		[Fact]
+		public async Task AndSubscriberHasBeenDisposed_WhenStopping_ThenThrow()
+		{
+			_rtgsSubscriber.Start(new AllTestHandlers());
+
+			await _rtgsSubscriber.DisposeAsync();
+
+			await FluentActions.Awaiting(() => _rtgsSubscriber.StopAsync())
+				.Should().ThrowExactlyAsync<ObjectDisposedException>()
+				.WithMessage("*RtgsSubscriber*");
+		}
 	}
 }

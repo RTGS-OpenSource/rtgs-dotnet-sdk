@@ -473,33 +473,9 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 			payawayFundsHandler.ReceivedMessage.Should().BeEquivalentTo(ValidMessages.PayawayFunds);
 		}
 
-		[Fact]
-		public async Task AndSubscriberHasBeenDisposed_WhenStarting_ThenThrow()
-		{
-			_rtgsSubscriber.Start(new AllTestHandlers());
-
-			await _rtgsSubscriber.DisposeAsync();
-
-			FluentActions.Invoking(() => _rtgsSubscriber.Start(new AllTestHandlers()))
-				.Should().ThrowExactly<ObjectDisposedException>()
-				.WithMessage("*RtgsSubscriber*");
-		}
-
-		[Fact]
-		public async Task AndSubscriberHasBeenDisposed_WhenStopping_ThenThrow()
-		{
-			_rtgsSubscriber.Start(new AllTestHandlers());
-
-			await _rtgsSubscriber.DisposeAsync();
-
-			await FluentActions.Awaiting(() => _rtgsSubscriber.StopAsync())
-				.Should().ThrowExactlyAsync<ObjectDisposedException>()
-				.WithMessage("*RtgsSubscriber*");
-		}
-
 		[Theory]
 		[ClassData(typeof(SubscriberActionData))]
-		public async Task AndSubscriberIsStopped_WhenStarting_ThenReceivedMessages<TRequest>(SubscriberAction<TRequest> subscriberAction)
+		public async Task AndSubscriberIsStopped_WhenStarting_ThenReceiveMessages<TRequest>(SubscriberAction<TRequest> subscriberAction)
 		{
 			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
 
