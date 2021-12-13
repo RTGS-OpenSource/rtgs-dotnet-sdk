@@ -108,7 +108,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 			FluentActions.Invoking(() => _rtgsSubscriber.Start(handlers.Skip(1)))
 				.Should()
 				.Throw<ArgumentException>()
-				.WithMessage("No IMessageRejectV1Handler handler was found. (Parameter 'handlers')");
+				.WithMessage("No handler of type IMessageRejectV1Handler was found. (Parameter 'handlers')");
 		}
 
 		[Fact]

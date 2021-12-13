@@ -33,7 +33,7 @@ namespace RTGS.DotNetSDK.Subscriber.Validators
 				var configuredHandlers = handlers.Where(requiredHandler.IsInstanceOfType).ToList();
 				if (!configuredHandlers.Any())
 				{
-					errors.Add($"No {requiredHandler.Name} handler was found.");
+					errors.Add($"No handler of type {requiredHandler.Name} was found.");
 				}
 				else if (configuredHandlers.Count > 1)
 				{
