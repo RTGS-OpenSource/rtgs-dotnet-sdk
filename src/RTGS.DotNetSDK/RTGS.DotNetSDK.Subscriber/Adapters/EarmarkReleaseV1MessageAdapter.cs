@@ -10,10 +10,10 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters
 	{
 		public string MessageIdentifier => "EarmarkRelease";
 
-		public async Task HandleMessageAsync(RtgsMessage message, IHandler<EarmarkReleaseV1> handler)
+		public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<EarmarkReleaseV1> handler)
 		{
-			var earmarkRelease = JsonSerializer.Deserialize<EarmarkReleaseV1>(message.Data);
-			await handler.HandleMessageAsync(earmarkRelease);
+			var earmarkReleaseMessage = JsonSerializer.Deserialize<EarmarkReleaseV1>(rtgsMessage.Data);
+			await handler.HandleMessageAsync(earmarkReleaseMessage);
 		}
 	}
 }

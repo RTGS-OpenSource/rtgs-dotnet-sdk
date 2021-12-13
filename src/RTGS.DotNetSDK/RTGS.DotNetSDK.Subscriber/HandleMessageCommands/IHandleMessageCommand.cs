@@ -7,6 +7,6 @@ namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands
 	{
 		string MessageIdentifier { get; }
 
-		Task HandleAsync(RtgsMessage message);
+		Task HandleAsync(RtgsMessage rtgsMessage);
 	}
 }

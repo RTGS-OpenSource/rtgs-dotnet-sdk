@@ -10,9 +10,9 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters
 	{
 		public string MessageIdentifier => "PayawayComplete";
 
-		public async Task HandleMessageAsync(RtgsMessage message, IHandler<BankToCustomerDebitCreditNotificationV09> handler)
+		public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<BankToCustomerDebitCreditNotificationV09> handler)
 		{
-			var payawayCompleteMessage = JsonSerializer.Deserialize<BankToCustomerDebitCreditNotificationV09>(message.Data);
+			var payawayCompleteMessage = JsonSerializer.Deserialize<BankToCustomerDebitCreditNotificationV09>(rtgsMessage.Data);
 			await handler.HandleMessageAsync(payawayCompleteMessage);
 		}
 	}

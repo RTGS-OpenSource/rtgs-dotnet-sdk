@@ -23,6 +23,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 	{
 		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(100);
 		private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
+		private static readonly TimeSpan WaitForExceptionEventDuration = TimeSpan.FromMilliseconds(100);
 
 		private readonly GrpcServerFixture _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
@@ -372,6 +373,201 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 														   && acknowledgement.Header.CorrelationId == sentRtgsMessage.Header.CorrelationId
 														   && acknowledgement.Header.InstructionType == "cannot be handled"
 														   && !acknowledgement.Success);
+		}
+
+		[Theory]
+		[ClassData(typeof(SubscriberActionData))]
+		public async Task WhenMessageWithIdentifierThatCannotBeHandledReceived_ThenSubsequentMessagesCanBeHandled<TRequest>(SubscriberAction<TRequest> subscriberAction)
+		{
+			_fromRtgsSender.SetExpectedAcknowledgementCount(2);
+
+			_rtgsSubscriber.Start(new AllTestHandlers());
+
+			await _fromRtgsSender.SendAsync(
+				"cannot be handled",
+				ValidMessages.AtomicLockResponseV1);
+
+			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+
+			subscriberAction.Handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
+
+			await _rtgsSubscriber.StopAsync();
+		}
+
+		[Fact]
+		public async Task WhenHandlerThrows_ThenLogError()
+		{
+			using var exceptionSignal = new ManualResetEventSlim();
+
+			var testHandlers = new AllTestHandlers()
+				.ThrowWhenMessageRejectV1Received(new OutOfMemoryException("test"));
+
+			_rtgsSubscriber.Start(testHandlers);
+			_rtgsSubscriber.OnExceptionOccurred += (_, args) => exceptionSignal.Set();
+
+			await _fromRtgsSender.SendAsync("MessageRejected", ValidMessages.MessageRejected);
+
+			exceptionSignal.Wait(WaitForExceptionEventDuration);
+
+			var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
+			errorLogs.Should().BeEquivalentTo(new[]
+			{
+				new LogEntry(
+					"An error occurred while handling a message (MessageIdentifier: MessageRejected)",
+					LogEventLevel.Error,
+					typeof(OutOfMemoryException))
+			});
+		}
+
+		[Fact]
+		public async Task WhenHandlerThrows_ThenRaiseExceptionEvent()
+		{
+			using var exceptionSignal = new ManualResetEventSlim();
+			Exception actualRaisedException = null;
+
+			var expectedRaisedException = new OutOfMemoryException("test");
+
+			var testHandlers = new AllTestHandlers()
+				.ThrowWhenMessageRejectV1Received(expectedRaisedException);
+
+			_rtgsSubscriber.Start(testHandlers);
+			_rtgsSubscriber.OnExceptionOccurred += (_, args) =>
+			{
+				actualRaisedException = args.Exception;
+				exceptionSignal.Set();
+			};
+
+			await _fromRtgsSender.SendAsync("MessageRejected", ValidMessages.MessageRejected);
+
+			exceptionSignal.Wait(WaitForExceptionEventDuration);
+
+			await _rtgsSubscriber.StopAsync();
+
+			actualRaisedException.Should().BeSameAs(expectedRaisedException);
+		}
+
+		[Fact]
+		public async Task WhenHandlerThrowsForFirstMessage_ThenSecondMessageIsHandled()
+		{
+			var testHandlers = new AllTestHandlers()
+				.ThrowWhenMessageRejectV1Received(new OutOfMemoryException("test"))
+				.ToList();
+
+			_rtgsSubscriber.Start(testHandlers);
+
+			_fromRtgsSender.SetExpectedAcknowledgementCount(2);
+
+			await _fromRtgsSender.SendAsync("MessageRejected", ValidMessages.MessageRejected);
+
+			await _fromRtgsSender.SendAsync("PayawayFunds", ValidMessages.PayawayFunds);
+
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+			await _rtgsSubscriber.StopAsync();
+
+			var payawayFundsHandler = testHandlers.OfType<AllTestHandlers.TestPayawayFundsV1Handler>().Single();
+			payawayFundsHandler.ReceivedMessage.Should().BeEquivalentTo(ValidMessages.PayawayFunds);
+		}
+
+		[Fact]
+		public async Task AndSubscriberHasBeenDisposed_WhenStarting_ThenThrow()
+		{
+			_rtgsSubscriber.Start(new AllTestHandlers());
+
+			await _rtgsSubscriber.DisposeAsync();
+
+			FluentActions.Invoking(() => _rtgsSubscriber.Start(new AllTestHandlers()))
+				.Should().ThrowExactly<ObjectDisposedException>()
+				.WithMessage("*RtgsSubscriber*");
+		}
+
+		[Fact]
+		public async Task AndSubscriberHasBeenDisposed_WhenStopping_ThenThrow()
+		{
+			_rtgsSubscriber.Start(new AllTestHandlers());
+
+			await _rtgsSubscriber.DisposeAsync();
+
+			await FluentActions.Awaiting(() => _rtgsSubscriber.StopAsync())
+				.Should().ThrowExactlyAsync<ObjectDisposedException>()
+				.WithMessage("*RtgsSubscriber*");
+		}
+
+		[Theory]
+		[ClassData(typeof(SubscriberActionData))]
+		public async Task AndSubscriberIsStopped_WhenStarting_ThenReceivedMessages<TRequest>(SubscriberAction<TRequest> subscriberAction)
+		{
+			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
+
+			await _rtgsSubscriber.StopAsync();
+
+			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
+
+			var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+			using var _ = new AssertionScope();
+
+			_fromRtgsSender.Acknowledgements
+				.Should().ContainSingle(acknowledgement => acknowledgement.Header.CorrelationId == sentRtgsMessage.Header.CorrelationId
+														   && acknowledgement.Success);
+
+			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+
+			subscriberAction.Handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
+		}
+
+		[Fact]
+		public async Task WhenExceptionEventHandlerThrows_ThenLogError()
+		{
+			_rtgsSubscriber.Start(new AllTestHandlers());
+
+			_rtgsSubscriber.OnExceptionOccurred += (_, _) => throw new InvalidOperationException("test");
+
+			await _fromRtgsSender.SendAsync("will-throw", ValidMessages.AtomicLockResponseV1);
+
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+			await _rtgsSubscriber.StopAsync();
+
+			var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
+			errorLogs.Should().BeEquivalentTo(new[]
+			{
+				new LogEntry(
+					"An error occurred while processing a message (MessageIdentifier: will-throw)",
+					LogEventLevel.Error,
+					typeof(RtgsSubscriberException)),
+				new LogEntry(
+					"An error occurred while raising exception occurred event",
+					LogEventLevel.Error,
+					typeof(InvalidOperationException))
+			});
+		}
+
+		[Theory]
+		[ClassData(typeof(SubscriberActionData))]
+		public async Task WhenExceptionEventHandlerThrows_ThenSubsequentMessagesCanBeHandled<TRequest>(SubscriberAction<TRequest> subscriberAction)
+		{
+			_fromRtgsSender.SetExpectedAcknowledgementCount(2);
+
+			_rtgsSubscriber.Start(new AllTestHandlers());
+
+			_rtgsSubscriber.OnExceptionOccurred += (_, _) => throw new InvalidOperationException("test");
+
+			await _fromRtgsSender.SendAsync("will-throw", ValidMessages.AtomicLockResponseV1);
+
+			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+
+			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+
+			subscriberAction.Handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
 		}
 	}
 }

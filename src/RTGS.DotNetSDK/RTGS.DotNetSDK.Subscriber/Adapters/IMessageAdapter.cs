@@ -12,6 +12,6 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters
 	public interface IMessageAdapter<out TMessage> : IMessageAdapter
 	{
 		// TODO: use cancellation tokens to ensure tests would eventually finish by timing out
-		Task HandleMessageAsync(RtgsMessage message, IHandler<TMessage> handler);
+		Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<TMessage> handler);
 	}
 }

@@ -10,9 +10,9 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters
 	{
 		public string MessageIdentifier => "BlockFunds";
 
-		public async Task HandleMessageAsync(RtgsMessage message, IHandler<AtomicTransferFundsV1> handler)
+		public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<AtomicTransferFundsV1> handler)
 		{
-			var atomicTransferFundsMessage = JsonConvert.DeserializeObject<AtomicTransferFundsV1>(message.Data);
+			var atomicTransferFundsMessage = JsonConvert.DeserializeObject<AtomicTransferFundsV1>(rtgsMessage.Data);
 			await handler.HandleMessageAsync(atomicTransferFundsMessage);
 		}
 	}

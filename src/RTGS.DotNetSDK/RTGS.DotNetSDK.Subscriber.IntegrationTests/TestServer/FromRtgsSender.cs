@@ -71,6 +71,9 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 			return rtgsMessage;
 		}
 
+		public void SetExpectedAcknowledgementCount(int count) =>
+			_acknowledgementsSignal.Reset(count);
+
 		public void AddAcknowledgement(RtgsMessageAcknowledgement acknowledgement)
 		{
 			_acknowledgements.Add(acknowledgement);

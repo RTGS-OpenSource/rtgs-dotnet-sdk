@@ -10,9 +10,9 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters
 	{
 		public string MessageIdentifier => "MessageRejected";
 
-		public async Task HandleMessageAsync(RtgsMessage message, IHandler<Admi00200101> handler)
+		public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<Admi00200101> handler)
 		{
-			var messageRejectedMessage = JsonSerializer.Deserialize<Admi00200101>(message.Data);
+			var messageRejectedMessage = JsonSerializer.Deserialize<Admi00200101>(rtgsMessage.Data);
 			await handler.HandleMessageAsync(messageRejectedMessage);
 		}
 	}
