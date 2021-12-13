@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 using RTGS.DotNetSDK.Subscriber.Handlers;
+using RTGS.DotNetSDK.Subscriber.Validators;
 using RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Subscriber
@@ -15,6 +17,7 @@ namespace RTGS.DotNetSDK.Subscriber
 		private readonly ILogger<RtgsSubscriber> _logger;
 		private readonly Payment.PaymentClient _grpcClient;
 		private readonly RtgsSubscriberOptions _options;
+		private readonly IHandlerValidator _handlerValidator;
 		private readonly IHandleMessageCommandsFactory _handleMessageCommandsFactory;
 		private readonly SemaphoreSlim _disposingSignal = new(1);
 		private Task _executingTask;
@@ -25,17 +28,30 @@ namespace RTGS.DotNetSDK.Subscriber
 			ILogger<RtgsSubscriber> logger,
 			Payment.PaymentClient grpcClient,
 			RtgsSubscriberOptions options,
+			IHandlerValidator handlerValidator,
 			IHandleMessageCommandsFactory handleMessageCommandsFactory)
 		{
 			_logger = logger;
 			_grpcClient = grpcClient;
 			_options = options;
+			_handlerValidator = handlerValidator;
 			_handleMessageCommandsFactory = handleMessageCommandsFactory;
 		}
 
 		// TODO: what if called twice?
-		public void Start(IEnumerable<IHandler> handlers) =>
-			_executingTask = Execute(handlers.ToList());
+		public void Start(IEnumerable<IHandler> handlers)
+		{
+			if (handlers is null)
+			{
+				throw new ArgumentNullException(nameof(handlers));
+			}
+
+			var handlersList = handlers.ToList();
+
+			_handlerValidator.Validate(handlersList);
+
+			_executingTask = Execute(handlersList);
+		}
 
 		private async Task Execute(IReadOnlyCollection<IHandler> handlers)
 		{
