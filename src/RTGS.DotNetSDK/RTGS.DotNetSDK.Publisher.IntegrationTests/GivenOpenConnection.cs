@@ -234,6 +234,15 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			}
 
 			[Theory]
+			[ClassData(typeof(PublisherActionWithNullMessagesData))]
+			public async Task AndMessageIsNull_WhenSending_ThenThrow<TRequest>(PublisherAction<TRequest> publisherAction) =>
+				await FluentActions
+					.Awaiting(() => publisherAction.InvokeSendDelegateAsync(_rtgsPublisher))
+					.Should()
+					.ThrowAsync<ArgumentNullException>()
+					.WithMessage("Value cannot be null. (Parameter 'message')");
+
+			[Theory]
 			[ClassData(typeof(PublisherActionData))]
 			public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader<TRequest>(PublisherAction<TRequest> publisherAction)
 			{
