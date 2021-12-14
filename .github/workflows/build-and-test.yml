@@ -3,7 +3,7 @@ name: RTGS .NET SDK Build Test Publish
 # this workflow will always build and test for a PR or a push to main or a release
 # it can publish a nuget package too but only under these circumstances:
 # 1 - a push to main will cause a Nuget package to be built and published to the private AzureArtifacts feed
-# 2 - createing a release will cause a Nuget package to be built and published to the public Nuget.org feed
+# 2 - creating a release will cause a Nuget package to be built and published to the public Nuget.org feed
 #
 # Finally if pushing to main - documentation will also be built
 
@@ -14,6 +14,7 @@ on:
     branches: [main]
   release:
     types: [published]
+  workflow_dispatch:
 
 env:
   SOLUTION_FOLDER: ./src/RTGS.DotNetSDK/
@@ -30,19 +31,25 @@ jobs:
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '5.0.x'
-      - name: Dotnet Tool Manifest
+      - name: dotnet Tool Manifest
         run: dotnet new tool-manifest
       - name: Install dotnet format
         run: dotnet tool install dotnet-format
-      - name: Dotnet Format
+      - name: dotnet Format
         run: dotnet format ${{env.SOLUTION_FOLDER}} --check
-      - name: Build Dotnet
+      - name: dotnet build
         run: dotnet build --configuration Release ${{env.SOLUTION_FOLDER}}
-      - name: Test Dotnet
+      - name: dotnet test
         run: |
           dotnet tool install dotnet-reportgenerator-globaltool --tool-path ./tools
           dotnet test --configuration Release ${{env.SOLUTION_FOLDER}} --no-build --results-directory "./test_results" --logger "trx;LogFilePrefix=results;" --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true
           ./tools/reportgenerator -reports:./test_results/**/coverage.cobertura.xml -targetdir:./test_results/CodeCoverage -reporttypes:Cobertura
+      - name: Upload dotnet test results
+        uses: actions/upload-artifact@v2
+        with:
+          name: dotnet-test-results
+          path: ./test_results/*.trx
+        if: ${{ always() }}
       - uses: 5monkeys/cobertura-action@master
         with:
           path: test_results/CodeCoverage/Cobertura.xml
