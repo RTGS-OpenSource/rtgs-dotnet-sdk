@@ -7,7 +7,10 @@ namespace RTGS.DotNetSDK.Subscriber
 {
 	public interface IRtgsSubscriber : IAsyncDisposable
 	{
+		event EventHandler<ExceptionEventArgs> OnExceptionOccurred;
+
 		void Start(IEnumerable<IHandler> handlers);
+
 		Task StopAsync();
 	}
 }

@@ -10,9 +10,9 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters
 	{
 		public string MessageIdentifier => "payment.lock.v2";
 
-		public async Task HandleMessageAsync(RtgsMessage message, IHandler<AtomicLockResponseV1> handler)
+		public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<AtomicLockResponseV1> handler)
 		{
-			var atomicLockResponseMessage = JsonConvert.DeserializeObject<AtomicLockResponseV1>(message.Data);
+			var atomicLockResponseMessage = JsonConvert.DeserializeObject<AtomicLockResponseV1>(rtgsMessage.Data);
 			await handler.HandleMessageAsync(atomicLockResponseMessage);
 		}
 	}
