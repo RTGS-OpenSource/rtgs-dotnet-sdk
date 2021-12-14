@@ -56,7 +56,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		}
 
 		[Fact]
-		public void WhenStarting_ThenExceptionEventIsRaised()
+		public async Task WhenStarting_ThenExceptionEventIsRaised()
 		{
 			using var raisedExceptionSignal = new ManualResetEventSlim();
 			Exception raisedException = null;
@@ -67,7 +67,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 				raisedExceptionSignal.Set();
 			};
 
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 			var waitForExceptionDuration = TimeSpan.FromSeconds(30);
 			raisedExceptionSignal.Wait(waitForExceptionDuration);
@@ -76,13 +76,13 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		}
 
 		[Fact]
-		public void WhenStarting_ThenExceptionIsLogged()
+		public async Task WhenStarting_ThenExceptionIsLogged()
 		{
 			using var raisedExceptionSignal = new ManualResetEventSlim();
 
 			_rtgsSubscriber.OnExceptionOccurred += (_, _) => raisedExceptionSignal.Set();
 
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 			var waitForExceptionDuration = TimeSpan.FromSeconds(30);
 			raisedExceptionSignal.Wait(waitForExceptionDuration);

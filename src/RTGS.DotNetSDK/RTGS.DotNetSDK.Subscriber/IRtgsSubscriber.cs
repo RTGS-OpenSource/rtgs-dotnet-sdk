@@ -9,7 +9,7 @@ namespace RTGS.DotNetSDK.Subscriber
 	{
 		event EventHandler<ExceptionEventArgs> OnExceptionOccurred;
 
-		void Start(IEnumerable<IHandler> handlers);
+		Task StartAsync(IEnumerable<IHandler> handlers);
 
 		Task StopAsync();
 	}

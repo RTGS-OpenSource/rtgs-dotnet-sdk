@@ -19,7 +19,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers
 			var types = typeof(AllTestHandlers)
 				.GetNestedTypes()
 				.Where(type => !type.IsAbstract)
-				.Select(type => Activator.CreateInstance(type))
+				.Select(Activator.CreateInstance)
 				.Cast<IHandler>();
 
 			return types.GetEnumerator();
