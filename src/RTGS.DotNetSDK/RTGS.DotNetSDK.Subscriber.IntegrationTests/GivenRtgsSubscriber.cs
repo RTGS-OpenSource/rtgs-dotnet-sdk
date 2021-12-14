@@ -58,42 +58,44 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 
 
 		[Fact]
-		public void WhenHandlerCollectionIsNull_WhenStarting_ThenThrows() =>
-			FluentActions.Invoking(() => _rtgsSubscriber.Start(null))
+		public async Task WhenHandlerCollectionIsNull_WhenStarting_ThenThrows() =>
+			await FluentActions.Awaiting(() => _rtgsSubscriber.StartAsync(null))
 				.Should()
-				.Throw<ArgumentNullException>()
+				.ThrowAsync<ArgumentNullException>()
 				.WithMessage("Value cannot be null. (Parameter 'handlers')");
 
 		[Fact]
-		public void WhenAnyHandlerInCollectionIsNull_WhenStarting_ThenThrows()
+		public async Task WhenAnyHandlerInCollectionIsNull_WhenStarting_ThenThrows()
 		{
 			var handlers = new AllTestHandlers().ToList();
 			handlers.Add(null);
 
-			FluentActions.Invoking(() => _rtgsSubscriber.Start(handlers))
+			await FluentActions.Awaiting(() => _rtgsSubscriber.StartAsync(handlers))
 				.Should()
-				.Throw<ArgumentException>()
+				.ThrowAsync<ArgumentException>()
 				.WithMessage("Handlers collection cannot contain null handlers. (Parameter 'handlers')");
 		}
 
 		[Fact]
-		public void WhenHandlerCollectionIsMissingHandlers_WhenStarting_ThenThrows()
+		public async Task WhenHandlerCollectionIsMissingHandlers_WhenStarting_ThenThrows()
 		{
-			var handlers = new AllTestHandlers().Where(handler => handler.GetType() != typeof(AllTestHandlers.TestMessageRejectedV1Handler));
-			FluentActions.Invoking(() => _rtgsSubscriber.Start(handlers))
+			var handlers = new AllTestHandlers()
+				.Where(handler => handler.GetType() != typeof(AllTestHandlers.TestMessageRejectedV1Handler));
+
+			await FluentActions.Awaiting(() => _rtgsSubscriber.StartAsync(handlers))
 				.Should()
-				.Throw<ArgumentException>()
+				.ThrowAsync<ArgumentException>()
 				.WithMessage("No handler of type IMessageRejectV1Handler was found. (Parameter 'handlers')");
 		}
 
 		[Fact]
-		public void WhenDuplicateHandlerInCollection_WhenStarting_ThenThrows()
+		public async Task WhenDuplicateHandlerInCollection_WhenStarting_ThenThrows()
 		{
 			var handlers = new AllTestHandlers().Concat(new AllTestHandlers());
 
-			FluentActions.Invoking(() => _rtgsSubscriber.Start(handlers))
+			await FluentActions.Awaiting(() => _rtgsSubscriber.StartAsync(handlers))
 				.Should()
-				.Throw<ArgumentException>()
+				.ThrowAsync<ArgumentException>()
 				.WithMessage("Multiple handlers of type IAtomicLockResponseV1Handler were found." +
 							 "Multiple handlers of type IAtomicTransferFundsV1Handler were found." +
 							 "Multiple handlers of type IAtomicTransferResponseV1Handler were found." +
@@ -107,17 +109,17 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 
 
 		[Fact]
-		public void WhenStartIsCalledTwice_ThenThrowInvalidOperationException()
+		public async Task WhenStartIsCalledTwice_ThenThrowInvalidOperationException()
 		{
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
-			FluentActions.Invoking(() => _rtgsSubscriber.Start(new AllTestHandlers()))
-				.Should().ThrowExactly<InvalidOperationException>()
+			await FluentActions.Awaiting(() => _rtgsSubscriber.StartAsync(new AllTestHandlers()))
+				.Should().ThrowExactlyAsync<InvalidOperationException>()
 				.WithMessage("RTGS Subscriber is already running");
 		}
 
 		[Fact]
-		public async Task WhenStopIsCalledButSubscriberNotRunning_ThenThrowInvalidOperationExcpetion() =>
+		public async Task WhenStopIsCalledButSubscriberNotRunning_ThenThrowInvalidOperationException() =>
 			await FluentActions.Awaiting(() => _rtgsSubscriber.StopAsync())
 				.Should().ThrowExactlyAsync<InvalidOperationException>()
 				.WithMessage("RTGS Subscriber is not running");
@@ -125,19 +127,19 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[Fact]
 		public async Task AndSubscriberHasBeenDisposed_WhenStarting_ThenThrow()
 		{
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 			await _rtgsSubscriber.DisposeAsync();
 
-			FluentActions.Invoking(() => _rtgsSubscriber.Start(new AllTestHandlers()))
-				.Should().ThrowExactly<ObjectDisposedException>()
+			await FluentActions.Awaiting(() => _rtgsSubscriber.StartAsync(new AllTestHandlers()))
+				.Should().ThrowExactlyAsync<ObjectDisposedException>()
 				.WithMessage("*RtgsSubscriber*");
 		}
 
 		[Fact]
 		public async Task AndSubscriberHasBeenDisposed_WhenStopping_ThenThrow()
 		{
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 			await _rtgsSubscriber.DisposeAsync();
 

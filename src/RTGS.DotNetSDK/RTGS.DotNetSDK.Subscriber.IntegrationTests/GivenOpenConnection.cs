@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -88,7 +89,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[ClassData(typeof(SubscriberActionData))]
 		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader<TRequest>(SubscriberAction<TRequest> subscriberAction)
 		{
-			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
+			await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
 			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
@@ -101,7 +102,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[ClassData(typeof(SubscriberActionData))]
 		public async Task WhenReceivedExpectedMessageType_ThenPassToHandlerAndAcknowledge<TMessage>(SubscriberAction<TMessage> subscriberAction)
 		{
-			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
+			await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
 			var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
@@ -122,7 +123,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[ClassData(typeof(SubscriberActionData))]
 		public async Task WhenSubscriberIsStopped_ThenCloseConnection<TMessage>(SubscriberAction<TMessage> subscriberAction)
 		{
-			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
+			await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
 			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
@@ -145,7 +146,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[ClassData(typeof(SubscriberActionData))]
 		public async Task WhenSubscriberIsDisposed_ThenCloseConnection<TMessage>(SubscriberAction<TMessage> subscriberAction)
 		{
-			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
+			await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
 			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
@@ -165,9 +166,9 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		}
 
 		[Fact]
-		public void WhenDisposingInParallel_ThenCanDispose()
+		public async Task WhenDisposingInParallel_ThenCanDispose()
 		{
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 			using var disposeSignal = new ManualResetEventSlim();
 			const int concurrentDisposableThreads = 20;
@@ -190,7 +191,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[ClassData(typeof(SubscriberActionWithLogsData))]
 		public async Task WhenMessageReceived_ThenLogInformation<TMessage>(SubscriberActionWithLogs<TMessage> subscriberAction)
 		{
-			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
+			await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
 			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
@@ -207,7 +208,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[Fact]
 		public async Task WhenMessageWithNoHeaderReceived_ThenLogError()
 		{
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 			await _fromRtgsSender.SendAsync(
 				"will not be used as the header is being set to null",
@@ -227,7 +228,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		{
 			Exception raisedException = null;
 
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 			_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
 
 			await _fromRtgsSender.SendAsync(
@@ -245,7 +246,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[Fact]
 		public async Task WhenMessageWithNoHeaderReceived_ThenAcknowledgeAsFailure()
 		{
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 			await _fromRtgsSender.SendAsync(
 				"will not be used as the header is being set to null",
@@ -266,7 +267,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[Fact]
 		public async Task WhenMessageWithNoMessageIdentifierReceived_ThenLogError()
 		{
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 			await _fromRtgsSender.SendAsync(
 				string.Empty,
@@ -285,7 +286,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		{
 			Exception raisedException = null;
 
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 			_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
 
 			await _fromRtgsSender.SendAsync(
@@ -302,7 +303,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[Fact]
 		public async Task WhenMessageWithNoMessageIdentifierReceived_ThenAcknowledgeAsFailure()
 		{
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 			var sentRtgsMessage = await _fromRtgsSender.SendAsync(
 				string.Empty,
@@ -322,7 +323,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[Fact]
 		public async Task WhenMessageWithIdentifierThatCannotBeHandledReceived_ThenLogError()
 		{
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 			await _fromRtgsSender.SendAsync(
 				"cannot be handled",
@@ -341,7 +342,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		{
 			Exception raisedException = null;
 
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 			_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
 
 			await _fromRtgsSender.SendAsync(
@@ -358,7 +359,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[Fact]
 		public async Task WhenMessageWithIdentifierThatCannotBeHandledReceived_ThenAcknowledgeAsFailure()
 		{
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 			var sentRtgsMessage = await _fromRtgsSender.SendAsync(
 				"cannot be handled",
@@ -381,7 +382,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		{
 			_fromRtgsSender.SetExpectedAcknowledgementCount(2);
 
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 			await _fromRtgsSender.SendAsync(
 				"cannot be handled",
@@ -406,7 +407,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 			var testHandlers = new AllTestHandlers()
 				.ThrowWhenMessageRejectV1Received(new OutOfMemoryException("test"));
 
-			_rtgsSubscriber.Start(testHandlers);
+			await _rtgsSubscriber.StartAsync(testHandlers);
 			_rtgsSubscriber.OnExceptionOccurred += (_, args) => exceptionSignal.Set();
 
 			await _fromRtgsSender.SendAsync("MessageRejected", ValidMessages.MessageRejected);
@@ -434,7 +435,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 			var testHandlers = new AllTestHandlers()
 				.ThrowWhenMessageRejectV1Received(expectedRaisedException);
 
-			_rtgsSubscriber.Start(testHandlers);
+			await _rtgsSubscriber.StartAsync(testHandlers);
 			_rtgsSubscriber.OnExceptionOccurred += (_, args) =>
 			{
 				actualRaisedException = args.Exception;
@@ -457,7 +458,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 				.ThrowWhenMessageRejectV1Received(new OutOfMemoryException("test"))
 				.ToList();
 
-			_rtgsSubscriber.Start(testHandlers);
+			await _rtgsSubscriber.StartAsync(testHandlers);
 
 			_fromRtgsSender.SetExpectedAcknowledgementCount(2);
 
@@ -477,11 +478,11 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[ClassData(typeof(SubscriberActionData))]
 		public async Task AndSubscriberIsStopped_WhenStarting_ThenReceiveMessages<TRequest>(SubscriberAction<TRequest> subscriberAction)
 		{
-			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
+			await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
 			await _rtgsSubscriber.StopAsync();
 
-			_rtgsSubscriber.Start(subscriberAction.AllTestHandlers);
+			await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
 			var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
@@ -501,7 +502,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		[Fact]
 		public async Task WhenExceptionEventHandlerThrows_ThenLogError()
 		{
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 			_rtgsSubscriber.OnExceptionOccurred += (_, _) => throw new InvalidOperationException("test");
 
@@ -531,7 +532,7 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 		{
 			_fromRtgsSender.SetExpectedAcknowledgementCount(2);
 
-			_rtgsSubscriber.Start(new AllTestHandlers());
+			await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
 			_rtgsSubscriber.OnExceptionOccurred += (_, _) => throw new InvalidOperationException("test");
 
@@ -544,6 +545,96 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 			subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 			subscriberAction.Handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
+		}
+
+		[Theory]
+		[ClassData(typeof(SubscriberActionData))]
+		public async Task AndMessageIsBeingProcessed_WhenStopping_ThenHandleGracefully<TRequest>(SubscriberAction<TRequest> subscriberAction)
+		{
+			await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+
+			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+
+			await _rtgsSubscriber.StopAsync();
+
+			_serilogContext.SubscriberLogs(LogEventLevel.Error).Should().BeEmpty();
+		}
+
+		[Theory]
+		[ClassData(typeof(SubscriberActionData))]
+		public async Task AndMessageIsBeingProcessed_WhenDisposing_ThenHandleGracefully<TRequest>(SubscriberAction<TRequest> subscriberAction)
+		{
+			await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+
+			await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+
+			await _rtgsSubscriber.DisposeAsync();
+
+			_serilogContext.SubscriberLogs(LogEventLevel.Error).Should().BeEmpty();
+		}
+
+		[Fact]
+		public void WhenStartingInParallel_ThenOnlyOneSucceeds()
+		{
+			using var startSignal = new ManualResetEventSlim();
+
+			var invalidOperationExceptions = new ConcurrentBag<InvalidOperationException>();
+
+			const int concurrentStartThreadsCount = 20;
+			var startTasks = Enumerable.Range(1, concurrentStartThreadsCount)
+				.Select(_ => Task.Run(async () =>
+				{
+					startSignal.Wait();
+
+					try
+					{
+						await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+					}
+					catch (InvalidOperationException ex)
+					{
+						invalidOperationExceptions.Add(ex);
+					}
+				}))
+				.ToArray();
+
+			startSignal.Set();
+
+			Task.WaitAll(startTasks, TimeSpan.FromSeconds(5));
+
+			invalidOperationExceptions.Count.Should().Be(concurrentStartThreadsCount - 1);
+		}
+
+		[Fact]
+		public async Task WhenStoppingInParallel_ThenOnlyOneSucceeds()
+		{
+			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+
+			using var stopSignal = new ManualResetEventSlim();
+
+			var invalidOperationExceptions = new ConcurrentBag<InvalidOperationException>();
+
+			const int concurrentStopThreadsCount = 20;
+			var stopTasks = Enumerable.Range(1, concurrentStopThreadsCount)
+				.Select(_ => Task.Run(async () =>
+				{
+					stopSignal.Wait();
+
+					try
+					{
+						await _rtgsSubscriber.StopAsync();
+					}
+					catch (InvalidOperationException ex)
+					{
+						invalidOperationExceptions.Add(ex);
+					}
+				}))
+				.ToArray();
+
+			stopSignal.Set();
+
+			Task.WaitAll(stopTasks, TimeSpan.FromSeconds(5));
+
+			invalidOperationExceptions.Count.Should().Be(concurrentStopThreadsCount - 1);
 		}
 	}
 }

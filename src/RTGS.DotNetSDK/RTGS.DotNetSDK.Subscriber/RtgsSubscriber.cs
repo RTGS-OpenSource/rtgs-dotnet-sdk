@@ -20,10 +20,13 @@ namespace RTGS.DotNetSDK.Subscriber
 		private readonly RtgsSubscriberOptions _options;
 		private readonly IHandlerValidator _handlerValidator;
 		private readonly IHandleMessageCommandsFactory _handleMessageCommandsFactory;
+		private readonly SemaphoreSlim _startStopSignal = new(1);
 		private readonly SemaphoreSlim _disposingSignal = new(1);
+		private readonly SemaphoreSlim _processingSignal = new(1);
 		private Task _executingTask;
 		private AsyncDuplexStreamingCall<RtgsMessageAcknowledgement, RtgsMessage> _fromRtgsCall;
 		private bool _disposed;
+		private bool _isStopRequested;
 
 		public event EventHandler<ExceptionEventArgs> OnExceptionOccurred;
 
@@ -41,17 +44,11 @@ namespace RTGS.DotNetSDK.Subscriber
 			_handleMessageCommandsFactory = handleMessageCommandsFactory;
 		}
 
-		public void Start(IEnumerable<IHandler> handlers)
+		public async Task StartAsync(IEnumerable<IHandler> handlers)
 		{
-			// TODO: thread safety?
 			if (_disposed)
 			{
 				throw new ObjectDisposedException(nameof(RtgsSubscriber));
-			}
-
-			if (_executingTask is not null)
-			{
-				throw new InvalidOperationException("RTGS Subscriber is already running");
 			}
 
 			if (handlers is null)
@@ -59,11 +56,26 @@ namespace RTGS.DotNetSDK.Subscriber
 				throw new ArgumentNullException(nameof(handlers));
 			}
 
-			var handlersList = handlers.ToList();
+			await _startStopSignal.WaitAsync();
 
-			_handlerValidator.Validate(handlersList);
+			try
+			{
+				if (_executingTask is not null)
+				{
+					throw new InvalidOperationException("RTGS Subscriber is already running");
+				}
 
-			_executingTask = Execute(handlersList);
+				_isStopRequested = false;
+
+				var handlersList = handlers.ToList();
+				_handlerValidator.Validate(handlersList);
+
+				_executingTask = Execute(handlersList);
+			}
+			finally
+			{
+				_startStopSignal.Release();
+			}
 		}
 
 		private async Task Execute(IReadOnlyCollection<IHandler> handlers)
@@ -80,7 +92,23 @@ namespace RTGS.DotNetSDK.Subscriber
 
 				await foreach (var rtgsMessage in _fromRtgsCall.ResponseStream.ReadAllAsync())
 				{
-					await ProcessRtgsMessage(commands, rtgsMessage);
+					if (_isStopRequested)
+					{
+						// If the subscriber is stopping the request stream will have been completed.
+						// That means it is not possible to send an acknowledgement back.
+						return;
+					}
+
+					await _processingSignal.WaitAsync();
+
+					try
+					{
+						await ProcessRtgsMessage(commands, rtgsMessage);
+					}
+					finally
+					{
+						_processingSignal.Release();
+					}
 				}
 			}
 			catch (RpcException ex)
@@ -122,7 +150,7 @@ namespace RTGS.DotNetSDK.Subscriber
 				}
 
 				// We need to send back the acknowledgement as soon as possible to avoid timeouts on the server.
-				// The handler should be quick but we cannot guarentee that is the case so do this first.
+				// The handler should be quick but we cannot guarantee that is the case so do this first.
 				await SendSuccessAcknowledgement(rtgsMessage.Header);
 
 				try
@@ -184,30 +212,48 @@ namespace RTGS.DotNetSDK.Subscriber
 				throw new ObjectDisposedException(nameof(RtgsSubscriber));
 			}
 
-			if (_executingTask is null)
+			await _startStopSignal.WaitAsync();
+
+			try
 			{
-				throw new InvalidOperationException("RTGS Subscriber is not running");
+				if (_executingTask is null)
+				{
+					throw new InvalidOperationException("RTGS Subscriber is not running");
+				}
+
+				_logger.LogInformation("RTGS Subscriber stopping");
+
+				_isStopRequested = true;
+				await CompleteAsyncEnumerables();
+				_executingTask = null;
+
+				_logger.LogInformation("RTGS Subscriber stopped");
 			}
-
-			_logger.LogInformation("RTGS Subscriber stopping");
-
-			await CompleteAsyncEnumerables();
-			_executingTask = null;
-
-			_logger.LogInformation("RTGS Subscriber stopped");
+			finally
+			{
+				_startStopSignal.Release();
+			}
 		}
 
 		private async Task CompleteAsyncEnumerables()
 		{
-			// TODO: can't stop if processing
-			if (_fromRtgsCall is not null)
+			await _processingSignal.WaitAsync();
+
+			try
 			{
-				await _fromRtgsCall.RequestStream.CompleteAsync();
+				if (_fromRtgsCall is not null)
+				{
+					await _fromRtgsCall.RequestStream.CompleteAsync();
 
-				await _executingTask;
+					await _executingTask;
 
-				_fromRtgsCall.Dispose();
-				_fromRtgsCall = null;
+					_fromRtgsCall.Dispose();
+					_fromRtgsCall = null;
+				}
+			}
+			finally
+			{
+				_processingSignal.Release();
 			}
 		}
 
@@ -233,6 +279,9 @@ namespace RTGS.DotNetSDK.Subscriber
 				{
 					await Stop(false);
 				}
+
+				_startStopSignal.Dispose();
+				_processingSignal.Dispose();
 			}
 			finally
 			{
