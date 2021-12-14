@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 
 namespace RTGS.DotNetSDK.Subscriber.Validators
 {
-	public class HandlerValidator : IHandlerValidator
+	internal class HandlerValidator : IHandlerValidator
 	{
 		private readonly IEnumerable<Type> _requiredHandlers = new[]
 		{
@@ -19,13 +20,14 @@ namespace RTGS.DotNetSDK.Subscriber.Validators
 			typeof(IPayawayFundsV1Handler),
 			typeof(IPayawayCompleteV1Handler)
 		};
-		public void Validate(IList<IHandler> handlers)
+
+		public void Validate(IReadOnlyList<IHandler> handlers)
 		{
-			var errors = new List<string>();
+			var errorsBuilder = new StringBuilder();
 
 			if (handlers.Any(handler => handler is null))
 			{
-				errors.Add("Handlers collection cannot contain null handlers.");
+				errorsBuilder.AppendLine("Handlers collection cannot contain null handlers.");
 			}
 
 			foreach (Type requiredHandler in _requiredHandlers)
@@ -33,17 +35,18 @@ namespace RTGS.DotNetSDK.Subscriber.Validators
 				var configuredHandlers = handlers.Where(requiredHandler.IsInstanceOfType).ToList();
 				if (!configuredHandlers.Any())
 				{
-					errors.Add($"No handler of type {requiredHandler.Name} was found.");
+					errorsBuilder.AppendLine($"No handler of type {requiredHandler.Name} was found.");
 				}
 				else if (configuredHandlers.Count > 1)
 				{
-					errors.Add($"Multiple handlers of type {requiredHandler.Name} were found.");
+					errorsBuilder.AppendLine($"Multiple handlers of type {requiredHandler.Name} were found.");
 				}
 			}
 
-			if (errors.Any())
+			var errorMessage = errorsBuilder.ToString();
+			if (!string.IsNullOrWhiteSpace(errorMessage))
 			{
-				throw new ArgumentException(string.Join("\r\n", errors), nameof(handlers));
+				throw new ArgumentException(errorMessage, nameof(handlers));
 			}
 		}
 	}

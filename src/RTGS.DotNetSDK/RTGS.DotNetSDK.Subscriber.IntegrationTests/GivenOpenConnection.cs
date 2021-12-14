@@ -84,54 +84,6 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 			return Task.CompletedTask;
 		}
 
-		[Fact]
-		public void WhenHandlerCollectionIsNull_ThenThrows() =>
-			FluentActions.Invoking(() => _rtgsSubscriber.Start(null))
-				.Should()
-				.Throw<ArgumentNullException>()
-				.WithMessage("Value cannot be null. (Parameter 'handlers')");
-
-		[Fact]
-		public void WhenAnyHandlerInCollectionIsNull_ThenThrows()
-		{
-			var handlers = new AllTestHandlers().ToList();
-			handlers.Add(null);
-
-			FluentActions.Invoking(() => _rtgsSubscriber.Start(handlers))
-				.Should()
-				.Throw<ArgumentException>()
-				.WithMessage("Handlers collection cannot contain null handlers. (Parameter 'handlers')");
-		}
-
-		[Fact]
-		public void WhenHandlerCollectionIsMissingHandlers_ThenThrows()
-		{
-			var handlers = new AllTestHandlers().ToList();
-			FluentActions.Invoking(() => _rtgsSubscriber.Start(handlers.Skip(1)))
-				.Should()
-				.Throw<ArgumentException>()
-				.WithMessage("No handler of type IMessageRejectV1Handler was found. (Parameter 'handlers')");
-		}
-
-		[Fact]
-		public void WhenDuplicateHandlerInCollection_ThenThrows()
-		{
-			var handlers = new AllTestHandlers().Concat(new AllTestHandlers());
-
-			FluentActions.Invoking(() => _rtgsSubscriber.Start(handlers))
-				.Should()
-				.Throw<ArgumentException>()
-				.WithMessage("Multiple handlers of type IAtomicLockResponseV1Handler were found." +
-							 "Multiple handlers of type IAtomicTransferFundsV1Handler were found." +
-							 "Multiple handlers of type IAtomicTransferResponseV1Handler were found." +
-							 "Multiple handlers of type IEarmarkCompleteV1Handler were found." +
-							 "Multiple handlers of type IEarmarkFundsV1Handler were found." +
-							 "Multiple handlers of type IEarmarkReleaseV1Handler were found." +
-							 "Multiple handlers of type IMessageRejectV1Handler were found." +
-							 "Multiple handlers of type IPayawayFundsV1Handler were found." +
-							 "Multiple handlers of type IPayawayCompleteV1Handler were found. (Parameter 'handlers')");
-		}
-
 		[Theory]
 		[ClassData(typeof(SubscriberActionData))]
 		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader<TRequest>(SubscriberAction<TRequest> subscriberAction)
