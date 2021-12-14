@@ -47,7 +47,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: dotnet-test-results
-          path: ./test_results
+          path: ./test_results/*.trx
         if: ${{ always() }}
       - uses: 5monkeys/cobertura-action@master
         with:
