@@ -44,11 +44,11 @@ jobs:
           dotnet test --configuration Release ${{env.SOLUTION_FOLDER}} --no-build --results-directory "./test_results" --logger "trx;LogFilePrefix=results;" --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true
           ./tools/reportgenerator -reports:./test_results/**/coverage.cobertura.xml -targetdir:./test_results/CodeCoverage -reporttypes:Cobertura
       - name: Upload dotnet test results
-          uses: actions/upload-artifact@v2
-          with:
-            name: dotnet-test-results
-            path: ./test_results
-          if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: dotnet-test-results
+          path: ./test_results
+        if: ${{ always() }}
       - uses: 5monkeys/cobertura-action@master
         with:
           path: test_results/CodeCoverage/Cobertura.xml
