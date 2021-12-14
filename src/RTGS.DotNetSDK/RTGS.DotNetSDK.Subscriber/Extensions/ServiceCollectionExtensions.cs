@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
+using RTGS.DotNetSDK.Subscriber.Validators;
 using RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Subscriber.Extensions
@@ -41,6 +42,7 @@ namespace RTGS.DotNetSDK.Subscriber.Extensions
 			serviceCollection.AddTransient<IMessageAdapter, EarmarkFundsV1MessageAdapter>();
 			serviceCollection.AddTransient<IMessageAdapter, EarmarkCompleteV1MessageAdapter>();
 			serviceCollection.AddTransient<IMessageAdapter, EarmarkReleaseV1MessageAdapter>();
+			serviceCollection.AddSingleton<IHandlerValidator, HandlerValidator>();
 
 			return serviceCollection;
 		}
