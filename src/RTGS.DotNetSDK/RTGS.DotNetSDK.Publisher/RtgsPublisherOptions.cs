@@ -50,20 +50,14 @@ namespace RTGS.DotNetSDK.Publisher
 		{
 			private Builder(string bankDid, Uri remoteHostAddress)
 			{
-				if (bankDid is null)
-				{
-					throw new ArgumentNullException(nameof(bankDid));
-				}
+				ArgumentNullException.ThrowIfNull(bankDid, nameof(bankDid));
 
 				if (string.IsNullOrWhiteSpace(bankDid))
 				{
 					throw new ArgumentException("Value cannot be white space.", nameof(bankDid));
 				}
 
-				if (remoteHostAddress is null)
-				{
-					throw new ArgumentNullException(nameof(remoteHostAddress));
-				}
+				ArgumentNullException.ThrowIfNull(remoteHostAddress, nameof(remoteHostAddress));
 
 				BankDidValue = bankDid;
 				RemoteHostAddressValue = remoteHostAddress;

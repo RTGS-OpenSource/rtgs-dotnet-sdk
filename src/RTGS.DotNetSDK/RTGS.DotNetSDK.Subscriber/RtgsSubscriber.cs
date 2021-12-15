@@ -51,10 +51,7 @@ namespace RTGS.DotNetSDK.Subscriber
 				throw new ObjectDisposedException(nameof(RtgsSubscriber));
 			}
 
-			if (handlers is null)
-			{
-				throw new ArgumentNullException(nameof(handlers));
-			}
+			ArgumentNullException.ThrowIfNull(handlers, nameof(handlers));
 
 			await _startStopSignal.WaitAsync();
 
