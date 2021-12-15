@@ -13,44 +13,44 @@ namespace RTGS.DotNetSDK.Publisher
 	public interface IRtgsPublisher : IAsyncDisposable
 	{
 		/// <summary>
-		/// Sends an <see cref="AtomicLockRequest"/> to initiate a transaction.
+		/// Sends an <see cref="AtomicLockRequestV1"/> to initiate a transaction.
 		/// </summary>
-		/// <param name="message">The <see cref="AtomicLockRequest"/> message</param>
+		/// <param name="message">The <see cref="AtomicLockRequestV1"/> message</param>
 		/// <param name="cancellationToken">A cancellation token</param>
 		/// <returns>The result of the operation</returns>
-		Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message, CancellationToken cancellationToken = default);
+		Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Sends an <see cref="AtomicTransferRequest"/> to invoke transfer of funds.
+		/// Sends an <see cref="AtomicTransferRequestV1"/> to invoke transfer of funds.
 		/// </summary>
-		/// <param name="message">The <see cref="AtomicTransferRequest"/> message</param>
+		/// <param name="message">The <see cref="AtomicTransferRequestV1"/> message</param>
 		/// <param name="cancellationToken">A cancellation token</param>
 		/// <returns>The result of the operation</returns>
-		Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequest message, CancellationToken cancellationToken = default);
+		Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequestV1 message, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Sends an <see cref="EarmarkConfirmation"/> to confirm funds have been earmarked.
+		/// Sends an <see cref="EarmarkConfirmationV1"/> to confirm funds have been earmarked.
 		/// </summary>
-		/// <param name="message">The <see cref="EarmarkConfirmation"/> message</param>
+		/// <param name="message">The <see cref="EarmarkConfirmationV1"/> message</param>
 		/// <param name="cancellationToken">A cancellation token</param>
 		/// <returns>The result of the operation</returns>
-		Task<SendResult> SendEarmarkConfirmationAsync(EarmarkConfirmation message, CancellationToken cancellationToken = default);
+		Task<SendResult> SendEarmarkConfirmationAsync(EarmarkConfirmationV1 message, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Sends a <see cref="AtomicTransferConfirmation"/> request to confirm atomic fund transfer.
+		/// Sends a <see cref="AtomicTransferConfirmationV1"/> request to confirm atomic fund transfer.
 		/// </summary>
-		/// <param name="message">The <see cref="AtomicTransferConfirmation"/> message</param>
+		/// <param name="message">The <see cref="AtomicTransferConfirmationV1"/> message</param>
 		/// <param name="cancellationToken">A cancellation token</param>
 		/// <returns>The result of the operation</returns>
-		Task<SendResult> SendAtomicTransferConfirmationAsync(AtomicTransferConfirmation message, CancellationToken cancellationToken = default);
+		Task<SendResult> SendAtomicTransferConfirmationAsync(AtomicTransferConfirmationV1 message, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Sends an <see cref="UpdateLedgerRequest"/> to notify RTGS of a change to available funds.
+		/// Sends an <see cref="UpdateLedgerRequestV1"/> to notify RTGS of a change to available funds.
 		/// </summary>
-		/// <param name="message">The <see cref="UpdateLedgerRequest"/> message</param>
+		/// <param name="message">The <see cref="UpdateLedgerRequestV1"/> message</param>
 		/// <param name="cancellationToken">A cancellation token</param>
 		/// <returns>The result of the operation</returns>
-		Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequest message, CancellationToken cancellationToken = default);
+		Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequestV1 message, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// Sends a <see cref="FIToFICustomerCreditTransferV10"/> (payaway) transaction request.
@@ -64,7 +64,7 @@ namespace RTGS.DotNetSDK.Publisher
 		Task<SendResult> SendPayawayCreateAsync(FIToFICustomerCreditTransferV10 message, CancellationToken cancellationToken = default);
 
 		/// <summary>
-		/// Sends a <see cref="BankToCustomerDebitCreditNotificationV09"/> (payaway) confirmation request
+		/// Sends a <see cref="BankToCustomerDebitCreditNotificationV09"/> (payaway) confirmation request.
 		/// </summary>
 		/// <param name="message">The <see cref="BankToCustomerDebitCreditNotificationV09"/>  message</param>
 		/// <param name="cancellationToken">A cancellation token</param>

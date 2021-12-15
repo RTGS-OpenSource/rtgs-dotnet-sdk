@@ -9,44 +9,44 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 {
 	public class PublisherActionTimeoutAcknowledgementLogsData : BasePublisherActionData
 	{
-		public override IPublisherAction<AtomicLockRequest> AtomicLock =>
-			new PublisherActionWithLogs<AtomicLockRequest>(
+		public override IPublisherAction<AtomicLockRequestV1> AtomicLock =>
+			new PublisherActionWithLogs<AtomicLockRequestV1>(
 				PublisherActions.AtomicLock,
 				new List<LogEntry>
 				{
-					new("Timed out waiting for AtomicLockRequest acknowledgement from RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Error)
+					new("Timed out waiting for AtomicLockRequestV1 acknowledgement from RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Error)
 				});
 
-		public override IPublisherAction<AtomicTransferRequest> AtomicTransfer =>
-			new PublisherActionWithLogs<AtomicTransferRequest>(
+		public override IPublisherAction<AtomicTransferRequestV1> AtomicTransfer =>
+			new PublisherActionWithLogs<AtomicTransferRequestV1>(
 				PublisherActions.AtomicTransfer,
 				new List<LogEntry>
 				{
-					new("Timed out waiting for AtomicTransferRequest acknowledgement from RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Error)
+					new("Timed out waiting for AtomicTransferRequestV1 acknowledgement from RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Error)
 				});
 
-		public override IPublisherAction<EarmarkConfirmation> EarmarkConfirmation =>
-			new PublisherActionWithLogs<EarmarkConfirmation>(
+		public override IPublisherAction<EarmarkConfirmationV1> EarmarkConfirmation =>
+			new PublisherActionWithLogs<EarmarkConfirmationV1>(
 				PublisherActions.EarmarkConfirmation,
 				new List<LogEntry>
 				{
-					new("Timed out waiting for EarmarkConfirmation acknowledgement from RTGS (SendEarmarkConfirmationAsync)", LogEventLevel.Error)
+					new("Timed out waiting for EarmarkConfirmationV1 acknowledgement from RTGS (SendEarmarkConfirmationAsync)", LogEventLevel.Error)
 				});
 
-		public override IPublisherAction<AtomicTransferConfirmation> AtomicTransferConfirmation =>
-			new PublisherActionWithLogs<AtomicTransferConfirmation>(
+		public override IPublisherAction<AtomicTransferConfirmationV1> AtomicTransferConfirmation =>
+			new PublisherActionWithLogs<AtomicTransferConfirmationV1>(
 				PublisherActions.AtomicTransferConfirmation,
 				new List<LogEntry>
 				{
-					new("Timed out waiting for AtomicTransferConfirmation acknowledgement from RTGS (SendAtomicTransferConfirmationAsync)", LogEventLevel.Error)
+					new("Timed out waiting for AtomicTransferConfirmationV1 acknowledgement from RTGS (SendAtomicTransferConfirmationAsync)", LogEventLevel.Error)
 				});
 
-		public override IPublisherAction<UpdateLedgerRequest> UpdateLedger =>
-			new PublisherActionWithLogs<UpdateLedgerRequest>(
+		public override IPublisherAction<UpdateLedgerRequestV1> UpdateLedger =>
+			new PublisherActionWithLogs<UpdateLedgerRequestV1>(
 				PublisherActions.UpdateLedger,
 				new List<LogEntry>
 				{
-					new("Timed out waiting for UpdateLedgerRequest acknowledgement from RTGS (SendUpdateLedgerRequestAsync)", LogEventLevel.Error)
+					new("Timed out waiting for UpdateLedgerRequestV1 acknowledgement from RTGS (SendUpdateLedgerRequestAsync)", LogEventLevel.Error)
 				});
 
 		public override IPublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate =>

@@ -9,7 +9,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 	{
 		public const string BankDid = "test-bank-did";
 
-		public static readonly AtomicLockRequest AtomicLockRequest = new()
+		public static readonly AtomicLockRequestV1 AtomicLockRequest = new()
 		{
 			DbtrToRtgsId = new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
 			{
@@ -34,7 +34,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 			EndToEndId = "end-to-end-id"
 		};
 
-		public static readonly AtomicTransferRequest AtomicTransferRequest = new()
+		public static readonly AtomicTransferRequestV1 AtomicTransferRequest = new()
 		{
 			DbtrToRtgsId = new Public.Payment.V1.Pacs.GenericFinancialIdentification1
 			{
@@ -56,19 +56,19 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 			LckId = "B27C2536-27F8-403F-ABBD-7AC4190FBBD3"
 		};
 
-		public static readonly EarmarkConfirmation EarmarkConfirmation = new()
+		public static readonly EarmarkConfirmationV1 EarmarkConfirmation = new()
 		{
 			LockId = new Guid("159C6010-82CB-4775-8C87-05E6EC203E8E"),
 			Success = true
 		};
 
-		public static readonly AtomicTransferConfirmation AtomicTransferConfirmation = new()
+		public static readonly AtomicTransferConfirmationV1 AtomicTransferConfirmation = new()
 		{
 			LockId = new Guid("B30E15E3-CD54-4FA6-B0EB-B9BAE32976F9"),
 			Success = true
 		};
 
-		public static readonly UpdateLedgerRequest UpdateLedgerRequest = new()
+		public static readonly UpdateLedgerRequestV1 UpdateLedgerRequest = new()
 		{
 			Amt = new Public.Payment.V1.Pacs.ProtoDecimal()
 			{

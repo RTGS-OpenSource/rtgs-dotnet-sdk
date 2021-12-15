@@ -99,7 +99,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				_toRtgsMessageHandler.SetupForMessage(handler =>
 					handler.ReturnExpectedAcknowledgementWithSuccess());
 
-				await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest());
+				await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
 
 				using var disposeSignal = new ManualResetEventSlim();
 				const int concurrentDisposableThreads = 20;
@@ -141,18 +141,18 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 				allCompleted.Should().BeTrue();
 
 				var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-				receiver.Connections.Single().Requests.Select(request => JsonConvert.DeserializeObject<AtomicLockRequest>(request.Data))
-					.Should().BeEquivalentTo(atomicLockRequests, options => options.ComparingByMembers<AtomicLockRequest>());
+				receiver.Connections.Single().Requests.Select(request => JsonConvert.DeserializeObject<AtomicLockRequestV1>(request.Data))
+					.Should().BeEquivalentTo(atomicLockRequests, options => options.ComparingByMembers<AtomicLockRequestV1>());
 
-				IEnumerable<AtomicLockRequest> GenerateFiveUniqueAtomicLockRequests()
+				IEnumerable<AtomicLockRequestV1> GenerateFiveUniqueAtomicLockRequests()
 				{
 					// We need writing to the stream to take a significant amount of time to ensure race condition.
 					// Using a long end to end id is one way of achieving this.
-					yield return new AtomicLockRequest { EndToEndId = new string('a', 100_000) };
-					yield return new AtomicLockRequest { EndToEndId = new string('b', 100_000) };
-					yield return new AtomicLockRequest { EndToEndId = new string('c', 100_000) };
-					yield return new AtomicLockRequest { EndToEndId = new string('d', 100_000) };
-					yield return new AtomicLockRequest { EndToEndId = new string('e', 100_000) };
+					yield return new AtomicLockRequestV1 { EndToEndId = new string('a', 100_000) };
+					yield return new AtomicLockRequestV1 { EndToEndId = new string('b', 100_000) };
+					yield return new AtomicLockRequestV1 { EndToEndId = new string('c', 100_000) };
+					yield return new AtomicLockRequestV1 { EndToEndId = new string('d', 100_000) };
+					yield return new AtomicLockRequestV1 { EndToEndId = new string('e', 100_000) };
 				}
 			}
 

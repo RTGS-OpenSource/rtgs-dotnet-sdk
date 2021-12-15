@@ -90,12 +90,12 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			var result = await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest());
+			var result = await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
 			result.Should().Be(SendResult.Success);
 
 			await _grpcServer.StopAsync();
 
-			var exceptionAssertions = await FluentActions.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest()))
+			var exceptionAssertions = await FluentActions.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1()))
 				.Should().ThrowAsync<Exception>();
 
 			// One of two exceptions can be thrown depending on how far along the call is.
@@ -109,7 +109,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest());
+			await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
 
 			await _grpcServer.StopAsync();
 

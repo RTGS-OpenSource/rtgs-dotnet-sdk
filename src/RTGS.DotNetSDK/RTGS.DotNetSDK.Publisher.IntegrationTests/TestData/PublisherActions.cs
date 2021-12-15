@@ -6,23 +6,23 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 {
 	public static class PublisherActions
 	{
-		public static readonly PublisherAction<AtomicLockRequest> AtomicLock = new(
+		public static readonly PublisherAction<AtomicLockRequestV1> AtomicLock = new(
 			ValidMessages.AtomicLockRequest,
 			(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, cancellationToken));
 
-		public static readonly PublisherAction<AtomicTransferRequest> AtomicTransfer = new(
+		public static readonly PublisherAction<AtomicTransferRequestV1> AtomicTransfer = new(
 			ValidMessages.AtomicTransferRequest,
 			(publisher, request, cancellationToken) => publisher.SendAtomicTransferRequestAsync(request, cancellationToken));
 
-		public static readonly PublisherAction<EarmarkConfirmation> EarmarkConfirmation = new(
+		public static readonly PublisherAction<EarmarkConfirmationV1> EarmarkConfirmation = new(
 			ValidMessages.EarmarkConfirmation,
 			(publisher, request, cancellationToken) => publisher.SendEarmarkConfirmationAsync(request, cancellationToken));
 
-		public static readonly PublisherAction<AtomicTransferConfirmation> AtomicTransferConfirmation = new(
+		public static readonly PublisherAction<AtomicTransferConfirmationV1> AtomicTransferConfirmation = new(
 			ValidMessages.AtomicTransferConfirmation,
 			(publisher, request, cancellationToken) => publisher.SendAtomicTransferConfirmationAsync(request, cancellationToken));
 
-		public static readonly PublisherAction<UpdateLedgerRequest> UpdateLedger = new(
+		public static readonly PublisherAction<UpdateLedgerRequestV1> UpdateLedger = new(
 			ValidMessages.UpdateLedgerRequest,
 			(publisher, request, cancellationToken) => publisher.SendUpdateLedgerRequestAsync(request, cancellationToken));
 

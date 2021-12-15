@@ -28,7 +28,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 			await using var rtgsPublisher = clientHost.Services.GetRequiredService<IRtgsPublisher>();
 
-			await FluentActions.Awaiting(() => rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest()))
+			await FluentActions.Awaiting(() => rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1()))
 				.Should().ThrowAsync<RpcException>();
 		}
 	}

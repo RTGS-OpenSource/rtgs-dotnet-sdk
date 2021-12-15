@@ -9,11 +9,11 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 {
 	public abstract class BasePublisherActionData : IEnumerable<object[]>
 	{
-		public abstract IPublisherAction<AtomicLockRequest> AtomicLock { get; }
-		public abstract IPublisherAction<AtomicTransferRequest> AtomicTransfer { get; }
-		public abstract IPublisherAction<EarmarkConfirmation> EarmarkConfirmation { get; }
-		public abstract IPublisherAction<AtomicTransferConfirmation> AtomicTransferConfirmation { get; }
-		public abstract IPublisherAction<UpdateLedgerRequest> UpdateLedger { get; }
+		public abstract IPublisherAction<AtomicLockRequestV1> AtomicLock { get; }
+		public abstract IPublisherAction<AtomicTransferRequestV1> AtomicTransfer { get; }
+		public abstract IPublisherAction<EarmarkConfirmationV1> EarmarkConfirmation { get; }
+		public abstract IPublisherAction<AtomicTransferConfirmationV1> AtomicTransferConfirmation { get; }
+		public abstract IPublisherAction<UpdateLedgerRequestV1> UpdateLedger { get; }
 		public abstract IPublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate { get; }
 		public abstract IPublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation { get; }
 

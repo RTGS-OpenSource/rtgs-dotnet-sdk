@@ -34,19 +34,19 @@ namespace RTGS.DotNetSDK.Publisher
 			_options = options;
 		}
 
-		public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequest message, CancellationToken cancellationToken) =>
+		public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payment.lock.v2", cancellationToken);
 
-		public Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequest message, CancellationToken cancellationToken) =>
+		public Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequestV1 message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payment.block.v1", cancellationToken);
 
-		public Task<SendResult> SendEarmarkConfirmationAsync(EarmarkConfirmation message, CancellationToken cancellationToken) =>
+		public Task<SendResult> SendEarmarkConfirmationAsync(EarmarkConfirmationV1 message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payment.earmarkconfirmation.v1", cancellationToken);
 
-		public Task<SendResult> SendAtomicTransferConfirmationAsync(AtomicTransferConfirmation message, CancellationToken cancellationToken) =>
+		public Task<SendResult> SendAtomicTransferConfirmationAsync(AtomicTransferConfirmationV1 message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payment.blockconfirmation.v1", cancellationToken);
 
-		public Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequest message, CancellationToken cancellationToken) =>
+		public Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequestV1 message, CancellationToken cancellationToken) =>
 			SendRequestAsync(message, "payment.update.ledger.v1", cancellationToken);
 
 		public Task<SendResult> SendPayawayCreateAsync(FIToFICustomerCreditTransferV10 message, CancellationToken cancellationToken) =>
