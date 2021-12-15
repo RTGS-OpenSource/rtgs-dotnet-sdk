@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using RTGS.DotNetSDK.Subscriber.Adapters;
+﻿using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.Public.Payment.V2;
 

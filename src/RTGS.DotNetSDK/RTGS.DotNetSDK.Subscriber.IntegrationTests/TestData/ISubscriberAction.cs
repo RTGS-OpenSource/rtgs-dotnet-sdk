@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using RTGS.DotNetSDK.Subscriber.Handlers;
-using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers;
+﻿using RTGS.DotNetSDK.Subscriber.Handlers;
 
 namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData
 {

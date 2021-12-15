@@ -1,21 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Grpc.Core;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using RTGS.DotNetSDK.Publisher.Extensions;
-using RTGS.DotNetSDK.Publisher.IntegrationTests.Logging;
-using RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
-using RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer;
-using RTGS.DotNetSDK.Publisher.Messages;
-using Serilog;
-using Serilog.Events;
-using Serilog.Sinks.TestCorrelator;
-using Xunit;
-
-namespace RTGS.DotNetSDK.Publisher.IntegrationTests
+﻿namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 {
 	public class GivenServerStops : IAsyncLifetime
 	{

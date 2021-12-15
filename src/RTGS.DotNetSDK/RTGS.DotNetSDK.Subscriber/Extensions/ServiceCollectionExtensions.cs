@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 using RTGS.DotNetSDK.Subscriber.Validators;

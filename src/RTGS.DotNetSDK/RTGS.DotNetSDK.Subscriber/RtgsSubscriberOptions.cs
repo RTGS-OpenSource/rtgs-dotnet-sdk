@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RTGS.DotNetSDK.Subscriber
+﻿namespace RTGS.DotNetSDK.Subscriber
 {
 	/// <summary>
 	/// Represents the options used when sending messages to RTGS via a <see cref="IRtgsSubscriber"/>.

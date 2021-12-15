@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-
-namespace RTGS.DotNetSDK.Publisher
+﻿namespace RTGS.DotNetSDK.Publisher
 {
 	/// <summary>
 	/// Represents the options used when sending messages to RTGS via a <see cref="IRtgsPublisher"/>.

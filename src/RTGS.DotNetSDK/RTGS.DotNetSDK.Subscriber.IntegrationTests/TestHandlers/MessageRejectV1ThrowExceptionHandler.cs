@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using RTGS.DotNetSDK.Subscriber.Handlers;
+﻿using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.ISO20022.Messages.Admi_002_001.V01;
 
 namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers

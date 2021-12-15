@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Threading.Tasks;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.Public.Payment.V2;

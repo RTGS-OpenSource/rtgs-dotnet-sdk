@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace RTGS.DotNetSDK.Subscriber.Handlers
+﻿namespace RTGS.DotNetSDK.Subscriber.Handlers
 {
 	public interface IHandler { }
 

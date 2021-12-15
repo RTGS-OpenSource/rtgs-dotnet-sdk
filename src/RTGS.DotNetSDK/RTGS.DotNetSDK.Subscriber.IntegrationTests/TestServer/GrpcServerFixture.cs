@@ -1,9 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Xunit;
-
-namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
+﻿namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer
 {
 	public class GrpcServerFixture : IAsyncLifetime
 	{

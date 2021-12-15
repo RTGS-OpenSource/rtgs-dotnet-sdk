@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.DotNetSDK.Subscriber.Messages;
 using RTGS.Public.Payment.V2;

@@ -1,20 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using RTGS.DotNetSDK.Subscriber.Extensions;
-using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
+﻿using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 using RTGS.DotNetSDK.Subscriber.Handlers;
-using RTGS.DotNetSDK.Subscriber.IntegrationTests.Logging;
-using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData;
-using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers;
-using Serilog;
-using Serilog.Events;
-using Serilog.Sinks.TestCorrelator;
-using Xunit;
 
 namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 {

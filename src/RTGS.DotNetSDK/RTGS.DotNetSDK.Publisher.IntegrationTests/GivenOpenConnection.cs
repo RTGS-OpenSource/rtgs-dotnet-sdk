@@ -1,23 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
-using FluentAssertions.Execution;
-using Grpc.Core;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
-using RTGS.DotNetSDK.Publisher.Extensions;
-using RTGS.DotNetSDK.Publisher.IntegrationTests.Logging;
-using RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
-using RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer;
-using RTGS.DotNetSDK.Publisher.Messages;
-using Serilog;
-using Serilog.Events;
-using Serilog.Sinks.TestCorrelator;
-using Xunit;
+﻿using Newtonsoft.Json;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 {

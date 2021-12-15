@@ -1,5 +1,4 @@
-﻿using System;
-using RTGS.Public.Payment.V1.Pacs;
+﻿using RTGS.Public.Payment.V1.Pacs;
 
 namespace RTGS.DotNetSDK.Subscriber.Messages
 {

@@ -1,16 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using RTGS.DotNetSDK.Subscriber.Extensions;
-using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData;
-using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers;
-using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer;
-using Xunit;
-
-namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
+﻿namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 {
 	public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 	{

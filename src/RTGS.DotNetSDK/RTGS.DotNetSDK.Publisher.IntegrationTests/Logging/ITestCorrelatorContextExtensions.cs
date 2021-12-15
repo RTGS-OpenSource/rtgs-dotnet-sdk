@@ -1,9 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Serilog.Events;
-using Serilog.Formatting.Display;
-using Serilog.Sinks.TestCorrelator;
+﻿using Serilog.Formatting.Display;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.Logging
 {

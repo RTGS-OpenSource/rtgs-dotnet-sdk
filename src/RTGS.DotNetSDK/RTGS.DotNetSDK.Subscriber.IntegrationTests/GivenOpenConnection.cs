@@ -1,22 +1,4 @@
-using System;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using FluentAssertions;
-using FluentAssertions.Execution;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using RTGS.DotNetSDK.Subscriber.Exceptions;
-using RTGS.DotNetSDK.Subscriber.Extensions;
-using RTGS.DotNetSDK.Subscriber.IntegrationTests.Logging;
-using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData;
-using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers;
-using RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer;
-using Serilog;
-using Serilog.Events;
-using Serilog.Sinks.TestCorrelator;
-using Xunit;
 
 namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
 {

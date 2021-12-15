@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-
-namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
+﻿namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 {
 	public class PublisherActionWithMessageIdentifier<TRequest> : IPublisherAction<TRequest>
 	{

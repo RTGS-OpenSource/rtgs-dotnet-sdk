@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RTGS.DotNetSDK.Subscriber.Messages
+﻿namespace RTGS.DotNetSDK.Subscriber.Messages
 {
 	public record EarmarkCompleteV1
 	{

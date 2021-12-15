@@ -1,16 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Grpc.Core;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using RTGS.DotNetSDK.Publisher.Extensions;
-using RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
-using RTGS.DotNetSDK.Publisher.Messages;
-using Serilog;
-using Xunit;
-
-namespace RTGS.DotNetSDK.Publisher.IntegrationTests
+﻿namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 {
 	public class GivenWrongRemoteHostAddress
 	{

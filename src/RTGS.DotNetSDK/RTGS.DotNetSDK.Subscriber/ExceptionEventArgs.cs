@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RTGS.DotNetSDK.Subscriber
+﻿namespace RTGS.DotNetSDK.Subscriber
 {
 	public sealed class ExceptionEventArgs : EventArgs
 	{

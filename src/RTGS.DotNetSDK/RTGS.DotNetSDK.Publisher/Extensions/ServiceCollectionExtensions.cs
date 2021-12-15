@@ -1,6 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading;
+﻿using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using RTGS.Public.Payment.V2;
 

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RTGS.DotNetSDK.Publisher.Messages
+﻿namespace RTGS.DotNetSDK.Publisher.Messages
 {
 	/// <summary>
 	/// Used to represent the message sent to RTGS to indicate that the funds have been earmarked (or not if <see cref="Success"/> = <code>false</code>)

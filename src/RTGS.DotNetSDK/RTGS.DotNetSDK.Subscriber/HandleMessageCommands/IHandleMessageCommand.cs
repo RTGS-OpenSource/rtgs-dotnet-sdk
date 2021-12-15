@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using RTGS.Public.Payment.V2;
+﻿using RTGS.Public.Payment.V2;
 
 namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands
 {

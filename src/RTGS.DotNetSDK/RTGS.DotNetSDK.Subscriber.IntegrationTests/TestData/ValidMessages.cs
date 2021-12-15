@@ -1,5 +1,4 @@
-﻿using System;
-using RTGS.DotNetSDK.Subscriber.Messages;
+﻿using RTGS.DotNetSDK.Subscriber.Messages;
 using RTGS.Public.Payment.V1.Pacs;
 
 namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData

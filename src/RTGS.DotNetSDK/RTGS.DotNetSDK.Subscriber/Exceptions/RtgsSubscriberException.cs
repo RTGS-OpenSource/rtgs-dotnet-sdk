@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace RTGS.DotNetSDK.Subscriber.Exceptions
+﻿namespace RTGS.DotNetSDK.Subscriber.Exceptions
 {
 	public class RtgsSubscriberException : Exception
 	{
