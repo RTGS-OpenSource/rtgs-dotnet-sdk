@@ -72,7 +72,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			receiver.ThrowOnConnection = true;
 
 			await FluentActions
-				.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest()))
+				.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1()))
 				.Should()
 				.ThrowAsync<Exception>();
 		}
@@ -85,7 +85,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			receiver.ThrowOnConnection = true;
 
 			await FluentActions
-				.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest { EndToEndId = new string('e', 100_000) }))
+				.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1 { EndToEndId = new string('e', 100_000) }))
 				.Should()
 				.ThrowAsync<Exception>();
 		}
@@ -98,7 +98,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			receiver.ThrowOnConnection = true;
 
 			await FluentActions
-				.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest()))
+				.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1()))
 				.Should()
 				.ThrowAsync<Exception>();
 
@@ -106,7 +106,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 			receiver.ThrowOnConnection = false;
 
-			var result = await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest());
+			var result = await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
 
 			result.Should().Be(SendResult.Success);
 		}

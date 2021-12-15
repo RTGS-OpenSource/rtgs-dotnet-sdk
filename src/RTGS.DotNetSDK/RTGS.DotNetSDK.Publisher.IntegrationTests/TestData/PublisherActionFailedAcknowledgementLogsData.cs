@@ -9,54 +9,54 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
 {
 	public class PublisherActionFailedAcknowledgementLogsData : BasePublisherActionData
 	{
-		public override IPublisherAction<AtomicLockRequest> AtomicLock =>
-			new PublisherActionWithLogs<AtomicLockRequest>(
+		public override IPublisherAction<AtomicLockRequestV1> AtomicLock =>
+			new PublisherActionWithLogs<AtomicLockRequestV1>(
 				PublisherActions.AtomicLock,
 				new List<LogEntry>
 				{
-					new("Sending AtomicLockRequest to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
-					new("Sent AtomicLockRequest to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
-					new("Received AtomicLockRequest acknowledgement (rejected) from RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Error)
+					new("Sending AtomicLockRequestV1 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
+					new("Sent AtomicLockRequestV1 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
+					new("Received AtomicLockRequestV1 acknowledgement (rejected) from RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Error)
 				});
 
-		public override IPublisherAction<AtomicTransferRequest> AtomicTransfer =>
-			new PublisherActionWithLogs<AtomicTransferRequest>(
+		public override IPublisherAction<AtomicTransferRequestV1> AtomicTransfer =>
+			new PublisherActionWithLogs<AtomicTransferRequestV1>(
 				PublisherActions.AtomicTransfer,
 				new List<LogEntry>
 				{
-					new("Sending AtomicTransferRequest to RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Information),
-					new("Sent AtomicTransferRequest to RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Information),
-					new("Received AtomicTransferRequest acknowledgement (rejected) from RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Error)
+					new("Sending AtomicTransferRequestV1 to RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Information),
+					new("Sent AtomicTransferRequestV1 to RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Information),
+					new("Received AtomicTransferRequestV1 acknowledgement (rejected) from RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Error)
 				});
 
-		public override IPublisherAction<EarmarkConfirmation> EarmarkConfirmation =>
-			new PublisherActionWithLogs<EarmarkConfirmation>(
+		public override IPublisherAction<EarmarkConfirmationV1> EarmarkConfirmation =>
+			new PublisherActionWithLogs<EarmarkConfirmationV1>(
 				PublisherActions.EarmarkConfirmation,
 				new List<LogEntry>
 				{
-					new("Sending EarmarkConfirmation to RTGS (SendEarmarkConfirmationAsync)", LogEventLevel.Information),
-					new("Sent EarmarkConfirmation to RTGS (SendEarmarkConfirmationAsync)", LogEventLevel.Information),
-					new("Received EarmarkConfirmation acknowledgement (rejected) from RTGS (SendEarmarkConfirmationAsync)", LogEventLevel.Error)
+					new("Sending EarmarkConfirmationV1 to RTGS (SendEarmarkConfirmationAsync)", LogEventLevel.Information),
+					new("Sent EarmarkConfirmationV1 to RTGS (SendEarmarkConfirmationAsync)", LogEventLevel.Information),
+					new("Received EarmarkConfirmationV1 acknowledgement (rejected) from RTGS (SendEarmarkConfirmationAsync)", LogEventLevel.Error)
 				});
 
-		public override IPublisherAction<AtomicTransferConfirmation> AtomicTransferConfirmation =>
-			new PublisherActionWithLogs<AtomicTransferConfirmation>(
+		public override IPublisherAction<AtomicTransferConfirmationV1> AtomicTransferConfirmation =>
+			new PublisherActionWithLogs<AtomicTransferConfirmationV1>(
 				PublisherActions.AtomicTransferConfirmation,
 				new List<LogEntry>
 				{
-					new("Sending AtomicTransferConfirmation to RTGS (SendAtomicTransferConfirmationAsync)", LogEventLevel.Information),
-					new("Sent AtomicTransferConfirmation to RTGS (SendAtomicTransferConfirmationAsync)", LogEventLevel.Information),
-					new("Received AtomicTransferConfirmation acknowledgement (rejected) from RTGS (SendAtomicTransferConfirmationAsync)", LogEventLevel.Error)
+					new("Sending AtomicTransferConfirmationV1 to RTGS (SendAtomicTransferConfirmationAsync)", LogEventLevel.Information),
+					new("Sent AtomicTransferConfirmationV1 to RTGS (SendAtomicTransferConfirmationAsync)", LogEventLevel.Information),
+					new("Received AtomicTransferConfirmationV1 acknowledgement (rejected) from RTGS (SendAtomicTransferConfirmationAsync)", LogEventLevel.Error)
 				});
 
-		public override IPublisherAction<UpdateLedgerRequest> UpdateLedger =>
-			new PublisherActionWithLogs<UpdateLedgerRequest>(
+		public override IPublisherAction<UpdateLedgerRequestV1> UpdateLedger =>
+			new PublisherActionWithLogs<UpdateLedgerRequestV1>(
 				PublisherActions.UpdateLedger,
 				new List<LogEntry>
 				{
-					new("Sending UpdateLedgerRequest to RTGS (SendUpdateLedgerRequestAsync)", LogEventLevel.Information),
-					new("Sent UpdateLedgerRequest to RTGS (SendUpdateLedgerRequestAsync)", LogEventLevel.Information),
-					new("Received UpdateLedgerRequest acknowledgement (rejected) from RTGS (SendUpdateLedgerRequestAsync)", LogEventLevel.Error)
+					new("Sending UpdateLedgerRequestV1 to RTGS (SendUpdateLedgerRequestAsync)", LogEventLevel.Information),
+					new("Sent UpdateLedgerRequestV1 to RTGS (SendUpdateLedgerRequestAsync)", LogEventLevel.Information),
+					new("Received UpdateLedgerRequestV1 acknowledgement (rejected) from RTGS (SendUpdateLedgerRequestAsync)", LogEventLevel.Error)
 				});
 
 		public override IPublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate =>

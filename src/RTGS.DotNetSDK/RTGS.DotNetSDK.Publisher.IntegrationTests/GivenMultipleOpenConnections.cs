@@ -77,7 +77,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 
 					sendRequestsSignal.Wait();
 
-					await rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequest());
+					await rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
 				})).ToArray();
 
 			sendRequestsSignal.Set();
@@ -101,19 +101,19 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests
 			await using var rtgsPublisher5 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
 
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-			await rtgsPublisher1.SendAtomicLockRequestAsync(new AtomicLockRequest());
+			await rtgsPublisher1.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
 
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-			await rtgsPublisher2.SendAtomicLockRequestAsync(new AtomicLockRequest());
+			await rtgsPublisher2.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
 
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-			await rtgsPublisher3.SendAtomicLockRequestAsync(new AtomicLockRequest());
+			await rtgsPublisher3.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
 
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-			await rtgsPublisher4.SendAtomicLockRequestAsync(new AtomicLockRequest());
+			await rtgsPublisher4.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
 
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-			await rtgsPublisher5.SendAtomicLockRequestAsync(new AtomicLockRequest());
+			await rtgsPublisher5.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
 
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
