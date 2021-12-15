@@ -1,11 +1,10 @@
 using RTGS.DotNetSDK.Subscriber.Handlers;
 
-namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers
+namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestHandlers;
+
+public interface ITestHandler<out TMessage> : IHandler
 {
-	public interface ITestHandler<out TMessage> : IHandler
-	{
-		TMessage ReceivedMessage { get; }
-		void WaitForMessage(TimeSpan timeout);
-		void Reset();
-	}
+	TMessage ReceivedMessage { get; }
+	void WaitForMessage(TimeSpan timeout);
+	void Reset();
 }

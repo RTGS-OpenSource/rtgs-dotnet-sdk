@@ -1,32 +1,31 @@
 ﻿extern alias RTGSServer;
 using RTGSServer::RTGS.Public.Payment.V2;
 
-namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
+namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer;
+
+public class TestPaymentService : Payment.PaymentBase
 {
-	public class TestPaymentService : Payment.PaymentBase
+	private readonly ToRtgsReceiver _receiver;
+	private readonly ToRtgsMessageHandler _messageHandler;
+
+	public TestPaymentService(ToRtgsReceiver receiver, ToRtgsMessageHandler messageHandler)
 	{
-		private readonly ToRtgsReceiver _receiver;
-		private readonly ToRtgsMessageHandler _messageHandler;
+		_receiver = receiver;
+		_messageHandler = messageHandler;
+	}
 
-		public TestPaymentService(ToRtgsReceiver receiver, ToRtgsMessageHandler messageHandler)
+	public override async Task ToRtgsMessage(
+		IAsyncStreamReader<RtgsMessage> requestStream,
+		IServerStreamWriter<RtgsMessageAcknowledgement> responseStream,
+		ServerCallContext context)
+	{
+		var connectionInfo = _receiver.SetupConnectionInfo(context.RequestHeaders);
+
+		await foreach (var message in requestStream.ReadAllAsync(context.CancellationToken))
 		{
-			_receiver = receiver;
-			_messageHandler = messageHandler;
-		}
+			await _messageHandler.Handle(message, responseStream);
 
-		public override async Task ToRtgsMessage(
-			IAsyncStreamReader<RtgsMessage> requestStream,
-			IServerStreamWriter<RtgsMessageAcknowledgement> responseStream,
-			ServerCallContext context)
-		{
-			var connectionInfo = _receiver.SetupConnectionInfo(context.RequestHeaders);
-
-			await foreach (var message in requestStream.ReadAllAsync(context.CancellationToken))
-			{
-				await _messageHandler.Handle(message, responseStream);
-
-				connectionInfo.Add(message);
-			}
+			connectionInfo.Add(message);
 		}
 	}
 }

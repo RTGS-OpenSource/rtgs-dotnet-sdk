@@ -1,78 +1,77 @@
-﻿namespace RTGS.DotNetSDK.Subscriber.IntegrationTests
+﻿namespace RTGS.DotNetSDK.Subscriber.IntegrationTests;
+
+public class GivenWrongRemoteHostAddress : IAsyncDisposable
 {
-	public class GivenWrongRemoteHostAddress : IAsyncDisposable
+	private readonly ITestCorrelatorContext _serilogContext;
+	private readonly IHost _clientHost;
+	private readonly IRtgsSubscriber _rtgsSubscriber;
+
+	public GivenWrongRemoteHostAddress()
 	{
-		private readonly ITestCorrelatorContext _serilogContext;
-		private readonly IHost _clientHost;
-		private readonly IRtgsSubscriber _rtgsSubscriber;
+		SetupSerilogLogger();
 
-		public GivenWrongRemoteHostAddress()
+		_serilogContext = TestCorrelator.CreateContext();
+
+		var rtgsSubscriberOptions = RtgsSubscriberOptions.Builder.CreateNew(ValidMessages.BankDid, new Uri("https://localhost:4567"))
+			.Build();
+
+		_clientHost = Host.CreateDefaultBuilder()
+			.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
+			.ConfigureServices(services => services.AddRtgsSubscriber(rtgsSubscriberOptions))
+			.UseSerilog()
+			.Build();
+
+		_rtgsSubscriber = _clientHost.Services.GetRequiredService<IRtgsSubscriber>();
+	}
+
+	private static void SetupSerilogLogger() =>
+		Log.Logger = new LoggerConfiguration()
+			.MinimumLevel.Debug()
+			.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+			.Enrich.FromLogContext()
+			.WriteTo.Console()
+			.WriteTo.TestCorrelator()
+			.CreateLogger();
+
+	public async ValueTask DisposeAsync()
+	{
+		await _rtgsSubscriber.DisposeAsync();
+		await _clientHost.StopAsync();
+	}
+
+	[Fact]
+	public async Task WhenStarting_ThenExceptionEventIsRaised()
+	{
+		using var raisedExceptionSignal = new ManualResetEventSlim();
+		Exception raisedException = null;
+
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) =>
 		{
-			SetupSerilogLogger();
+			raisedException = args.Exception;
+			raisedExceptionSignal.Set();
+		};
 
-			_serilogContext = TestCorrelator.CreateContext();
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
-			var rtgsSubscriberOptions = RtgsSubscriberOptions.Builder.CreateNew(ValidMessages.BankDid, new Uri("https://localhost:4567"))
-				.Build();
+		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
+		raisedExceptionSignal.Wait(waitForExceptionDuration);
 
-			_clientHost = Host.CreateDefaultBuilder()
-				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
-				.ConfigureServices(services => services.AddRtgsSubscriber(rtgsSubscriberOptions))
-				.UseSerilog()
-				.Build();
+		raisedException.Should().NotBeNull();
+	}
 
-			_rtgsSubscriber = _clientHost.Services.GetRequiredService<IRtgsSubscriber>();
-		}
+	[Fact]
+	public async Task WhenStarting_ThenExceptionIsLogged()
+	{
+		using var raisedExceptionSignal = new ManualResetEventSlim();
 
-		private static void SetupSerilogLogger() =>
-			Log.Logger = new LoggerConfiguration()
-				.MinimumLevel.Debug()
-				.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-				.Enrich.FromLogContext()
-				.WriteTo.Console()
-				.WriteTo.TestCorrelator()
-				.CreateLogger();
+		_rtgsSubscriber.OnExceptionOccurred += (_, _) => raisedExceptionSignal.Set();
 
-		public async ValueTask DisposeAsync()
-		{
-			await _rtgsSubscriber.DisposeAsync();
-			await _clientHost.StopAsync();
-		}
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
-		[Fact]
-		public async Task WhenStarting_ThenExceptionEventIsRaised()
-		{
-			using var raisedExceptionSignal = new ManualResetEventSlim();
-			Exception raisedException = null;
+		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
+		raisedExceptionSignal.Wait(waitForExceptionDuration);
 
-			_rtgsSubscriber.OnExceptionOccurred += (_, args) =>
-			{
-				raisedException = args.Exception;
-				raisedExceptionSignal.Set();
-			};
-
-			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
-
-			var waitForExceptionDuration = TimeSpan.FromSeconds(30);
-			raisedExceptionSignal.Wait(waitForExceptionDuration);
-
-			raisedException.Should().NotBeNull();
-		}
-
-		[Fact]
-		public async Task WhenStarting_ThenExceptionIsLogged()
-		{
-			using var raisedExceptionSignal = new ManualResetEventSlim();
-
-			_rtgsSubscriber.OnExceptionOccurred += (_, _) => raisedExceptionSignal.Set();
-
-			await _rtgsSubscriber.StartAsync(new AllTestHandlers());
-
-			var waitForExceptionDuration = TimeSpan.FromSeconds(30);
-			raisedExceptionSignal.Wait(waitForExceptionDuration);
-
-			var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
-			errorLogs.Should().BeEquivalentTo(new[] { new LogEntry("An error occurred while communicating with RTGS", LogEventLevel.Error, typeof(RpcException)) });
-		}
+		var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
+		errorLogs.Should().BeEquivalentTo(new[] { new LogEntry("An error occurred while communicating with RTGS", LogEventLevel.Error, typeof(RpcException)) });
 	}
 }

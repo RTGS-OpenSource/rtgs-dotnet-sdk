@@ -1,7 +1,6 @@
-﻿namespace RTGS.DotNetSDK.Subscriber.Messages
+﻿namespace RTGS.DotNetSDK.Subscriber.Messages;
+
+public record EarmarkCompleteV1
 {
-	public record EarmarkCompleteV1
-	{
-		public Guid LockId { get; init; }
-	}
+	public Guid LockId { get; init; }
 }

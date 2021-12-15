@@ -1,10 +1,9 @@
-﻿namespace RTGS.DotNetSDK.Subscriber.Handlers
-{
-	public interface IHandler { }
+﻿namespace RTGS.DotNetSDK.Subscriber.Handlers;
 
-	public interface IHandler<in TMessage> : IHandler
-	{
-		// TODO: use cancellation tokens to ensure tests would eventually finish by timing out
-		Task HandleMessageAsync(TMessage message);
-	}
+public interface IHandler { }
+
+public interface IHandler<in TMessage> : IHandler
+{
+	// TODO: use cancellation tokens to ensure tests would eventually finish by timing out
+	Task HandleMessageAsync(TMessage message);
 }

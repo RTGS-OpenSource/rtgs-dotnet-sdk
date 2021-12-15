@@ -1,9 +1,8 @@
-﻿namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
-{
-	public interface IPublisherAction<out TRequest>
-	{
-		TRequest Request { get; }
+﻿namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
 
-		Task<SendResult> InvokeSendDelegateAsync(IRtgsPublisher publisher, CancellationToken cancellationToken = default);
-	}
+public interface IPublisherAction<out TRequest>
+{
+	TRequest Request { get; }
+
+	Task<SendResult> InvokeSendDelegateAsync(IRtgsPublisher publisher, CancellationToken cancellationToken = default);
 }
