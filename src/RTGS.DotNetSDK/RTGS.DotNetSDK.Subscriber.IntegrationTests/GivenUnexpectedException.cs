@@ -62,16 +62,31 @@ public class GivenUnexpectedException : IAsyncDisposable
 		await _rtgsSubscriber.DisposeAsync();
 		await _clientHost.StopAsync();
 	}
-
+	//TODO: Test for the the server dying, subscriber throwing, server reviving, subscriber restarting successfully
 	[Fact]
-	public async Task WhenStarting_ThenExceptionEventIsRaised()
+	public async Task WhenFatalErrorIsRaised_ThenIsRunningShouldBeFalse()
 	{
 		using var raisedExceptionSignal = new ManualResetEventSlim();
-		Exception raisedException = null;
+
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedExceptionSignal.Set();
+
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+
+		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
+		raisedExceptionSignal.Wait(waitForExceptionDuration);
+
+		_rtgsSubscriber.IsRunning.Should().Be(false);
+	}
+
+	[Fact]
+	public async Task WhenStarting_ThenFatalExceptionEventIsRaised()
+	{
+		using var raisedExceptionSignal = new ManualResetEventSlim();
+		ExceptionEventArgs raisedArgs = null;
 
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) =>
 		{
-			raisedException = args.Exception;
+			raisedArgs = args;
 			raisedExceptionSignal.Set();
 		};
 
@@ -80,7 +95,12 @@ public class GivenUnexpectedException : IAsyncDisposable
 		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
 		raisedExceptionSignal.Wait(waitForExceptionDuration);
 
-		raisedException.Should().NotBeNull().And.Be(_thrownException);
+		using var _ = new AssertionScope();
+
+		raisedArgs.Should().NotBeNull();
+
+		raisedArgs?.Exception.Should().BeSameAs(_thrownException);
+		raisedArgs?.IsFatal.Should().BeTrue();
 	}
 
 	[Fact]

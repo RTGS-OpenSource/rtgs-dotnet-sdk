@@ -23,6 +23,8 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 	private bool _disposed;
 	private bool _isStopRequested;
 
+	public bool IsRunning => false;
+
 	public event EventHandler<ExceptionEventArgs> OnExceptionOccurred;
 
 	public RtgsSubscriber(
@@ -107,13 +109,13 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 		{
 			_logger.LogError(ex, "An error occurred while communicating with RTGS");
 
-			RaiseExceptionOccurredEvent(ex);
+			RaiseFatalExceptionOccurredEvent(ex);
 		}
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "An unknown error occurred");
 
-			RaiseExceptionOccurredEvent(ex);
+			RaiseFatalExceptionOccurredEvent(ex);
 		}
 	}
 
@@ -153,23 +155,29 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 			{
 				_logger.LogError(ex, "An error occurred while handling a message (MessageIdentifier: {MessageIdentifier})", command.MessageIdentifier);
 
-				RaiseExceptionOccurredEvent(ex);
+				RaiseNonFatalExceptionOccurredEvent(ex);
 			}
 		}
 		catch (RtgsSubscriberException ex)
 		{
 			_logger.LogError(ex, "An error occurred while processing a message (MessageIdentifier: {MessageIdentifier})", ex.MessageIdentifier);
 
-			RaiseExceptionOccurredEvent(ex);
+			RaiseNonFatalExceptionOccurredEvent(ex);
 		}
 	}
 
-	private void RaiseExceptionOccurredEvent(Exception raisedException)
+	private void RaiseFatalExceptionOccurredEvent(Exception raisedException)
+		=> RaiseExceptionOccurredEvent(raisedException, true);
+
+	private void RaiseNonFatalExceptionOccurredEvent(Exception raisedException)
+		=> RaiseExceptionOccurredEvent(raisedException, false);
+
+	private void RaiseExceptionOccurredEvent(Exception raisedException, bool isFatal)
 	{
 		try
 		{
 			var eventHandler = OnExceptionOccurred;
-			eventHandler?.Invoke(this, new ExceptionEventArgs(raisedException));
+			eventHandler?.Invoke(this, new ExceptionEventArgs(raisedException, isFatal));
 		}
 		catch (Exception ex)
 		{
