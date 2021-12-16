@@ -27,29 +27,37 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '6.0.x'
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+
       - name: dotnet Tool Manifest
         run: dotnet new tool-manifest
+
       - name: Install dotnet format
         run: dotnet tool install dotnet-format
+
       - name: dotnet Format
         run: dotnet format ${{env.SOLUTION_FOLDER}} --verify-no-changes
+
       - name: dotnet build
         run: dotnet build --configuration Release ${{env.SOLUTION_FOLDER}}
+
       - name: dotnet test
         run: |
           dotnet tool install dotnet-reportgenerator-globaltool --tool-path ./tools
           dotnet test --configuration Release ${{env.SOLUTION_FOLDER}} --no-build --results-directory "./test_results" --logger "trx;LogFilePrefix=results;" --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true
           ./tools/reportgenerator -reports:./test_results/**/coverage.cobertura.xml -targetdir:./test_results/CodeCoverage -reporttypes:Cobertura
+
       - name: Upload dotnet test results
         uses: actions/upload-artifact@v2
         with:
           name: dotnet-test-results
           path: ./test_results/*.trx
         if: ${{ always() }}
+
       - uses: 5monkeys/cobertura-action@master
         with:
           path: test_results/CodeCoverage/Cobertura.xml
@@ -65,11 +73,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # require v1 here so that MinVer has access to history to determine version number to apply
-      - uses: actions/checkout@v1
-      - name: Setup .NET Core
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '5.0.x'
           source-url: ${{env.AZURE_ARTIFACTS_URL}}
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
@@ -92,11 +101,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # require v1 here so that MinVer has access to history to determine version number to apply
-      - uses: actions/checkout@v1
-      - name: Setup .NET Core
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Setup .NET
         uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '5.0.x'
 
       - name: dotnet build and publish
         run: |
@@ -116,17 +125,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Setup .NET Core
+
+      - name: Setup .NET
         uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '5.0.x'
+
       - name: Setup DocFX
         uses: crazy-max/ghaction-chocolatey@v1
         with:
           args: install docfx
+
       - name: DocFX Build
         run: docfx docs/docfx.json
         continue-on-error: false
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
         with:
