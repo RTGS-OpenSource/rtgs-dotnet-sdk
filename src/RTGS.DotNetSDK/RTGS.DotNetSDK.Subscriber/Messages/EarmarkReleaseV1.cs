@@ -1,9 +1,6 @@
-﻿using System;
+﻿namespace RTGS.DotNetSDK.Subscriber.Messages;
 
-namespace RTGS.DotNetSDK.Subscriber.Messages
+public record EarmarkReleaseV1
 {
-	public record EarmarkReleaseV1
-	{
-		public Guid LockId { get; init; }
-	}
+	public Guid LockId { get; init; }
 }

@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using RTGS.DotNetSDK.Subscriber.Handlers;
+﻿using RTGS.DotNetSDK.Subscriber.Handlers;
 
-namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands
+namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
+
+public interface IHandleMessageCommandsFactory
 {
-	public interface IHandleMessageCommandsFactory
-	{
-		IEnumerable<IHandleMessageCommand> CreateAll(IReadOnlyCollection<IHandler> handlers);
-	}
+	IEnumerable<IHandleMessageCommand> CreateAll(IReadOnlyCollection<IHandler> handlers);
 }

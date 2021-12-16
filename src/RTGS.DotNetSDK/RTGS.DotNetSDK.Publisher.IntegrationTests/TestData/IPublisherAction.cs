@@ -1,12 +1,8 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
 
-namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData
+public interface IPublisherAction<out TRequest>
 {
-	public interface IPublisherAction<out TRequest>
-	{
-		TRequest Request { get; }
+	TRequest Request { get; }
 
-		Task<SendResult> InvokeSendDelegateAsync(IRtgsPublisher publisher, CancellationToken cancellationToken = default);
-	}
+	Task<SendResult> InvokeSendDelegateAsync(IRtgsPublisher publisher, CancellationToken cancellationToken = default);
 }

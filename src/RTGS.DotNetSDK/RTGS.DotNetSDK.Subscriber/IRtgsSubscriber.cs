@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using RTGS.DotNetSDK.Subscriber.Handlers;
+﻿using RTGS.DotNetSDK.Subscriber.Handlers;
 
-namespace RTGS.DotNetSDK.Subscriber
+namespace RTGS.DotNetSDK.Subscriber;
+
+public interface IRtgsSubscriber : IAsyncDisposable
 {
-	public interface IRtgsSubscriber : IAsyncDisposable
-	{
-		event EventHandler<ExceptionEventArgs> OnExceptionOccurred;
+	event EventHandler<ExceptionEventArgs> OnExceptionOccurred;
 
-		Task StartAsync(IEnumerable<IHandler> handlers);
+	Task StartAsync(IEnumerable<IHandler> handlers);
 
-		Task StopAsync();
-	}
+	Task StopAsync();
 }

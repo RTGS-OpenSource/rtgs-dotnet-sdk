@@ -1,12 +1,10 @@
-﻿using System.Threading.Tasks;
-using RTGS.Public.Payment.V2;
+﻿using RTGS.Public.Payment.V2;
 
-namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands
+namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
+
+public interface IHandleMessageCommand
 {
-	public interface IHandleMessageCommand
-	{
-		string MessageIdentifier { get; }
+	string MessageIdentifier { get; }
 
-		Task HandleAsync(RtgsMessage rtgsMessage);
-	}
+	Task HandleAsync(RtgsMessage rtgsMessage);
 }

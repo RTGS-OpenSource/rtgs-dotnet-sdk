@@ -1,14 +1,11 @@
-﻿using System;
+﻿namespace RTGS.DotNetSDK.Subscriber;
 
-namespace RTGS.DotNetSDK.Subscriber
+public sealed class ExceptionEventArgs : EventArgs
 {
-	public sealed class ExceptionEventArgs : EventArgs
+	public ExceptionEventArgs(Exception exception)
 	{
-		public ExceptionEventArgs(Exception exception)
-		{
-			Exception = exception;
-		}
-
-		public Exception Exception { get; }
+		Exception = exception;
 	}
+
+	public Exception Exception { get; }
 }

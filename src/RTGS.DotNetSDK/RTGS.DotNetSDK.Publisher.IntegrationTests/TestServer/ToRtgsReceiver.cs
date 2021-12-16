@@ -1,62 +1,58 @@
 ﻿extern alias RTGSServer;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using Grpc.Core;
 using RTGSServer::RTGS.Public.Payment.V2;
 
-namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer
+namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer;
+
+public class ToRtgsReceiver
 {
-	public class ToRtgsReceiver
+	private Action _messageReceivedAction;
+
+	public ConcurrentBag<ToRtgsConnectionInfo> Connections { get; } = new();
+
+	public int NumberOfConnections => Connections.Count;
+
+	public bool ThrowOnConnection { get; set; }
+
+	public ToRtgsConnectionInfo SetupConnectionInfo(Metadata headers)
 	{
-		private Action _messageReceivedAction;
-
-		public ConcurrentBag<ToRtgsConnectionInfo> Connections { get; } = new();
-
-		public int NumberOfConnections => Connections.Count;
-
-		public bool ThrowOnConnection { get; set; }
-
-		public ToRtgsConnectionInfo SetupConnectionInfo(Metadata headers)
+		if (ThrowOnConnection)
 		{
-			if (ThrowOnConnection)
-			{
-				throw new InvalidOperationException("The receiver was configured to throw on connection");
-			}
-
-			var connectionInfo = new ToRtgsConnectionInfo(headers, this);
-
-			Connections.Add(connectionInfo);
-
-			return connectionInfo;
+			throw new InvalidOperationException("The receiver was configured to throw on connection");
 		}
 
-		public void RegisterOnMessageReceived(Action action) =>
-			_messageReceivedAction = action;
+		var connectionInfo = new ToRtgsConnectionInfo(headers, this);
 
-		private void MessageReceived() =>
-			_messageReceivedAction?.Invoke();
+		Connections.Add(connectionInfo);
 
-		public class ToRtgsConnectionInfo
+		return connectionInfo;
+	}
+
+	public void RegisterOnMessageReceived(Action action) =>
+		_messageReceivedAction = action;
+
+	private void MessageReceived() =>
+		_messageReceivedAction?.Invoke();
+
+	public class ToRtgsConnectionInfo
+	{
+		private readonly ToRtgsReceiver _parent;
+		private readonly List<RtgsMessage> _requests = new();
+
+		public ToRtgsConnectionInfo(Metadata headers, ToRtgsReceiver parent)
 		{
-			private readonly ToRtgsReceiver _parent;
-			private readonly List<RtgsMessage> _requests = new();
+			Headers = headers;
+			_parent = parent;
+		}
 
-			public ToRtgsConnectionInfo(Metadata headers, ToRtgsReceiver parent)
-			{
-				Headers = headers;
-				_parent = parent;
-			}
+		public IEnumerable<RtgsMessage> Requests => _requests;
+		public Metadata Headers { get; }
 
-			public IEnumerable<RtgsMessage> Requests => _requests;
-			public Metadata Headers { get; }
+		public void Add(RtgsMessage message)
+		{
+			_requests.Add(message);
 
-			public void Add(RtgsMessage message)
-			{
-				_requests.Add(message);
-
-				_parent.MessageReceived();
-			}
+			_parent.MessageReceived();
 		}
 	}
 }
