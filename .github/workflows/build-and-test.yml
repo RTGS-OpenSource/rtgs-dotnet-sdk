@@ -28,9 +28,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '6.0.x'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
       - name: dotnet Tool Manifest
         run: dotnet new tool-manifest
       - name: Install dotnet format
@@ -66,10 +65,9 @@ jobs:
     steps:
       # require v1 here so that MinVer has access to history to determine version number to apply
       - uses: actions/checkout@v1
-      - name: Setup .NET Core
+      - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '5.0.x'
           source-url: ${{env.AZURE_ARTIFACTS_URL}}
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
@@ -93,11 +91,8 @@ jobs:
     steps:
       # require v1 here so that MinVer has access to history to determine version number to apply
       - uses: actions/checkout@v1
-      - name: Setup .NET Core
+      - name: Setup .NET
         uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '5.0.x'
-
       - name: dotnet build and publish
         run: |
           dotnet build --configuration Release ${{env.SOLUTION_FOLDER}}
@@ -116,10 +111,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Setup .NET Core
+      - name: Setup .NET
         uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '5.0.x'
       - name: Setup DocFX
         uses: crazy-max/ghaction-chocolatey@v1
         with:
