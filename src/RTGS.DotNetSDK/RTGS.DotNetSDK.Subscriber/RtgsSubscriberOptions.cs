@@ -9,6 +9,8 @@ public class RtgsSubscriberOptions
 	{
 		BankDid = builder.BankDidValue;
 		RemoteHostAddress = builder.RemoteHostAddressValue;
+		KeepAlivePingDelay = builder.KeepAlivePingDelayValue;
+		KeepAlivePingTimeout = builder.KeepAlivePingTimeoutValue;
 	}
 
 	/// <summary>
@@ -20,6 +22,16 @@ public class RtgsSubscriberOptions
 	/// Address of the RTGS gRPC server.
 	/// </summary>
 	public Uri RemoteHostAddress { get; }
+
+	/// <summary>
+	/// The delay between each ping to keep the gRPC connection alive (default 30 seconds).
+	/// </summary>
+	public TimeSpan KeepAlivePingDelay { get; }
+
+	/// <summary>
+	/// The timeout period within which we expect a ping response (default 30 seconds).
+	/// </summary>
+	public TimeSpan KeepAlivePingTimeout { get; }
 
 	/// <summary>
 	/// A builder for <see cref="RtgsSubscriberOptions"/>.
@@ -43,6 +55,8 @@ public class RtgsSubscriberOptions
 
 		internal string BankDidValue { get; }
 		internal Uri RemoteHostAddressValue { get; }
+		internal TimeSpan KeepAlivePingDelayValue { get; private set; } = TimeSpan.FromSeconds(30);
+		internal TimeSpan KeepAlivePingTimeoutValue { get; private set; } = TimeSpan.FromSeconds(30);
 
 		/// <summary>
 		/// Creates a new instance of <see cref="Builder"/>.
@@ -52,6 +66,42 @@ public class RtgsSubscriberOptions
 		/// <returns><see cref="Builder"/></returns>
 		public static Builder CreateNew(string bankDid, Uri remoteHostAddress) =>
 			new(bankDid, remoteHostAddress);
+
+		/// <summary>
+		/// Specifies the delay between each ping to keep the gRPC connection alive.
+		/// </summary>
+		/// <param name="duration">The duration.</param>
+		/// <returns><see cref="Builder"/></returns>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown if duration is less than 1 second.</exception>
+		public Builder KeepAlivePingDelay(TimeSpan duration)
+		{
+			ThrowIfLessThanOneSecond(duration);
+
+			KeepAlivePingDelayValue = duration;
+			return this;
+		}
+
+		/// <summary>
+		/// Specifies the timeout period within which we expect a ping response.
+		/// </summary>
+		/// <param name="duration">The duration.</param>
+		/// <returns><see cref="Builder"/></returns>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown if duration is less than 1 second.</exception>
+		public Builder KeepAlivePingTimeout(TimeSpan duration)
+		{
+			ThrowIfLessThanOneSecond(duration);
+
+			KeepAlivePingTimeoutValue = duration;
+			return this;
+		}
+
+		private static void ThrowIfLessThanOneSecond(TimeSpan duration)
+		{
+			if (duration < TimeSpan.FromSeconds(1) && duration != Timeout.InfiniteTimeSpan)
+			{
+				throw new ArgumentOutOfRangeException(nameof(duration), duration.TotalSeconds, "Value must be at least 1 second.");
+			}
+		}
 
 		/// <summary>
 		/// Builds a new <see cref="RtgsSubscriberOptions"/> instance.

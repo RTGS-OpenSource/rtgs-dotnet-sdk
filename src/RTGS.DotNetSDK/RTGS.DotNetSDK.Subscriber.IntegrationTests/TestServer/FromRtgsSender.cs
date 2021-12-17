@@ -31,9 +31,12 @@ public class FromRtgsSender
 		RequestHeaders = null;
 	}
 
+	public bool WaitForConnection() =>
+		_readyToSend.Wait(WaitForReadyToSendDuration);
+
 	public async Task<RtgsMessage> SendAsync<T>(string messageIdentifier, T data, Action<RtgsMessage> customiseRtgsMessage = null)
 	{
-		var messageStreamSet = _readyToSend.Wait(WaitForReadyToSendDuration);
+		var messageStreamSet = WaitForConnection();
 		if (!messageStreamSet)
 		{
 			return null;

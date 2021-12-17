@@ -23,6 +23,8 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 	private bool _disposed;
 	private bool _isStopRequested;
 
+	public bool IsRunning { get; private set; }
+
 	public event EventHandler<ExceptionEventArgs> OnExceptionOccurred;
 
 	public RtgsSubscriber(
@@ -52,7 +54,7 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 
 		try
 		{
-			if (_executingTask is not null)
+			if (_executingTask is not null && _executingTask.Status != TaskStatus.RanToCompletion)
 			{
 				throw new InvalidOperationException("RTGS Subscriber is already running");
 			}
@@ -72,12 +74,16 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 
 	private async Task Execute(IReadOnlyCollection<IHandler> handlers)
 	{
+		IsRunning = true;
+
 		_logger.LogInformation("RTGS Subscriber started");
 
 		try
 		{
 			var commands = _handleMessageCommandsFactory.CreateAll(handlers)
 				.ToDictionary(command => command.MessageIdentifier, command => command);
+
+			_fromRtgsCall?.Dispose();
 
 			var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
 			_fromRtgsCall = _grpcClient.FromRtgsMessage(grpcCallHeaders);
@@ -105,15 +111,17 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 		}
 		catch (RpcException ex)
 		{
+			IsRunning = false;
 			_logger.LogError(ex, "An error occurred while communicating with RTGS");
 
-			RaiseExceptionOccurredEvent(ex);
+			RaiseFatalExceptionOccurredEvent(ex);
 		}
 		catch (Exception ex)
 		{
+			IsRunning = false;
 			_logger.LogError(ex, "An unknown error occurred");
 
-			RaiseExceptionOccurredEvent(ex);
+			RaiseFatalExceptionOccurredEvent(ex);
 		}
 	}
 
@@ -153,23 +161,29 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 			{
 				_logger.LogError(ex, "An error occurred while handling a message (MessageIdentifier: {MessageIdentifier})", command.MessageIdentifier);
 
-				RaiseExceptionOccurredEvent(ex);
+				RaiseNonFatalExceptionOccurredEvent(ex);
 			}
 		}
 		catch (RtgsSubscriberException ex)
 		{
 			_logger.LogError(ex, "An error occurred while processing a message (MessageIdentifier: {MessageIdentifier})", ex.MessageIdentifier);
 
-			RaiseExceptionOccurredEvent(ex);
+			RaiseNonFatalExceptionOccurredEvent(ex);
 		}
 	}
 
-	private void RaiseExceptionOccurredEvent(Exception raisedException)
+	private void RaiseFatalExceptionOccurredEvent(Exception raisedException)
+		=> RaiseExceptionOccurredEvent(raisedException, true);
+
+	private void RaiseNonFatalExceptionOccurredEvent(Exception raisedException)
+		=> RaiseExceptionOccurredEvent(raisedException, false);
+
+	private void RaiseExceptionOccurredEvent(Exception raisedException, bool isFatal)
 	{
 		try
 		{
 			var eventHandler = OnExceptionOccurred;
-			eventHandler?.Invoke(this, new ExceptionEventArgs(raisedException));
+			eventHandler?.Invoke(this, new ExceptionEventArgs(raisedException, isFatal));
 		}
 		catch (Exception ex)
 		{
@@ -218,6 +232,7 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 			_isStopRequested = true;
 			await CompleteAsyncEnumerables();
 			_executingTask = null;
+			IsRunning = false;
 
 			_logger.LogInformation("RTGS Subscriber stopped");
 		}

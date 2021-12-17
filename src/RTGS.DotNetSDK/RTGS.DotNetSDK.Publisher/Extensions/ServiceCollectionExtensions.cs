@@ -23,8 +23,9 @@ public static class ServiceCollectionExtensions
 	{
 		serviceCollection.AddSingleton(options);
 
-		var grpcClientBuilder = serviceCollection.AddGrpcClient<Payment.PaymentClient>(
-			clientOptions => clientOptions.Address = options.RemoteHostAddress).ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+		var grpcClientBuilder = serviceCollection
+			.AddGrpcClient<Payment.PaymentClient>(clientOptions => clientOptions.Address = options.RemoteHostAddress)
+			.ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
 			{
 				PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
 				KeepAlivePingDelay = options.KeepAlivePingDelay,

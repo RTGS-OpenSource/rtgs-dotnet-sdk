@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
 using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 using RTGS.DotNetSDK.Subscriber.Validators;
@@ -25,8 +26,16 @@ public static class ServiceCollectionExtensions
 	{
 		serviceCollection.AddSingleton(options);
 
-		var grpcClientBuilder = serviceCollection.AddGrpcClient<Payment.PaymentClient>(
-			clientOptions => clientOptions.Address = options.RemoteHostAddress);
+		var grpcClientBuilder = serviceCollection
+			.AddGrpcClient<Payment.PaymentClient>(clientOptions => clientOptions.Address = options.RemoteHostAddress)
+			.ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+			{
+				PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
+				KeepAlivePingDelay = options.KeepAlivePingDelay,
+				KeepAlivePingTimeout = options.KeepAlivePingTimeout,
+				EnableMultipleHttp2Connections = true,
+				KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always
+			});
 
 		configureGrpcClient?.Invoke(grpcClientBuilder);
 

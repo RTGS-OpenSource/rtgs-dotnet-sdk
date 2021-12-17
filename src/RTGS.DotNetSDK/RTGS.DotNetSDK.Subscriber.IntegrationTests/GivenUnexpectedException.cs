@@ -5,6 +5,8 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests;
 
 public class GivenUnexpectedException : IAsyncDisposable
 {
+	private static readonly TimeSpan WaitForExceptionDuration = TimeSpan.FromSeconds(30);
+
 	private readonly OutOfMemoryException _thrownException;
 	private readonly ITestCorrelatorContext _serilogContext;
 	private readonly IHost _clientHost;
@@ -64,23 +66,40 @@ public class GivenUnexpectedException : IAsyncDisposable
 	}
 
 	[Fact]
-	public async Task WhenStarting_ThenExceptionEventIsRaised()
+	public async Task WhenFatalErrorIsRaised_ThenIsRunningShouldBeFalse()
 	{
 		using var raisedExceptionSignal = new ManualResetEventSlim();
-		Exception raisedException = null;
+
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedExceptionSignal.Set();
+
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+
+		raisedExceptionSignal.Wait(WaitForExceptionDuration);
+
+		_rtgsSubscriber.IsRunning.Should().Be(false);
+	}
+
+	[Fact]
+	public async Task WhenStarting_ThenFatalExceptionEventIsRaised()
+	{
+		using var raisedExceptionSignal = new ManualResetEventSlim();
+		ExceptionEventArgs raisedArgs = null;
 
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) =>
 		{
-			raisedException = args.Exception;
+			raisedArgs = args;
 			raisedExceptionSignal.Set();
 		};
 
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
-		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
-		raisedExceptionSignal.Wait(waitForExceptionDuration);
+		raisedExceptionSignal.Wait(WaitForExceptionDuration);
 
-		raisedException.Should().NotBeNull().And.Be(_thrownException);
+		using var _ = new AssertionScope();
+
+		raisedArgs.Should().NotBeNull();
+		raisedArgs?.Exception.Should().BeSameAs(_thrownException);
+		raisedArgs?.IsFatal.Should().BeTrue();
 	}
 
 	[Fact]
@@ -92,8 +111,7 @@ public class GivenUnexpectedException : IAsyncDisposable
 
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
-		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
-		raisedExceptionSignal.Wait(waitForExceptionDuration);
+		raisedExceptionSignal.Wait(WaitForExceptionDuration);
 
 		var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
 		errorLogs.Should().BeEquivalentTo(new[] { new LogEntry("An unknown error occurred", LogEventLevel.Error, _thrownException.GetType()) });
