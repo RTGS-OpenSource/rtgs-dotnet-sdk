@@ -22,8 +22,10 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 	private AsyncDuplexStreamingCall<RtgsMessageAcknowledgement, RtgsMessage> _fromRtgsCall;
 	private bool _disposed;
 	private bool _isStopRequested;
+	private bool _running;
 
-	public bool IsRunning => false;
+	//public bool IsRunning => _executingTask?.Status == TaskStatus.Running || _executingTask?.Status == TaskStatus.WaitingForActivation;
+	public bool IsRunning => _running;
 
 	public event EventHandler<ExceptionEventArgs> OnExceptionOccurred;
 
@@ -74,6 +76,8 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 
 	private async Task Execute(IReadOnlyCollection<IHandler> handlers)
 	{
+		_running = true;
+
 		_logger.LogInformation("RTGS Subscriber started");
 
 		try
@@ -107,12 +111,14 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 		}
 		catch (RpcException ex)
 		{
+			_running = false;
 			_logger.LogError(ex, "An error occurred while communicating with RTGS");
 
 			RaiseFatalExceptionOccurredEvent(ex);
 		}
 		catch (Exception ex)
 		{
+			_running = false;
 			_logger.LogError(ex, "An unknown error occurred");
 
 			RaiseFatalExceptionOccurredEvent(ex);

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using RTGS.DotNetSDK.Subscriber.Handlers;
 
 namespace RTGS.DotNetSDK.Subscriber.IntegrationTests;
 
@@ -65,7 +66,93 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		_grpcServer.Reset();
 
 		return Task.CompletedTask;
-	}	
+	}
+
+	[Fact]
+	public async Task WhenServerStops_ThenThrowFatalRpcExceptionEvent()
+	{
+		using var raisedExceptionSignal = new ManualResetEventSlim();
+		ExceptionEventArgs raisedArgs = null;
+
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) =>
+		{
+			raisedExceptionSignal.Set();
+			raisedArgs = args;
+		};
+
+		var testHandlers = new AllTestHandlers().ToList();
+		await _rtgsSubscriber.StartAsync(testHandlers);
+
+		await EnsureSubscriberIsRunning(testHandlers);
+
+		await _grpcServer.StopAsync();
+
+		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
+		raisedExceptionSignal.Wait(waitForExceptionDuration);
+
+		using var _ = new AssertionScope();
+
+		raisedArgs.Should().NotBeNull();
+		raisedArgs?.Exception.Should().BeOfType<RpcException>();
+		raisedArgs?.IsFatal.Should().BeTrue();
+	}
+
+	private async Task EnsureSubscriberIsRunning(IEnumerable<IHandler> testHandlers)
+	{
+		await _fromRtgsSender.SendAsync("MessageRejected", ValidMessages.MessageRejected);
+
+		var messageRejectedHandler = testHandlers.OfType<AllTestHandlers.TestMessageRejectedV1Handler>().Single();
+		messageRejectedHandler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		using var _ = new AssertionScope();
+
+		messageRejectedHandler.ReceivedMessage.Should().NotBeNull();
+		_rtgsSubscriber.IsRunning.Should().BeTrue();
+	}
+
+	[Fact]
+	public async Task WhenServerStops_ThenStopSubscriber()
+	{
+		using var raisedExceptionSignal = new ManualResetEventSlim();
+
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedExceptionSignal.Set();
+
+		var testHandlers = new AllTestHandlers().ToList();
+		await _rtgsSubscriber.StartAsync(testHandlers);
+
+		await EnsureSubscriberIsRunning(testHandlers);
+
+		await _grpcServer.StopAsync();
+
+		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
+		raisedExceptionSignal.Wait(waitForExceptionDuration);
+
+		_rtgsSubscriber.IsRunning.Should().Be(false);
+	}
+
+	[Fact]
+	public async Task WhenServerRestarts_ThenCanRestartSubscriber()
+	{
+		using var raisedExceptionSignal = new ManualResetEventSlim();
+
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedExceptionSignal.Set();
+
+		var testHandlers = new AllTestHandlers().ToList();
+		await _rtgsSubscriber.StartAsync(testHandlers);
+
+		await EnsureSubscriberIsRunning(testHandlers);
+
+		await _grpcServer.StopAsync();
+
+		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
+		raisedExceptionSignal.Wait(waitForExceptionDuration);
+
+		await _grpcServer.InitializeAsync();
+
+		await _rtgsSubscriber.StartAsync(testHandlers);
+
+		await EnsureSubscriberIsRunning(testHandlers);
+	}
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionData))]

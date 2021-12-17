@@ -65,43 +65,5 @@ public class GivenServerStops : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 		return Task.CompletedTask;
 	}
 
-	[Fact]
-	public async Task ThenThrowFatalRpcExceptionEvent()
-	{
-		using var raisedExceptionSignal = new ManualResetEventSlim();
-		ExceptionEventArgs raisedArgs = null;
-
-		_rtgsSubscriber.OnExceptionOccurred += (_, args) =>
-		{
-			raisedExceptionSignal.Set();
-			raisedArgs = args;
-		};
-
-		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
-
-		await _grpcServer.StopAsync();
-
-		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
-		raisedExceptionSignal.Wait(waitForExceptionDuration);
-
-		raisedArgs?.Exception.Should().BeOfType<RpcException>();
-		raisedArgs?.IsFatal.Should().BeTrue();
-	}
-
-	[Fact]
-	public async Task ThenStopSubscriber()
-	{
-		using var raisedExceptionSignal = new ManualResetEventSlim();
-
-		_rtgsSubscriber.OnExceptionOccurred += (_, args) =>	raisedExceptionSignal.Set();
-
-		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
-
-		await _grpcServer.StopAsync();
-
-		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
-		raisedExceptionSignal.Wait(waitForExceptionDuration);
-
-		_rtgsSubscriber.IsRunning.Should().Be(false);
-	}
+	
 }
