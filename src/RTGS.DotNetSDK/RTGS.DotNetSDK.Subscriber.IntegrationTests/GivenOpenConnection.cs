@@ -65,7 +65,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		_grpcServer.Reset();
 
 		return Task.CompletedTask;
-	}
+	}	
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionData))]

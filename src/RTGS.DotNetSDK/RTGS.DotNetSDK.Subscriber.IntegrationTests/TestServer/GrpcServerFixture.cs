@@ -29,6 +29,9 @@ public class GrpcServerFixture : IAsyncLifetime
 		}
 	}
 
+	public async Task StopAsync()
+		=> await _server.StopAsync();
+
 	public Task DisposeAsync()
 	{
 		_server?.Dispose();
