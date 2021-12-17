@@ -18,7 +18,7 @@ jobs:
       # require v1 here so that MinVer has access to history to determine version number to apply
       - uses: actions/checkout@v1
       - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v1 sdfgsdfgsdfgsdfg
         with:
           source-url: ${{env.AZURE_ARTIFACTS_URL}}
         env:
