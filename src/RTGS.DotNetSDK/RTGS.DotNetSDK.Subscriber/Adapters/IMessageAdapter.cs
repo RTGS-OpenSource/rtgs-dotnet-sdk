@@ -10,6 +10,5 @@ public interface IMessageAdapter
 
 public interface IMessageAdapter<out TMessage> : IMessageAdapter
 {
-	// TODO: use cancellation tokens to ensure tests would eventually finish by timing out
 	Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<TMessage> handler);
 }
