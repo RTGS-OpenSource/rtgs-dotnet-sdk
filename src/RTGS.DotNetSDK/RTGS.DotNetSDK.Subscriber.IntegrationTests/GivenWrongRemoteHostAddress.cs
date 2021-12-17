@@ -2,6 +2,8 @@
 
 public class GivenWrongRemoteHostAddress : IAsyncDisposable
 {
+	private static readonly TimeSpan WaitForExceptionEventDuration = TimeSpan.FromSeconds(30);
+
 	private readonly ITestCorrelatorContext _serilogContext;
 	private readonly IHost _clientHost;
 	private readonly IRtgsSubscriber _rtgsSubscriber;
@@ -43,20 +45,23 @@ public class GivenWrongRemoteHostAddress : IAsyncDisposable
 	public async Task WhenStarting_ThenExceptionEventIsRaised()
 	{
 		using var raisedExceptionSignal = new ManualResetEventSlim();
-		Exception raisedException = null;
+		ExceptionEventArgs raisedArgs = null;
 
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) =>
 		{
-			raisedException = args.Exception;
+			raisedArgs = args;
 			raisedExceptionSignal.Set();
 		};
 
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
-		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
-		raisedExceptionSignal.Wait(waitForExceptionDuration);
+		raisedExceptionSignal.Wait(WaitForExceptionEventDuration);
 
-		raisedException.Should().NotBeNull();
+		using var _ = new AssertionScope();
+
+		raisedArgs.Should().NotBeNull();
+		raisedArgs?.Exception.Should().NotBeNull();
+		raisedArgs?.IsFatal.Should().BeTrue();
 	}
 
 	[Fact]
@@ -68,8 +73,7 @@ public class GivenWrongRemoteHostAddress : IAsyncDisposable
 
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
-		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
-		raisedExceptionSignal.Wait(waitForExceptionDuration);
+		raisedExceptionSignal.Wait(WaitForExceptionEventDuration);
 
 		var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
 		errorLogs.Should().BeEquivalentTo(new[] { new LogEntry("An error occurred while communicating with RTGS", LogEventLevel.Error, typeof(RpcException)) });

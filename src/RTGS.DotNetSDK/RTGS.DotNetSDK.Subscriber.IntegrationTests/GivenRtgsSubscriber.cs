@@ -4,6 +4,7 @@ public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 {
 	private readonly GrpcServerFixture _grpcServer;
 	private IHost _clientHost;
+	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
 
 	public GivenRtgsSubscriber(GrpcServerFixture grpcServer)
@@ -23,6 +24,7 @@ public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 				.ConfigureServices((_, services) => services.AddRtgsSubscriber(rtgsSubscriberOptions))
 				.Build();
 
+			_fromRtgsSender = _grpcServer.Services.GetRequiredService<FromRtgsSender>();
 			_rtgsSubscriber = _clientHost.Services.GetRequiredService<IRtgsSubscriber>();
 		}
 		catch (Exception)
@@ -43,7 +45,6 @@ public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 
 		_grpcServer.Reset();
 	}
-
 
 	[Fact]
 	public async Task WhenHandlerCollectionIsNull_WhenStarting_ThenThrows() =>
@@ -95,6 +96,31 @@ public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 						 "Multiple handlers of type IPayawayCompleteV1Handler were found. (Parameter 'handlers')");
 	}
 
+	[Fact]
+	public async Task WhenStartIsCalled_ThenIsRunningIsTrue()
+	{
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+
+		_fromRtgsSender.WaitForConnection().Should().BeTrue();
+
+		_rtgsSubscriber.IsRunning.Should().BeTrue();
+	}
+
+	[Fact]
+	public void WhenStartIsNotCalled_ThenIsRunningIsFalse() =>
+		_rtgsSubscriber.IsRunning.Should().BeFalse();
+
+	[Fact]
+	public async Task WhenStartIsCalledAndStopIsCalled_ThenIsRunningIsFalse()
+	{
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+
+		_fromRtgsSender.WaitForConnection().Should().BeTrue();
+
+		await _rtgsSubscriber.StopAsync();
+
+		_rtgsSubscriber.IsRunning.Should().BeFalse();
+	}
 
 	[Fact]
 	public async Task WhenStartIsCalledTwice_ThenThrowInvalidOperationException()

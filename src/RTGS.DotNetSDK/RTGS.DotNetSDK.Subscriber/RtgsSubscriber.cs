@@ -22,10 +22,8 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 	private AsyncDuplexStreamingCall<RtgsMessageAcknowledgement, RtgsMessage> _fromRtgsCall;
 	private bool _disposed;
 	private bool _isStopRequested;
-	private bool _running;
 
-	//public bool IsRunning => _executingTask?.Status == TaskStatus.Running || _executingTask?.Status == TaskStatus.WaitingForActivation;
-	public bool IsRunning => _running;
+	public bool IsRunning { get; private set; }
 
 	public event EventHandler<ExceptionEventArgs> OnExceptionOccurred;
 
@@ -56,7 +54,7 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 
 		try
 		{
-			if (_executingTask is not null)
+			if (_executingTask is not null && _executingTask.Status != TaskStatus.RanToCompletion)
 			{
 				throw new InvalidOperationException("RTGS Subscriber is already running");
 			}
@@ -76,7 +74,7 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 
 	private async Task Execute(IReadOnlyCollection<IHandler> handlers)
 	{
-		_running = true;
+		IsRunning = true;
 
 		_logger.LogInformation("RTGS Subscriber started");
 
@@ -84,6 +82,8 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 		{
 			var commands = _handleMessageCommandsFactory.CreateAll(handlers)
 				.ToDictionary(command => command.MessageIdentifier, command => command);
+
+			_fromRtgsCall?.Dispose();
 
 			var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid) };
 			_fromRtgsCall = _grpcClient.FromRtgsMessage(grpcCallHeaders);
@@ -111,14 +111,14 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 		}
 		catch (RpcException ex)
 		{
-			_running = false;
+			IsRunning = false;
 			_logger.LogError(ex, "An error occurred while communicating with RTGS");
 
 			RaiseFatalExceptionOccurredEvent(ex);
 		}
 		catch (Exception ex)
 		{
-			_running = false;
+			IsRunning = false;
 			_logger.LogError(ex, "An unknown error occurred");
 
 			RaiseFatalExceptionOccurredEvent(ex);
@@ -232,6 +232,7 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 			_isStopRequested = true;
 			await CompleteAsyncEnumerables();
 			_executingTask = null;
+			IsRunning = false;
 
 			_logger.LogInformation("RTGS Subscriber stopped");
 		}

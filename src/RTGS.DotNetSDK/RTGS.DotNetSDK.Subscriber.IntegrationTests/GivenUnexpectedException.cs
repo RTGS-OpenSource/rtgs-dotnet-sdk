@@ -5,6 +5,8 @@ namespace RTGS.DotNetSDK.Subscriber.IntegrationTests;
 
 public class GivenUnexpectedException : IAsyncDisposable
 {
+	private static readonly TimeSpan WaitForExceptionDuration = TimeSpan.FromSeconds(30);
+
 	private readonly OutOfMemoryException _thrownException;
 	private readonly ITestCorrelatorContext _serilogContext;
 	private readonly IHost _clientHost;
@@ -62,7 +64,7 @@ public class GivenUnexpectedException : IAsyncDisposable
 		await _rtgsSubscriber.DisposeAsync();
 		await _clientHost.StopAsync();
 	}
-	//TODO: Test for the the server dying, subscriber throwing, server reviving, subscriber restarting successfully
+
 	[Fact]
 	public async Task WhenFatalErrorIsRaised_ThenIsRunningShouldBeFalse()
 	{
@@ -72,8 +74,7 @@ public class GivenUnexpectedException : IAsyncDisposable
 
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
-		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
-		raisedExceptionSignal.Wait(waitForExceptionDuration);
+		raisedExceptionSignal.Wait(WaitForExceptionDuration);
 
 		_rtgsSubscriber.IsRunning.Should().Be(false);
 	}
@@ -92,13 +93,11 @@ public class GivenUnexpectedException : IAsyncDisposable
 
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
-		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
-		raisedExceptionSignal.Wait(waitForExceptionDuration);
+		raisedExceptionSignal.Wait(WaitForExceptionDuration);
 
 		using var _ = new AssertionScope();
 
 		raisedArgs.Should().NotBeNull();
-
 		raisedArgs?.Exception.Should().BeSameAs(_thrownException);
 		raisedArgs?.IsFatal.Should().BeTrue();
 	}
@@ -112,8 +111,7 @@ public class GivenUnexpectedException : IAsyncDisposable
 
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
-		var waitForExceptionDuration = TimeSpan.FromSeconds(30);
-		raisedExceptionSignal.Wait(waitForExceptionDuration);
+		raisedExceptionSignal.Wait(WaitForExceptionDuration);
 
 		var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
 		errorLogs.Should().BeEquivalentTo(new[] { new LogEntry("An unknown error occurred", LogEventLevel.Error, _thrownException.GetType()) });
