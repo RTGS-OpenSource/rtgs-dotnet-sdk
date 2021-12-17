@@ -17,8 +17,8 @@ jobs:
     steps:
       # require v1 here so that MinVer has access to history to determine version number to apply
       - uses: actions/checkout@v1
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1 sdfgsdfgsdfgsdfg
+      - name: Setup .NET 
+        uses: actions/setup-dotnet@v1
         with:
           source-url: ${{env.AZURE_ARTIFACTS_URL}}
         env:
@@ -26,7 +26,7 @@ jobs:
 
       - name: dotnet build and publish
         run: |
-          dotnet build --configuration Release $${{env.SOLUTION_FOLDER}}
+          dotnet build --configuration Release ${{env.SOLUTION_FOLDER}}
           dotnet pack -c Release ${{env.PUBLISHER_FOLDER}}RTGS.DotNetSDK.Publisher.csproj
           dotnet pack -c Release ${{env.SUBSCRIBER_FOLDER}}RTGS.DotNetSDK.Subscriber.csproj
 
