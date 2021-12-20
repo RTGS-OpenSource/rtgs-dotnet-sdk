@@ -106,7 +106,8 @@ public static class ValidMessages
 
 	public static readonly AtomicTransferFundsV1 AtomicTransferFundsV1 = new()
 	{
-		PacsJson = "pacs-json"
+		PacsJson = "pacs-json",
+		LockId = new Guid("6051b46f-a930-40fd-80ee-a08570900c87")
 	};
 
 	public static readonly EarmarkFundsV1 EarmarkFundsV1 = new()

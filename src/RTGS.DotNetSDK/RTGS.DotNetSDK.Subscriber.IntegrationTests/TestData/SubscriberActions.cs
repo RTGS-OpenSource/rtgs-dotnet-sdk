@@ -24,7 +24,7 @@ public static class SubscriberActions
 		new(new AllTestHandlers(), handlers => handlers.OfType<TestAtomicTransferResponseV1Handler>().Single(), "BlockResponse", ValidMessages.AtomicTransferResponseV1);
 
 	public static readonly SubscriberAction<AtomicTransferFundsV1> AtomicTransferFundsV1 =
-		new(new AllTestHandlers(), handlers => handlers.OfType<TestAtomicTransferFundsV1Handler>().Single(), "BlockFunds", ValidMessages.AtomicTransferFundsV1);
+		new(new AllTestHandlers(), handlers => handlers.OfType<TestAtomicTransferFundsV1Handler>().Single(), "payment.blockfunds.v1", ValidMessages.AtomicTransferFundsV1);
 
 	public static readonly SubscriberAction<EarmarkFundsV1> EarmarkFundsV1 =
 		new(new AllTestHandlers(), handlers => handlers.OfType<TestEarmarkFundsV1Handler>().Single(), "EarmarkFunds", ValidMessages.EarmarkFundsV1);
