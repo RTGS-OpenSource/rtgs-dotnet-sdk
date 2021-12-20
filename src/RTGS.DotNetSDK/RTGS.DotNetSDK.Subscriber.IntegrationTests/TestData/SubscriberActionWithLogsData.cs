@@ -68,7 +68,7 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			new List<LogEntry>()
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("BlockFunds message received from RTGS", LogEventLevel.Information),
+				new("payment.blockfunds.v1 message received from RTGS", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
