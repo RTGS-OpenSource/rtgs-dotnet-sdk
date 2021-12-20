@@ -1,4 +1,4 @@
-﻿using RTGS.Public.Payment.V1.Pacs;
+﻿using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.Publisher.Messages;
 
@@ -8,20 +8,12 @@ namespace RTGS.DotNetSDK.Publisher.Messages;
 public record AtomicTransferRequestV1
 {
 	/// <summary>
-	/// Bank RTGS id, identifier of the bank.
-	/// </summary>
-	/// <remarks>
-	/// The <c>GenericFinancialIdentification1</c> type is from NuGet package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
-	/// </remarks>
-	public GenericFinancialIdentification1 DbtrToRtgsId { get; init; }
-
-	/// <summary>
 	/// Financial institution to financial institution customer credit transfer.
 	/// </summary>
 	/// <remarks>
-	/// The <c>FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer</c> type is from NuGet package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
+	/// The <c>FIToFICustomerCreditTransferV10</c> type is from NuGet package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
 	/// </remarks>
-	public FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer FIToFICstmrCdtTrf { get; init; }
+	public FIToFICustomerCreditTransferV10 FIToFICstmrCdtTrf { get; init; }
 
 	/// <summary>
 	/// Lock Id - a GUID to link this atomic transfer to its corresponding atomic lock.

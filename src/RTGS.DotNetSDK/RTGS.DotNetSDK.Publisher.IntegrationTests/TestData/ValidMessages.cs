@@ -34,22 +34,13 @@ public static class ValidMessages
 
 	public static readonly AtomicTransferRequestV1 AtomicTransferRequest = new()
 	{
-		DbtrToRtgsId = new Public.Payment.V1.Pacs.GenericFinancialIdentification1
+		FIToFICstmrCdtTrf = new FIToFICustomerCreditTransferV10
 		{
-			Id = BankDid
-		},
-		FIToFICstmrCdtTrf = new Public.Payment.V1.Pacs.FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer()
-		{
-			GrpHdr = new Public.Payment.V1.Pacs.GroupHeader93
+			GrpHdr = new GroupHeader96
 			{
 				MsgId = "message-id"
 			},
-			CdtTrfTxInf =
-			{
-				{
-					new Public.Payment.V1.Pacs.CreditTransferTransaction39 { PoolgAdjstmntDt = "2021-01-01" }
-				}
-			}
+			CdtTrfTxInf = new []{ new CreditTransferTransaction50 { PoolgAdjstmntDt = DateTime.Parse("2021-01-01") } }
 		},
 		LckId = "B27C2536-27F8-403F-ABBD-7AC4190FBBD3"
 	};
