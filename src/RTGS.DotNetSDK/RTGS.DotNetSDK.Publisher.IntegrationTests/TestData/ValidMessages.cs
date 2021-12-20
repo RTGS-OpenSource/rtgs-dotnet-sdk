@@ -36,10 +36,10 @@ public static class ValidMessages
 	{
 		FIToFICstmrCdtTrf = new FIToFICustomerCreditTransferV10
 		{
-			GrpHdr = new GroupHeader96 {MsgId = "message-id"},
+			GrpHdr = new GroupHeader96 { MsgId = "message-id" },
 			CdtTrfTxInf = new[]
 			{
-				new CreditTransferTransaction50 {PoolgAdjstmntDt = DateTime.Parse("2021-01-01")}
+				new CreditTransferTransaction50 { PoolgAdjstmntDt = DateTime.Parse("2021-01-01") }
 			}
 		},
 		LckId = "B27C2536-27F8-403F-ABBD-7AC4190FBBD3"
