@@ -6,7 +6,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
 public class PublisherActionWithMessageIdentifierData : BasePublisherActionData
 {
 	public override IPublisherAction<AtomicLockRequestV1> AtomicLock => new PublisherActionWithMessageIdentifier<AtomicLockRequestV1>(PublisherActions.AtomicLock, "payment.lock.v2");
-	public override IPublisherAction<AtomicTransferRequestV1> AtomicTransfer => new PublisherActionWithMessageIdentifier<AtomicTransferRequestV1>(PublisherActions.AtomicTransfer, "payment.block.v1");
+	public override IPublisherAction<AtomicTransferRequestV1> AtomicTransfer => new PublisherActionWithMessageIdentifier<AtomicTransferRequestV1>(PublisherActions.AtomicTransfer, "payment.block.v2");
 	public override IPublisherAction<EarmarkConfirmationV1> EarmarkConfirmation => new PublisherActionWithMessageIdentifier<EarmarkConfirmationV1>(PublisherActions.EarmarkConfirmation, "payment.earmarkconfirmation.v1");
 	public override IPublisherAction<AtomicTransferConfirmationV1> AtomicTransferConfirmation => new PublisherActionWithMessageIdentifier<AtomicTransferConfirmationV1>(PublisherActions.AtomicTransferConfirmation, "payment.blockconfirmation.v1");
 	public override IPublisherAction<UpdateLedgerRequestV1> UpdateLedger => new PublisherActionWithMessageIdentifier<UpdateLedgerRequestV1>(PublisherActions.UpdateLedger, "payment.update.ledger.v1");
