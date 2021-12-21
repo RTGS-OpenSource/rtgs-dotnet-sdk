@@ -35,7 +35,7 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 		SendRequestAsync(message, "payment.lock.v2", cancellationToken);
 
 	public Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequestV1 message, CancellationToken cancellationToken) =>
-		SendRequestAsync(message, "payment.block.v1", cancellationToken);
+		SendRequestAsync(message, "payment.block.v2", cancellationToken);
 
 	public Task<SendResult> SendEarmarkConfirmationAsync(EarmarkConfirmationV1 message, CancellationToken cancellationToken) =>
 		SendRequestAsync(message, "payment.earmarkconfirmation.v1", cancellationToken);
