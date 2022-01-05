@@ -59,15 +59,8 @@ public static class ValidMessages
 
 	public static readonly UpdateLedgerRequestV1 UpdateLedgerRequest = new()
 	{
-		Amt = new Public.Payment.V1.Pacs.ProtoDecimal()
-		{
-			Units = 1,
-			Nanos = 230_000_000
-		},
-		BkToRtgsId = new Public.Payment.V1.Pacs.GenericFinancialIdentification1()
-		{
-			Id = BankDid
-		}
+		Amount = 1.23m,
+		AccountIdentifier = "GB33BUKB20201555555555"
 	};
 
 	public static readonly FIToFICustomerCreditTransferV10 PayawayCreate = new()
