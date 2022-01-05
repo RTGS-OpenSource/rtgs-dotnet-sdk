@@ -44,7 +44,7 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 		SendRequestAsync(message, "payment.blockconfirmation.v1", cancellationToken);
 
 	public Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequestV1 message, CancellationToken cancellationToken) =>
-		SendRequestAsync(message, "payment.update.ledger.v1", cancellationToken);
+		SendRequestAsync(message, "payment.update.ledger.v2", cancellationToken);
 
 	public Task<SendResult> SendPayawayCreateAsync(FIToFICustomerCreditTransferV10 message, CancellationToken cancellationToken) =>
 		SendRequestAsync(message, "payaway.create.v1", cancellationToken);
