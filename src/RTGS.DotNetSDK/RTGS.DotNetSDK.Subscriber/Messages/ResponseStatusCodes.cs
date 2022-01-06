@@ -1,5 +1,8 @@
 ﻿namespace RTGS.DotNetSDK.Subscriber.Messages;
 
+/// <summary>
+/// Enumeration of response status codes.
+/// </summary>
 public enum ResponseStatusCodes
 {
 	NotSet = 0,

@@ -2,4 +2,7 @@
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers;
 
+/// <summary>
+/// Interface to define an <see cref="FIToFICustomerCreditTransferV10"/> handler.
+/// </summary>
 public interface IPayawayFundsV1Handler : IHandler<FIToFICustomerCreditTransferV10> { }
