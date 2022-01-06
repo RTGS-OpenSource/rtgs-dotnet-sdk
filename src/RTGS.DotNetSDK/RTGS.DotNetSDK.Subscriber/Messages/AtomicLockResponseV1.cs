@@ -10,11 +10,17 @@ public record AtomicLockResponseV1
 	/// <summary>
 	/// The id of the lock.
 	/// </summary>
+	/// <remarks>
+	/// Guid value represented as a string.
+	/// </remarks>
 	public string LckId { get; init; }
 
 	/// <summary>
 	/// When the lock expires.
 	/// </summary>
+	/// <remarks>
+	/// DateTime value represented using ISO 8601 format.
+	/// </remarks>
 	public string LckExpry { get; init; }
 
 	/// <summary>
@@ -41,7 +47,7 @@ public record AtomicLockResponseV1
 	public decimal XchgRate { get; init; }
 
 	/// <summary>
-	/// Changes information - details about any changes that will be applied.
+	/// Charges information - details about any charges that will be applied.
 	/// </summary>
 	/// <remarks>
 	/// The <see cref="Charges7"/> type is from NuGet package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>

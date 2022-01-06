@@ -33,5 +33,8 @@ public class AtomicTransferResponseV1
 	/// <summary>
 	/// The id of the lock.
 	/// </summary>
+	/// <remarks>
+	/// Guid value represented as a string.
+	/// </remarks>
 	public string LckId { get; init; }
 }
