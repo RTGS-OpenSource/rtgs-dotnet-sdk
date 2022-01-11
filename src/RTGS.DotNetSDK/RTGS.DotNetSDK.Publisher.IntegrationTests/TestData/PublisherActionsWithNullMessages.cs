@@ -32,4 +32,8 @@ public static class PublisherActionsWithNullMessages
 	public static readonly PublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation = new(
 		null,
 		(publisher, request, cancellationToken) => publisher.SendPayawayConfirmationAsync(request, cancellationToken));
+
+	public static readonly PublisherAction<BankPartnersRequestV1> BankPartnersRequest = new(
+	null,
+	(publisher, request, cancellationToken) => publisher.SendBankPartnersRequestAsync(request, cancellationToken));
 }

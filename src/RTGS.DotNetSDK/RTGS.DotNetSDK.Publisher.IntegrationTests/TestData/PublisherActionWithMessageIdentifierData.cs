@@ -12,4 +12,5 @@ public class PublisherActionWithMessageIdentifierData : BasePublisherActionData
 	public override IPublisherAction<UpdateLedgerRequestV1> UpdateLedger => new PublisherActionWithMessageIdentifier<UpdateLedgerRequestV1>(PublisherActions.UpdateLedger, "payment.update.ledger.v1");
 	public override IPublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate => new PublisherActionWithMessageIdentifier<FIToFICustomerCreditTransferV10>(PublisherActions.PayawayCreate, "payaway.create.v1");
 	public override IPublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation => new PublisherActionWithMessageIdentifier<BankToCustomerDebitCreditNotificationV09>(PublisherActions.PayawayConfirmation, "payaway.confirmation.v1");
+	public override IPublisherAction<BankPartnersRequestV1> BankPartnersRequest => new PublisherActionWithMessageIdentifier<BankPartnersRequestV1>(PublisherActions.BankPartnersRequest, "bank.partners.v1");
 }

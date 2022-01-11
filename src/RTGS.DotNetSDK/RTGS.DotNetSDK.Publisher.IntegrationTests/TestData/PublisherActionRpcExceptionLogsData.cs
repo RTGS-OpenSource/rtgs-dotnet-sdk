@@ -74,4 +74,14 @@ public class PublisherActionRpcExceptionLogsData : BasePublisherActionData
 				new("Sent BankToCustomerDebitCreditNotificationV09 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
 				new("Error received when sending BankToCustomerDebitCreditNotificationV09 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Error, typeof(RpcException))
 			});
+
+	public override IPublisherAction<BankPartnersRequestV1> BankPartnersRequest =>
+	new PublisherActionWithLogs<BankPartnersRequestV1>(
+		PublisherActions.BankPartnersRequest,
+		new List<LogEntry>
+		{
+				new("Sending BankPartnersRequestV1 to RTGS (SendBankPartnersRequestAsync)", LogEventLevel.Information),
+				new("Sent BankPartnersRequestV1 to RTGS (SendBankPartnersRequestAsync)", LogEventLevel.Information),
+				new("Error received when sending BankPartnersRequestV1 to RTGS (SendBankPartnersRequestAsync)", LogEventLevel.Error, typeof(RpcException))
+		});
 }

@@ -105,4 +105,6 @@ public static class ValidMessages
 			}
 		}
 	};
+
+	public static readonly BankPartnersRequestV1 BankPartnersRequest = new();
 }

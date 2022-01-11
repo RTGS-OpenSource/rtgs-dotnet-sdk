@@ -74,4 +74,14 @@ public class PublisherActionSuccessAcknowledgementLogsData : BasePublisherAction
 				new("Sent BankToCustomerDebitCreditNotificationV09 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
 				new("Received BankToCustomerDebitCreditNotificationV09 acknowledgement (acknowledged) from RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information)
 			});
+
+	public override IPublisherAction<BankPartnersRequestV1> BankPartnersRequest =>
+	new PublisherActionWithLogs<BankPartnersRequestV1>(
+		PublisherActions.BankPartnersRequest,
+		new List<LogEntry>
+		{
+				new("Sending BankPartnersRequestV1 to RTGS (SendBankPartnersRequestAsync)", LogEventLevel.Information),
+				new("Sent BankPartnersRequestV1 to RTGS (SendBankPartnersRequestAsync)", LogEventLevel.Information),
+				new("Received BankPartnersRequestV1 acknowledgement (acknowledged) from RTGS (SendBankPartnersRequestAsync)", LogEventLevel.Information)
+		});
 }
