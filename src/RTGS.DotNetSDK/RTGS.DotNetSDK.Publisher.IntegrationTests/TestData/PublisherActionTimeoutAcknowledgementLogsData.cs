@@ -60,4 +60,12 @@ public class PublisherActionTimeoutAcknowledgementLogsData : BasePublisherAction
 			{
 				new("Timed out waiting for BankToCustomerDebitCreditNotificationV09 acknowledgement from RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Error)
 			});
+
+	public override IPublisherAction<BankPartnersRequestV1> BankPartnersRequest =>
+		new PublisherActionWithLogs<BankPartnersRequestV1>(
+			PublisherActions.BankPartnersRequest,
+			new List<LogEntry>
+			{
+					new("Timed out waiting for BankPartnersRequestV1 acknowledgement from RTGS (SendBankPartnersRequestAsync)", LogEventLevel.Error)
+			});
 }

@@ -13,6 +13,7 @@ public abstract class BasePublisherActionData : IEnumerable<object[]>
 	public abstract IPublisherAction<UpdateLedgerRequestV1> UpdateLedger { get; }
 	public abstract IPublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate { get; }
 	public abstract IPublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation { get; }
+	public abstract IPublisherAction<BankPartnersRequestV1> BankPartnersRequest { get; }
 
 	public IEnumerator<object[]> GetActions() =>
 		GetType().GetProperties()

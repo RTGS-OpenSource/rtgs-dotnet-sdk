@@ -12,4 +12,5 @@ public class PublisherActionWithNullMessagesData : BasePublisherActionData
 	public override IPublisherAction<UpdateLedgerRequestV1> UpdateLedger => PublisherActionsWithNullMessages.UpdateLedger;
 	public override IPublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate => PublisherActionsWithNullMessages.PayawayCreate;
 	public override IPublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation => PublisherActionsWithNullMessages.PayawayConfirmation;
+	public override IPublisherAction<BankPartnersRequestV1> BankPartnersRequest => PublisherActionsWithNullMessages.BankPartnersRequest;
 }

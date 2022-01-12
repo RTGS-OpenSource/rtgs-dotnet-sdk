@@ -39,6 +39,9 @@ jobs:
       - name: Install dotnet format
         run: dotnet tool install dotnet-format
 
+      - name: dotnet Restore
+        run: dotnet restore ${{env.SOLUTION_FOLDER}}
+
       - name: dotnet Format
         run: dotnet format ${{env.SOLUTION_FOLDER}} --verify-no-changes
 

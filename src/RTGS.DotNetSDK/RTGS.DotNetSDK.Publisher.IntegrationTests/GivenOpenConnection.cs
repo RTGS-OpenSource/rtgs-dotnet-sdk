@@ -249,7 +249,6 @@ public class GivenOpenConnection
 
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 			var receivedMessage = receiver.Connections.Should().ContainSingle().Which.Requests.Should().ContainSingle().Subject;
-			var receivedRequest = JsonConvert.DeserializeObject<TRequest>(receivedMessage.Data);
 
 			using var _ = new AssertionScope();
 
@@ -257,7 +256,11 @@ public class GivenOpenConnection
 			receivedMessage.Header?.InstructionType.Should().Be(publisherAction.MessageIdentifier);
 			receivedMessage.Header?.CorrelationId.Should().NotBeNullOrEmpty();
 
-			receivedRequest.Should().BeEquivalentTo(publisherAction.Request, options => options.ComparingByMembers<TRequest>());
+			if (publisherAction.ComparePayload)
+			{
+				var receivedRequest = JsonConvert.DeserializeObject<TRequest>(receivedMessage.Data);
+				receivedRequest.Should().BeEquivalentTo(publisherAction.Request, options => options.ComparingByMembers<TRequest>());
+			}
 		}
 
 		[Theory]
