@@ -74,7 +74,7 @@ public interface IRtgsPublisher : IAsyncDisposable
 	/// <summary>
 	/// Sends a <see cref="BankPartnersRequestV1"/> bank partners request.
 	/// </summary>
-	/// <param name="message">The <see cref="BankPartnersRequestV1"/>  message</param>
+	/// <param name="message">The <see cref="BankPartnersRequestV1"/> message</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
 	Task<SendResult> SendBankPartnersRequestAsync(BankPartnersRequestV1 message, CancellationToken cancellationToken = default);

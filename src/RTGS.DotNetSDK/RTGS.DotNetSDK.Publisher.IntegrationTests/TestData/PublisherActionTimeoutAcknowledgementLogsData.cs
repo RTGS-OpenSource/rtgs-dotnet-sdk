@@ -62,10 +62,10 @@ public class PublisherActionTimeoutAcknowledgementLogsData : BasePublisherAction
 			});
 
 	public override IPublisherAction<BankPartnersRequestV1> BankPartnersRequest =>
-	new PublisherActionWithLogs<BankPartnersRequestV1>(
-		PublisherActions.BankPartnersRequest,
-		new List<LogEntry>
-		{
-				new("Timed out waiting for BankPartnersRequestV1 acknowledgement from RTGS (SendBankPartnersRequestAsync)", LogEventLevel.Error)
-		});
+		new PublisherActionWithLogs<BankPartnersRequestV1>(
+			PublisherActions.BankPartnersRequest,
+			new List<LogEntry>
+			{
+					new("Timed out waiting for BankPartnersRequestV1 acknowledgement from RTGS (SendBankPartnersRequestAsync)", LogEventLevel.Error)
+			});
 }
