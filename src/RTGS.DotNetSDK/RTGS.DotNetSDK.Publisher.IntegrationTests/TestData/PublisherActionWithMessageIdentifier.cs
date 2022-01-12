@@ -4,10 +4,11 @@ public class PublisherActionWithMessageIdentifier<TRequest> : IPublisherAction<T
 {
 	private readonly IPublisherAction<TRequest> _publisherAction;
 
-	public PublisherActionWithMessageIdentifier(IPublisherAction<TRequest> publisherAction, string messageIdentifier)
+	public PublisherActionWithMessageIdentifier(IPublisherAction<TRequest> publisherAction, string messageIdentifier, bool comparePayload = true)
 	{
 		_publisherAction = publisherAction;
 		MessageIdentifier = messageIdentifier;
+		ComparePayload = comparePayload;
 	}
 
 	public TRequest Request => _publisherAction.Request;
@@ -16,4 +17,5 @@ public class PublisherActionWithMessageIdentifier<TRequest> : IPublisherAction<T
 		_publisherAction.InvokeSendDelegateAsync(publisher, cancellationToken);
 
 	public string MessageIdentifier { get; }
+	public bool ComparePayload { get; }
 }

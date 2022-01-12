@@ -53,7 +53,7 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 		SendRequestAsync(message, "payaway.confirmation.v1", cancellationToken);
 
 	public Task<SendResult> SendBankPartnersRequestAsync(BankPartnersRequestV1 message, CancellationToken cancellationToken) =>
-	SendRequestAsync(message, "bank.partners.v1", cancellationToken);
+		SendRequestAsync(message, "bank.partners.v1", cancellationToken);
 
 	private async Task<SendResult> SendRequestAsync<T>(T message, string messageIdentifier, CancellationToken cancellationToken, [CallerMemberName] string callingMethod = null)
 	{

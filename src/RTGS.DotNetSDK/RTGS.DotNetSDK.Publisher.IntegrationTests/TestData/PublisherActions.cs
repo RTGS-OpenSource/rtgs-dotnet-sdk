@@ -34,7 +34,7 @@ public static class PublisherActions
 		(publisher, request, cancellationToken) => publisher.SendPayawayConfirmationAsync(request, cancellationToken));
 
 	public static readonly PublisherAction<BankPartnersRequestV1> BankPartnersRequest = new(
-	ValidMessages.BankPartnersRequest,
-	(publisher, request, cancellationToken) => publisher.SendBankPartnersRequestAsync(request, cancellationToken));
+		ValidMessages.BankPartnersRequest,
+		(publisher, request, cancellationToken) => publisher.SendBankPartnersRequestAsync(request, cancellationToken));
 
 }
