@@ -1,20 +1,34 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Authors>RTGS Global Limited</Authors>
+		<Company>RTGS Global Limited</Company>
+		<Product>RTGS Global Publisher</Product>
+		<Copyright>RTGS Global Limited</Copyright>
+		<Description>Publisher to send messages to the RTGS Global network.</Description>
+		<RepositoryUrl>https://github.com/RTGS-OpenSource/rtgs-dotnet-sdk</RepositoryUrl>
+		<RootNamespace>RTGS.DotNetSDK.Publisher</RootNamespace>
+		<PackageIcon>rtgs_global_logo.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.41.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
-    <PackageReference Include="MinVer" Version="2.5.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="RTGS.ISO20022.Messages" Version="1.0.68" />
-    <PackageReference Include="RTGS.Public.Payment.Client" Version="2.0.59" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.41.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+		<PackageReference Include="MinVer" Version="2.5.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="RTGS.ISO20022.Messages" Version="1.0.68" />
+		<PackageReference Include="RTGS.Public.Payment.Client" Version="2.0.59" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\..\..\rtgs_global_logo.png" Pack="true" PackagePath="\" />
+		<None Include="..\..\..\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 </Project>
