@@ -72,7 +72,9 @@ jobs:
   publish-to-devops-artifacts:
     # if pushing to main then publish to Azure Artifacts (this is pre-release so keep private)
     if: (github.ref == 'refs/heads/main' && github.event_name == 'push')
-    needs: build-and-test
+    needs:
+      - build-and-test
+      - generate-docs
     runs-on: ubuntu-latest
     steps:
       # require v1 here so that MinVer has access to history to determine version number to apply
