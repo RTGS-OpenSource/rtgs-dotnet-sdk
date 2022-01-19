@@ -40,7 +40,7 @@ public static class ValidMessages
 		},
 		DbtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
-			Ccy = "USD",
+			Ccy = "GBP",
 			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00DEBTORAGENTACCOUNT" }
 		},
 		CdtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
@@ -50,8 +50,8 @@ public static class ValidMessages
 		},
 		CdtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
-			Ccy = "GBP",
-			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00ULTIMATECREDITORACCOUNT" }
+			Ccy = "USD",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00CREDITORAGENTACCOUNT" }
 		},
 		SplmtryData = "some-extra-data",
 		EndToEndId = "end-to-end-id"
