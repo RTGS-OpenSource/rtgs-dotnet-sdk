@@ -252,9 +252,8 @@ public class GivenOpenConnection
 
 			using var _ = new AssertionScope();
 
-			receivedMessage.Header.Should().NotBeNull();
-			receivedMessage.Header?.InstructionType.Should().Be(publisherAction.MessageIdentifier);
-			receivedMessage.Header?.CorrelationId.Should().NotBeNullOrEmpty();
+			receivedMessage.MessageIdentifier.Should().Be(publisherAction.MessageIdentifier);
+			receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
 
 			if (publisherAction.ComparePayload)
 			{

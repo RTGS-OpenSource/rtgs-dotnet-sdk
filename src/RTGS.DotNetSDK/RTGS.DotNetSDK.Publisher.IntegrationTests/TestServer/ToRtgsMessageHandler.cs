@@ -1,6 +1,6 @@
 ﻿extern alias RTGSServer;
 using System.Collections.Concurrent;
-using RTGSServer::RTGS.Public.Payment.V2;
+using RTGSServer::RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestServer;
 
@@ -46,9 +46,7 @@ public class ToRtgsMessageHandler
 				{
 					Code = (int)StatusCode.Internal,
 					Success = false,
-					Header = expected
-						? message.Header
-						: GenerateUnexpectedMessageHeader(message.Header)
+					CorrelationId = expected ? message.CorrelationId : Guid.NewGuid().ToString()
 				}));
 
 		public void ReturnExpectedAcknowledgementWithSuccess() =>
@@ -63,9 +61,7 @@ public class ToRtgsMessageHandler
 				{
 					Code = (int)StatusCode.OK,
 					Success = true,
-					Header = expected
-						? message.Header
-						: GenerateUnexpectedMessageHeader(message.Header)
+					CorrelationId = expected ? message.CorrelationId : Guid.NewGuid().ToString()
 				}));
 
 		public void ReturnExpectedAcknowledgementWithDelay(TimeSpan timeSpan) =>
@@ -77,16 +73,9 @@ public class ToRtgsMessageHandler
 				{
 					Code = (int)StatusCode.OK,
 					Success = true,
-					Header = message.Header
+					CorrelationId = message.CorrelationId
 				};
 			});
-
-		private static RtgsMessageHeader GenerateUnexpectedMessageHeader(RtgsMessageHeader original) =>
-			new()
-			{
-				CorrelationId = Guid.NewGuid().ToString(),
-				InstructionType = original.InstructionType
-			};
 
 		public void ThrowRpcException(StatusCode statusCode, string detail) =>
 			GenerateAcknowledgements.Add(_ => throw new RpcException(new Status(statusCode, detail)));

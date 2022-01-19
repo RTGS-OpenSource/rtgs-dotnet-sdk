@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
-using RTGS.Public.Payment.V2;
+using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Publisher;
 
@@ -146,7 +146,7 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 		{
 			await foreach (var acknowledgement in _toRtgsCall.ResponseStream.ReadAllAsync())
 			{
-				if (acknowledgement.Header.CorrelationId == _acknowledgementContext?.CorrelationId)
+				if (acknowledgement.CorrelationId == _acknowledgementContext?.CorrelationId)
 				{
 					_acknowledgementContext?.Release(acknowledgement);
 				}
@@ -172,11 +172,8 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 		var rtgsMessage = new RtgsMessage
 		{
 			Data = JsonSerializer.Serialize(message),
-			Header = new RtgsMessageHeader
-			{
-				InstructionType = messageIdentifier,
-				CorrelationId = _acknowledgementContext.CorrelationId
-			}
+			MessageIdentifier = messageIdentifier,
+			CorrelationId = _acknowledgementContext.CorrelationId
 		};
 
 		await _writingSignal.WaitAsync(cancellationToken);

@@ -1,6 +1,6 @@
 ﻿extern alias RTGSServer;
 using System.Text.Json;
-using RTGSServer::RTGS.Public.Payment.V2;
+using RTGSServer::RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer;
 
@@ -51,11 +51,8 @@ public class FromRtgsSender
 
 		var rtgsMessage = new RtgsMessage
 		{
-			Header = new RtgsMessageHeader
-			{
-				CorrelationId = correlationId,
-				InstructionType = messageIdentifier
-			},
+			CorrelationId = correlationId,
+			MessageIdentifier = messageIdentifier,
 			Data = JsonSerializer.Serialize(data)
 		};
 

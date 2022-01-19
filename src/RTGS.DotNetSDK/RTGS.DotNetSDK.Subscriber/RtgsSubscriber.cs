@@ -4,7 +4,7 @@ using RTGS.DotNetSDK.Subscriber.Exceptions;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.DotNetSDK.Subscriber.Validators;
-using RTGS.Public.Payment.V2;
+using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Subscriber;
 
@@ -129,29 +129,23 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 	{
 		try
 		{
-			if (rtgsMessage.Header is null)
+			if (string.IsNullOrWhiteSpace(rtgsMessage.MessageIdentifier))
 			{
-				await SendFailureAcknowledgement(rtgsMessage.Header);
-				throw new RtgsSubscriberException("Message with no header received");
-			}
-
-			if (string.IsNullOrWhiteSpace(rtgsMessage.Header.InstructionType))
-			{
-				await SendFailureAcknowledgement(rtgsMessage.Header);
+				await SendFailureAcknowledgement(rtgsMessage.CorrelationId);
 				throw new RtgsSubscriberException("Message with no identifier received");
 			}
 
-			_logger.LogInformation("{MessageIdentifier} message received from RTGS", rtgsMessage.Header.InstructionType);
+			_logger.LogInformation("{MessageIdentifier} message received from RTGS", rtgsMessage.MessageIdentifier);
 
-			if (!commands.TryGetValue(rtgsMessage.Header.InstructionType, out var command))
+			if (!commands.TryGetValue(rtgsMessage.MessageIdentifier, out var command))
 			{
-				await SendFailureAcknowledgement(rtgsMessage.Header);
-				throw new RtgsSubscriberException("No handler found for message", rtgsMessage.Header.InstructionType);
+				await SendFailureAcknowledgement(rtgsMessage.CorrelationId);
+				throw new RtgsSubscriberException("No handler found for message", rtgsMessage.MessageIdentifier);
 			}
 
 			// We need to send back the acknowledgement as soon as possible to avoid timeouts on the server.
 			// The handler should be quick but we cannot guarantee that is the case so do this first.
-			await SendSuccessAcknowledgement(rtgsMessage.Header);
+			await SendSuccessAcknowledgement(rtgsMessage.CorrelationId);
 
 			try
 			{
@@ -191,17 +185,17 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 		}
 	}
 
-	private Task SendSuccessAcknowledgement(RtgsMessageHeader header) =>
-		SendAcknowledgement(header, true);
+	private Task SendSuccessAcknowledgement(string correlationId) =>
+		SendAcknowledgement(correlationId, true);
 
-	private Task SendFailureAcknowledgement(RtgsMessageHeader header) =>
-		SendAcknowledgement(header, false);
+	private Task SendFailureAcknowledgement(string correlationId) =>
+		SendAcknowledgement(correlationId, false);
 
-	private async Task SendAcknowledgement(RtgsMessageHeader header, bool success)
+	private async Task SendAcknowledgement(string correlationId, bool success)
 	{
 		var acknowledgement = new RtgsMessageAcknowledgement
 		{
-			Header = header ?? new RtgsMessageHeader(),
+			CorrelationId = correlationId,
 			Success = success
 		};
 

@@ -1,6 +1,6 @@
 ﻿using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.Handlers;
-using RTGS.Public.Payment.V2;
+using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 
