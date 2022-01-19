@@ -32,6 +32,7 @@ public class AllTestHandlers : IEnumerable<IHandler>
 	public class TestEarmarkFundsV1Handler : TestHandler<EarmarkFundsV1>, IEarmarkFundsV1Handler { }
 	public class TestEarmarkCompleteV1Handler : TestHandler<EarmarkCompleteV1>, IEarmarkCompleteV1Handler { }
 	public class TestEarmarkReleaseV1Handler : TestHandler<EarmarkReleaseV1>, IEarmarkReleaseV1Handler { }
+	public class TestBankPartnersResponseV1 : TestHandler<BankPartnersResponseV1>, IBankPartnersResponseV1Handler { }
 
 	public abstract class TestHandler<TMessage> : ITestHandler<TMessage>
 	{
