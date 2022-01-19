@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 using RTGS.DotNetSDK.Subscriber.Validators;
-using RTGS.Public.Payment.V2;
+using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Subscriber.Extensions;
 

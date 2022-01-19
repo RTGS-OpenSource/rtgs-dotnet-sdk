@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
-using RTGS.Public.Payment.V2;
+using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Publisher.Extensions;
 

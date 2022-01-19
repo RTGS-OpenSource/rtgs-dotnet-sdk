@@ -93,7 +93,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		using var _ = new AssertionScope();
 
 		_fromRtgsSender.Acknowledgements
-			.Should().ContainSingle(acknowledgement => acknowledgement.Header.CorrelationId == sentRtgsMessage.Header.CorrelationId
+			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
 													   && acknowledgement.Success);
 
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
@@ -188,65 +188,6 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 	}
 
 	[Fact]
-	public async Task WhenMessageWithNoHeaderReceived_ThenLogError()
-	{
-		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
-
-		await _fromRtgsSender.SendAsync(
-			"will not be used as the header is being set to null",
-			ValidMessages.AtomicLockResponseV1,
-			message => message.Header = null);
-
-		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		await _rtgsSubscriber.StopAsync();
-
-		var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
-		errorLogs.Should().BeEquivalentTo(new[] { new LogEntry("An error occurred while processing a message (MessageIdentifier: null)", LogEventLevel.Error, typeof(RtgsSubscriberException)) });
-	}
-
-	[Fact]
-	public async Task WhenMessageWithNoHeaderReceived_ThenRaiseExceptionEvent()
-	{
-		Exception raisedException = null;
-
-		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
-		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
-
-		await _fromRtgsSender.SendAsync(
-			"will not be used as the header is being set to null",
-			ValidMessages.AtomicLockResponseV1,
-			message => message.Header = null);
-
-		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		await _rtgsSubscriber.StopAsync();
-
-		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should().Be("Message with no header received");
-	}
-
-	[Fact]
-	public async Task WhenMessageWithNoHeaderReceived_ThenAcknowledgeAsFailure()
-	{
-		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
-
-		await _fromRtgsSender.SendAsync(
-			"will not be used as the header is being set to null",
-			ValidMessages.AtomicLockResponseV1,
-			message => message.Header = null);
-
-		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		await _rtgsSubscriber.StopAsync();
-
-		_fromRtgsSender.Acknowledgements
-			.Should().ContainSingle(acknowledgement => acknowledgement.Header != null
-													   && acknowledgement.Header.CorrelationId == string.Empty
-													   && acknowledgement.Header.InstructionType == string.Empty
-													   && !acknowledgement.Success);
-	}
-
-	[Fact]
 	public async Task WhenMessageWithNoMessageIdentifierReceived_ThenLogError()
 	{
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
@@ -296,9 +237,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		await _rtgsSubscriber.StopAsync();
 
 		_fromRtgsSender.Acknowledgements
-			.Should().ContainSingle(acknowledgement => acknowledgement.Header != null
-													   && acknowledgement.Header.CorrelationId == sentRtgsMessage.Header.CorrelationId
-													   && acknowledgement.Header.InstructionType == string.Empty
+			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
 													   && !acknowledgement.Success);
 	}
 
@@ -352,9 +291,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		await _rtgsSubscriber.StopAsync();
 
 		_fromRtgsSender.Acknowledgements
-			.Should().ContainSingle(acknowledgement => acknowledgement.Header != null
-													   && acknowledgement.Header.CorrelationId == sentRtgsMessage.Header.CorrelationId
-													   && acknowledgement.Header.InstructionType == "cannot be handled"
+			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
 													   && !acknowledgement.Success);
 	}
 
@@ -473,7 +410,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		using var _ = new AssertionScope();
 
 		_fromRtgsSender.Acknowledgements
-			.Should().ContainSingle(acknowledgement => acknowledgement.Header.CorrelationId == sentRtgsMessage.Header.CorrelationId
+			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
 													   && acknowledgement.Success);
 
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);

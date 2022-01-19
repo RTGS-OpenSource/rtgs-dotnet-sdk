@@ -1,5 +1,5 @@
 ﻿extern alias RTGSServer;
-using RTGSServer::RTGS.Public.Payment.V2;
+using RTGSServer::RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestServer;
 
