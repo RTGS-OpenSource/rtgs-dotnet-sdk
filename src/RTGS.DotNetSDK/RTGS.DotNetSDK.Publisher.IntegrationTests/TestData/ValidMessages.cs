@@ -35,17 +35,18 @@ public static class ValidMessages
 		},
 		DbtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
-			Ccy = "USD", 
+			Ccy = "USD",
 			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00DEBTORACCOUNT" }
 		},
 		DbtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
-			Ccy = "USD", 
+			Ccy = "USD",
 			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00DEBTORAGENTACCOUNT" }
 		},
 		CdtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
-			Ccy = "GBP", Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00CREDITORACCOUNT" }
+			Ccy = "GBP",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00CREDITORACCOUNT" }
 		},
 		CdtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
