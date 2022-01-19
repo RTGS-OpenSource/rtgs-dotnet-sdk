@@ -76,6 +76,18 @@ public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 			.ThrowAsync<ArgumentException>()
 			.WithMessage("No handler of type IMessageRejectV1Handler was found. (Parameter 'handlers')");
 	}
+	
+	[Fact]
+	public async Task WhenHandlerCollectionIsMissingBankPartners_WhenStarting_ThenThrows()
+	{
+		var handlers = new AllTestHandlers()
+			.Where(handler => handler.GetType() != typeof(AllTestHandlers.TestBankPartnersResponseV1));
+
+		await FluentActions.Awaiting(() => _rtgsSubscriber.StartAsync(handlers))
+			.Should()
+			.ThrowAsync<ArgumentException>()
+			.WithMessage("No handler of type IBankPartnersResponseV1Handler was found. (Parameter 'handlers')");
+	}
 
 	[Fact]
 	public async Task WhenDuplicateHandlerInCollection_WhenStarting_ThenThrows()
@@ -88,6 +100,7 @@ public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 			.WithMessage("Multiple handlers of type IAtomicLockResponseV1Handler were found." +
 						 "Multiple handlers of type IAtomicTransferFundsV1Handler were found." +
 						 "Multiple handlers of type IAtomicTransferResponseV1Handler were found." +
+						 "Multiple handlers of type IBankPartnersResponseV1Handler were found." +
 						 "Multiple handlers of type IEarmarkCompleteV1Handler were found." +
 						 "Multiple handlers of type IEarmarkFundsV1Handler were found." +
 						 "Multiple handlers of type IEarmarkReleaseV1Handler were found." +

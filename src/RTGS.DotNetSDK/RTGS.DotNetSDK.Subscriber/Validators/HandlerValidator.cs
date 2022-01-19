@@ -10,6 +10,7 @@ internal class HandlerValidator : IHandlerValidator
 		typeof(IAtomicLockResponseV1Handler),
 		typeof(IAtomicTransferFundsV1Handler),
 		typeof(IAtomicTransferResponseV1Handler),
+		typeof(IBankPartnersResponseV1Handler),
 		typeof(IEarmarkCompleteV1Handler),
 		typeof(IEarmarkFundsV1Handler),
 		typeof(IEarmarkReleaseV1Handler),
