@@ -76,7 +76,7 @@ public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 			.ThrowAsync<ArgumentException>()
 			.WithMessage("No handler of type IMessageRejectV1Handler was found. (Parameter 'handlers')");
 	}
-	
+
 	[Fact]
 	public async Task WhenHandlerCollectionIsMissingBankPartners_WhenStarting_ThenThrows()
 	{

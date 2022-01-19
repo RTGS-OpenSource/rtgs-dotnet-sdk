@@ -33,7 +33,7 @@ public class SubscriberActionData : BaseSubscriberActionData
 
 	public override ISubscriberAction<EarmarkReleaseV1> EarmarkReleaseV1 =>
 		SubscriberActions.EarmarkReleaseV1;
-	
+
 	public override ISubscriberAction<BankPartnersResponseV1> BankPartnersResponseV1 =>
 		SubscriberActions.BankPartnersResponseV1;
 }

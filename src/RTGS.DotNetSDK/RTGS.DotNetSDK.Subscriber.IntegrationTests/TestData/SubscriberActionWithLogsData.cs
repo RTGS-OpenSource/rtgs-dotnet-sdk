@@ -105,7 +105,7 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
-	
+
 	public override ISubscriberAction<BankPartnersResponseV1> BankPartnersResponseV1 =>
 		new SubscriberActionWithLogs<BankPartnersResponseV1>(
 			SubscriberActions.BankPartnersResponseV1,
