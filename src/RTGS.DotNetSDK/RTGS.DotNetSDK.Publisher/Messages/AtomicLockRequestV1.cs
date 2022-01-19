@@ -29,7 +29,7 @@ public record AtomicLockRequestV1
 	/// <remarks>
 	/// The <c>GenericFinancialIdentification1</c> type is from NuGet package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
 	/// </remarks>
-	public GenericFinancialIdentification1 BankPartnerDid { get; init; }
+	public GenericFinancialIdentification1 BkPtnrId { get; init; }
 	
 	/// <summary>
 	/// Debtor account.

@@ -29,7 +29,7 @@ public static class ValidMessages
 			Ccy = "GBP",
 			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00ULTIMATECREDITORACCOUNT" }
 		},
-		BankPartnerDid = new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
+		BkPtnrId = new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
 		{
 			Id = BankPartnerDid
 		},
