@@ -24,14 +24,6 @@ public record AtomicLockRequestV1
 	public ActiveCurrencyAndAmount CdtrAmt { get; init; }
 
 	/// <summary>
-	/// Bank RTGS id, the identifier of the bank partner bank.
-	/// </summary>
-	/// <remarks>
-	/// The <c>GenericFinancialIdentification1</c> type is from NuGet package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
-	/// </remarks>
-	public GenericFinancialIdentification1 BkPtnrId { get; init; }
-
-	/// <summary>
 	/// Debtor account.
 	/// </summary>
 	/// <remarks>
