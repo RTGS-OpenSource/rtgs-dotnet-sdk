@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.DotNetSDK.Subscriber.Messages;
 using RTGS.Public.Payment.V3;
@@ -11,7 +11,7 @@ internal class BankPartnersResponseV1MessageAdapter : IMessageAdapter<BankPartne
 
 	public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<BankPartnersResponseV1> handler)
 	{
-		var bankPartnersResponseMessage = JsonConvert.DeserializeObject<BankPartnersResponseV1>(rtgsMessage.Data);
+		var bankPartnersResponseMessage = JsonSerializer.Deserialize<BankPartnersResponseV1>(rtgsMessage.Data);
 		await handler.HandleMessageAsync(bankPartnersResponseMessage);
 	}
 }

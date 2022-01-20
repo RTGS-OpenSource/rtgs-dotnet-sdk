@@ -78,18 +78,6 @@ public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 	}
 
 	[Fact]
-	public async Task WhenHandlerCollectionIsMissingBankPartners_WhenStarting_ThenThrows()
-	{
-		var handlers = new AllTestHandlers()
-			.Where(handler => handler.GetType() != typeof(AllTestHandlers.TestBankPartnersResponseV1));
-
-		await FluentActions.Awaiting(() => _rtgsSubscriber.StartAsync(handlers))
-			.Should()
-			.ThrowAsync<ArgumentException>()
-			.WithMessage("No handler of type IBankPartnersResponseV1Handler was found. (Parameter 'handlers')");
-	}
-
-	[Fact]
 	public async Task WhenDuplicateHandlerInCollection_WhenStarting_ThenThrows()
 	{
 		var handlers = new AllTestHandlers().Concat(new AllTestHandlers());
