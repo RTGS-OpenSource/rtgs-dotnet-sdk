@@ -9,7 +9,7 @@ name: RTGS .NET SDK Build Test Publish
 
 on:
   push:
-    branches: [main,feature/3090-restore-docfx]
+    branches: [main]
   pull_request:
     branches: [main]
   release:
@@ -124,7 +124,7 @@ jobs:
           dotnet nuget push ${{env.SUBSCRIBER_FOLDER}}bin/Release/*.nupkg -k ${{ secrets.NUGET_TOKEN }} -s ${{env.NUGET_URL}}
 
   generate-docs:
-    if: github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: build-and-test
     runs-on: windows-latest
     steps:
