@@ -240,6 +240,20 @@ public class GivenOpenConnection
 		}
 
 		[Theory]
+		[ClassData(typeof(PublisherActionData))]
+		public async Task WhenUsingRtgsMessageHeaders_ThenSeeHeadersInMessageHeaders<TRequest>(PublisherAction<TRequest> publisherAction)
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+
+			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+
+			var receivedMessage = receiver.Connections.Should().ContainSingle().Which.Requests.Should().ContainSingle().Subject;
+			receivedMessage.Headers.ToDictionary(h => h.Key, h => h.Value).Should().BeEquivalentTo(publisherAction.Headers);
+		}
+
+		[Theory]
 		[ClassData(typeof(PublisherActionWithMessageIdentifierData))]
 		public async Task ThenCanSendRequestToRtgs<TRequest>(PublisherActionWithMessageIdentifier<TRequest> publisherAction)
 		{

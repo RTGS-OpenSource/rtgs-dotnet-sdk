@@ -10,7 +10,16 @@ public class PublisherAction<TRequest> : IPublisherAction<TRequest>
 		Request = request;
 	}
 
+	public PublisherAction(TRequest request, Dictionary<string, string> headers, Func<IRtgsPublisher, TRequest, CancellationToken, Task<SendResult>> sendDelegate)
+	{
+		_sendDelegate = sendDelegate;
+		Request = request;
+		Headers = headers;
+	}
+
 	public TRequest Request { get; }
+
+	public Dictionary<string, string> Headers { get; } = new();
 
 	public Task<SendResult> InvokeSendDelegateAsync(IRtgsPublisher publisher, CancellationToken cancellationToken = default) =>
 		_sendDelegate(publisher, Request, cancellationToken);

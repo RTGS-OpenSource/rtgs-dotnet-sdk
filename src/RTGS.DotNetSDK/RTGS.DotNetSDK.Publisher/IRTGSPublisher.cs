@@ -1,4 +1,5 @@
 ﻿using RTGS.DotNetSDK.Publisher.Messages;
+using RTGS.ISO20022.Messages.Admi_002_001.V01;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
@@ -70,6 +71,18 @@ public interface IRtgsPublisher : IAsyncDisposable
 	/// The <see cref="BankToCustomerDebitCreditNotificationV09"/> type is from nuget package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
 	/// </remarks>
 	Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message, CancellationToken cancellationToken = default);
+
+	/// <summary>
+	/// Sends a <see cref="Admi00200101"/> (payaway) rejection request.
+	/// </summary>
+	/// <param name="message">The <see cref="Admi00200101"/> rejection message</param>
+	/// /// <param name="partnerBankDid">The BankDid for the partner bank to which this rejection should be sent</param>
+	/// <param name="cancellationToken">A cancellation token</param>
+	/// <returns>The result of the operation</returns>
+	/// <remarks>
+	/// The <see cref="Admi00200101"/> type is from nuget package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
+	/// </remarks>
+	Task<SendResult> SendPayawayRejectionAsync(Admi00200101 message, string partnerBankDid, CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Sends a <see cref="BankPartnersRequestV1"/> bank partners request.

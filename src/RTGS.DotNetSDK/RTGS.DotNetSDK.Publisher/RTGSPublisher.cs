@@ -1,8 +1,10 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Publisher.Messages;
+using RTGS.ISO20022.Messages.Admi_002_001.V01;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 using RTGS.Public.Payment.V3;
@@ -52,10 +54,16 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 	public Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message, CancellationToken cancellationToken) =>
 		SendRequestAsync(message, "payaway.confirmation.v1", cancellationToken);
 
+	public Task<SendResult> SendPayawayRejectionAsync(Admi00200101 message, string partnerBankDid, CancellationToken cancellationToken)
+	{
+		var headers = new Dictionary<string, string> { { "ToBankDid", partnerBankDid } };
+		return SendRequestAsync(message, "payaway.rejection.v1", cancellationToken, headers);
+	}
+
 	public Task<SendResult> SendBankPartnersRequestAsync(BankPartnersRequestV1 message, CancellationToken cancellationToken) =>
 		SendRequestAsync(message, "bank.partners.v1", cancellationToken);
 
-	private async Task<SendResult> SendRequestAsync<T>(T message, string messageIdentifier, CancellationToken cancellationToken, [CallerMemberName] string callingMethod = null)
+	private async Task<SendResult> SendRequestAsync<T>(T message, string messageIdentifier, CancellationToken cancellationToken, Dictionary<string, string> headers = null, [CallerMemberName] string callingMethod = null)
 	{
 		if (_disposed)
 		{
@@ -75,7 +83,7 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 
 			_acknowledgementContext = new AcknowledgementContext();
 
-			await SendMessage(message, messageIdentifier, callingMethod, linkedTokenSource.Token);
+			await SendMessage(message, messageIdentifier, headers, callingMethod, linkedTokenSource.Token);
 
 			await _acknowledgementContext.WaitAsync(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
 
@@ -165,7 +173,7 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 		}
 	}
 
-	private async Task SendMessage<T>(T message, string messageIdentifier, string callingMethod, CancellationToken cancellationToken)
+	private async Task SendMessage<T>(T message, string messageIdentifier, Dictionary<string, string> headers, string callingMethod, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 
@@ -175,6 +183,11 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 			MessageIdentifier = messageIdentifier,
 			CorrelationId = _acknowledgementContext.CorrelationId
 		};
+
+		if (headers != null)
+		{
+			rtgsMessage.Headers.Add(headers);
+		}
 
 		await _writingSignal.WaitAsync(cancellationToken);
 

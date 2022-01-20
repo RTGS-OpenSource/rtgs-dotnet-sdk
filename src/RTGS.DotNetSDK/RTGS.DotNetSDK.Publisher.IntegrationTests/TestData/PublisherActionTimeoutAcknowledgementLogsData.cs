@@ -1,4 +1,5 @@
-﻿using RTGS.ISO20022.Messages.Camt_054_001.V09;
+﻿using RTGS.ISO20022.Messages.Admi_002_001.V01;
+using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
@@ -59,6 +60,14 @@ public class PublisherActionTimeoutAcknowledgementLogsData : BasePublisherAction
 			new List<LogEntry>
 			{
 				new("Timed out waiting for BankToCustomerDebitCreditNotificationV09 acknowledgement from RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Error)
+			});
+
+	public override IPublisherAction<Admi00200101> PayawayRejection =>
+		new PublisherActionWithLogs<Admi00200101>(
+			PublisherActions.PayawayRejection,
+			new List<LogEntry>
+			{
+				new("Timed out waiting for Admi00200101 acknowledgement from RTGS (SendPayawayRejectionAsync)", LogEventLevel.Error)
 			});
 
 	public override IPublisherAction<BankPartnersRequestV1> BankPartnersRequest =>
