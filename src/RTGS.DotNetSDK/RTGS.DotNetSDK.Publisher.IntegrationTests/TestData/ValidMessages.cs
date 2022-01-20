@@ -6,6 +6,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
 public static class ValidMessages
 {
 	public const string BankDid = "test-bank-did";
+	public const string BankPartnerDid = "test-bank-partner-did";
 
 	public static readonly AtomicLockRequestV1 AtomicLockRequest = new()
 	{
@@ -27,6 +28,30 @@ public static class ValidMessages
 		{
 			Ccy = "GBP",
 			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00ULTIMATECREDITORACCOUNT" }
+		},
+		BkPtnrId = new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
+		{
+			Id = BankPartnerDid
+		},
+		DbtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Ccy = "USD",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00DEBTORACCOUNT" }
+		},
+		DbtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Ccy = "GBP",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00DEBTORAGENTACCOUNT" }
+		},
+		CdtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Ccy = "GBP",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00CREDITORACCOUNT" }
+		},
+		CdtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Ccy = "USD",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00CREDITORAGENTACCOUNT" }
 		},
 		SplmtryData = "some-extra-data",
 		EndToEndId = "end-to-end-id"
