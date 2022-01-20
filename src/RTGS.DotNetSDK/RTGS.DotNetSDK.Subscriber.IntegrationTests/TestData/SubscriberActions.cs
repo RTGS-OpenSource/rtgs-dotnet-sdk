@@ -34,4 +34,7 @@ public static class SubscriberActions
 
 	public static readonly SubscriberAction<EarmarkReleaseV1> EarmarkReleaseV1 =
 		new(new AllTestHandlers(), handlers => handlers.OfType<TestEarmarkReleaseV1Handler>().Single(), "EarmarkRelease", ValidMessages.EarmarkReleaseV1);
+
+	public static readonly SubscriberAction<BankPartnersResponseV1> BankPartnersResponseV1 =
+		new(new AllTestHandlers(), handlers => handlers.OfType<TestBankPartnersResponseV1>().Single(), "bank.partners.v1", ValidMessages.BankPartnersResponseV1);
 }

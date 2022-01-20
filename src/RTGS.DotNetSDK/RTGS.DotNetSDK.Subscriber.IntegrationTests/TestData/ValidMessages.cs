@@ -133,4 +133,49 @@ public static class ValidMessages
 	{
 		LockId = new Guid("19968ca5-d019-4019-9849-9f8002a3b06b")
 	};
+
+	public static readonly BankPartnersResponseV1 BankPartnersResponseV1 = new()
+	{
+		DbtrAcct =
+			new ISO20022.Messages.Pacs_008_001.V10.CashAccount40()
+			{
+				Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "iban1" }
+			},
+		BkPtnrs = new List<BankPartnersResponseV1.BankPartner>
+		{
+			new BankPartnersResponseV1.BankPartner
+			{
+				Id =
+					new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
+					{
+						Id = "id1"
+					},
+				Ccy = "PLN",
+				BkNm = "Bank",
+				CdtrAcct =
+					new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+					{
+						Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+						{
+							IBAN = "CdtrAcctIban"
+						}
+					},
+				CdtrAgtAcct =
+					new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+					{
+						Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+						{
+							IBAN = "CdtrAgtAcctIban"
+						}
+					},
+				DbtrAgtAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+				{
+					Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+					{
+						IBAN = "DbtrAgtAcctIban"
+					}
+				}
+			}
+		}
+	};
 }

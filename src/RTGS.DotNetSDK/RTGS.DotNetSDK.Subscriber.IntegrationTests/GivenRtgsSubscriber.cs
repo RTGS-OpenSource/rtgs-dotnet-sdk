@@ -88,6 +88,7 @@ public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 			.WithMessage("Multiple handlers of type IAtomicLockResponseV1Handler were found." +
 						 "Multiple handlers of type IAtomicTransferFundsV1Handler were found." +
 						 "Multiple handlers of type IAtomicTransferResponseV1Handler were found." +
+						 "Multiple handlers of type IBankPartnersResponseV1Handler were found." +
 						 "Multiple handlers of type IEarmarkCompleteV1Handler were found." +
 						 "Multiple handlers of type IEarmarkFundsV1Handler were found." +
 						 "Multiple handlers of type IEarmarkReleaseV1Handler were found." +

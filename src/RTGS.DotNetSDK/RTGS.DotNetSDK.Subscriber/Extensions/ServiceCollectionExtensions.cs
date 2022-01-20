@@ -50,6 +50,7 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddTransient<IMessageAdapter, EarmarkFundsV1MessageAdapter>();
 		serviceCollection.AddTransient<IMessageAdapter, EarmarkCompleteV1MessageAdapter>();
 		serviceCollection.AddTransient<IMessageAdapter, EarmarkReleaseV1MessageAdapter>();
+		serviceCollection.AddTransient<IMessageAdapter, BankPartnersResponseV1MessageAdapter>();
 		serviceCollection.AddSingleton<IHandlerValidator, HandlerValidator>();
 
 		return serviceCollection;
