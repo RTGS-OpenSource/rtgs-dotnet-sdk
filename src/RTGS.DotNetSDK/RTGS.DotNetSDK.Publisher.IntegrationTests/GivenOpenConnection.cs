@@ -250,7 +250,7 @@ public class GivenOpenConnection
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
 			var receivedMessage = receiver.Connections.Should().ContainSingle().Which.Requests.Should().ContainSingle().Subject;
-			receivedMessage.Headers.ToDictionary(h => h.Key, h => h.Value).Should().BeEquivalentTo(publisherAction.Headers);
+			receivedMessage.Headers.Should().BeEquivalentTo(publisherAction.Headers);
 		}
 
 		[Theory]

@@ -36,8 +36,8 @@ public static class PublisherActions
 
 	public static readonly PublisherAction<Admi00200101> PayawayRejection = new(
 		ValidMessages.PayawayRejection,
-		new Dictionary<string, string> { { "ToBankDid", "partner-bank-did" } },
-		(publisher, request, cancellationToken) => publisher.SendPayawayRejectionAsync(request, "partner-bank-did", cancellationToken));
+		new Dictionary<string, string> { { "tobankdid", "to-bank-did" } },
+		(publisher, request, cancellationToken) => publisher.SendPayawayRejectionAsync(request, "to-bank-did", cancellationToken));
 
 	public static readonly PublisherAction<BankPartnersRequestV1> BankPartnersRequest = new(
 		ValidMessages.BankPartnersRequest,

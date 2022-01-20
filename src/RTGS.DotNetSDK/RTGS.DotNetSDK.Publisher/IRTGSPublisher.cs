@@ -76,13 +76,13 @@ public interface IRtgsPublisher : IAsyncDisposable
 	/// Sends a <see cref="Admi00200101"/> (payaway) rejection request.
 	/// </summary>
 	/// <param name="message">The <see cref="Admi00200101"/> rejection message</param>
-	/// /// <param name="partnerBankDid">The BankDid for the partner bank to which this rejection should be sent</param>
+	/// /// <param name="toBankDid">The BankDid for the bank to which this rejection should be sent</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
 	/// <remarks>
 	/// The <see cref="Admi00200101"/> type is from nuget package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
 	/// </remarks>
-	Task<SendResult> SendPayawayRejectionAsync(Admi00200101 message, string partnerBankDid, CancellationToken cancellationToken);
+	Task<SendResult> SendPayawayRejectionAsync(Admi00200101 message, string toBankDid, CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Sends a <see cref="BankPartnersRequestV1"/> bank partners request.
