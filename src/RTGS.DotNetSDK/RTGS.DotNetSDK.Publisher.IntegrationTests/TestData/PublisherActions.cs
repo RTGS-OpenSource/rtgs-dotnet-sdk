@@ -1,4 +1,5 @@
-﻿using RTGS.ISO20022.Messages.Camt_054_001.V09;
+﻿using RTGS.ISO20022.Messages.Admi_002_001.V01;
+using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
@@ -32,6 +33,11 @@ public static class PublisherActions
 	public static readonly PublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation = new(
 		ValidMessages.PayawayConfirmation,
 		(publisher, request, cancellationToken) => publisher.SendPayawayConfirmationAsync(request, cancellationToken));
+
+	public static readonly PublisherAction<Admi00200101> PayawayRejection = new(
+		ValidMessages.PayawayRejection,
+		new Dictionary<string, string> { { "tobankdid", "to-bank-did" } },
+		(publisher, request, cancellationToken) => publisher.SendPayawayRejectionAsync(request, "to-bank-did", cancellationToken));
 
 	public static readonly PublisherAction<BankPartnersRequestV1> BankPartnersRequest = new(
 		ValidMessages.BankPartnersRequest,

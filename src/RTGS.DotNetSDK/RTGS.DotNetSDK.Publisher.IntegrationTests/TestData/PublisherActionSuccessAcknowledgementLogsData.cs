@@ -1,4 +1,5 @@
-﻿using RTGS.ISO20022.Messages.Camt_054_001.V09;
+﻿using RTGS.ISO20022.Messages.Admi_002_001.V01;
+using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
@@ -73,6 +74,16 @@ public class PublisherActionSuccessAcknowledgementLogsData : BasePublisherAction
 				new("Sending BankToCustomerDebitCreditNotificationV09 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
 				new("Sent BankToCustomerDebitCreditNotificationV09 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
 				new("Received BankToCustomerDebitCreditNotificationV09 acknowledgement (acknowledged) from RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information)
+			});
+
+	public override IPublisherAction<Admi00200101> PayawayRejection =>
+		new PublisherActionWithLogs<Admi00200101>(
+			PublisherActions.PayawayRejection,
+			new List<LogEntry>
+			{
+				new("Sending Admi00200101 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information),
+				new("Sent Admi00200101 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information),
+				new("Received Admi00200101 acknowledgement (acknowledged) from RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information)
 			});
 
 	public override IPublisherAction<BankPartnersRequestV1> BankPartnersRequest =>
