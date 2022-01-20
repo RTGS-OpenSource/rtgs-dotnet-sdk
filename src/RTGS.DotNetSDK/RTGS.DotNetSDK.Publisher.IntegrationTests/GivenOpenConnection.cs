@@ -80,7 +80,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
+			await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), "bank-partner-did");
 
 			using var disposeSignal = new ManualResetEventSlim();
 			const int concurrentDisposableThreads = 20;
@@ -113,7 +113,7 @@ public class GivenOpenConnection
 
 					sendRequestsSignal.Wait();
 
-					await _rtgsPublisher.SendAtomicLockRequestAsync(request);
+					await _rtgsPublisher.SendAtomicLockRequestAsync(request, "bank-partner-did");
 				})).ToArray();
 
 			sendRequestsSignal.Set();

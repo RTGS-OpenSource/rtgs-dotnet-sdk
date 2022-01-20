@@ -33,8 +33,11 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 		_options = options;
 	}
 
-	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, CancellationToken cancellationToken) =>
-		SendRequestAsync(message, "payment.lock.v2", cancellationToken);
+	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, string bankPartnerDid, CancellationToken cancellationToken)
+	{
+		var headers = new Dictionary<string, string> { { "bankpartnerdid", bankPartnerDid } };
+		return SendRequestAsync(message, "payment.lock.v2", cancellationToken, headers);
+	}
 
 	public Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequestV1 message, CancellationToken cancellationToken) =>
 		SendRequestAsync(message, "payment.block.v2", cancellationToken);

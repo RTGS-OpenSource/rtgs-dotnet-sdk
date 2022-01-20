@@ -2,6 +2,7 @@
 
 public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 {
+	private const string BankPartnerDId = "bank-partner-did";
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 	private readonly GrpcServerFixture _grpcServer;
@@ -63,7 +64,7 @@ public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcSe
 
 				sendRequestsSignal.Wait();
 
-				await rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
+				await rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDId);
 			})).ToArray();
 
 		sendRequestsSignal.Set();
@@ -87,19 +88,19 @@ public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcSe
 		await using var rtgsPublisher5 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsPublisher1.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
+		await rtgsPublisher1.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDId);
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsPublisher2.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
+		await rtgsPublisher2.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDId);
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsPublisher3.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
+		await rtgsPublisher3.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDId);
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsPublisher4.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
+		await rtgsPublisher4.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDId);
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsPublisher5.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
+		await rtgsPublisher5.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDId);
 
 		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
