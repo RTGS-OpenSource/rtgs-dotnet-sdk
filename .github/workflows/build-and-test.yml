@@ -137,7 +137,7 @@ jobs:
       - name: Setup DocFX
         uses: crazy-max/ghaction-chocolatey@v1
         with:
-          args: install docfx --version=2.58.9 --checksum E6BD6D788DDB07D9BCB6D90F2822D7E2E6C4FEB0E2CAEABC60FF39232D07BC52 # specific version due to 2.58.9 checksum error
+          args: install docfx
 
       - name: DocFX Build
         run: docfx docs/docfx.json
