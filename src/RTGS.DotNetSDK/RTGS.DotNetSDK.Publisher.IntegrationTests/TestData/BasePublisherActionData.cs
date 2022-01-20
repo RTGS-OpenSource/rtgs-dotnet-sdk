@@ -17,7 +17,7 @@ public abstract class BasePublisherActionData : IEnumerable<object[]>
 	public abstract IPublisherAction<Admi00200101> PayawayRejection { get; }
 	public abstract IPublisherAction<BankPartnersRequestV1> BankPartnersRequest { get; }
 
-	public IEnumerator<object[]> GetActions() =>
+	private IEnumerator<object[]> GetActions() =>
 		GetType().GetProperties()
 			.Select(propertyInfo => new[] { propertyInfo.GetValue(this) })
 			.GetEnumerator();

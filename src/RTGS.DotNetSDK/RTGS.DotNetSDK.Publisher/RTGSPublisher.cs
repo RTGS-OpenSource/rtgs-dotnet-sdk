@@ -34,36 +34,36 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 	}
 
 	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, CancellationToken cancellationToken) =>
-		SendRequestAsync(message, "payment.lock.v2", cancellationToken);
+		SendMessage(message, "payment.lock.v2", cancellationToken);
 
 	public Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequestV1 message, CancellationToken cancellationToken) =>
-		SendRequestAsync(message, "payment.block.v2", cancellationToken);
+		SendMessage(message, "payment.block.v2", cancellationToken);
 
 	public Task<SendResult> SendEarmarkConfirmationAsync(EarmarkConfirmationV1 message, CancellationToken cancellationToken) =>
-		SendRequestAsync(message, "payment.earmarkconfirmation.v1", cancellationToken);
+		SendMessage(message, "payment.earmarkconfirmation.v1", cancellationToken);
 
 	public Task<SendResult> SendAtomicTransferConfirmationAsync(AtomicTransferConfirmationV1 message, CancellationToken cancellationToken) =>
-		SendRequestAsync(message, "payment.blockconfirmation.v1", cancellationToken);
+		SendMessage(message, "payment.blockconfirmation.v1", cancellationToken);
 
 	public Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequestV1 message, CancellationToken cancellationToken) =>
-		SendRequestAsync(message, "payment.update.ledger.v2", cancellationToken);
+		SendMessage(message, "payment.update.ledger.v2", cancellationToken);
 
 	public Task<SendResult> SendPayawayCreateAsync(FIToFICustomerCreditTransferV10 message, CancellationToken cancellationToken) =>
-		SendRequestAsync(message, "payaway.create.v1", cancellationToken);
+		SendMessage(message, "payaway.create.v1", cancellationToken);
 
 	public Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message, CancellationToken cancellationToken) =>
-		SendRequestAsync(message, "payaway.confirmation.v1", cancellationToken);
+		SendMessage(message, "payaway.confirmation.v1", cancellationToken);
 
 	public Task<SendResult> SendPayawayRejectionAsync(Admi00200101 message, string toBankDid, CancellationToken cancellationToken)
 	{
 		var headers = new Dictionary<string, string> { { "tobankdid", toBankDid } };
-		return SendRequestAsync(message, "payaway.rejection.v1", cancellationToken, headers);
+		return SendMessage(message, "payaway.rejection.v1", cancellationToken, headers);
 	}
 
 	public Task<SendResult> SendBankPartnersRequestAsync(BankPartnersRequestV1 message, CancellationToken cancellationToken) =>
-		SendRequestAsync(message, "bank.partners.v1", cancellationToken);
+		SendMessage(message, "bank.partners.v1", cancellationToken);
 
-	private async Task<SendResult> SendRequestAsync<T>(T message, string messageIdentifier, CancellationToken cancellationToken, Dictionary<string, string> headers = null, [CallerMemberName] string callingMethod = null)
+	private async Task<SendResult> SendMessage<T>(T message, string messageIdentifier, CancellationToken cancellationToken, Dictionary<string, string> headers = null, [CallerMemberName] string callingMethod = null)
 	{
 		if (_disposed)
 		{
@@ -79,7 +79,7 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 		{
 			linkedTokenSource.Token.ThrowIfCancellationRequested();
 
-			await EnsureRtgsCallSetup<T>(linkedTokenSource.Token);
+			await EnsureRtgsCallSetup(linkedTokenSource.Token);
 
 			_acknowledgementContext = new AcknowledgementContext();
 
@@ -107,7 +107,7 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 		}
 	}
 
-	private async Task EnsureRtgsCallSetup<T>(CancellationToken cancellationToken)
+	private async Task EnsureRtgsCallSetup(CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 
@@ -320,17 +320,6 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 				_handled = true;
 				Status = SendResult.Timeout;
 			}
-		}
-
-		public void TimedOut()
-		{
-			if (_handled)
-			{
-				return;
-			}
-
-			_handled = true;
-			Status = SendResult.Timeout;
 		}
 
 		public void Release(RtgsMessageAcknowledgement acknowledgement)
