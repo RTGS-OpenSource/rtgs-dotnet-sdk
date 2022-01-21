@@ -62,7 +62,7 @@ public class GivenInitialFailedConnection : IAsyncLifetime, IClassFixture<GrpcSe
 		receiver.ThrowOnConnection = true;
 
 		await FluentActions
-			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDId))
+			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid))
 			.Should()
 			.ThrowAsync<Exception>();
 	}
@@ -75,7 +75,7 @@ public class GivenInitialFailedConnection : IAsyncLifetime, IClassFixture<GrpcSe
 		receiver.ThrowOnConnection = true;
 
 		await FluentActions
-			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1 { EndToEndId = new string('e', 100_000) }, BankPartnerDId))
+			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1 { EndToEndId = new string('e', 100_000) }, BankPartnerDid))
 			.Should()
 			.ThrowAsync<Exception>();
 	}
@@ -88,7 +88,7 @@ public class GivenInitialFailedConnection : IAsyncLifetime, IClassFixture<GrpcSe
 		receiver.ThrowOnConnection = true;
 
 		await FluentActions
-			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDId))
+			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid))
 			.Should()
 			.ThrowAsync<Exception>();
 
@@ -96,7 +96,7 @@ public class GivenInitialFailedConnection : IAsyncLifetime, IClassFixture<GrpcSe
 
 		receiver.ThrowOnConnection = false;
 
-		var result = await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDId);
+		var result = await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);
 
 		result.Should().Be(SendResult.Success);
 	}
