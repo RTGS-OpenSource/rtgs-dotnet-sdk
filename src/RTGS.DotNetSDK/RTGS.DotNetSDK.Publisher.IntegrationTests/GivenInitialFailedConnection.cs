@@ -2,7 +2,7 @@
 
 public class GivenInitialFailedConnection : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 {
-	private const string BankPartnerDId = "bank-partner-did";
+	private const string BankPartnerDid = "bank-partner-did";
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 	private readonly GrpcServerFixture _grpcServer;
