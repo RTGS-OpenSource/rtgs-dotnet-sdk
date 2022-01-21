@@ -6,6 +6,7 @@ public class GivenOpenConnection
 {
 	public class AndShortTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 	{
+		private const string BankPartnerDid = "bank-partner-did";
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 		private readonly GrpcServerFixture _grpcServer;
@@ -80,7 +81,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), "bank-partner-did");
+			await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);
 
 			using var disposeSignal = new ManualResetEventSlim();
 			const int concurrentDisposableThreads = 20;
@@ -113,7 +114,7 @@ public class GivenOpenConnection
 
 					sendRequestsSignal.Wait();
 
-					await _rtgsPublisher.SendAtomicLockRequestAsync(request, "bank-partner-did");
+					await _rtgsPublisher.SendAtomicLockRequestAsync(request, BankPartnerDid);
 				})).ToArray();
 
 			sendRequestsSignal.Set();
