@@ -83,7 +83,7 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 
 			_acknowledgementContext = new AcknowledgementContext();
 
-			await SendMessage(message, messageIdentifier, headers, callingMethod, linkedTokenSource.Token);
+			await SendMessageAsync(message, messageIdentifier, headers, callingMethod, linkedTokenSource.Token);
 
 			await _acknowledgementContext.WaitAsync(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
 
@@ -173,7 +173,7 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 		}
 	}
 
-	private async Task SendMessage<T>(T message, string messageIdentifier, Dictionary<string, string> headers, string callingMethod, CancellationToken cancellationToken)
+	private async Task SendMessageAsync<T>(T message, string messageIdentifier, IDictionary<string, string> headers, string callingMethod, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 
