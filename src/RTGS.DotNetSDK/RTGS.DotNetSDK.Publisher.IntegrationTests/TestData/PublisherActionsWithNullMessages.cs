@@ -8,7 +8,7 @@ public static class PublisherActionsWithNullMessages
 {
 	public static readonly PublisherAction<AtomicLockRequestV1> AtomicLock = new(
 		null,
-		(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, cancellationToken));
+		(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, null, cancellationToken));
 
 	public static readonly PublisherAction<AtomicTransferRequestV1> AtomicTransfer = new(
 		null,

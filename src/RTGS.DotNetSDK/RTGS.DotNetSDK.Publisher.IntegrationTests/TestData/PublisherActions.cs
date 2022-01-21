@@ -8,7 +8,8 @@ public static class PublisherActions
 {
 	public static readonly PublisherAction<AtomicLockRequestV1> AtomicLock = new(
 		ValidMessages.AtomicLockRequest,
-		(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, cancellationToken));
+		new Dictionary<string, string> { { "bankpartnerdid", "bank-partner-did" } },
+		(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, "bank-partner-did", cancellationToken));
 
 	public static readonly PublisherAction<AtomicTransferRequestV1> AtomicTransfer = new(
 		ValidMessages.AtomicTransferRequest,
