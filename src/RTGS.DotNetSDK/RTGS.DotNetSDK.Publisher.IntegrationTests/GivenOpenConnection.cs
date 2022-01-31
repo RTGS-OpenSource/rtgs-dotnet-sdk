@@ -38,7 +38,12 @@ public class GivenOpenConnection
 		{
 			try
 			{
-				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, _grpcServer.ServerUri)
+				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
+						ValidMessages.BankDid, 
+						_grpcServer.ServerUri,
+						"",
+						"",
+						"")
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
@@ -464,7 +469,12 @@ public class GivenOpenConnection
 		{
 			try
 			{
-				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, _grpcServer.ServerUri)
+				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
+						ValidMessages.BankDid, 
+						_grpcServer.ServerUri,
+						"",
+						"",
+						"")
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 

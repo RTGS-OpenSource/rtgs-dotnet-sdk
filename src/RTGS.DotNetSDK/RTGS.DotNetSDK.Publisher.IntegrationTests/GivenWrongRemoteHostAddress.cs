@@ -5,7 +5,12 @@ public class GivenWrongRemoteHostAddress
 	[Fact]
 	public async Task WhenSending_ThenRpcExceptionThrown()
 	{
-		var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, new Uri("https://localhost:4567"))
+		var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
+				ValidMessages.BankDid,
+				new Uri("https://localhost:4567"),
+				"",
+				"",
+				"")
 			.Build();
 
 		using var clientHost = Host.CreateDefaultBuilder()

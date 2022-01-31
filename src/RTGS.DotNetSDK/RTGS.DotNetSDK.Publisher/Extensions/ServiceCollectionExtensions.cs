@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using IDCryptGlobal.Cloud.Agent.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Publisher.Extensions;
@@ -36,6 +37,10 @@ public static class ServiceCollectionExtensions
 			});
 
 		configureGrpcClient?.Invoke(grpcClientBuilder);
+
+		serviceCollection.AddSingleton(Options.Create(options.IdentityConfig));
+
+		serviceCollection.AddHttpClient<AgentComms>();
 
 		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
 		serviceCollection.AddTransient<IRtgsInternalPublisher, RtgsInternalPublisher>();

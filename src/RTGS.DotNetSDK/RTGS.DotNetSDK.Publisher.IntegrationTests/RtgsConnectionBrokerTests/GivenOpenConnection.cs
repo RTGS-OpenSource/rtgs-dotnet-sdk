@@ -1,10 +1,15 @@
-﻿using Newtonsoft.Json;
+﻿using System.Net;
+using System.Net.Http;
+using System.Net.Mime;
+using System.Text;
+using IDCryptGlobal.Cloud.Agent.Identity;
+using Microsoft.Extensions.Http;
 
-namespace RTGS.DotNetSDK.Publisher.IntegrationTests.NewThingTests;
+namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests;
 
 public class GivenOpenConnection
 {
-	public class AndShortTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>
+	public class AndShortTestWaitForAcknowledgementDuration : DelegatingHandler, IAsyncLifetime, IClassFixture<GrpcServerFixture>
 	{
 		private const string BankPartnerDid = "bank-partner-did";
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
@@ -12,9 +17,13 @@ public class GivenOpenConnection
 		private readonly GrpcServerFixture _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
 
-		private IRtgsConnectionBroker _rtgsNewThing;
+		private IRtgsConnectionBroker _rtgsRtgsConnectionBroker;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
+
+		private string _actualRequest;
+		private string _actualRequestAbsoluteUri;
+
 
 		public AndShortTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
 		{
@@ -38,7 +47,12 @@ public class GivenOpenConnection
 		{
 			try
 			{
-				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, _grpcServer.ServerUri)
+				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
+						ValidMessages.BankDid,
+						_grpcServer.ServerUri,
+						"",
+						"",
+						"")
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
@@ -46,11 +60,16 @@ public class GivenOpenConnection
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
-					.ConfigureServices(services => services.AddRtgsPublisher(rtgsPublisherOptions))
+					.ConfigureServices(services => services
+						.AddRtgsPublisher(rtgsPublisherOptions)
+						.ConfigureAll<HttpClientFactoryOptions>(
+							options => options.HttpMessageHandlerBuilderActions.Add(
+								handlerBuilder => handlerBuilder.AdditionalHandlers.Add(this)))
+						)
 					.UseSerilog()
 					.Build();
 
-				_rtgsNewThing = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
+				_rtgsRtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 				_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
 			}
 			catch (Exception)
@@ -63,11 +82,25 @@ public class GivenOpenConnection
 			}
 		}
 
+
+
 		public async Task DisposeAsync()
 		{
 			_clientHost?.Dispose();
 
 			_grpcServer.Reset();
+		}
+
+		protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+		{
+			_actualRequestAbsoluteUri = request.RequestUri!.AbsoluteUri;
+
+			_actualRequest = await request.Content!.ReadAsStringAsync(cancellationToken);
+
+			return new HttpResponseMessage(HttpStatusCode.OK)
+			{
+				Content = new StringContent("expected-response", Encoding.UTF8, MediaTypeNames.Text.Plain)
+			};
 		}
 
 		[Fact]
@@ -76,7 +109,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			await _rtgsNewThing.SendInvitationAsync();
+			await _rtgsRtgsConnectionBroker.SendInvitationAsync();
 
 			using var _ = new AssertionScope();
 

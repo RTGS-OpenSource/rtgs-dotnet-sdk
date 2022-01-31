@@ -35,7 +35,12 @@ public class GivenServerStops : IAsyncLifetime
 		{
 			var serverUri = await _grpcServer.StartAsync();
 
-			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, serverUri)
+			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
+					ValidMessages.BankDid,
+					serverUri,
+					"",
+					"",
+					"")
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 

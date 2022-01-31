@@ -18,7 +18,12 @@ public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcSe
 	{
 		try
 		{
-			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, _grpcServer.ServerUri)
+			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
+					ValidMessages.BankDid, 
+					_grpcServer.ServerUri,
+					"",
+					"",
+					"")
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 

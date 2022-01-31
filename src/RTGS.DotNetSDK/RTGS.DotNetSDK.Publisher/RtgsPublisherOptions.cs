@@ -1,4 +1,6 @@
-﻿namespace RTGS.DotNetSDK.Publisher;
+﻿using IDCryptGlobal.Cloud.Agent.Identity;
+
+namespace RTGS.DotNetSDK.Publisher;
 
 /// <summary>
 /// Represents the options used when sending messages to RTGS via a <see cref="IRtgsPublisher"/>.
@@ -12,6 +14,7 @@ public record RtgsPublisherOptions
 		WaitForAcknowledgementDuration = builder.WaitForAcknowledgementDurationValue;
 		KeepAlivePingDelay = builder.KeepAlivePingDelayValue;
 		KeepAlivePingTimeout = builder.KeepAlivePingTimeoutValue;
+		IdentityConfig = builder.IdentityConfig;
 	}
 
 	/// <summary>
@@ -41,11 +44,21 @@ public record RtgsPublisherOptions
 	public TimeSpan KeepAlivePingTimeout { get; }
 
 	/// <summary>
+	/// 
+	/// </summary>
+	public IdentityConfig IdentityConfig { get;  }
+
+	/// <summary>
 	/// A builder for <see cref="RtgsPublisherOptions"/>.
 	/// </summary>
 	public sealed class Builder
 	{
-		private Builder(string bankDid, Uri remoteHostAddress)
+		private Builder(
+			string bankDid, 
+			Uri remoteHostAddress,
+			string idCryptApiKey,
+			string idCryptApiUrl,
+			string idCryptServiceEndPoint)
 		{
 			ArgumentNullException.ThrowIfNull(bankDid, nameof(bankDid));
 
@@ -58,6 +71,12 @@ public record RtgsPublisherOptions
 
 			BankDidValue = bankDid;
 			RemoteHostAddressValue = remoteHostAddress;
+			IdentityConfig = new IdentityConfig
+			{
+				Apikey = idCryptApiKey,
+				ApiUrl = idCryptApiUrl,
+				ServiceEndPoint = idCryptServiceEndPoint
+			};
 		}
 
 		internal string BankDidValue { get; }
@@ -65,6 +84,8 @@ public record RtgsPublisherOptions
 		internal TimeSpan WaitForAcknowledgementDurationValue { get; private set; } = TimeSpan.FromSeconds(10);
 		internal TimeSpan KeepAlivePingDelayValue { get; private set; } = TimeSpan.FromSeconds(30);
 		internal TimeSpan KeepAlivePingTimeoutValue { get; private set; } = TimeSpan.FromSeconds(30);
+
+		internal IdentityConfig IdentityConfig { get; }
 
 		/// <summary>
 		/// Creates a new instance of <see cref="Builder"/>.
@@ -74,8 +95,13 @@ public record RtgsPublisherOptions
 		/// <returns><see cref="Builder"/></returns>
 		/// <exception cref="ArgumentNullException">Thrown if bankDid or remoteHostAddress is null.</exception>
 		/// <exception cref="ArgumentException">Thrown if bankDid is white space.</exception>
-		public static Builder CreateNew(string bankDid, Uri remoteHostAddress) =>
-			new(bankDid, remoteHostAddress);
+		public static Builder CreateNew(
+			string bankDid, 
+			Uri remoteHostAddress,
+			string idCryptApiKey,
+			string idCryptApiUrl,
+			string idCryptServiceEndPoint) =>
+			new(bankDid, remoteHostAddress, idCryptApiKey, idCryptApiUrl, idCryptServiceEndPoint);
 
 		/// <summary>
 		/// Specifies the acknowledgement timeout duration.
