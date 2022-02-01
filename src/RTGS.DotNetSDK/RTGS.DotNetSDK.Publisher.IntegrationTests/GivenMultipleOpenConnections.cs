@@ -22,7 +22,7 @@ public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcSe
 					ValidMessages.BankDid, 
 					_grpcServer.ServerUri,
 					"",
-					"",
+					new Uri("http://example.com"),
 					"")
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();

@@ -40,8 +40,6 @@ public static class ServiceCollectionExtensions
 
 		serviceCollection.AddSingleton(Options.Create(options.IdentityConfig));
 
-		serviceCollection.AddHttpClient<AgentComms>();
-
 		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
 		serviceCollection.AddTransient<IRtgsInternalPublisher, RtgsInternalPublisher>();
 		serviceCollection.AddTransient<IIdentityClient, IdentityClient>();

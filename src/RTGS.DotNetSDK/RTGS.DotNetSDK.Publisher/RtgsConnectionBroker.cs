@@ -25,13 +25,13 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 
 		var connection = _identityClient.Connection;
 
-		var response = connection.CreateInvitation(
+		var response = await connection.CreateInvitation(
 			alias,
 			autoAccept,
 			multiUse,
 			usePublicDid);
 
-		var invitation = response.Result.Invitation;
+		var invitation = response.Invitation;
 
 		var invitationMessage = new IdCryptInvitationV1
 		{
@@ -46,6 +46,6 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		await _rtgsInternalPublisher
 			.SendIdCryptInvitationAsync(invitationMessage, cancellationToken);
 
-		return response.Result.ConnectionID;
+		return response.ConnectionID;
 	}
 }

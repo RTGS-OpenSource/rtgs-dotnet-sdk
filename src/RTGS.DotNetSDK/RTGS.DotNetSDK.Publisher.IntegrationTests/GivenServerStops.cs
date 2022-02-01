@@ -39,7 +39,7 @@ public class GivenServerStops : IAsyncLifetime
 					ValidMessages.BankDid,
 					serverUri,
 					"",
-					"",
+					new Uri("http://example.com"),
 					"")
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();

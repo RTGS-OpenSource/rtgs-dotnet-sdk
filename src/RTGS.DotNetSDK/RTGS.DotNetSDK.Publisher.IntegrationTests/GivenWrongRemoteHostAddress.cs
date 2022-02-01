@@ -9,7 +9,7 @@ public class GivenWrongRemoteHostAddress
 				ValidMessages.BankDid,
 				new Uri("https://localhost:4567"),
 				"",
-				"",
+				new Uri("http://example.com"),
 				"")
 			.Build();
 

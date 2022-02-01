@@ -42,7 +42,7 @@ public class GivenOpenConnection
 						ValidMessages.BankDid, 
 						_grpcServer.ServerUri,
 						"",
-						"",
+						new Uri("http://example.com"),
 						"")
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
@@ -473,7 +473,7 @@ public class GivenOpenConnection
 						ValidMessages.BankDid, 
 						_grpcServer.ServerUri,
 						"",
-						"",
+						new Uri("http://example.com"),
 						"")
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();

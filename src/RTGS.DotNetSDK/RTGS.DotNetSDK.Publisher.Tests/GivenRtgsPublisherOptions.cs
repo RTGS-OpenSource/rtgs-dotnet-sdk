@@ -15,7 +15,7 @@ public class GivenRtgsPublisherOptions
 					"bank-did", 
 					new Uri("http://example.org"),
 					"",
-					"",
+					new Uri("http://example.com"),
 					"")
 				.KeepAlivePingDelay(duration))
 			.Should()
@@ -28,7 +28,7 @@ public class GivenRtgsPublisherOptions
 					"bank-did", 
 					new Uri("http://example.org"),
 					"",
-					"",
+					new Uri("http://example.com"),
 					"")
 				.KeepAlivePingDelay(Timeout.InfiniteTimeSpan))
 			.Should()
@@ -41,7 +41,7 @@ public class GivenRtgsPublisherOptions
 					"bank-did", 
 					new Uri("http://example.org"),
 					"",
-					"",
+					new Uri("http://example.com"),
 					"")
 				.KeepAlivePingDelay(duration))
 			.Should()
@@ -54,7 +54,7 @@ public class GivenRtgsPublisherOptions
 					"bank-did", 
 					new Uri("http://example.org"),
 					"",
-					"",
+					new Uri("http://example.com"),
 					"")
 				.KeepAlivePingTimeout(duration))
 			.Should()
@@ -67,7 +67,7 @@ public class GivenRtgsPublisherOptions
 					"bank-did", 
 					new Uri("http://example.org"),
 					"",
-					"",
+					new Uri("http://example.com"),
 					"")
 				.KeepAlivePingTimeout(Timeout.InfiniteTimeSpan))
 			.Should()
@@ -80,7 +80,7 @@ public class GivenRtgsPublisherOptions
 					"bank-did", 
 					new Uri("http://example.org"),
 					"",
-					"",
+					new Uri("http://example.com"),
 					"")
 				.KeepAlivePingTimeout(duration))
 			.Should()
@@ -92,7 +92,7 @@ public class GivenRtgsPublisherOptions
 				"bank-did", 
 				null,
 				"",
-				"",
+				new Uri("http://example.com"),
 				""))
 			.Should()
 			.Throw<ArgumentNullException>()
@@ -104,7 +104,7 @@ public class GivenRtgsPublisherOptions
 				null, 
 				new Uri("http://example.org"),
 				"",
-				"",
+				new Uri("http://example.com"),
 				""))
 			.Should()
 			.Throw<ArgumentNullException>()
@@ -118,7 +118,7 @@ public class GivenRtgsPublisherOptions
 				whiteSpace, 
 				new Uri("http://example.org"),
 				"",
-				"",
+				new Uri("http://example.com"),
 				""))
 			.Should()
 			.Throw<ArgumentException>()
@@ -131,7 +131,7 @@ public class GivenRtgsPublisherOptions
 					"bank-did", 
 					new Uri("http://example.org"),
 					"",
-					"",
+					new Uri("http://example.com"),
 					"")
 				.WaitForAcknowledgementDuration(duration))
 			.Should()
@@ -144,7 +144,7 @@ public class GivenRtgsPublisherOptions
 					"bank-did", 
 					new Uri("http://example.org"),
 					"",
-					"",
+					new Uri("http://example.com"),
 					"")
 				.WaitForAcknowledgementDuration(Timeout.InfiniteTimeSpan))
 			.Should()
@@ -158,7 +158,7 @@ public class GivenRtgsPublisherOptions
 					"bank-did", 
 					new Uri("http://example.org"),
 					"",
-					"",
+					new Uri("http://example.com"),
 					"")
 				.WaitForAcknowledgementDuration(duration))
 			.Should()

@@ -24,7 +24,7 @@ public class GivenInitialFailedConnection : IAsyncLifetime, IClassFixture<GrpcSe
 					ValidMessages.BankDid, 
 					_grpcServer.ServerUri,
 					"",
-					"",
+					new Uri("http://example.com"),
 					"")
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();

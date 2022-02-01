@@ -57,7 +57,7 @@ public record RtgsPublisherOptions
 			string bankDid, 
 			Uri remoteHostAddress,
 			string idCryptApiKey,
-			string idCryptApiUrl,
+			Uri idCryptApiUrl,
 			string idCryptServiceEndPoint)
 		{
 			ArgumentNullException.ThrowIfNull(bankDid, nameof(bankDid));
@@ -74,7 +74,7 @@ public record RtgsPublisherOptions
 			IdentityConfig = new IdentityConfig
 			{
 				Apikey = idCryptApiKey,
-				ApiUrl = idCryptApiUrl,
+				ApiUrl = idCryptApiUrl.ToString(),
 				ServiceEndPoint = idCryptServiceEndPoint
 			};
 		}
@@ -99,7 +99,7 @@ public record RtgsPublisherOptions
 			string bankDid, 
 			Uri remoteHostAddress,
 			string idCryptApiKey,
-			string idCryptApiUrl,
+			Uri idCryptApiUrl,
 			string idCryptServiceEndPoint) =>
 			new(bankDid, remoteHostAddress, idCryptApiKey, idCryptApiUrl, idCryptServiceEndPoint);
 

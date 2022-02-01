@@ -2,14 +2,14 @@
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
-using IDCryptGlobal.Cloud.Agent.Identity;
 using Microsoft.Extensions.Http;
+using RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests.HttpHandlers;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests;
 
 public class GivenOpenConnection
 {
-	public class AndShortTestWaitForAcknowledgementDuration : DelegatingHandler, IAsyncLifetime, IClassFixture<GrpcServerFixture>
+	public class AndShortTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 	{
 		private const string BankPartnerDid = "bank-partner-did";
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
@@ -20,9 +20,6 @@ public class GivenOpenConnection
 		private IRtgsConnectionBroker _rtgsRtgsConnectionBroker;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
-
-		private string _actualRequest;
-		private string _actualRequestAbsoluteUri;
 
 
 		public AndShortTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
@@ -49,10 +46,10 @@ public class GivenOpenConnection
 			{
 				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
 						ValidMessages.BankDid,
-						_grpcServer.ServerUri,
-						"",
-						"",
-						"")
+						_grpcServer.ServerUri, 
+						Guid.NewGuid().ToString(),
+						new Uri("http://example.com"),
+						"http://example.com")
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
@@ -64,7 +61,8 @@ public class GivenOpenConnection
 						.AddRtgsPublisher(rtgsPublisherOptions)
 						.ConfigureAll<HttpClientFactoryOptions>(
 							options => options.HttpMessageHandlerBuilderActions.Add(
-								handlerBuilder => handlerBuilder.AdditionalHandlers.Add(this)))
+								handlerBuilder => handlerBuilder.AdditionalHandlers.Add(
+									new StatusCodeHttpHandler(HttpStatusCode.OK, new StringContent("{}")))))
 						)
 					.UseSerilog()
 					.Build();
@@ -82,25 +80,11 @@ public class GivenOpenConnection
 			}
 		}
 
-
-
 		public async Task DisposeAsync()
 		{
 			_clientHost?.Dispose();
 
 			_grpcServer.Reset();
-		}
-
-		protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-		{
-			_actualRequestAbsoluteUri = request.RequestUri!.AbsoluteUri;
-
-			_actualRequest = await request.Content!.ReadAsStringAsync(cancellationToken);
-
-			return new HttpResponseMessage(HttpStatusCode.OK)
-			{
-				Content = new StringContent("expected-response", Encoding.UTF8, MediaTypeNames.Text.Plain)
-			};
 		}
 
 		[Fact]
@@ -129,6 +113,5 @@ public class GivenOpenConnection
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
 			errorLogs.Should().BeEmpty();
 		}
-
 	}
 }
