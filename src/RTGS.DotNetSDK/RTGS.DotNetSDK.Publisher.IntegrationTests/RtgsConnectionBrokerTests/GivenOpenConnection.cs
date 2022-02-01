@@ -7,6 +7,7 @@ using IDCryptGlobal.Cloud.Agent.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Options;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests.HttpHandlers;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests;
@@ -15,7 +16,6 @@ public class GivenOpenConnection
 {
 	public class AndShortTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 	{
-		private const string BankPartnerDid = "bank-partner-did";
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 		private readonly GrpcServerFixture _grpcServer;
@@ -50,7 +50,7 @@ public class GivenOpenConnection
 			{
 				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
 						ValidMessages.BankDid,
-						_grpcServer.ServerUri, 
+						_grpcServer.ServerUri,
 						Guid.NewGuid().ToString(),
 						new Uri("http://example.com"),
 						"http://example.com")
@@ -59,18 +59,34 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-			
-                _clientHost = Host.CreateDefaultBuilder()
-                    .ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
-                    .ConfigureServices(services => services
-                        .AddRtgsPublisher(rtgsPublisherOptions)
-						.AddHttpClient<IdentityConnectionClient>()
-							.AddHttpMessageHandler<StatusCodeHttpHandler>()
-                        )
-                    .UseSerilog()
-                    .Build();
+				var responseJson = "{\"connection_id\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\"," +
+							   "\"invitation\":{" +
+							   "\"@ID\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\"," +
+							   "\"@Type\":\"https://didcomm.org/my-family/1.0/my-message-type\"," +
+							   "\"label\":\"Bob\"," +
+							   "\"recipientKeys\":[" +
+							   "\"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"]," +
+							   "\"serviceEndpoint\":\"http://192.168.56.101:8020\"}}";
 
-                _rtgsRtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
+				var statusCodeHttpHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, new StringContent(responseJson));
+
+				_clientHost = Host.CreateDefaultBuilder()
+					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
+					.ConfigureServices(services => services
+						.AddRtgsPublisher(rtgsPublisherOptions)
+						.AddSingleton(statusCodeHttpHandler)
+						.AddHttpClient<IIdentityClient, IdentityClient>((httpClient, serviceProvider) =>
+							{
+								var identityOptions = serviceProvider.GetRequiredService<IOptions<IdentityConfig>>();
+								var identityClient = new IdentityClient(httpClient, identityOptions);
+								
+								return identityClient;
+							})
+						.AddHttpMessageHandler<StatusCodeHttpHandler>())
+					.UseSerilog()
+					.Build();
+
+				_rtgsRtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 				_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
 			}
 			catch (Exception)
@@ -98,17 +114,17 @@ public class GivenOpenConnection
 
 			await _rtgsRtgsConnectionBroker.SendInvitationAsync();
 
-			using var _ = new AssertionScope();
-
-			var expectedInformationLogs = new List<LogEntry>
+			var expectedLogs = new List<LogEntry>
 			{
 				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
 				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
 				new("Received IdCryptInvitationV1 acknowledgement (acknowledged) from RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information)
 			};
 
+			using var _ = new AssertionScope();
+
 			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
-			informationLogs.Should().BeEquivalentTo(expectedInformationLogs, options => options.WithStrictOrdering());
+			informationLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
 
 			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
 			warningLogs.Should().BeEmpty();
@@ -116,5 +132,63 @@ public class GivenOpenConnection
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
 			errorLogs.Should().BeEmpty();
 		}
+
+		[Fact]
+		public async Task WhenSendingMessageAndFailedAcknowledgementReceived_ThenLog()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithFailure());
+
+			await _rtgsRtgsConnectionBroker.SendInvitationAsync();
+
+			var exepctedLogs = new List<LogEntry>
+			{
+				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
+				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
+				new("Received IdCryptInvitationV1 acknowledgement (rejected) from RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Error)
+			};
+
+			using var _ = new AssertionScope();
+
+			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
+			informationLogs.Should().BeEquivalentTo(exepctedLogs.Where(log => log.LogLevel is LogEventLevel.Information), options => options.WithStrictOrdering());
+
+			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
+			warningLogs.Should().BeEmpty();
+
+			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
+			errorLogs.Should().BeEquivalentTo(exepctedLogs.Where(log => log.LogLevel is LogEventLevel.Error), options => options.WithStrictOrdering());
+		}
+
+		[Fact]
+		public async Task WhenSendingMessageAndRpcExceptionReceived_ThenLog()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler => 
+				handler.ThrowRpcException(StatusCode.Unavailable, "test"));
+
+			await FluentActions.Awaiting(() => _rtgsRtgsConnectionBroker.SendInvitationAsync())
+				.Should()
+				.ThrowAsync<RpcException>();
+
+			var expectedLogs = new List<LogEntry>
+			{
+				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
+				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
+				new("Error received when sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Error, typeof(RpcException))
+			};
+
+			using var _ = new AssertionScope();
+
+			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
+			informationLogs.Should().BeEquivalentTo(expectedLogs.Where(log => log.LogLevel is LogEventLevel.Information), options => options.WithStrictOrdering());
+
+			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
+			warningLogs.Should().BeEmpty();
+
+			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
+			errorLogs.Should().BeEquivalentTo(expectedLogs.Where(log => log.LogLevel is LogEventLevel.Error), options => options.WithStrictOrdering());
+		}
+
+
 	}
 }
