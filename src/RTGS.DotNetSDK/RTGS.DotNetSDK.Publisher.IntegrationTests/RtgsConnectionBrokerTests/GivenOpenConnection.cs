@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
+using IDCryptGlobal.Cloud.Agent.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Http;
@@ -58,23 +59,13 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				var responseJson = "{\"connection_id\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\"," +
-				               "\"invitation\":{" +
-				               "\"@ID\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\"," +
-				               "\"@Type\":\"https://didcomm.org/my-family/1.0/my-message-type\"," +
-				               "\"label\":\"Bob\"," +
-				               "\"recipientKeys\":[" +
-				               "\"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"]," +
-				               "\"serviceEndpoint\":\"http://192.168.56.101:8020\"}}";
-
+			
                 _clientHost = Host.CreateDefaultBuilder()
                     .ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
                     .ConfigureServices(services => services
                         .AddRtgsPublisher(rtgsPublisherOptions)
-                        .ConfigureAll<HttpClientFactoryOptions>(
-                            options => options.HttpMessageHandlerBuilderActions.Add(
-                                handlerBuilder => handlerBuilder.AdditionalHandlers.Add(
-                                    new StatusCodeHttpHandler(HttpStatusCode.OK, new StringContent(responseJson)))))
+						.AddHttpClient<IdentityConnectionClient>()
+							.AddHttpMessageHandler<StatusCodeHttpHandler>()
                         )
                     .UseSerilog()
                     .Build();
