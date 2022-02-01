@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests.HttpHandlers;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests;
@@ -21,7 +22,7 @@ public class GivenOpenConnection
 		private readonly GrpcServerFixture _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
 
-		private IRtgsConnectionBroker _rtgsRtgsConnectionBroker;
+		private IRtgsConnectionBroker _rtgsConnectionBroker;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
 
@@ -86,7 +87,7 @@ public class GivenOpenConnection
 					.UseSerilog()
 					.Build();
 
-				_rtgsRtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
+				_rtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 				_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
 			}
 			catch (Exception)
@@ -112,7 +113,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			await _rtgsRtgsConnectionBroker.SendInvitationAsync();
+			await _rtgsConnectionBroker.SendInvitationAsync();
 
 			var expectedLogs = new List<LogEntry>
 			{
@@ -139,7 +140,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithFailure());
 
-			await _rtgsRtgsConnectionBroker.SendInvitationAsync();
+			await _rtgsConnectionBroker.SendInvitationAsync();
 
 			var exepctedLogs = new List<LogEntry>
 			{
@@ -166,7 +167,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler => 
 				handler.ThrowRpcException(StatusCode.Unavailable, "test"));
 
-			await FluentActions.Awaiting(() => _rtgsRtgsConnectionBroker.SendInvitationAsync())
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
 				.Should()
 				.ThrowAsync<RpcException>();
 
@@ -188,7 +189,57 @@ public class GivenOpenConnection
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
 			errorLogs.Should().BeEquivalentTo(expectedLogs.Where(log => log.LogLevel is LogEventLevel.Error), options => options.WithStrictOrdering());
 		}
+		
+		[Fact]
+		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
+			await _rtgsConnectionBroker.SendInvitationAsync();
+
+			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+
+			var connection = receiver.Connections.SingleOrDefault();
+
+			connection.Should().NotBeNull();
+			connection!.Headers.Should()
+                .ContainSingle(header => header.Key == "bankdid" 
+                                         && header.Value == ValidMessages.BankDid);
+		}
+
+
+
+        [Fact]
+        public async Task ThenCanSendRequestToRtgs()
+        {
+            _toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+            await _rtgsConnectionBroker.SendInvitationAsync();
+
+            var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+            var receivedMessage = receiver.Connections
+                .Should().ContainSingle().Which.Requests
+                .Should().ContainSingle().Subject;
+
+            using var _ = new AssertionScope();
+
+            receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.v1");
+            receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
+
+            var receivedRequest = JsonConvert.DeserializeObject<IdCryptInvitationV1>(receivedMessage.Data);
+            receivedRequest.Should().BeEquivalentTo(publisherAction.Request, options => options.ComparingByMembers<TRequest>());
+        }
+
+		// TODO: RBEN - Deferred for later
+        //[Fact]
+        //public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnSuccess()
+        //{
+        //    _toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+        //    var connectionId = await _rtgsConnectionBroker.SendInvitationAsync();
+
+        //    connectionId.Should().Be("3fa85f64-5717-4562-b3fc-2c963f66afa6");
+        //}
 
 	}
 }
