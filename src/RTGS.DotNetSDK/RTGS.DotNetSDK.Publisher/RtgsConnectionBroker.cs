@@ -16,7 +16,7 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		_rtgsInternalPublisher = rtgsInternalPublisher;
 	}
 
-	public async Task<string> SendInvitationAsync(CancellationToken cancellationToken)
+	public async Task<SendInvitationResult> SendInvitationAsync(CancellationToken cancellationToken)
 	{
 		var alias = Guid.NewGuid().ToString();
 		var autoAccept = true;
@@ -43,9 +43,17 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 			Type = invitation.Type
 		};
 
-		await _rtgsInternalPublisher
+		var sendResult = await _rtgsInternalPublisher
 			.SendIdCryptInvitationAsync(invitationMessage, cancellationToken);
 
-		return response.ConnectionID;
+		var sendInvitationResult = new SendInvitationResult
+		{
+			ConnectionId = sendResult is SendResult.Success ? 
+				response.ConnectionID : 
+				null,
+			SendResult = sendResult
+		};
+
+		return sendInvitationResult;
 	}
 }

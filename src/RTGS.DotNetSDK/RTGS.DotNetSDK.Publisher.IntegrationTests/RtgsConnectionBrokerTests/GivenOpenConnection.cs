@@ -1,17 +1,12 @@
 ﻿using System.Net;
 using System.Net.Http;
-using System.Net.Mime;
-using System.Text;
-using System.Text.Json;
 using FluentAssertions.Json;
 using IDCryptGlobal.Cloud.Agent.Identity;
 using IDCryptGlobal.Cloud.Agent.Identity.Connection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.Extensions.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests.HttpHandlers;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests;
@@ -29,9 +24,9 @@ public class GivenOpenConnection
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
         private StatusCodeHttpHandler _idCryptMessageHandler;
+		private ConnectionInviteResponseModel _connectionInviteResponse;
 
-
-        public AndShortTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
+		public AndShortTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
 		{
 			_grpcServer = grpcServer;
 
@@ -64,7 +59,7 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-                var connectionInviteResponse = new ConnectionInviteResponseModel
+                _connectionInviteResponse = new ConnectionInviteResponseModel
                 {
                     ConnectionID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
                     Invitation = new ConnectionInvitation
@@ -81,7 +76,7 @@ public class GivenOpenConnection
 
                 };
 
-                var connectionInviteResponseJson = JsonConvert.SerializeObject(connectionInviteResponse);
+                var connectionInviteResponseJson = JsonConvert.SerializeObject(_connectionInviteResponse);
 
 				_idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, new StringContent(connectionInviteResponseJson));
 
@@ -221,8 +216,6 @@ public class GivenOpenConnection
                                          && header.Value == ValidMessages.BankDid);
 		}
 
-
-
         [Fact]
         public async Task ThenCanSendRequestToRtgs()
         {
@@ -240,45 +233,131 @@ public class GivenOpenConnection
             receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.v1");
             receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
 
-            var inviteRequest = _idCryptMessageHandler.Request.Content.ReadAsStringAsync();
+			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Request.RequestUri.Query);
 
-            var expectedMessageData = new IdCryptInvitationV1
+			var expectedMessageData = new IdCryptInvitationV1
             {
-                Alias = "ff4f21a9-3567-4b21-9268-9cfe6d4aab20",
-                Label = "Bob",
-                RecipientKeys = new[]
-                {
-                    "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
-                },
-                Id = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                Type = "https://didcomm.org/my-family/1.0/my-message-type",
-                ServiceEndPoint = "http://192.168.56.101:8020"
+                Alias = inviteRequestQueryParams["alias"],
+                Label = _connectionInviteResponse.Invitation.Label,
+                RecipientKeys = _connectionInviteResponse.Invitation.RecipientKeys,
+                Id = _connectionInviteResponse.Invitation.ID,
+                Type = _connectionInviteResponse.Invitation.Type,
+                ServiceEndPoint = _connectionInviteResponse.Invitation.ServiceEndPoint
             };
 
             var actualMessageData = JsonConvert
                 .DeserializeObject<IdCryptInvitationV1>(receivedMessage.Data);
 
-            actualMessageData.Label.Should().Be(expectedMessageData.Label);
-            actualMessageData.RecipientKeys.First().Should().Be(expectedMessageData.RecipientKeys.First());
-            actualMessageData.Id.Should().Be(expectedMessageData.Id);
-            actualMessageData.Type.Should().Be(expectedMessageData.Type);
-            actualMessageData.ServiceEndPoint.Should().Be(expectedMessageData.ServiceEndPoint);
+            actualMessageData.Should().BeEquivalentTo(expectedMessageData);
         }
 
-		// TODO: RBEN - Deferred for later
-		//[Fact]
-		//public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnSuccess()
-		//{
-		//    _toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+		[Fact]
+		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnSuccessAndConnectionId()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-		//    var connectionId = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
-		//    connectionId.Should().Be("3fa85f64-5717-4562-b3fc-2c963f66afa6");
-		//}
+			using var _ = new AssertionScope();
+
+			result.ConnectionId.Should().Be(_connectionInviteResponse.ConnectionID);
+			result.SendResult.Should().Be(SendResult.Success);
+		}
+
+		[Fact]
+		public async Task WhenBankMessageApiReturnsUnsuccessfulAcknowledgement_ThenReturnRejectedAndConnectionIdIsNull()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithFailure());
+
+			var result = await _rtgsConnectionBroker.SendInvitationAsync();
+
+			using var _ = new AssertionScope();
+
+			result.ConnectionId.Should().BeNull();
+			result.SendResult.Should().Be(SendResult.Rejected);
+		}
+
+		[Fact]
+		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgementTooLate_ThenReturnTimeoutAndConnectionIdIsNull()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1))));
+
+			var result = await _rtgsConnectionBroker.SendInvitationAsync();
+
+			result.ConnectionId.Should().BeNull();
+			result.SendResult.Should().Be(SendResult.Timeout);
+		}
+
+		[Fact]
+		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgementTooLate_ThenLogError()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1))));
+
+			var result = await _rtgsConnectionBroker.SendInvitationAsync();
+
+			var expectedLogs = new List<LogEntry>
+			{
+				new("Timed out waiting for IdCryptInvitationV1 acknowledgement from RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Error)
+			};
+
+			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
+			errorLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
+		}
+
+		[Fact]
+		public async Task WhenSendingMultipleMessages_ThenOnlyOneConnection()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnUnexpectedAcknowledgementWithSuccess());
+			await _rtgsConnectionBroker.SendInvitationAsync();
+
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnUnexpectedAcknowledgementWithSuccess());
+			await _rtgsConnectionBroker.SendInvitationAsync();
+
+			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+
+			receiver.NumberOfConnections.Should().Be(1);
+		}
+
+		[Fact]
+		public async Task WhenSendingMultipleMessagesAndLastOneTimesOut_ThenDoNotSeePreviousSuccess()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithSuccess());
+			var result1 = await _rtgsConnectionBroker.SendInvitationAsync();
+
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1))));
+			var result2 = await _rtgsConnectionBroker.SendInvitationAsync();
+
+			using var _ = new AssertionScope();
+
+			result1.SendResult.Should().Be(SendResult.Success);
+			result1.ConnectionId.Should().Be(_connectionInviteResponse.ConnectionID);
+
+			result2.SendResult.Should().Be(SendResult.Timeout);
+			result2.ConnectionId.Should().BeNull();
+		}
+
+		[Fact]
+		public async Task WhenBankMessageApiOnlyReturnsUnexpectedAcknowledgement_ThenReturnTimeoutAndConnectionIdIsNull()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnUnexpectedAcknowledgementWithSuccess());
+
+			var result = await _rtgsConnectionBroker.SendInvitationAsync();
+
+			result.SendResult.Should().Be(SendResult.Timeout);
+			result.ConnectionId.Should().BeNull();
+		}
+
 
 	}
 
-    private record IdCryptInvitationV1
+	private record IdCryptInvitationV1
     {
         public string Alias { get; init; }
         public string Label { get; init; }
