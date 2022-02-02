@@ -7,6 +7,8 @@ internal class StatusCodeHttpHandler : DelegatingHandler
 {
 	private HttpResponseMessage _response;
 
+    public HttpRequestMessage Request { get; private set; }
+
 	public StatusCodeHttpHandler(HttpStatusCode statusCode, HttpContent content)
 	{
 		_response = new HttpResponseMessage(statusCode)
@@ -16,7 +18,9 @@ internal class StatusCodeHttpHandler : DelegatingHandler
 	}
 
 	protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-	{
+    {
+        Request = request;
+
 		_response.RequestMessage = request;
 
 		return Task.FromResult(_response);

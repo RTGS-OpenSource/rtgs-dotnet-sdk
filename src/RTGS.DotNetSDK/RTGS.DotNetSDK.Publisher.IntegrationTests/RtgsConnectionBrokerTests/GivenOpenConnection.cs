@@ -3,12 +3,15 @@ using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
+using FluentAssertions.Json;
 using IDCryptGlobal.Cloud.Agent.Identity;
+using IDCryptGlobal.Cloud.Agent.Identity.Connection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests.HttpHandlers;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests;
@@ -25,9 +28,10 @@ public class GivenOpenConnection
 		private IRtgsConnectionBroker _rtgsConnectionBroker;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
+        private StatusCodeHttpHandler _idCryptMessageHandler;
 
 
-		public AndShortTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
+        public AndShortTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
 		{
 			_grpcServer = grpcServer;
 
@@ -60,22 +64,32 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				var responseJson = "{\"connection_id\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\"," +
-							   "\"invitation\":{" +
-							   "\"@ID\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\"," +
-							   "\"@Type\":\"https://didcomm.org/my-family/1.0/my-message-type\"," +
-							   "\"label\":\"Bob\"," +
-							   "\"recipientKeys\":[" +
-							   "\"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV\"]," +
-							   "\"serviceEndpoint\":\"http://192.168.56.101:8020\"}}";
+                var connectionInviteResponse = new ConnectionInviteResponseModel
+                {
+                    ConnectionID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    Invitation = new ConnectionInvitation
+                    {
+                        ID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                        Type = "https://didcomm.org/my-family/1.0/my-message-type",
+                        Label = "Bob",
+                        RecipientKeys = new[]
+                        {
+							"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
+						},
+                        ServiceEndPoint = "http://192.168.56.101:8020"
+					}
 
-				var statusCodeHttpHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, new StringContent(responseJson));
+                };
+
+                var connectionInviteResponseJson = JsonConvert.SerializeObject(connectionInviteResponse);
+
+				_idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, new StringContent(connectionInviteResponseJson));
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 					.ConfigureServices(services => services
 						.AddRtgsPublisher(rtgsPublisherOptions)
-						.AddSingleton(statusCodeHttpHandler)
+						.AddSingleton(_idCryptMessageHandler)
 						.AddHttpClient<IIdentityClient, IdentityClient>((httpClient, serviceProvider) =>
 							{
 								var identityOptions = serviceProvider.GetRequiredService<IOptions<IdentityConfig>>();
@@ -226,20 +240,51 @@ public class GivenOpenConnection
             receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.v1");
             receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
 
-            var receivedRequest = JsonConvert.DeserializeObject<IdCryptInvitationV1>(receivedMessage.Data);
-            receivedRequest.Should().BeEquivalentTo(publisherAction.Request, options => options.ComparingByMembers<TRequest>());
+            var inviteRequest = _idCryptMessageHandler.Request.Content.ReadAsStringAsync();
+
+            var expectedMessageData = new IdCryptInvitationV1
+            {
+                Alias = "ff4f21a9-3567-4b21-9268-9cfe6d4aab20",
+                Label = "Bob",
+                RecipientKeys = new[]
+                {
+                    "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
+                },
+                Id = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                Type = "https://didcomm.org/my-family/1.0/my-message-type",
+                ServiceEndPoint = "http://192.168.56.101:8020"
+            };
+
+            var actualMessageData = JsonConvert
+                .DeserializeObject<IdCryptInvitationV1>(receivedMessage.Data);
+
+            actualMessageData.Label.Should().Be(expectedMessageData.Label);
+            actualMessageData.RecipientKeys.First().Should().Be(expectedMessageData.RecipientKeys.First());
+            actualMessageData.Id.Should().Be(expectedMessageData.Id);
+            actualMessageData.Type.Should().Be(expectedMessageData.Type);
+            actualMessageData.ServiceEndPoint.Should().Be(expectedMessageData.ServiceEndPoint);
         }
 
 		// TODO: RBEN - Deferred for later
-        //[Fact]
-        //public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnSuccess()
-        //{
-        //    _toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+		//[Fact]
+		//public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnSuccess()
+		//{
+		//    _toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-        //    var connectionId = await _rtgsConnectionBroker.SendInvitationAsync();
+		//    var connectionId = await _rtgsConnectionBroker.SendInvitationAsync();
 
-        //    connectionId.Should().Be("3fa85f64-5717-4562-b3fc-2c963f66afa6");
-        //}
+		//    connectionId.Should().Be("3fa85f64-5717-4562-b3fc-2c963f66afa6");
+		//}
 
 	}
+
+    private record IdCryptInvitationV1
+    {
+        public string Alias { get; init; }
+        public string Label { get; init; }
+        public IEnumerable<string> RecipientKeys { get; init; }
+        public string Id { get; init; }
+        public string Type { get; init; }
+        public string ServiceEndPoint { get; init; }
+    }
 }
