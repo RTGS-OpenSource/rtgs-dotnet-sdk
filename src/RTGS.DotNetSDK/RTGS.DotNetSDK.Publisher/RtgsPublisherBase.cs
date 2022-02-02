@@ -7,7 +7,7 @@ using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Publisher;
 
-internal abstract class RtgsPublisherBase
+internal abstract class RtgsPublisherBase : IAsyncDisposable
 {
 	private readonly ILogger<RtgsPublisher> _logger;
 	private readonly Payment.PaymentClient _paymentClient;

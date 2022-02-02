@@ -1,19 +1,17 @@
 ﻿using System.Net;
 using System.Net.Http;
-using FluentAssertions.Json;
 using IDCryptGlobal.Cloud.Agent.Identity;
 using IDCryptGlobal.Cloud.Agent.Identity.Connection;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests.HttpHandlers;
+using RTGS.DotNetSDK.Publisher.IntegrationTests.HttpHandlers;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests;
 
 public class GivenOpenConnection
 {
-	public class AndShortTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>
+	public class AndShortTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
@@ -24,27 +22,45 @@ public class GivenOpenConnection
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
         private StatusCodeHttpHandler _idCryptMessageHandler;
-		private ConnectionInviteResponseModel _connectionInviteResponse;
+		private readonly ConnectionInviteResponseModel _connectionInviteResponse;
 
 		public AndShortTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
 		{
 			_grpcServer = grpcServer;
 
-			SetupSerilogLogger();
+            _connectionInviteResponse = new ConnectionInviteResponseModel
+            {
+                ConnectionID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                Invitation = new ConnectionInvitation
+                {
+                    ID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    Type = "https://didcomm.org/my-family/1.0/my-message-type",
+                    Label = "Bob",
+                    RecipientKeys = new[]
+                    {
+                        "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
+                    },
+                    ServiceEndPoint = "http://192.168.56.101:8020"
+                }
+            };
 
-			_serilogContext = TestCorrelator.CreateContext();
-		}
+            SetupSerilogLogger();
+
+            SetupDependencies();
+
+            _serilogContext = TestCorrelator.CreateContext();
+        }
 
 		private static void SetupSerilogLogger() =>
-			Log.Logger = new LoggerConfiguration()
-				.MinimumLevel.Debug()
-				.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-				.Enrich.FromLogContext()
-				.WriteTo.Console()
-				.WriteTo.TestCorrelator()
-				.CreateLogger();
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .WriteTo.TestCorrelator()
+                .CreateLogger();
 
-		public async Task InitializeAsync()
+        private void SetupDependencies()
 		{
 			try
 			{
@@ -58,23 +74,6 @@ public class GivenOpenConnection
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
-
-                _connectionInviteResponse = new ConnectionInviteResponseModel
-                {
-                    ConnectionID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                    Invitation = new ConnectionInvitation
-                    {
-                        ID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                        Type = "https://didcomm.org/my-family/1.0/my-message-type",
-                        Label = "Bob",
-                        RecipientKeys = new[]
-                        {
-							"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
-						},
-                        ServiceEndPoint = "http://192.168.56.101:8020"
-					}
-
-                };
 
                 var connectionInviteResponseJson = JsonConvert.SerializeObject(_connectionInviteResponse);
 
@@ -103,14 +102,14 @@ public class GivenOpenConnection
 			{
 				// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
 				// See https://github.com/xunit/xunit/discussions/2313 for further details.
-				await DisposeAsync();
+				Dispose();
 
 				throw;
 			}
 		}
 
-		public async Task DisposeAsync()
-		{
+		public void Dispose()
+        {
 			_clientHost?.Dispose();
 
 			_grpcServer.Reset();
@@ -425,7 +424,7 @@ public class GivenOpenConnection
         }
     }
 
-    public class AndLongTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>
+    public class AndLongTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
     {
         private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan TestWaitForSendDuration = TimeSpan.FromSeconds(15);
@@ -443,7 +442,25 @@ public class GivenOpenConnection
 		{
 			_grpcServer = grpcServer;
 
+            _connectionInviteResponse = new ConnectionInviteResponseModel
+            {
+                ConnectionID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                Invitation = new ConnectionInvitation
+                {
+                    ID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    Type = "https://didcomm.org/my-family/1.0/my-message-type",
+                    Label = "Bob",
+                    RecipientKeys = new[]
+                    {
+                        "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
+                    },
+                    ServiceEndPoint = "http://192.168.56.101:8020"
+                }
+            };
+
 			SetupSerilogLogger();
+
+            SetupDependencies();
 
 			_serilogContext = TestCorrelator.CreateContext();
 		}
@@ -457,7 +474,7 @@ public class GivenOpenConnection
 				.WriteTo.TestCorrelator()
 				.CreateLogger();
 
-		public async Task InitializeAsync()
+		private void SetupDependencies()
 		{
 			try
 			{
@@ -471,22 +488,6 @@ public class GivenOpenConnection
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
-
-				_connectionInviteResponse = new ConnectionInviteResponseModel
-				{
-					ConnectionID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-					Invitation = new ConnectionInvitation
-					{
-						ID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-						Type = "https://didcomm.org/my-family/1.0/my-message-type",
-						Label = "Bob",
-						RecipientKeys = new[]
-						{
-							"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
-						},
-						ServiceEndPoint = "http://192.168.56.101:8020"
-					}
-				};
 
 				var connectionInviteResponseJson = JsonConvert.SerializeObject(_connectionInviteResponse);
 
@@ -515,13 +516,13 @@ public class GivenOpenConnection
 			{
 				// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
 				// See https://github.com/xunit/xunit/discussions/2313 for further details.
-				await DisposeAsync();
+				Dispose();
 
 				throw;
 			}
 		}
 
-		public async Task DisposeAsync()
+		public void Dispose()
 		{
 			_clientHost?.Dispose();
 
