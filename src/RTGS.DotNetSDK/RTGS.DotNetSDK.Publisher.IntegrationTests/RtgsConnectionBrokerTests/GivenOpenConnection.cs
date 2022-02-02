@@ -354,8 +354,76 @@ public class GivenOpenConnection
 			result.ConnectionId.Should().BeNull();
 		}
 
+        [Fact]
+        public async Task WhenBankMessageApiReturnsUnexpectedAcknowledgementBeforeFailureAcknowledgement_ThenReturnRejected()
+        {
+            _toRtgsMessageHandler.SetupForMessage(handler =>
+            {
+                handler.ReturnUnexpectedAcknowledgementWithSuccess();
+                handler.ReturnExpectedAcknowledgementWithFailure();
+            });
 
-	}
+            var result = await _rtgsConnectionBroker.SendInvitationAsync();
+
+            result.SendResult.Should().Be(SendResult.Rejected);
+        }
+
+        [Fact]
+        public async Task WhenBankMessageApiReturnsFailureAcknowledgementBeforeUnexpectedAcknowledgement_ThenReturnRejected()
+        {
+            _toRtgsMessageHandler.SetupForMessage(handler =>
+            {
+                handler.ReturnExpectedAcknowledgementWithFailure();
+                handler.ReturnUnexpectedAcknowledgementWithSuccess();
+            });
+
+            var result = await _rtgsConnectionBroker.SendInvitationAsync();
+
+            result.SendResult.Should().Be(SendResult.Rejected);
+        }
+
+        [Fact]
+        public async Task WhenBankMessageApiReturnsSuccessWrappedByUnexpectedFailureAcknowledgements_ThenReturnSuccess()
+        {
+            _toRtgsMessageHandler.SetupForMessage(handler =>
+            {
+                handler.ReturnUnexpectedAcknowledgementWithFailure();
+                handler.ReturnExpectedAcknowledgementWithSuccess();
+                handler.ReturnUnexpectedAcknowledgementWithFailure();
+            });
+
+            var result = await _rtgsConnectionBroker.SendInvitationAsync();
+
+            result.SendResult.Should().Be(SendResult.Success);
+        }
+
+        [Fact]
+        public async Task WhenBankMessageApiReturnsSuccessForSecondMessageOnly_ThenDoNotTimeout()
+        {
+            var result1 = await _rtgsConnectionBroker.SendInvitationAsync();
+            result1.SendResult.Should().Be(SendResult.Timeout);
+
+            _toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+            var result2 = await _rtgsConnectionBroker.SendInvitationAsync();
+            result2.SendResult.Should().Be(SendResult.Success);
+        }
+
+        [Fact]
+        public async Task WhenBankMessageApiThrowsExceptionForFirstMessage_ThenStillHandleSecondMessage()
+        {
+            _toRtgsMessageHandler.SetupForMessage(handler => handler.ThrowRpcException(StatusCode.Unknown, "test"));
+
+            await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+                .Should()
+                .ThrowAsync<RpcException>();
+
+            _toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+            var result = await _rtgsConnectionBroker.SendInvitationAsync();
+            result.SendResult.Should().Be(SendResult.Success);
+        }
+    }
 
 	private record IdCryptInvitationV1
     {
