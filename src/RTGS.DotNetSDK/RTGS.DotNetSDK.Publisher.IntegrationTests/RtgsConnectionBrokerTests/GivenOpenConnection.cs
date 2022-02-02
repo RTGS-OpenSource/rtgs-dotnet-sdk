@@ -425,7 +425,160 @@ public class GivenOpenConnection
         }
     }
 
-	private record IdCryptInvitationV1
+    public class AndLongTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>
+    {
+        private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan TestWaitForSendDuration = TimeSpan.FromSeconds(15);
+
+		private readonly GrpcServerFixture _grpcServer;
+		private readonly ITestCorrelatorContext _serilogContext;
+
+		private IRtgsConnectionBroker _rtgsConnectionBroker;
+		private ToRtgsMessageHandler _toRtgsMessageHandler;
+		private IHost _clientHost;
+		private StatusCodeHttpHandler _idCryptMessageHandler;
+		private ConnectionInviteResponseModel _connectionInviteResponse;
+
+		public AndLongTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
+		{
+			_grpcServer = grpcServer;
+
+			SetupSerilogLogger();
+
+			_serilogContext = TestCorrelator.CreateContext();
+		}
+
+		private static void SetupSerilogLogger() =>
+			Log.Logger = new LoggerConfiguration()
+				.MinimumLevel.Debug()
+				.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+				.Enrich.FromLogContext()
+				.WriteTo.Console()
+				.WriteTo.TestCorrelator()
+				.CreateLogger();
+
+		public async Task InitializeAsync()
+		{
+			try
+			{
+				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
+						ValidMessages.BankDid,
+						_grpcServer.ServerUri,
+						Guid.NewGuid().ToString(),
+						new Uri("http://example.com"),
+						"http://example.com")
+					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
+					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
+					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
+					.Build();
+
+				_connectionInviteResponse = new ConnectionInviteResponseModel
+				{
+					ConnectionID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+					Invitation = new ConnectionInvitation
+					{
+						ID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+						Type = "https://didcomm.org/my-family/1.0/my-message-type",
+						Label = "Bob",
+						RecipientKeys = new[]
+						{
+							"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
+						},
+						ServiceEndPoint = "http://192.168.56.101:8020"
+					}
+				};
+
+				var connectionInviteResponseJson = JsonConvert.SerializeObject(_connectionInviteResponse);
+
+				_idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, new StringContent(connectionInviteResponseJson));
+
+				_clientHost = Host.CreateDefaultBuilder()
+					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
+					.ConfigureServices(services => services
+						.AddRtgsPublisher(rtgsPublisherOptions)
+						.AddSingleton(_idCryptMessageHandler)
+						.AddHttpClient<IIdentityClient, IdentityClient>((httpClient, serviceProvider) =>
+						{
+							var identityOptions = serviceProvider.GetRequiredService<IOptions<IdentityConfig>>();
+							var identityClient = new IdentityClient(httpClient, identityOptions);
+
+							return identityClient;
+						})
+						.AddHttpMessageHandler<StatusCodeHttpHandler>())
+					.UseSerilog()
+					.Build();
+
+				_rtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
+				_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
+			}
+			catch (Exception)
+			{
+				// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
+				// See https://github.com/xunit/xunit/discussions/2313 for further details.
+				await DisposeAsync();
+
+				throw;
+			}
+		}
+
+		public async Task DisposeAsync()
+		{
+			_clientHost?.Dispose();
+
+			_grpcServer.Reset();
+		}
+
+		[Fact]
+        public async Task WhenCancellationTokenIsCancelledBeforeAcknowledgmentTimeout_ThenThrowOperationCancelled()
+        {
+            using var cancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
+
+            var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+            receiver.RegisterOnMessageReceived(() => cancellationTokenSource.Cancel());
+
+            await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync(cancellationTokenSource.Token))
+                .Should().ThrowAsync<OperationCanceledException>();
+        }
+
+        [Fact]
+        public async Task WhenCancellationTokenIsCancelledBeforeSemaphoreIsEntered_ThenThrowOperationCancelled()
+        {
+            var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+
+            using var firstMessageReceivedSignal = new ManualResetEventSlim();
+            receiver.RegisterOnMessageReceived(() => firstMessageReceivedSignal.Set());
+
+            // Send the first message that has no acknowledgement setup so the client
+            // will hold on to the semaphore for a long time.
+            using var firstMessageCancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
+            var firstMessageTask = FluentActions
+                .Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync(firstMessageCancellationTokenSource.Token))
+                .Should()
+                .ThrowAsync<OperationCanceledException>();
+
+            // Once the server has received the first message we know the semaphore is in use...
+            firstMessageReceivedSignal.Wait(TestWaitForSendDuration);
+
+            // ...we can send the second message knowing it will be waiting due to the semaphore.
+            using var secondMessageCancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
+            var secondMessageTask = FluentActions
+                .Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync(secondMessageCancellationTokenSource.Token))
+                .Should()
+                .ThrowAsync<OperationCanceledException>();
+
+            // While the first message's acknowledgement is still being waited, cancel the second message before it is sent.
+            secondMessageCancellationTokenSource.Cancel();
+            await secondMessageTask;
+
+            // Allow the test to gracefully stop.
+            firstMessageCancellationTokenSource.Cancel();
+            await firstMessageTask;
+
+            receiver.Connections.Single().Requests.Count().Should().Be(1, "the second message should not have been sent as the semaphore should not be entered");
+        }
+	}
+
+    private record IdCryptInvitationV1
     {
         public string Alias { get; init; }
         public string Label { get; init; }
