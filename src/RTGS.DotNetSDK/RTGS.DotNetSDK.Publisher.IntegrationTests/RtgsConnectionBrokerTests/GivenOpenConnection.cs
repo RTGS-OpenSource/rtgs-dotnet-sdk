@@ -430,12 +430,9 @@ public class GivenOpenConnection
         private static readonly TimeSpan TestWaitForSendDuration = TimeSpan.FromSeconds(15);
 
 		private readonly GrpcServerFixture _grpcServer;
-		private readonly ITestCorrelatorContext _serilogContext;
 
 		private IRtgsConnectionBroker _rtgsConnectionBroker;
-		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
-		private StatusCodeHttpHandler _idCryptMessageHandler;
 		private ConnectionInviteResponseModel _connectionInviteResponse;
 
 		public AndLongTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
@@ -458,21 +455,8 @@ public class GivenOpenConnection
                 }
             };
 
-			SetupSerilogLogger();
-
             SetupDependencies();
-
-			_serilogContext = TestCorrelator.CreateContext();
 		}
-
-		private static void SetupSerilogLogger() =>
-			Log.Logger = new LoggerConfiguration()
-				.MinimumLevel.Debug()
-				.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-				.Enrich.FromLogContext()
-				.WriteTo.Console()
-				.WriteTo.TestCorrelator()
-				.CreateLogger();
 
 		private void SetupDependencies()
 		{
@@ -485,19 +469,17 @@ public class GivenOpenConnection
 						new Uri("http://example.com"),
 						"http://example.com")
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
-					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
-					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
 				var connectionInviteResponseJson = JsonConvert.SerializeObject(_connectionInviteResponse);
 
-				_idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, new StringContent(connectionInviteResponseJson));
+				var idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, new StringContent(connectionInviteResponseJson));
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 					.ConfigureServices(services => services
 						.AddRtgsPublisher(rtgsPublisherOptions)
-						.AddSingleton(_idCryptMessageHandler)
+						.AddSingleton(idCryptMessageHandler)
 						.AddHttpClient<IIdentityClient, IdentityClient>((httpClient, serviceProvider) =>
 						{
 							var identityOptions = serviceProvider.GetRequiredService<IOptions<IdentityConfig>>();
@@ -506,11 +488,9 @@ public class GivenOpenConnection
 							return identityClient;
 						})
 						.AddHttpMessageHandler<StatusCodeHttpHandler>())
-					.UseSerilog()
 					.Build();
 
 				_rtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
-				_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
 			}
 			catch (Exception)
 			{
