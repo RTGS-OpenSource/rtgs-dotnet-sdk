@@ -54,37 +54,18 @@ public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcSe
 	}
 
 	[Fact]
-	public void WhenSendingInParallel_ThenCanSendToRtgs()
+	public void WhenRequestingMultiplePublishers_ThenSamePublisherIsReturned()
 	{
-		const int PublisherCount = 5;
+		var rtgsPublisher1 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+		var rtgsPublisher2 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
 
-		using var sendRequestsSignal = new ManualResetEventSlim();
-
-		var sendRequestTasks = Enumerable.Range(1, PublisherCount)
-			.Select(request => Task.Run(async () =>
-			{
-				_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-
-				await using var rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
-
-				sendRequestsSignal.Wait();
-
-				await rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);
-			})).ToArray();
-
-		sendRequestsSignal.Set();
-
-		var allCompleted = Task.WaitAll(sendRequestTasks, TimeSpan.FromSeconds(5));
-		allCompleted.Should().BeTrue();
-
-		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-		receiver.Connections.Count.Should().Be(PublisherCount);
+		rtgsPublisher1.Should().BeSameAs(rtgsPublisher2);
 	}
 
 	[Fact]
 	public async Task WhenSendingSequentially_ThenCanSendToRtgs()
 	{
-		const int PublisherCount = 5;
+		const int PublisherCount = 1;
 
 		await using var rtgsPublisher1 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
 		await using var rtgsPublisher2 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();

@@ -39,7 +39,7 @@ public static class ServiceCollectionExtensions
 
 		configureGrpcClient?.Invoke(grpcClientBuilder);
 
-		serviceCollection.AddTransient<IRtgsSubscriber, RtgsSubscriber>();
+		serviceCollection.AddSingleton<IRtgsSubscriber, RtgsSubscriber>();
 		serviceCollection.AddTransient<IHandleMessageCommandsFactory, HandleMessageCommandsFactory>();
 		serviceCollection.AddTransient<IMessageAdapter, AtomicLockResponseV1MessageAdapter>();
 		serviceCollection.AddTransient<IMessageAdapter, AtomicTransferResponseV1MessageAdapter>();

@@ -45,7 +45,7 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddTransient<IRtgsInternalPublisher, RtgsInternalPublisher>();
 		serviceCollection.AddTransient<IIdentityClient, IdentityClient>();
 
-		serviceCollection.AddTransient<IRtgsPublisher, RtgsPublisher>();
+		serviceCollection.AddSingleton<IRtgsPublisher, RtgsPublisher>();
 
 		return serviceCollection;
 	}
