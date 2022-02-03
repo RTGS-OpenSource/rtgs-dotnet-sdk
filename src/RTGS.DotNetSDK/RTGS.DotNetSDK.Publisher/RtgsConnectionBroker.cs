@@ -72,8 +72,8 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 	}
 
 	private async Task<SendResult> SendInvitationToRtgsAsync(
-		string alias, 
-		ConnectionInvitation invitation, 
+		string alias,
+		ConnectionInvitation invitation,
 		CancellationToken cancellationToken)
 	{
 		var invitationMessage = new IdCryptInvitationV1

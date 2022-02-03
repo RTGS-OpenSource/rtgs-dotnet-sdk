@@ -72,7 +72,7 @@ public class GivenOpenConnection
 							{
 								var identityOptions = serviceProvider.GetRequiredService<IOptions<IdentityConfig>>();
 								var identityClient = new IdentityClient(httpClient, identityOptions);
-	
+
 								return identityClient;
 							})
 							.AddHttpMessageHandler<StatusCodeHttpHandler>())
@@ -442,7 +442,7 @@ public class GivenOpenConnection
 
 			_grpcServer.Reset();
 		}
-	
+
 		[Fact]
 		public async Task WhenSendingMessageAndSuccessAcknowledgementReceived_ThenLogInformation()
 		{
