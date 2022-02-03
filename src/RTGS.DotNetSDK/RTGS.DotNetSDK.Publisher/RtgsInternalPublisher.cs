@@ -7,7 +7,7 @@ namespace RTGS.DotNetSDK.Publisher;
 internal class RtgsInternalPublisher : RtgsPublisherBase, IRtgsInternalPublisher
 {
 	public RtgsInternalPublisher(ILogger<RtgsPublisher> logger, Payment.PaymentClient paymentClient, RtgsPublisherOptions options)
-	: base(logger, paymentClient, options)
+		: base(logger, paymentClient, options)
 	{
 	}
 

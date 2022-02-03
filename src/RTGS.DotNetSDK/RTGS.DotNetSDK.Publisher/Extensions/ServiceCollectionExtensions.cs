@@ -15,42 +15,44 @@ public static class ServiceCollectionExtensions
 	/// Adds <seealso cref="IRtgsPublisher"/> with supplied client configuration of <seealso cref="RtgsPublisherOptions"/>.
 	/// </summary>
 	/// <param name="serviceCollection">The service collection</param>
-	/// <param name="options">The options used to build the publisher</param>
+	/// <param name="publisherOptions">The options used to build the publisher</param>
 	/// <param name="configureGrpcClient">The client configure action (optional)</param>
 	/// <returns>The service collection so that additional calls can be chained.</returns>
 	public static IServiceCollection AddRtgsPublisher(
 		this IServiceCollection serviceCollection,
-		RtgsPublisherOptions options,
+		RtgsPublisherOptions publisherOptions,
 		Action<IHttpClientBuilder> configureGrpcClient = null)
 	{
-		serviceCollection.AddSingleton(options);
-		serviceCollection.AddSingleton(Options.Create(new IdentityConfig()
-		{
-			ApiUrl = options.IdCryptApiAddress.ToString(),
-			Apikey = options.IdCryptApiKey,
-			ServiceEndPoint = options.IdCryptServiceEndPoint
-		}));
+		serviceCollection.AddSingleton(publisherOptions);
 
 		var grpcClientBuilder = serviceCollection
-			.AddGrpcClient<Payment.PaymentClient>(clientOptions => clientOptions.Address = options.RemoteHostAddress)
+			.AddGrpcClient<Payment.PaymentClient>(clientOptions => clientOptions.Address = publisherOptions.RemoteHostAddress)
 			.ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
 			{
 				PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
-				KeepAlivePingDelay = options.KeepAlivePingDelay,
-				KeepAlivePingTimeout = options.KeepAlivePingTimeout,
+				KeepAlivePingDelay = publisherOptions.KeepAlivePingDelay,
+				KeepAlivePingTimeout = publisherOptions.KeepAlivePingTimeout,
 				EnableMultipleHttp2Connections = true,
 				KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always
 			});
 
 		configureGrpcClient?.Invoke(grpcClientBuilder);
 
-		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
-		serviceCollection.AddTransient<IIdentityClient, IdentityClient>();
+		serviceCollection.AddSingleton<IRtgsPublisher, RtgsPublisher>();
 		serviceCollection.AddSingleton<IRtgsInternalPublisher, RtgsInternalPublisher>();
 
+		serviceCollection.Configure<IdentityConfig>(identityConfig =>
+		{
+			identityConfig.ApiUrl = publisherOptions.IdCryptApiAddress.ToString();
+			identityConfig.Apikey = publisherOptions.IdCryptApiKey;
+			identityConfig.ServiceEndPoint = publisherOptions.IdCryptServiceEndPointAddress.ToString();
+		});
+
+		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
+		serviceCollection.AddTransient<IIdentityClient, IdentityClient>();
 		serviceCollection.AddSingleton<IRtgsConnectionBroker, RtgsConnectionBroker>();
 
-		serviceCollection.AddSingleton<IRtgsPublisher, RtgsPublisher>();
+
 
 		return serviceCollection;
 	}

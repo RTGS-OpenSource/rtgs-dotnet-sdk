@@ -1,4 +1,4 @@
-﻿namespace RTGS.DotNetSDK.Publisher.IntegrationTests;
+﻿namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsPublisherTests;
 
 public class GivenInitialFailedConnection : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 {
@@ -23,8 +23,9 @@ public class GivenInitialFailedConnection : IAsyncLifetime, IClassFixture<GrpcSe
 			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
 					ValidMessages.BankDid,
 					_grpcServer.ServerUri,
-					new Uri("http://id-crypt-cloud-agent.com"),
-					"", "")
+					new Uri("http://id-crypt-cloud-agent-api.com"),
+					"id-crypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 

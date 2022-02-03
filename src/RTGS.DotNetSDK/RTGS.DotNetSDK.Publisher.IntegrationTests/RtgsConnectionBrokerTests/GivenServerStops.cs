@@ -43,8 +43,9 @@ public class GivenServerStops : IAsyncLifetime
 			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
 					ValidMessages.BankDid,
 					serverUri,
-					new Uri("http://id-crypt-cloud-agent.com"),
-					Guid.NewGuid().ToString(), "http://id-crypt-cloud-agent.com")
+					new Uri("http://id-crypt-cloud-agent-api.com"),
+					"id-crypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 

@@ -15,7 +15,8 @@ public class GivenRtgsPublisherOptions
 					"bank-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
-					"", "")
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.KeepAlivePingDelay(duration))
 			.Should()
 			.Throw<ArgumentOutOfRangeException>()
@@ -27,7 +28,8 @@ public class GivenRtgsPublisherOptions
 					"bank-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
-					"", "")
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.KeepAlivePingDelay(Timeout.InfiniteTimeSpan))
 			.Should()
 			.NotThrow<ArgumentOutOfRangeException>();
@@ -39,7 +41,8 @@ public class GivenRtgsPublisherOptions
 					"bank-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
-					"", "")
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.KeepAlivePingDelay(duration))
 			.Should()
 			.NotThrow<ArgumentOutOfRangeException>();
@@ -51,7 +54,8 @@ public class GivenRtgsPublisherOptions
 					"bank-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
-					"", "")
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.KeepAlivePingTimeout(duration))
 			.Should()
 			.Throw<ArgumentOutOfRangeException>()
@@ -63,7 +67,8 @@ public class GivenRtgsPublisherOptions
 					"bank-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
-					"", "")
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.KeepAlivePingTimeout(Timeout.InfiniteTimeSpan))
 			.Should()
 			.NotThrow<ArgumentOutOfRangeException>();
@@ -75,7 +80,8 @@ public class GivenRtgsPublisherOptions
 					"bank-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
-					"", "")
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.KeepAlivePingTimeout(duration))
 			.Should()
 			.NotThrow<ArgumentOutOfRangeException>();
@@ -86,7 +92,8 @@ public class GivenRtgsPublisherOptions
 				"bank-did",
 				null,
 				new Uri("http://id-crypt-cloud-agent.com"),
-				"", ""))
+				"idcrypt-api-key",
+				new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
 			.Should()
 			.Throw<ArgumentNullException>()
 			.WithMessage("Value cannot be null. (Parameter 'remoteHostAddress')");
@@ -97,7 +104,8 @@ public class GivenRtgsPublisherOptions
 				null,
 				new Uri("http://example.org"),
 				new Uri("http://id-crypt-cloud-agent.com"),
-				"", ""))
+				"idcrypt-api-key",
+				new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
 			.Should()
 			.Throw<ArgumentNullException>()
 			.WithMessage("Value cannot be null. (Parameter 'bankDid')");
@@ -110,7 +118,8 @@ public class GivenRtgsPublisherOptions
 				whiteSpace,
 				new Uri("http://example.org"),
 				new Uri("http://id-crypt-cloud-agent.com"),
-				"", ""))
+				"idcrypt-api-key",
+				new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
 			.Should()
 			.Throw<ArgumentException>()
 			.WithMessage("Value cannot be white space. (Parameter 'bankDid')");
@@ -122,7 +131,8 @@ public class GivenRtgsPublisherOptions
 					"bank-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
-					"", "")
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.WaitForAcknowledgementDuration(duration))
 			.Should()
 			.Throw<ArgumentOutOfRangeException>()
@@ -134,7 +144,8 @@ public class GivenRtgsPublisherOptions
 					"bank-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
-					"", "")
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.WaitForAcknowledgementDuration(Timeout.InfiniteTimeSpan))
 			.Should()
 			.Throw<ArgumentOutOfRangeException>()
@@ -147,11 +158,62 @@ public class GivenRtgsPublisherOptions
 					"bank-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
-					"", "")
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.WaitForAcknowledgementDuration(duration))
 			.Should()
 			.Throw<ArgumentOutOfRangeException>()
 			.WithMessage($"Value must be between 1 and 30 seconds. (Parameter 'duration'){Environment.NewLine}Actual value was {duration.TotalSeconds}.");
+
+	[Fact]
+	public void WhenIdCryptApiAddressIsNull_ThenThrowArgumentNullException() =>
+	FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+			"bank-did",
+			new Uri("http://example.org"),
+			null,
+			"idcrypt-api-key",
+			new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
+		.Should()
+		.Throw<ArgumentNullException>()
+		.WithMessage("Value cannot be null. (Parameter 'idCryptApiAddress')");
+
+	[Fact]
+	public void WhenIdCryptApiKeyIsNull_ThenThrowArgumentNullException() =>
+	FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+			"bank-did",
+			new Uri("http://example.org"),
+			new Uri("http://id-crypt-cloud-agent.com"),
+			null,
+			new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
+		.Should()
+		.Throw<ArgumentNullException>()
+		.WithMessage("Value cannot be null. (Parameter 'idCryptApiKey')");
+
+	[Theory]
+	[InlineData("")]
+	[InlineData(" ")]
+	public void WhenIdCryptApiKeyIsWhiteSpace_ThenThrowArgumentException(string whiteSpace) =>
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+				"bank-did",
+				new Uri("http://example.org"),
+				new Uri("http://id-crypt-cloud-agent.com"),
+				whiteSpace,
+				new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
+			.Should()
+			.Throw<ArgumentException>()
+			.WithMessage("Value cannot be white space. (Parameter 'idCryptApiKey')");
+
+	[Fact]
+	public void WhenIdServiceEndpointAddressIsNull_ThenThrowArgumentNullException() =>
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+			"bank-did",
+			new Uri("http://example.org"),
+			new Uri("http://id-crypt-cloud-agent.com"),
+			"idcrypt-api-key",
+			null))
+		.Should()
+		.Throw<ArgumentNullException>()
+		.WithMessage("Value cannot be null. (Parameter 'idCryptServiceEndPointAddress')");
 
 	public static IEnumerable<object[]> TimeSpansLessThanOneSecond =>
 		new List<object[]>

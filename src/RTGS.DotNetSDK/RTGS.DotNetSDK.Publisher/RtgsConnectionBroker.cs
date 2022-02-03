@@ -24,6 +24,23 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 	public async Task<SendInvitationResult> SendInvitationAsync(CancellationToken cancellationToken)
 	{
 		var alias = Guid.NewGuid().ToString();
+
+		var idCryptResponse = await CreateIdCryptInvitationAsync(alias);
+		var sendToRtgsResult = await SendInvitationToRtgsAsync(alias, idCryptResponse.Invitation, cancellationToken);
+
+		var sendInvitationResult = new SendInvitationResult
+		{
+			ConnectionId = sendToRtgsResult is SendResult.Success ?
+				idCryptResponse.ConnectionID :
+				null,
+			SendResult = sendToRtgsResult
+		};
+
+		return sendInvitationResult;
+	}
+
+	private async Task<ConnectionInviteResponseModel> CreateIdCryptInvitationAsync(string alias)
+	{
 		var autoAccept = true;
 		var multiUse = false;
 		var usePublicDid = false;
@@ -44,15 +61,21 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		}
 		catch (Exception e)
 		{
-			_logger.LogError(e, "Error occurred when calling ID Crypt Cloud Agent API");
+			_logger.LogError(e, "Error occurred when calling ID Crypt Cloud Agent");
 
 			throw;
 		}
 
 		_logger.LogDebug("Sent CreateInvitation request to ID Crypt Cloud Agent");
 
-		var invitation = response.Invitation;
+		return response;
+	}
 
+	private async Task<SendResult> SendInvitationToRtgsAsync(
+		string alias, 
+		ConnectionInvitation invitation, 
+		CancellationToken cancellationToken)
+	{
 		var invitationMessage = new IdCryptInvitationV1
 		{
 			Alias = alias,
@@ -66,14 +89,6 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		var sendResult = await _rtgsInternalPublisher
 			.SendIdCryptInvitationAsync(invitationMessage, cancellationToken);
 
-		var sendInvitationResult = new SendInvitationResult
-		{
-			ConnectionId = sendResult is SendResult.Success ?
-				response.ConnectionID :
-				null,
-			SendResult = sendResult
-		};
-
-		return sendInvitationResult;
+		return sendResult;
 	}
 }

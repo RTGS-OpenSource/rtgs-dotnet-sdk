@@ -14,7 +14,7 @@ public record RtgsPublisherOptions
 		KeepAlivePingTimeout = builder.KeepAlivePingTimeoutValue;
 		IdCryptApiAddress = builder.IdCryptApiAddress;
 		IdCryptApiKey = builder.IdCryptApiKey;
-		IdCryptServiceEndPoint = builder.IdCryptServiceEndPoint;
+		IdCryptServiceEndPointAddress = builder.IdCryptServiceEndPointAddress;
 	}
 
 	/// <summary>
@@ -54,9 +54,9 @@ public record RtgsPublisherOptions
 	public string IdCryptApiKey { get; set; }
 
 	/// <summary>
-	/// Service End Point of the ID Crypt Cloud Agent.
+	/// Address of the ID Crypt Cloud Agent Service Endpoint.
 	/// </summary>
-	public string IdCryptServiceEndPoint { get; set; }
+	public Uri IdCryptServiceEndPointAddress { get; set; }
 
 	/// <summary>
 	/// A builder for <see cref="RtgsPublisherOptions"/>.
@@ -68,7 +68,7 @@ public record RtgsPublisherOptions
 			Uri remoteHostAddress,
 			Uri idCryptApiAddress,
 			string idCryptApiKey,
-			string idCryptServiceEndPoint)
+			Uri idCryptServiceEndPointAddress)
 		{
 			ArgumentNullException.ThrowIfNull(bankDid, nameof(bankDid));
 
@@ -79,13 +79,22 @@ public record RtgsPublisherOptions
 
 			ArgumentNullException.ThrowIfNull(remoteHostAddress, nameof(remoteHostAddress));
 
+			ArgumentNullException.ThrowIfNull(idCryptApiAddress, nameof(idCryptApiAddress));
+
+			ArgumentNullException.ThrowIfNull(idCryptApiKey, nameof(idCryptApiKey));
+
+			if (string.IsNullOrWhiteSpace(idCryptApiKey))
+			{
+				throw new ArgumentException("Value cannot be white space.", nameof(idCryptApiKey));
+			}
+
+			ArgumentNullException.ThrowIfNull(idCryptServiceEndPointAddress, nameof(idCryptServiceEndPointAddress));
+
 			BankDidValue = bankDid;
 			RemoteHostAddressValue = remoteHostAddress;
-
 			IdCryptApiAddress = idCryptApiAddress;
 			IdCryptApiKey = idCryptApiKey;
-			IdCryptServiceEndPoint = idCryptServiceEndPoint;
-
+			IdCryptServiceEndPointAddress = idCryptServiceEndPointAddress;
 		}
 
 		internal string BankDidValue { get; }
@@ -95,7 +104,7 @@ public record RtgsPublisherOptions
 		internal TimeSpan KeepAlivePingTimeoutValue { get; private set; } = TimeSpan.FromSeconds(30);
 		internal Uri IdCryptApiAddress { get; }
 		internal string IdCryptApiKey { get; }
-		internal string IdCryptServiceEndPoint { get; }
+		internal Uri IdCryptServiceEndPointAddress { get; }
 
 		/// <summary>
 		/// Creates a new instance of <see cref="Builder"/>.
@@ -104,17 +113,17 @@ public record RtgsPublisherOptions
 		/// <param name="remoteHostAddress">Address of the RTGS gRPC server.</param>
 		/// <param name="idCryptApiAddress">Address of the ID Crypt Cloud Agent API</param>
 		/// <param name="idCryptApiKey">API Key for the ID Crypt Cloud Agent API</param>
-		/// <param name="idCryptServiceEndPoint">Service End Point of the ID Crypt Cloud Agent</param>
+		/// <param name="idCryptServiceEndPointAddress">Address of the ID Crypt Cloud Agent Service Endpoint</param>
 		/// <returns><see cref="Builder"/></returns>
-		/// <exception cref="ArgumentNullException">Thrown if bankDid or remoteHostAddress is null.</exception>
-		/// <exception cref="ArgumentException">Thrown if bankDid is white space.</exception>
+		/// <exception cref="ArgumentNullException">Thrown if bankDid, remoteHostAddress idCryptApiAddress, idCryptApiKey or idCryptEndpointAddress is null.</exception>
+		/// <exception cref="ArgumentException">Thrown if bankDid or idCryptApiKey is white space.</exception>
 		public static Builder CreateNew(
 			string bankDid,
 			Uri remoteHostAddress,
 			Uri idCryptApiAddress,
 			string idCryptApiKey,
-			string idCryptServiceEndPoint) =>
-			new(bankDid, remoteHostAddress, idCryptApiAddress, idCryptApiKey, idCryptServiceEndPoint);
+			Uri idCryptServiceEndPointAddress) =>
+			new(bankDid, remoteHostAddress, idCryptApiAddress, idCryptApiKey, idCryptServiceEndPointAddress);
 
 		/// <summary>
 		/// Specifies the acknowledgement timeout duration.

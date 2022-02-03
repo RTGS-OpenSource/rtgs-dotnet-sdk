@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace RTGS.DotNetSDK.Publisher.IntegrationTests;
+namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsPublisherTests;
 
 public class GivenOpenConnection
 {
@@ -41,8 +41,9 @@ public class GivenOpenConnection
 				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
 						ValidMessages.BankDid,
 						_grpcServer.ServerUri,
-						new Uri("http://id-crypt-cloud-agent.com"),
-						"", "")
+						new Uri("http://id-crypt-cloud-agent-api.com"),
+						"id-crypt-api-key",
+						new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
@@ -471,8 +472,9 @@ public class GivenOpenConnection
 				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
 						ValidMessages.BankDid,
 						_grpcServer.ServerUri,
-						new Uri("http://id-crypt-cloud-agent.com"),
-						"", "")
+						new Uri("http://id-crypt-cloud-agent-api.com"),
+						Guid.NewGuid().ToString(),
+						new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
