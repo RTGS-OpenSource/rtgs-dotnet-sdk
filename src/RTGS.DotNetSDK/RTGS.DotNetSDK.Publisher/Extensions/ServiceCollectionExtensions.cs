@@ -40,10 +40,10 @@ public static class ServiceCollectionExtensions
 		configureGrpcClient?.Invoke(grpcClientBuilder);
 
 		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
-
-		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
-		serviceCollection.AddTransient<IRtgsInternalPublisher, RtgsInternalPublisher>();
 		serviceCollection.AddTransient<IIdentityClient, IdentityClient>();
+		serviceCollection.AddSingleton<IRtgsInternalPublisher, RtgsInternalPublisher>();
+
+		serviceCollection.AddSingleton<IRtgsConnectionBroker, RtgsConnectionBroker>();
 
 		serviceCollection.AddSingleton<IRtgsPublisher, RtgsPublisher>();
 

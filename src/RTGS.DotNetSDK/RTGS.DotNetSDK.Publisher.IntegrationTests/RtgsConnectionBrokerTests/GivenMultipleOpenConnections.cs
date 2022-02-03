@@ -70,38 +70,19 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
         _grpcServer.Reset();
     }
 
-    [Fact]
-    public void WhenSendingInParallel_ThenCanSendToRtgs()
-    {
-        const int BrokerCount = 5;
+	[Fact]
+	public void WhenRequestingMultipleConnectionBrokers_ThenSameConnectionBrokerIsReturned()
+	{
+		var connectionBroker1 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
+		var connectionBroker2 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 
-        using var sendRequestsSignal = new ManualResetEventSlim();
-
-        var sendRequestTasks = Enumerable.Range(1, BrokerCount)
-            .Select(request => Task.Run(async () =>
-            {
-                _toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-
-                var rtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
-
-                sendRequestsSignal.Wait();
-
-                await rtgsConnectionBroker.SendInvitationAsync();
-            })).ToArray();
-
-        sendRequestsSignal.Set();
-
-        var allCompleted = Task.WaitAll(sendRequestTasks, TimeSpan.FromSeconds(5));
-        allCompleted.Should().BeTrue();
-
-        var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-        receiver.Connections.Count.Should().Be(BrokerCount);
-    }
+		connectionBroker1.Should().BeSameAs(connectionBroker2);
+	}
 
 	[Fact]
 	public async Task WhenSendingSequentially_ThenCanSendToRtgs()
 	{
-		const int BrokerCount = 5;
+		const int PublisherCount = 1;
 
 		var rtgsConnectionBroker1 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 		var rtgsConnectionBroker2 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
@@ -127,7 +108,7 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
 		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
 		using var _ = new AssertionScope();
-		receiver.Connections.Count.Should().Be(BrokerCount);
+		receiver.Connections.Count.Should().Be(PublisherCount);
 		receiver.Connections.SelectMany(connection => connection.Requests).Count().Should().Be(5);
 	}
 }
