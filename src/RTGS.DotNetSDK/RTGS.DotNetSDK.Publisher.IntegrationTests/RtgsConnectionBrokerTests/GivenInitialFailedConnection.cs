@@ -59,8 +59,6 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 		}
 		catch (Exception)
 		{
-			// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
-			// See https://github.com/xunit/xunit/discussions/2313 for further details.
 			Dispose();
 
 			throw;
