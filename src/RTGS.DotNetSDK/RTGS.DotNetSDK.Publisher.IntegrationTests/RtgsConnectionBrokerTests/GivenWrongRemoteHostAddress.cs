@@ -14,9 +14,8 @@ public class GivenWrongRemoteHostAddress
 		var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
 				ValidMessages.BankDid,
 				new Uri("https://localhost:4567"),
-				Guid.NewGuid().ToString(),
-				new Uri("http://example.com"),
-				"http://example.com")
+				new Uri("http://id-crypt-cloud-agent.com"),
+				Guid.NewGuid().ToString(), "http://id-crypt-cloud-agent.com")
 			.Build();
 
 		var idCryptMessageHandler = new StatusCodeHttpHandler(

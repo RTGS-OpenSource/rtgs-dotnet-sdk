@@ -8,9 +8,8 @@ public class GivenWrongRemoteHostAddress
 		var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
 				ValidMessages.BankDid,
 				new Uri("https://localhost:4567"),
-				"",
-				new Uri("http://example.com"),
-				"")
+				new Uri("http://id-crypt-cloud-agent.com"),
+				"", "")
 			.Build();
 
 		using var clientHost = Host.CreateDefaultBuilder()

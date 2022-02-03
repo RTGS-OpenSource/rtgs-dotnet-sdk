@@ -29,9 +29,8 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
 					ValidMessages.BankDid,
 					_grpcServer.ServerUri,
-					Guid.NewGuid().ToString(),
-					new Uri("http://example.com"),
-					"http://example.com")
+					new Uri("http://id-crypt-cloud-agent.com"),
+					Guid.NewGuid().ToString(), "http://id-crypt-cloud-agent.com")
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 

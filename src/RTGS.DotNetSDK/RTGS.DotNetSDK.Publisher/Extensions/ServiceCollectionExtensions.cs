@@ -15,7 +15,7 @@ public static class ServiceCollectionExtensions
 	/// Adds <seealso cref="IRtgsPublisher"/> with supplied client configuration of <seealso cref="RtgsPublisherOptions"/>.
 	/// </summary>
 	/// <param name="serviceCollection">The service collection</param>
-	/// <param name="options">The options used to build the gRPC client</param>
+	/// <param name="options">The options used to build the publisher</param>
 	/// <param name="configureGrpcClient">The client configure action (optional)</param>
 	/// <returns>The service collection so that additional calls can be chained.</returns>
 	public static IServiceCollection AddRtgsPublisher(
@@ -24,7 +24,12 @@ public static class ServiceCollectionExtensions
 		Action<IHttpClientBuilder> configureGrpcClient = null)
 	{
 		serviceCollection.AddSingleton(options);
-		serviceCollection.AddSingleton(Options.Create(options.IdentityConfig));
+		serviceCollection.AddSingleton(Options.Create(new IdentityConfig()
+		{
+			ApiUrl = options.IdCryptApiAddress.ToString(),
+			Apikey = options.IdCryptApiKey,
+			ServiceEndPoint = options.IdCryptServiceEndPoint
+		}));
 
 		var grpcClientBuilder = serviceCollection
 			.AddGrpcClient<Payment.PaymentClient>(clientOptions => clientOptions.Address = options.RemoteHostAddress)

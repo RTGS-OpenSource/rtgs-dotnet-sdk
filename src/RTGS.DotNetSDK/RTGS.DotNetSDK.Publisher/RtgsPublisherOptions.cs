@@ -1,6 +1,4 @@
-﻿using IDCryptGlobal.Cloud.Agent.Identity;
-
-namespace RTGS.DotNetSDK.Publisher;
+﻿namespace RTGS.DotNetSDK.Publisher;
 
 /// <summary>
 /// Represents the options used when sending messages to RTGS via a <see cref="IRtgsPublisher"/>.
@@ -14,7 +12,9 @@ public record RtgsPublisherOptions
 		WaitForAcknowledgementDuration = builder.WaitForAcknowledgementDurationValue;
 		KeepAlivePingDelay = builder.KeepAlivePingDelayValue;
 		KeepAlivePingTimeout = builder.KeepAlivePingTimeoutValue;
-		IdentityConfig = builder.IdentityConfig;
+		IdCryptApiAddress = builder.IdCryptApiAddress;
+		IdCryptApiKey = builder.IdCryptApiKey;
+		IdCryptServiceEndPoint = builder.IdCryptServiceEndPoint;
 	}
 
 	/// <summary>
@@ -44,9 +44,19 @@ public record RtgsPublisherOptions
 	public TimeSpan KeepAlivePingTimeout { get; }
 
 	/// <summary>
-	/// 
+	/// Address of the ID Crypt Cloud Agent API.
 	/// </summary>
-	public IdentityConfig IdentityConfig { get; }
+	public Uri IdCryptApiAddress { get; set; }
+
+	/// <summary>
+	/// API Key for the ID Crypt Cloud Agent API.
+	/// </summary>
+	public string IdCryptApiKey { get; set; }
+
+	/// <summary>
+	/// Service End Point of the ID Crypt Cloud Agent.
+	/// </summary>
+	public string IdCryptServiceEndPoint { get; set; }
 
 	/// <summary>
 	/// A builder for <see cref="RtgsPublisherOptions"/>.
@@ -56,8 +66,8 @@ public record RtgsPublisherOptions
 		private Builder(
 			string bankDid,
 			Uri remoteHostAddress,
+			Uri idCryptApiAddress,
 			string idCryptApiKey,
-			Uri idCryptApiUrl,
 			string idCryptServiceEndPoint)
 		{
 			ArgumentNullException.ThrowIfNull(bankDid, nameof(bankDid));
@@ -71,12 +81,11 @@ public record RtgsPublisherOptions
 
 			BankDidValue = bankDid;
 			RemoteHostAddressValue = remoteHostAddress;
-			IdentityConfig = new IdentityConfig
-			{
-				Apikey = idCryptApiKey,
-				ApiUrl = idCryptApiUrl.ToString(),
-				ServiceEndPoint = idCryptServiceEndPoint
-			};
+
+			IdCryptApiAddress = idCryptApiAddress;
+			IdCryptApiKey = idCryptApiKey;
+			IdCryptServiceEndPoint = idCryptServiceEndPoint;
+
 		}
 
 		internal string BankDidValue { get; }
@@ -84,24 +93,28 @@ public record RtgsPublisherOptions
 		internal TimeSpan WaitForAcknowledgementDurationValue { get; private set; } = TimeSpan.FromSeconds(10);
 		internal TimeSpan KeepAlivePingDelayValue { get; private set; } = TimeSpan.FromSeconds(30);
 		internal TimeSpan KeepAlivePingTimeoutValue { get; private set; } = TimeSpan.FromSeconds(30);
-
-		internal IdentityConfig IdentityConfig { get; }
+		internal Uri IdCryptApiAddress { get; }
+		internal string IdCryptApiKey { get; }
+		internal string IdCryptServiceEndPoint { get; }
 
 		/// <summary>
 		/// Creates a new instance of <see cref="Builder"/>.
 		/// </summary>
 		/// <param name="bankDid">Decentralized identifier of the bank.</param>
 		/// <param name="remoteHostAddress">Address of the RTGS gRPC server.</param>
+		/// <param name="idCryptApiAddress">Address of the ID Crypt Cloud Agent API</param>
+		/// <param name="idCryptApiKey">API Key for the ID Crypt Cloud Agent API</param>
+		/// <param name="idCryptServiceEndPoint">Service End Point of the ID Crypt Cloud Agent</param>
 		/// <returns><see cref="Builder"/></returns>
 		/// <exception cref="ArgumentNullException">Thrown if bankDid or remoteHostAddress is null.</exception>
 		/// <exception cref="ArgumentException">Thrown if bankDid is white space.</exception>
 		public static Builder CreateNew(
 			string bankDid,
 			Uri remoteHostAddress,
+			Uri idCryptApiAddress,
 			string idCryptApiKey,
-			Uri idCryptApiUrl,
 			string idCryptServiceEndPoint) =>
-			new(bankDid, remoteHostAddress, idCryptApiKey, idCryptApiUrl, idCryptServiceEndPoint);
+			new(bankDid, remoteHostAddress, idCryptApiAddress, idCryptApiKey, idCryptServiceEndPoint);
 
 		/// <summary>
 		/// Specifies the acknowledgement timeout duration.

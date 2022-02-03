@@ -14,9 +14,8 @@ public class GivenRtgsPublisherOptions
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
 					"bank-did",
 					new Uri("http://example.org"),
-					"",
-					new Uri("http://example.com"),
-					"")
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"", "")
 				.KeepAlivePingDelay(duration))
 			.Should()
 			.Throw<ArgumentOutOfRangeException>()
@@ -27,9 +26,8 @@ public class GivenRtgsPublisherOptions
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
 					"bank-did",
 					new Uri("http://example.org"),
-					"",
-					new Uri("http://example.com"),
-					"")
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"", "")
 				.KeepAlivePingDelay(Timeout.InfiniteTimeSpan))
 			.Should()
 			.NotThrow<ArgumentOutOfRangeException>();
@@ -40,9 +38,8 @@ public class GivenRtgsPublisherOptions
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
 					"bank-did",
 					new Uri("http://example.org"),
-					"",
-					new Uri("http://example.com"),
-					"")
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"", "")
 				.KeepAlivePingDelay(duration))
 			.Should()
 			.NotThrow<ArgumentOutOfRangeException>();
@@ -53,9 +50,8 @@ public class GivenRtgsPublisherOptions
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
 					"bank-did",
 					new Uri("http://example.org"),
-					"",
-					new Uri("http://example.com"),
-					"")
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"", "")
 				.KeepAlivePingTimeout(duration))
 			.Should()
 			.Throw<ArgumentOutOfRangeException>()
@@ -66,9 +62,8 @@ public class GivenRtgsPublisherOptions
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
 					"bank-did",
 					new Uri("http://example.org"),
-					"",
-					new Uri("http://example.com"),
-					"")
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"", "")
 				.KeepAlivePingTimeout(Timeout.InfiniteTimeSpan))
 			.Should()
 			.NotThrow<ArgumentOutOfRangeException>();
@@ -79,9 +74,8 @@ public class GivenRtgsPublisherOptions
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
 					"bank-did",
 					new Uri("http://example.org"),
-					"",
-					new Uri("http://example.com"),
-					"")
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"", "")
 				.KeepAlivePingTimeout(duration))
 			.Should()
 			.NotThrow<ArgumentOutOfRangeException>();
@@ -91,9 +85,8 @@ public class GivenRtgsPublisherOptions
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
 				"bank-did",
 				null,
-				"",
-				new Uri("http://example.com"),
-				""))
+				new Uri("http://id-crypt-cloud-agent.com"),
+				"", ""))
 			.Should()
 			.Throw<ArgumentNullException>()
 			.WithMessage("Value cannot be null. (Parameter 'remoteHostAddress')");
@@ -103,9 +96,8 @@ public class GivenRtgsPublisherOptions
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
 				null,
 				new Uri("http://example.org"),
-				"",
-				new Uri("http://example.com"),
-				""))
+				new Uri("http://id-crypt-cloud-agent.com"),
+				"", ""))
 			.Should()
 			.Throw<ArgumentNullException>()
 			.WithMessage("Value cannot be null. (Parameter 'bankDid')");
@@ -117,9 +109,8 @@ public class GivenRtgsPublisherOptions
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
 				whiteSpace,
 				new Uri("http://example.org"),
-				"",
-				new Uri("http://example.com"),
-				""))
+				new Uri("http://id-crypt-cloud-agent.com"),
+				"", ""))
 			.Should()
 			.Throw<ArgumentException>()
 			.WithMessage("Value cannot be white space. (Parameter 'bankDid')");
@@ -130,9 +121,8 @@ public class GivenRtgsPublisherOptions
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
 					"bank-did",
 					new Uri("http://example.org"),
-					"",
-					new Uri("http://example.com"),
-					"")
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"", "")
 				.WaitForAcknowledgementDuration(duration))
 			.Should()
 			.Throw<ArgumentOutOfRangeException>()
@@ -143,9 +133,8 @@ public class GivenRtgsPublisherOptions
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
 					"bank-did",
 					new Uri("http://example.org"),
-					"",
-					new Uri("http://example.com"),
-					"")
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"", "")
 				.WaitForAcknowledgementDuration(Timeout.InfiniteTimeSpan))
 			.Should()
 			.Throw<ArgumentOutOfRangeException>()
@@ -157,9 +146,8 @@ public class GivenRtgsPublisherOptions
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
 					"bank-did",
 					new Uri("http://example.org"),
-					"",
-					new Uri("http://example.com"),
-					"")
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"", "")
 				.WaitForAcknowledgementDuration(duration))
 			.Should()
 			.Throw<ArgumentOutOfRangeException>()

@@ -21,9 +21,8 @@ public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcSe
 			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
 					ValidMessages.BankDid,
 					_grpcServer.ServerUri,
-					"",
-					new Uri("http://example.com"),
-					"")
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"", "")
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 

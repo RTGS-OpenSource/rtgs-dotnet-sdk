@@ -41,9 +41,8 @@ public class GivenOpenConnection
 				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
 						ValidMessages.BankDid,
 						_grpcServer.ServerUri,
-						"",
-						new Uri("http://example.com"),
-						"")
+						new Uri("http://id-crypt-cloud-agent.com"),
+						"", "")
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
@@ -472,9 +471,8 @@ public class GivenOpenConnection
 				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
 						ValidMessages.BankDid,
 						_grpcServer.ServerUri,
-						"",
-						new Uri("http://example.com"),
-						"")
+						new Uri("http://id-crypt-cloud-agent.com"),
+						"", "")
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
