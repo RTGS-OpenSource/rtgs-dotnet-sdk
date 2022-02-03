@@ -82,10 +82,13 @@ public class GivenServerStops : IAsyncLifetime
 		}
 	}
 
-	public async Task DisposeAsync()
+	public Task DisposeAsync()
 	{
 		_clientHost?.Dispose();
+
 		_grpcServer.Dispose();
+
+		return Task.CompletedTask;
 	}
 
 	[Fact]
@@ -115,6 +118,8 @@ public class GivenServerStops : IAsyncLifetime
 		await _rtgsConnectionBroker.SendInvitationAsync();
 
 		await _grpcServer.StopAsync();
+
+		_clientHost.Dispose();
 
 		var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
 		errorLogs.Should().BeEquivalentTo(new[]

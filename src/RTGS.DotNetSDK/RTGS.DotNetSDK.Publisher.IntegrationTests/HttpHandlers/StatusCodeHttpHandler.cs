@@ -9,6 +9,33 @@ internal class StatusCodeHttpHandler : DelegatingHandler
 
     public HttpRequestMessage Request { get; private set; }
 
+	public HttpStatusCode StatusCode
+	{
+		get
+		{
+			return _response.StatusCode;
+		}
+
+		set
+		{
+			_response.StatusCode = value;
+		}
+	}
+
+	public HttpContent Content
+	{
+		get
+		{
+			return _response.Content;
+		}
+
+		set
+		{
+			_response.Content = value;
+		}
+	}
+
+
 	public StatusCodeHttpHandler(HttpStatusCode statusCode, HttpContent content)
 	{
 		_response = new HttpResponseMessage(statusCode)

@@ -5,9 +5,15 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.Logging;
 public static class ITestCorrelatorContextExtensions
 {
 	public static IEnumerable<LogEntry> PublisherLogs(this ITestCorrelatorContext testCorrelatorContext, LogEventLevel logEventLevel) =>
+		Logs(testCorrelatorContext, "RTGS.DotNetSDK.Publisher.RtgsPublisher", logEventLevel);
+
+	public static IEnumerable<LogEntry> ConnectionBrokerLogs(this ITestCorrelatorContext testCorrelatorContext, LogEventLevel logEventLevel) =>
+		Logs(testCorrelatorContext, "RTGS.DotNetSDK.Publisher.RtgsConnectionBroker", logEventLevel);
+	
+	private static IEnumerable<LogEntry> Logs(ITestCorrelatorContext testCorrelatorContext, string sourceContext, LogEventLevel logEventLevel) =>
 		TestCorrelator
 			.GetLogEventsFromContextGuid(testCorrelatorContext.Guid)
-			.Where(logEvent => GetSourceContext(logEvent) == "RTGS.DotNetSDK.Publisher.RtgsPublisher")
+			.Where(logEvent => GetSourceContext(logEvent) == sourceContext)
 			.Where(logEvent => logEvent.Level == logEventLevel)
 			.Select(logEvent =>
 			{

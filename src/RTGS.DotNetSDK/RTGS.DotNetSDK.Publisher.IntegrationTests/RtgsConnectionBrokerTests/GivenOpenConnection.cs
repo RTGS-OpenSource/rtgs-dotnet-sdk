@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http;
 using IDCryptGlobal.Cloud.Agent.Identity;
-using IDCryptGlobal.Cloud.Agent.Identity.Connection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -97,6 +96,120 @@ public class GivenOpenConnection
 		}
 
 		[Fact]
+		public async Task WhenCallingIdCryptAgent_ThenAliasIsAlwaysUnique()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			await _rtgsConnectionBroker.SendInvitationAsync();
+
+			var inviteRequestQueryParams1 = QueryHelpers.ParseQuery(_idCryptMessageHandler.Request.RequestUri.Query);
+			var alias1 = inviteRequestQueryParams1["alias"];
+
+			await _rtgsConnectionBroker.SendInvitationAsync();
+
+			var inviteRequestQueryParams2 = QueryHelpers.ParseQuery(_idCryptMessageHandler.Request.RequestUri.Query);
+			var alias2 = inviteRequestQueryParams2["alias"];
+
+			alias2.Should().NotBeEquivalentTo(alias1);
+		}
+
+		[Fact]
+		public async Task WhenCallingIdCryptAgent_ThenDefaultQueryParamsAreCorrect()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			await _rtgsConnectionBroker.SendInvitationAsync();
+
+			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Request.RequestUri.Query);
+			var autoAccept = bool.Parse(inviteRequestQueryParams["auto_accept"]);
+			var multiUse = bool.Parse(inviteRequestQueryParams["multi_use"]);
+			var usePublicDid = bool.Parse(inviteRequestQueryParams["public"]);
+
+			autoAccept.Should().BeTrue();
+			multiUse.Should().BeFalse();
+			usePublicDid.Should().BeFalse();
+		}
+
+		[Fact]
+		public async Task WhenCallingIdCryptAgentAndResultIsNotSuccess_ThenExceptionIsThrown()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			_idCryptMessageHandler.StatusCode = HttpStatusCode.InternalServerError;
+			_idCryptMessageHandler.Content = null;
+
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+			  .Should()
+			  .ThrowAsync<Exception>();
+		}
+
+		[Fact]
+		public async Task WhenCallingIdCryptAgentAndExceptionIsThrown_ThenMessageNotSent()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			_idCryptMessageHandler.StatusCode = HttpStatusCode.InternalServerError;
+			_idCryptMessageHandler.Content = null;
+
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+			  .Should()
+			  .ThrowAsync<Exception>();
+
+			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+
+			var receivedMessage = receiver.Connections
+			   .Should().BeEmpty();
+		}
+
+		[Fact]
+		public async Task WhenCallingIdCryptAgentAndExceptionIsThrown_ThenLog()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			_idCryptMessageHandler.StatusCode = HttpStatusCode.InternalServerError;
+			_idCryptMessageHandler.Content = null;
+
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+			  .Should()
+			  .ThrowAsync<Exception>();
+			
+			var expectedLogs = new List<LogEntry>
+			{
+				new("Sending CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+				new("Error occurred when calling ID Crypt Cloud Agent API", LogEventLevel.Error, typeof(Exception)),
+			};
+
+			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug);
+			debugLogs.Should().BeEquivalentTo(expectedLogs.Where(log => log.LogLevel is LogEventLevel.Debug), options => options.WithStrictOrdering());
+
+			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error);
+			errorLogs.Should().BeEquivalentTo(expectedLogs.Where(log => log.LogLevel is LogEventLevel.Error), options => options.WithStrictOrdering());
+		}
+
+		[Fact]
+		public async Task WhenCallingIdCryptAgent_ThenLog()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			await _rtgsConnectionBroker.SendInvitationAsync();
+
+			var expectedLogs = new List<LogEntry>
+			{
+				new("Sending CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+				new("Sent CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug)
+			};
+
+			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug);
+			debugLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
+		}
+
+		[Fact]
 		public async Task WhenSendingMessageAndSuccessAcknowledgementReceived_ThenLogInformation()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
@@ -131,7 +244,7 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var exepctedLogs = new List<LogEntry>
+			var expectedLogs = new List<LogEntry>
 			{
 				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
 				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
@@ -141,13 +254,13 @@ public class GivenOpenConnection
 			using var _ = new AssertionScope();
 
 			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
-			informationLogs.Should().BeEquivalentTo(exepctedLogs.Where(log => log.LogLevel is LogEventLevel.Information), options => options.WithStrictOrdering());
+			informationLogs.Should().BeEquivalentTo(expectedLogs.Where(log => log.LogLevel is LogEventLevel.Information), options => options.WithStrictOrdering());
 
 			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
 			warningLogs.Should().BeEmpty();
 
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
-			errorLogs.Should().BeEquivalentTo(exepctedLogs.Where(log => log.LogLevel is LogEventLevel.Error), options => options.WithStrictOrdering());
+			errorLogs.Should().BeEquivalentTo(expectedLogs.Where(log => log.LogLevel is LogEventLevel.Error), options => options.WithStrictOrdering());
 		}
 
 		[Fact]
@@ -197,7 +310,7 @@ public class GivenOpenConnection
 		}
 
         [Fact]
-        public async Task ThenCanSendRequestToRtgs()
+        public async Task ThenCanSendRequestToRtgsAndInvitationIsCorrectlyMapped()
         {
             _toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
@@ -416,29 +529,12 @@ public class GivenOpenConnection
 
 		private IRtgsConnectionBroker _rtgsConnectionBroker;
 		private IHost _clientHost;
-		private ConnectionInviteResponseModel _connectionInviteResponse;
 
 		public AndLongTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
 		{
 			_grpcServer = grpcServer;
 
-            _connectionInviteResponse = new ConnectionInviteResponseModel
-            {
-                ConnectionID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                Invitation = new ConnectionInvitation
-                {
-                    ID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                    Type = "https://didcomm.org/my-family/1.0/my-message-type",
-                    Label = "Bob",
-                    RecipientKeys = new[]
-                    {
-                        "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
-                    },
-                    ServiceEndPoint = "http://192.168.56.101:8020"
-                }
-            };
-
-            SetupDependencies();
+			SetupDependencies();
 		}
 
 		private void SetupDependencies()
@@ -454,9 +550,9 @@ public class GivenOpenConnection
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
-				var connectionInviteResponseJson = JsonConvert.SerializeObject(_connectionInviteResponse);
-
-				var idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, new StringContent(connectionInviteResponseJson));
+				var idCryptMessageHandler = new StatusCodeHttpHandler(
+					HttpStatusCode.OK, 
+					new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
