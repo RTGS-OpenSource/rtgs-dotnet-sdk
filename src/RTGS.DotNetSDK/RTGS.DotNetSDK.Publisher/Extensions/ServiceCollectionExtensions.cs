@@ -36,7 +36,7 @@ public static class ServiceCollectionExtensions
 
 		configureGrpcClient?.Invoke(grpcClientBuilder);
 
-		serviceCollection.AddTransient<IRtgsPublisher, RtgsPublisher>();
+		serviceCollection.AddSingleton<IRtgsPublisher, RtgsPublisher>();
 
 		return serviceCollection;
 	}
