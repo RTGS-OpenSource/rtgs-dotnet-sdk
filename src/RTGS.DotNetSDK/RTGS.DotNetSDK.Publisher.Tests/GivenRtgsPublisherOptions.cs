@@ -12,7 +12,7 @@ public class GivenRtgsPublisherOptions
 	[MemberData(nameof(TimeSpansLessThanOneSecond))]
 	public void WhenKeepAlivePingDelayIsLessThanOneSecond_ThenThrowArgumentOutOfRangeException(TimeSpan duration) =>
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
-					"bank-did", 
+					"bank-did",
 					new Uri("http://example.org"),
 					"",
 					new Uri("http://example.com"),
@@ -25,7 +25,7 @@ public class GivenRtgsPublisherOptions
 	[Fact]
 	public void WhenKeepAlivePingDelayIsInfinite_ThenDoNotThrowArgumentOutOfRangeException() =>
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
-					"bank-did", 
+					"bank-did",
 					new Uri("http://example.org"),
 					"",
 					new Uri("http://example.com"),
@@ -38,7 +38,7 @@ public class GivenRtgsPublisherOptions
 	[MemberData(nameof(TimeSpansAtLeastOneSecond))]
 	public void WhenKeepAlivePingDelayIsAtLeastOneSecond_ThenDoNotThrowArgumentOutOfRangeException(TimeSpan duration) =>
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
-					"bank-did", 
+					"bank-did",
 					new Uri("http://example.org"),
 					"",
 					new Uri("http://example.com"),
@@ -51,7 +51,7 @@ public class GivenRtgsPublisherOptions
 	[MemberData(nameof(TimeSpansLessThanOneSecond))]
 	public void WhenKeepAlivePingTimeoutLessThanOneSecond_ThenThrowArgumentOutOfRangeException(TimeSpan duration) =>
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
-					"bank-did", 
+					"bank-did",
 					new Uri("http://example.org"),
 					"",
 					new Uri("http://example.com"),
@@ -64,7 +64,7 @@ public class GivenRtgsPublisherOptions
 	[Fact]
 	public void WhenKeepAlivePingTimeoutIsInfinite_ThenDoNotThrowArgumentOutOfRangeException() =>
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
-					"bank-did", 
+					"bank-did",
 					new Uri("http://example.org"),
 					"",
 					new Uri("http://example.com"),
@@ -77,7 +77,7 @@ public class GivenRtgsPublisherOptions
 	[MemberData(nameof(TimeSpansAtLeastOneSecond))]
 	public void WhenKeepAlivePingTimeoutIsAtLeastOneSecond_ThenDoNotThrowArgumentOutOfRangeException(TimeSpan duration) =>
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
-					"bank-did", 
+					"bank-did",
 					new Uri("http://example.org"),
 					"",
 					new Uri("http://example.com"),
@@ -89,7 +89,7 @@ public class GivenRtgsPublisherOptions
 	[Fact]
 	public void WhenRemoteHostAddressIsNull_ThenThrowArgumentNullException() =>
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
-				"bank-did", 
+				"bank-did",
 				null,
 				"",
 				new Uri("http://example.com"),
@@ -101,7 +101,7 @@ public class GivenRtgsPublisherOptions
 	[Fact]
 	public void WhenBankDidIsNull_ThenThrowArgumentNullException() =>
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
-				null, 
+				null,
 				new Uri("http://example.org"),
 				"",
 				new Uri("http://example.com"),
@@ -115,7 +115,7 @@ public class GivenRtgsPublisherOptions
 	[InlineData(" ")]
 	public void WhenBankDidIsWhiteSpace_ThenThrowArgumentException(string whiteSpace) =>
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
-				whiteSpace, 
+				whiteSpace,
 				new Uri("http://example.org"),
 				"",
 				new Uri("http://example.com"),
@@ -128,7 +128,7 @@ public class GivenRtgsPublisherOptions
 	[MemberData(nameof(TimeSpansLessThanOneSecond))]
 	public void WhenWaitForAcknowledgementDurationIsLessThanOneSecond_ThenThrowArgumentOutOfRangeException(TimeSpan duration) =>
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
-					"bank-did", 
+					"bank-did",
 					new Uri("http://example.org"),
 					"",
 					new Uri("http://example.com"),
@@ -141,7 +141,7 @@ public class GivenRtgsPublisherOptions
 	[Fact]
 	public void WhenWaitForAcknowledgementDurationIsInfinite_ThenThrowArgumentOutOfRangeException() =>
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
-					"bank-did", 
+					"bank-did",
 					new Uri("http://example.org"),
 					"",
 					new Uri("http://example.com"),
@@ -155,7 +155,7 @@ public class GivenRtgsPublisherOptions
 	[MemberData(nameof(TimeSpansGreaterThanThirtySeconds))]
 	public void WhenWaitForAcknowledgementDurationIsGreaterThan30_ThenThrowArgumentOutOfRangeException(TimeSpan duration) =>
 		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
-					"bank-did", 
+					"bank-did",
 					new Uri("http://example.org"),
 					"",
 					new Uri("http://example.com"),

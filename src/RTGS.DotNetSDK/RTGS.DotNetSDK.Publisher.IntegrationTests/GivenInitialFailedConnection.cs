@@ -21,7 +21,7 @@ public class GivenInitialFailedConnection : IAsyncLifetime, IClassFixture<GrpcSe
 		try
 		{
 			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
-					ValidMessages.BankDid, 
+					ValidMessages.BankDid,
 					_grpcServer.ServerUri,
 					"",
 					new Uri("http://example.com"),

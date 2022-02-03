@@ -5,7 +5,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
 
 public static class IdCryptTestMessages
 {
-	public static ConnectionInviteResponseModel ConnectionInviteResponse => new() 
+	public static ConnectionInviteResponseModel ConnectionInviteResponse => new()
 	{
 		ConnectionID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
 		Invitation = new ConnectionInvitation
@@ -21,7 +21,7 @@ public static class IdCryptTestMessages
 		}
 	};
 
-	public static string ConnectionInviteResponseJson => 
+	public static string ConnectionInviteResponseJson =>
 		JsonConvert.SerializeObject(ConnectionInviteResponse);
 
 

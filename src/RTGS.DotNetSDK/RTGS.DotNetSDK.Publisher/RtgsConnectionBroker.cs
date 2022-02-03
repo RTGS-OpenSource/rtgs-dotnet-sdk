@@ -68,8 +68,8 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 
 		var sendInvitationResult = new SendInvitationResult
 		{
-			ConnectionId = sendResult is SendResult.Success ? 
-				response.ConnectionID : 
+			ConnectionId = sendResult is SendResult.Success ?
+				response.ConnectionID :
 				null,
 			SendResult = sendResult
 		};

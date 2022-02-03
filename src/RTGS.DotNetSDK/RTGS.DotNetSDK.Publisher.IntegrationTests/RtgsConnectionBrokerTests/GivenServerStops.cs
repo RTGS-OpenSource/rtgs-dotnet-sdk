@@ -50,7 +50,7 @@ public class GivenServerStops : IAsyncLifetime
 				.Build();
 
 			var idCryptMessageHandler = new StatusCodeHttpHandler(
-				HttpStatusCode.OK, 
+				HttpStatusCode.OK,
 				new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
 
 			_clientHost = Host.CreateDefaultBuilder()

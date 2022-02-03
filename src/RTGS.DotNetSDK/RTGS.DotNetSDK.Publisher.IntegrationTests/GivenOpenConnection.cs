@@ -39,7 +39,7 @@ public class GivenOpenConnection
 			try
 			{
 				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
-						ValidMessages.BankDid, 
+						ValidMessages.BankDid,
 						_grpcServer.ServerUri,
 						"",
 						new Uri("http://example.com"),
@@ -470,7 +470,7 @@ public class GivenOpenConnection
 			try
 			{
 				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
-						ValidMessages.BankDid, 
+						ValidMessages.BankDid,
 						_grpcServer.ServerUri,
 						"",
 						new Uri("http://example.com"),

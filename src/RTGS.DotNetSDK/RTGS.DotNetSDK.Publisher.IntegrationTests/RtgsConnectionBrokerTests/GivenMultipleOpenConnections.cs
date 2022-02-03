@@ -8,67 +8,67 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests;
 
 public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServerFixture>
 {
-    private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
+	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
-    private readonly GrpcServerFixture _grpcServer;
-    private ToRtgsMessageHandler _toRtgsMessageHandler;
-    private IHost _clientHost;
+	private readonly GrpcServerFixture _grpcServer;
+	private ToRtgsMessageHandler _toRtgsMessageHandler;
+	private IHost _clientHost;
 
-    public GivenMultipleOpenConnections(GrpcServerFixture grpcServer)
-    {
-        _grpcServer = grpcServer;
+	public GivenMultipleOpenConnections(GrpcServerFixture grpcServer)
+	{
+		_grpcServer = grpcServer;
 
 		SetupDependencies();
-    }
+	}
 
-    private void SetupDependencies()
-    {
-        try
-        {
-            var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
-                    ValidMessages.BankDid,
-                    _grpcServer.ServerUri,
-                    Guid.NewGuid().ToString(),
-                    new Uri("http://example.com"),
-                    "http://example.com")
-                .WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
-                .Build();
+	private void SetupDependencies()
+	{
+		try
+		{
+			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
+					ValidMessages.BankDid,
+					_grpcServer.ServerUri,
+					Guid.NewGuid().ToString(),
+					new Uri("http://example.com"),
+					"http://example.com")
+				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
+				.Build();
 
-            var idCryptMessageHandler = new StatusCodeHttpHandler(
-				HttpStatusCode.OK, 
+			var idCryptMessageHandler = new StatusCodeHttpHandler(
+				HttpStatusCode.OK,
 				new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
 
-            _clientHost = Host.CreateDefaultBuilder()
-                .ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
-                .ConfigureServices(services => services
-                    .AddRtgsPublisher(rtgsPublisherOptions)
-                    .AddSingleton(idCryptMessageHandler)
-                    .AddHttpClient<IIdentityClient, IdentityClient>((httpClient, serviceProvider) =>
-                    {
-                        var identityOptions = serviceProvider.GetRequiredService<IOptions<IdentityConfig>>();
-                        var identityClient = new IdentityClient(httpClient, identityOptions);
+			_clientHost = Host.CreateDefaultBuilder()
+				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
+				.ConfigureServices(services => services
+					.AddRtgsPublisher(rtgsPublisherOptions)
+					.AddSingleton(idCryptMessageHandler)
+					.AddHttpClient<IIdentityClient, IdentityClient>((httpClient, serviceProvider) =>
+					{
+						var identityOptions = serviceProvider.GetRequiredService<IOptions<IdentityConfig>>();
+						var identityClient = new IdentityClient(httpClient, identityOptions);
 
-                        return identityClient;
-                    })
-                    .AddHttpMessageHandler<StatusCodeHttpHandler>())
-                .Build();
+						return identityClient;
+					})
+					.AddHttpMessageHandler<StatusCodeHttpHandler>())
+				.Build();
 
-            _toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
-        }
-        catch (Exception)
-        {
-            Dispose();
+			_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
+		}
+		catch (Exception)
+		{
+			Dispose();
 
-            throw;
-        }
-    }
+			throw;
+		}
+	}
 
-    public void Dispose()
-    {
-        _clientHost?.Dispose();
+	public void Dispose()
+	{
+		_clientHost?.Dispose();
 
-        _grpcServer.Reset();
-    }
+		_grpcServer.Reset();
+	}
 
 	[Fact]
 	public void WhenRequestingMultipleConnectionBrokers_ThenSameConnectionBrokerIsReturned()

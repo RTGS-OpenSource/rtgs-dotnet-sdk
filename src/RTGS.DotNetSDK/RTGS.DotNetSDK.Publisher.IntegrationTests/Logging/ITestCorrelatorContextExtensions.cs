@@ -9,7 +9,7 @@ public static class ITestCorrelatorContextExtensions
 
 	public static IEnumerable<LogEntry> ConnectionBrokerLogs(this ITestCorrelatorContext testCorrelatorContext, LogEventLevel logEventLevel) =>
 		Logs(testCorrelatorContext, "RTGS.DotNetSDK.Publisher.RtgsConnectionBroker", logEventLevel);
-	
+
 	private static IEnumerable<LogEntry> Logs(ITestCorrelatorContext testCorrelatorContext, string sourceContext, LogEventLevel logEventLevel) =>
 		TestCorrelator
 			.GetLogEventsFromContextGuid(testCorrelatorContext.Guid)

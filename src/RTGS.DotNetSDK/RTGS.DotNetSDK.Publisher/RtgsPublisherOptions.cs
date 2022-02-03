@@ -46,7 +46,7 @@ public record RtgsPublisherOptions
 	/// <summary>
 	/// 
 	/// </summary>
-	public IdentityConfig IdentityConfig { get;  }
+	public IdentityConfig IdentityConfig { get; }
 
 	/// <summary>
 	/// A builder for <see cref="RtgsPublisherOptions"/>.
@@ -54,7 +54,7 @@ public record RtgsPublisherOptions
 	public sealed class Builder
 	{
 		private Builder(
-			string bankDid, 
+			string bankDid,
 			Uri remoteHostAddress,
 			string idCryptApiKey,
 			Uri idCryptApiUrl,
@@ -96,7 +96,7 @@ public record RtgsPublisherOptions
 		/// <exception cref="ArgumentNullException">Thrown if bankDid or remoteHostAddress is null.</exception>
 		/// <exception cref="ArgumentException">Thrown if bankDid is white space.</exception>
 		public static Builder CreateNew(
-			string bankDid, 
+			string bankDid,
 			Uri remoteHostAddress,
 			string idCryptApiKey,
 			Uri idCryptApiUrl,

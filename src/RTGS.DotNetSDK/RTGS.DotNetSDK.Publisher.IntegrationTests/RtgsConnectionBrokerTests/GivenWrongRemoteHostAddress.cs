@@ -6,7 +6,7 @@ using RTGS.DotNetSDK.Publisher.IntegrationTests.HttpHandlers;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests;
 
-public class GivenWrongRemoteHostAddress 
+public class GivenWrongRemoteHostAddress
 {
 	[Fact]
 	public async Task WhenSending_ThenRpcExceptionThrown()
@@ -20,7 +20,7 @@ public class GivenWrongRemoteHostAddress
 			.Build();
 
 		var idCryptMessageHandler = new StatusCodeHttpHandler(
-			HttpStatusCode.OK, 
+			HttpStatusCode.OK,
 			new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
 
 		using var clientHost = Host.CreateDefaultBuilder()

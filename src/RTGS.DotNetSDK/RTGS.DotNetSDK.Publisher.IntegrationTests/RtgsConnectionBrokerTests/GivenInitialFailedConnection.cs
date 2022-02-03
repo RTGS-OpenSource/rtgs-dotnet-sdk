@@ -18,7 +18,7 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 	public GivenInitialFailedConnection(GrpcServerFixture grpcServer)
 	{
 		_grpcServer = grpcServer;
-	
+
 		SetupDependencies();
 	}
 
@@ -27,7 +27,7 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 		try
 		{
 			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
-					ValidMessages.BankDid, 
+					ValidMessages.BankDid,
 					_grpcServer.ServerUri,
 					Guid.NewGuid().ToString(),
 					new Uri("http://example.com"),
@@ -36,7 +36,7 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 				.Build();
 
 			var idCryptMessageHandler = new StatusCodeHttpHandler(
-				HttpStatusCode.OK, 
+				HttpStatusCode.OK,
 				new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
 
 			_clientHost = Host.CreateDefaultBuilder()

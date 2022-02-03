@@ -20,29 +20,29 @@ public class GivenOpenConnection
 		private IRtgsConnectionBroker _rtgsConnectionBroker;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
-        private StatusCodeHttpHandler _idCryptMessageHandler;
+		private StatusCodeHttpHandler _idCryptMessageHandler;
 
 		public AndShortTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
 		{
 			_grpcServer = grpcServer;
 
-            SetupSerilogLogger();
+			SetupSerilogLogger();
 
-            SetupDependencies();
+			SetupDependencies();
 
-            _serilogContext = TestCorrelator.CreateContext();
-        }
+			_serilogContext = TestCorrelator.CreateContext();
+		}
 
 		private static void SetupSerilogLogger() =>
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .WriteTo.TestCorrelator()
-                .CreateLogger();
+			Log.Logger = new LoggerConfiguration()
+				.MinimumLevel.Debug()
+				.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+				.Enrich.FromLogContext()
+				.WriteTo.Console()
+				.WriteTo.TestCorrelator()
+				.CreateLogger();
 
-        private void SetupDependencies()
+		private void SetupDependencies()
 		{
 			try
 			{
@@ -58,7 +58,7 @@ public class GivenOpenConnection
 					.Build();
 
 				_idCryptMessageHandler = new StatusCodeHttpHandler(
-					HttpStatusCode.OK, 
+					HttpStatusCode.OK,
 					new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
 
 				_clientHost = Host.CreateDefaultBuilder()
@@ -70,7 +70,7 @@ public class GivenOpenConnection
 							{
 								var identityOptions = serviceProvider.GetRequiredService<IOptions<IdentityConfig>>();
 								var identityClient = new IdentityClient(httpClient, identityOptions);
-								
+
 								return identityClient;
 							})
 							.AddHttpMessageHandler<StatusCodeHttpHandler>())
@@ -89,7 +89,7 @@ public class GivenOpenConnection
 		}
 
 		public void Dispose()
-        {
+		{
 			_clientHost?.Dispose();
 
 			_grpcServer.Reset();
@@ -177,7 +177,7 @@ public class GivenOpenConnection
 			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
 			  .Should()
 			  .ThrowAsync<Exception>();
-			
+
 			var expectedLogs = new List<LogEntry>
 			{
 				new("Sending CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug),
@@ -266,7 +266,7 @@ public class GivenOpenConnection
 		[Fact]
 		public async Task WhenSendingMessageAndRpcExceptionReceived_ThenLog()
 		{
-			_toRtgsMessageHandler.SetupForMessage(handler => 
+			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ThrowRpcException(StatusCode.Unavailable, "test"));
 
 			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
@@ -291,7 +291,7 @@ public class GivenOpenConnection
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
 			errorLogs.Should().BeEquivalentTo(expectedLogs.Where(log => log.LogLevel is LogEventLevel.Error), options => options.WithStrictOrdering());
 		}
-		
+
 		[Fact]
 		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader()
 		{
@@ -305,46 +305,46 @@ public class GivenOpenConnection
 
 			connection.Should().NotBeNull();
 			connection!.Headers.Should()
-                .ContainSingle(header => header.Key == "bankdid" 
-                                         && header.Value == ValidMessages.BankDid);
+				.ContainSingle(header => header.Key == "bankdid"
+										 && header.Value == ValidMessages.BankDid);
 		}
 
-        [Fact]
-        public async Task ThenCanSendRequestToRtgsAndInvitationIsCorrectlyMapped()
-        {
-            _toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+		[Fact]
+		public async Task ThenCanSendRequestToRtgsAndInvitationIsCorrectlyMapped()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-            await _rtgsConnectionBroker.SendInvitationAsync();
+			await _rtgsConnectionBroker.SendInvitationAsync();
 
-            var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-            var receivedMessage = receiver.Connections
-                .Should().ContainSingle().Which.Requests
-                .Should().ContainSingle().Subject;
+			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+			var receivedMessage = receiver.Connections
+				.Should().ContainSingle().Which.Requests
+				.Should().ContainSingle().Subject;
 
-            using var _ = new AssertionScope();
+			using var _ = new AssertionScope();
 
-            receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.v1");
-            receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
+			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.v1");
+			receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
 
 			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Request.RequestUri.Query);
 
 			var invitation = IdCryptTestMessages.ConnectionInviteResponse.Invitation;
 
 			var expectedMessageData = new IdCryptInvitationV1
-            {
-                Alias = inviteRequestQueryParams["alias"],
-                Label = invitation.Label,
-                RecipientKeys = invitation.RecipientKeys,
-                Id = invitation.ID,
-                Type = invitation.Type,
-                ServiceEndPoint = invitation.ServiceEndPoint
-            };
+			{
+				Alias = inviteRequestQueryParams["alias"],
+				Label = invitation.Label,
+				RecipientKeys = invitation.RecipientKeys,
+				Id = invitation.ID,
+				Type = invitation.Type,
+				ServiceEndPoint = invitation.ServiceEndPoint
+			};
 
-            var actualMessageData = JsonConvert
-                .DeserializeObject<IdCryptInvitationV1>(receivedMessage.Data);
+			var actualMessageData = JsonConvert
+				.DeserializeObject<IdCryptInvitationV1>(receivedMessage.Data);
 
-            actualMessageData.Should().BeEquivalentTo(expectedMessageData);
-        }
+			actualMessageData.Should().BeEquivalentTo(expectedMessageData);
+		}
 
 		[Fact]
 		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnSuccessAndConnectionId()
@@ -449,81 +449,81 @@ public class GivenOpenConnection
 			result.ConnectionId.Should().BeNull();
 		}
 
-        [Fact]
-        public async Task WhenBankMessageApiReturnsUnexpectedAcknowledgementBeforeFailureAcknowledgement_ThenReturnRejected()
-        {
-            _toRtgsMessageHandler.SetupForMessage(handler =>
-            {
-                handler.ReturnUnexpectedAcknowledgementWithSuccess();
-                handler.ReturnExpectedAcknowledgementWithFailure();
-            });
+		[Fact]
+		public async Task WhenBankMessageApiReturnsUnexpectedAcknowledgementBeforeFailureAcknowledgement_ThenReturnRejected()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+			{
+				handler.ReturnUnexpectedAcknowledgementWithSuccess();
+				handler.ReturnExpectedAcknowledgementWithFailure();
+			});
 
-            var result = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
-            result.SendResult.Should().Be(SendResult.Rejected);
-        }
+			result.SendResult.Should().Be(SendResult.Rejected);
+		}
 
-        [Fact]
-        public async Task WhenBankMessageApiReturnsFailureAcknowledgementBeforeUnexpectedAcknowledgement_ThenReturnRejected()
-        {
-            _toRtgsMessageHandler.SetupForMessage(handler =>
-            {
-                handler.ReturnExpectedAcknowledgementWithFailure();
-                handler.ReturnUnexpectedAcknowledgementWithSuccess();
-            });
+		[Fact]
+		public async Task WhenBankMessageApiReturnsFailureAcknowledgementBeforeUnexpectedAcknowledgement_ThenReturnRejected()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+			{
+				handler.ReturnExpectedAcknowledgementWithFailure();
+				handler.ReturnUnexpectedAcknowledgementWithSuccess();
+			});
 
-            var result = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
-            result.SendResult.Should().Be(SendResult.Rejected);
-        }
+			result.SendResult.Should().Be(SendResult.Rejected);
+		}
 
-        [Fact]
-        public async Task WhenBankMessageApiReturnsSuccessWrappedByUnexpectedFailureAcknowledgements_ThenReturnSuccess()
-        {
-            _toRtgsMessageHandler.SetupForMessage(handler =>
-            {
-                handler.ReturnUnexpectedAcknowledgementWithFailure();
-                handler.ReturnExpectedAcknowledgementWithSuccess();
-                handler.ReturnUnexpectedAcknowledgementWithFailure();
-            });
+		[Fact]
+		public async Task WhenBankMessageApiReturnsSuccessWrappedByUnexpectedFailureAcknowledgements_ThenReturnSuccess()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+			{
+				handler.ReturnUnexpectedAcknowledgementWithFailure();
+				handler.ReturnExpectedAcknowledgementWithSuccess();
+				handler.ReturnUnexpectedAcknowledgementWithFailure();
+			});
 
-            var result = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
-            result.SendResult.Should().Be(SendResult.Success);
-        }
+			result.SendResult.Should().Be(SendResult.Success);
+		}
 
-        [Fact]
-        public async Task WhenBankMessageApiReturnsSuccessForSecondMessageOnly_ThenDoNotTimeout()
-        {
-            var result1 = await _rtgsConnectionBroker.SendInvitationAsync();
-            result1.SendResult.Should().Be(SendResult.Timeout);
+		[Fact]
+		public async Task WhenBankMessageApiReturnsSuccessForSecondMessageOnly_ThenDoNotTimeout()
+		{
+			var result1 = await _rtgsConnectionBroker.SendInvitationAsync();
+			result1.SendResult.Should().Be(SendResult.Timeout);
 
-            _toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-            var result2 = await _rtgsConnectionBroker.SendInvitationAsync();
-            result2.SendResult.Should().Be(SendResult.Success);
-        }
+			var result2 = await _rtgsConnectionBroker.SendInvitationAsync();
+			result2.SendResult.Should().Be(SendResult.Success);
+		}
 
-        [Fact]
-        public async Task WhenBankMessageApiThrowsExceptionForFirstMessage_ThenStillHandleSecondMessage()
-        {
-            _toRtgsMessageHandler.SetupForMessage(handler => handler.ThrowRpcException(StatusCode.Unknown, "test"));
+		[Fact]
+		public async Task WhenBankMessageApiThrowsExceptionForFirstMessage_ThenStillHandleSecondMessage()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler => handler.ThrowRpcException(StatusCode.Unknown, "test"));
 
-            await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
-                .Should()
-                .ThrowAsync<RpcException>();
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+				.Should()
+				.ThrowAsync<RpcException>();
 
-            _toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-            var result = await _rtgsConnectionBroker.SendInvitationAsync();
-            result.SendResult.Should().Be(SendResult.Success);
-        }
-    }
+			var result = await _rtgsConnectionBroker.SendInvitationAsync();
+			result.SendResult.Should().Be(SendResult.Success);
+		}
+	}
 
-    public class AndLongTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
-    {
-        private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(30);
-        private static readonly TimeSpan TestWaitForSendDuration = TimeSpan.FromSeconds(15);
+	public class AndLongTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
+	{
+		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(30);
+		private static readonly TimeSpan TestWaitForSendDuration = TimeSpan.FromSeconds(15);
 
 		private readonly GrpcServerFixture _grpcServer;
 
@@ -551,7 +551,7 @@ public class GivenOpenConnection
 					.Build();
 
 				var idCryptMessageHandler = new StatusCodeHttpHandler(
-					HttpStatusCode.OK, 
+					HttpStatusCode.OK,
 					new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
 
 				_clientHost = Host.CreateDefaultBuilder()
@@ -589,62 +589,62 @@ public class GivenOpenConnection
 		}
 
 		[Fact]
-        public async Task WhenCancellationTokenIsCancelledBeforeAcknowledgmentTimeout_ThenThrowOperationCancelled()
-        {
-            using var cancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
+		public async Task WhenCancellationTokenIsCancelledBeforeAcknowledgmentTimeout_ThenThrowOperationCancelled()
+		{
+			using var cancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
 
-            var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-            receiver.RegisterOnMessageReceived(() => cancellationTokenSource.Cancel());
+			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+			receiver.RegisterOnMessageReceived(() => cancellationTokenSource.Cancel());
 
-            await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync(cancellationTokenSource.Token))
-                .Should().ThrowAsync<OperationCanceledException>();
-        }
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync(cancellationTokenSource.Token))
+				.Should().ThrowAsync<OperationCanceledException>();
+		}
 
-        [Fact]
-        public async Task WhenCancellationTokenIsCancelledBeforeSemaphoreIsEntered_ThenThrowOperationCancelled()
-        {
-            var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+		[Fact]
+		public async Task WhenCancellationTokenIsCancelledBeforeSemaphoreIsEntered_ThenThrowOperationCancelled()
+		{
+			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
-            using var firstMessageReceivedSignal = new ManualResetEventSlim();
-            receiver.RegisterOnMessageReceived(() => firstMessageReceivedSignal.Set());
+			using var firstMessageReceivedSignal = new ManualResetEventSlim();
+			receiver.RegisterOnMessageReceived(() => firstMessageReceivedSignal.Set());
 
-            // Send the first message that has no acknowledgement setup so the client
-            // will hold on to the semaphore for a long time.
-            using var firstMessageCancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
-            var firstMessageTask = FluentActions
-                .Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync(firstMessageCancellationTokenSource.Token))
-                .Should()
-                .ThrowAsync<OperationCanceledException>();
+			// Send the first message that has no acknowledgement setup so the client
+			// will hold on to the semaphore for a long time.
+			using var firstMessageCancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
+			var firstMessageTask = FluentActions
+				.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync(firstMessageCancellationTokenSource.Token))
+				.Should()
+				.ThrowAsync<OperationCanceledException>();
 
-            // Once the server has received the first message we know the semaphore is in use...
-            firstMessageReceivedSignal.Wait(TestWaitForSendDuration);
+			// Once the server has received the first message we know the semaphore is in use...
+			firstMessageReceivedSignal.Wait(TestWaitForSendDuration);
 
-            // ...we can send the second message knowing it will be waiting due to the semaphore.
-            using var secondMessageCancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
-            var secondMessageTask = FluentActions
-                .Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync(secondMessageCancellationTokenSource.Token))
-                .Should()
-                .ThrowAsync<OperationCanceledException>();
+			// ...we can send the second message knowing it will be waiting due to the semaphore.
+			using var secondMessageCancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
+			var secondMessageTask = FluentActions
+				.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync(secondMessageCancellationTokenSource.Token))
+				.Should()
+				.ThrowAsync<OperationCanceledException>();
 
-            // While the first message's acknowledgement is still being waited, cancel the second message before it is sent.
-            secondMessageCancellationTokenSource.Cancel();
-            await secondMessageTask;
+			// While the first message's acknowledgement is still being waited, cancel the second message before it is sent.
+			secondMessageCancellationTokenSource.Cancel();
+			await secondMessageTask;
 
-            // Allow the test to gracefully stop.
-            firstMessageCancellationTokenSource.Cancel();
-            await firstMessageTask;
+			// Allow the test to gracefully stop.
+			firstMessageCancellationTokenSource.Cancel();
+			await firstMessageTask;
 
-            receiver.Connections.Single().Requests.Count().Should().Be(1, "the second message should not have been sent as the semaphore should not be entered");
-        }
+			receiver.Connections.Single().Requests.Count().Should().Be(1, "the second message should not have been sent as the semaphore should not be entered");
+		}
 	}
 
-    private record IdCryptInvitationV1
-    {
-        public string Alias { get; init; }
-        public string Label { get; init; }
-        public IEnumerable<string> RecipientKeys { get; init; }
-        public string Id { get; init; }
-        public string Type { get; init; }
-        public string ServiceEndPoint { get; init; }
-    }
+	private record IdCryptInvitationV1
+	{
+		public string Alias { get; init; }
+		public string Label { get; init; }
+		public IEnumerable<string> RecipientKeys { get; init; }
+		public string Id { get; init; }
+		public string Type { get; init; }
+		public string ServiceEndPoint { get; init; }
+	}
 }
