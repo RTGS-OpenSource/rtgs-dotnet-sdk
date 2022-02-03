@@ -6,29 +6,43 @@ using RTGS.DotNetSDK.Publisher.IntegrationTests.HttpHandlers;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests;
 
-public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServerFixture>
+public class GivenServerStops : IAsyncLifetime
 {
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
-	private readonly GrpcServerFixture _grpcServer;
+	private readonly GrpcTestServer _grpcServer;
+	private readonly ITestCorrelatorContext _serilogContext;
 	private ToRtgsMessageHandler _toRtgsMessageHandler;
 	private IHost _clientHost;
 	private IRtgsConnectionBroker _rtgsConnectionBroker;
 
-	public GivenInitialFailedConnection(GrpcServerFixture grpcServer)
+	public GivenServerStops()
 	{
-		_grpcServer = grpcServer;
-	
-		SetupDependencies();
+		_grpcServer = new GrpcTestServer();
+
+		SetupSerilogLogger();
+
+		_serilogContext = TestCorrelator.CreateContext();
 	}
 
-	private void SetupDependencies()
+	private static void SetupSerilogLogger() =>
+		Log.Logger = new LoggerConfiguration()
+			.MinimumLevel.Debug()
+			.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+			.Enrich.FromLogContext()
+			.WriteTo.Console()
+			.WriteTo.TestCorrelator()
+			.CreateLogger();
+
+	public async Task InitializeAsync()
 	{
 		try
 		{
+			var serverUri = await _grpcServer.StartAsync();
+
 			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
-					ValidMessages.BankDid, 
-					_grpcServer.ServerUri,
+					ValidMessages.BankDid,
+					serverUri,
 					Guid.NewGuid().ToString(),
 					new Uri("http://example.com"),
 					"http://example.com")
@@ -52,6 +66,7 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 							return identityClient;
 						})
 						.AddHttpMessageHandler<StatusCodeHttpHandler>())
+				.UseSerilog()
 				.Build();
 
 			_rtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
@@ -61,63 +76,50 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 		{
 			// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
 			// See https://github.com/xunit/xunit/discussions/2313 for further details.
-			Dispose();
+			await DisposeAsync();
 
 			throw;
 		}
 	}
 
-	public void Dispose()
+	public async Task DisposeAsync()
 	{
 		_clientHost?.Dispose();
-
-		_grpcServer.Reset();
+		_grpcServer.Dispose();
 	}
 
 	[Fact]
-	public async Task WhenSending_ThenThrowException()
+	public async Task WhenSendingMessage_ThenRpcExceptionOrIOExceptionThrown()
 	{
-		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-
-		receiver.ThrowOnConnection = true;
-
-		await FluentActions
-			.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
-			.Should()
-			.ThrowAsync<Exception>();
-	}
-
-	[Fact]
-	public async Task WhenSendingBigMessage_ThenThrowException()
-	{
-		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-
-		receiver.ThrowOnConnection = true;
-
-		await FluentActions
-			.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
-			.Should()
-			.ThrowAsync<Exception>();
-	}
-
-	[Fact]
-	public async Task WhenSubsequentConnectionCanBeOpened_ThenCanSendSubsequentMessagesToRtgs()
-	{
-		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-
-		receiver.ThrowOnConnection = true;
-
-		await FluentActions
-			.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
-			.Should()
-			.ThrowAsync<Exception>();
-
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-		receiver.ThrowOnConnection = false;
-
 		var result = await _rtgsConnectionBroker.SendInvitationAsync();
-
 		result.SendResult.Should().Be(SendResult.Success);
+
+		await _grpcServer.StopAsync();
+
+		var exceptionAssertions = await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+			.Should().ThrowAsync<Exception>();
+
+		// One of two exceptions can be thrown depending on how far along the call is.
+		exceptionAssertions.And.GetType()
+			.Should().Match(exceptionType => exceptionType == typeof(RpcException)
+											 || exceptionType == typeof(IOException));
+	}
+
+	[Fact]
+	public async Task WhenNotSendingMessage_ThenLogError()
+	{
+		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+		await _rtgsConnectionBroker.SendInvitationAsync();
+
+		await _grpcServer.StopAsync();
+
+		var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
+		errorLogs.Should().BeEquivalentTo(new[]
+		{
+			new LogEntry("RTGS connection unexpectedly closed", LogEventLevel.Error, typeof(RpcException))
+		});
 	}
 }

@@ -24,6 +24,7 @@ public static class ServiceCollectionExtensions
 		Action<IHttpClientBuilder> configureGrpcClient = null)
 	{
 		serviceCollection.AddSingleton(options);
+		serviceCollection.AddSingleton(Options.Create(options.IdentityConfig));
 
 		var grpcClientBuilder = serviceCollection
 			.AddGrpcClient<Payment.PaymentClient>(clientOptions => clientOptions.Address = options.RemoteHostAddress)
@@ -38,7 +39,7 @@ public static class ServiceCollectionExtensions
 
 		configureGrpcClient?.Invoke(grpcClientBuilder);
 
-		serviceCollection.AddSingleton(Options.Create(options.IdentityConfig));
+		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
 
 		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
 		serviceCollection.AddTransient<IRtgsInternalPublisher, RtgsInternalPublisher>();

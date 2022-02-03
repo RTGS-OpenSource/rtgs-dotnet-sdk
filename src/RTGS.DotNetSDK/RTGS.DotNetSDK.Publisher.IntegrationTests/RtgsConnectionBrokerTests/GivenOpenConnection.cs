@@ -22,27 +22,10 @@ public class GivenOpenConnection
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
         private StatusCodeHttpHandler _idCryptMessageHandler;
-		private readonly ConnectionInviteResponseModel _connectionInviteResponse;
 
 		public AndShortTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
 		{
 			_grpcServer = grpcServer;
-
-            _connectionInviteResponse = new ConnectionInviteResponseModel
-            {
-                ConnectionID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                Invitation = new ConnectionInvitation
-                {
-                    ID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                    Type = "https://didcomm.org/my-family/1.0/my-message-type",
-                    Label = "Bob",
-                    RecipientKeys = new[]
-                    {
-                        "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
-                    },
-                    ServiceEndPoint = "http://192.168.56.101:8020"
-                }
-            };
 
             SetupSerilogLogger();
 
@@ -75,9 +58,9 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-                var connectionInviteResponseJson = JsonConvert.SerializeObject(_connectionInviteResponse);
-
-				_idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, new StringContent(connectionInviteResponseJson));
+				_idCryptMessageHandler = new StatusCodeHttpHandler(
+					HttpStatusCode.OK, 
+					new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
@@ -91,7 +74,7 @@ public class GivenOpenConnection
 								
 								return identityClient;
 							})
-						.AddHttpMessageHandler<StatusCodeHttpHandler>())
+							.AddHttpMessageHandler<StatusCodeHttpHandler>())
 					.UseSerilog()
 					.Build();
 
@@ -234,14 +217,16 @@ public class GivenOpenConnection
 
 			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Request.RequestUri.Query);
 
+			var invitation = IdCryptTestMessages.ConnectionInviteResponse.Invitation;
+
 			var expectedMessageData = new IdCryptInvitationV1
             {
                 Alias = inviteRequestQueryParams["alias"],
-                Label = _connectionInviteResponse.Invitation.Label,
-                RecipientKeys = _connectionInviteResponse.Invitation.RecipientKeys,
-                Id = _connectionInviteResponse.Invitation.ID,
-                Type = _connectionInviteResponse.Invitation.Type,
-                ServiceEndPoint = _connectionInviteResponse.Invitation.ServiceEndPoint
+                Label = invitation.Label,
+                RecipientKeys = invitation.RecipientKeys,
+                Id = invitation.ID,
+                Type = invitation.Type,
+                ServiceEndPoint = invitation.ServiceEndPoint
             };
 
             var actualMessageData = JsonConvert
@@ -259,7 +244,7 @@ public class GivenOpenConnection
 
 			using var _ = new AssertionScope();
 
-			result.ConnectionId.Should().Be(_connectionInviteResponse.ConnectionID);
+			result.ConnectionId.Should().Be(IdCryptTestMessages.ConnectionInviteResponse.ConnectionID);
 			result.SendResult.Should().Be(SendResult.Success);
 		}
 
@@ -335,7 +320,7 @@ public class GivenOpenConnection
 			using var _ = new AssertionScope();
 
 			result1.SendResult.Should().Be(SendResult.Success);
-			result1.ConnectionId.Should().Be(_connectionInviteResponse.ConnectionID);
+			result1.ConnectionId.Should().Be(IdCryptTestMessages.ConnectionInviteResponse.ConnectionID);
 
 			result2.SendResult.Should().Be(SendResult.Timeout);
 			result2.ConnectionId.Should().BeNull();
