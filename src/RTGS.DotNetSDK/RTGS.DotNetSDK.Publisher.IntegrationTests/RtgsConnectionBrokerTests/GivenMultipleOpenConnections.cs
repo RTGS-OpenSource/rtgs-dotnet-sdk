@@ -1,9 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http;
 using IDCryptGlobal.Cloud.Agent.Identity;
-using IDCryptGlobal.Cloud.Agent.Identity.Connection;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.HttpHandlers;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests;
@@ -13,34 +11,15 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
     private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
     private readonly GrpcServerFixture _grpcServer;
-    private readonly ConnectionInviteResponseModel _connectionInviteResponse;
     private ToRtgsMessageHandler _toRtgsMessageHandler;
     private IHost _clientHost;
-    private IRtgsConnectionBroker _rtgsConnectionBroker;
 
     public GivenMultipleOpenConnections(GrpcServerFixture grpcServer)
     {
         _grpcServer = grpcServer;
 
-        _connectionInviteResponse = new ConnectionInviteResponseModel
-        {
-            ConnectionID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-            Invitation = new ConnectionInvitation
-            {
-                ID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                Type = "https://didcomm.org/my-family/1.0/my-message-type",
-                Label = "Bob",
-                RecipientKeys = new[]
-                {
-                    "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
-                },
-                ServiceEndPoint = "http://192.168.56.101:8020"
-            }
-        };
-
-        SetupDependencies();
+		SetupDependencies();
     }
-
 
     private void SetupDependencies()
     {
@@ -55,9 +34,9 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
                 .WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
                 .Build();
 
-            var connectionInviteResponseJson = JsonConvert.SerializeObject(_connectionInviteResponse);
-
-            var idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, new StringContent(connectionInviteResponseJson));
+            var idCryptMessageHandler = new StatusCodeHttpHandler(
+				HttpStatusCode.OK, 
+				new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
 
             _clientHost = Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
@@ -74,13 +53,10 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
                     .AddHttpMessageHandler<StatusCodeHttpHandler>())
                 .Build();
 
-            _rtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
             _toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
         }
         catch (Exception)
         {
-            // If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
-            // See https://github.com/xunit/xunit/discussions/2313 for further details.
             Dispose();
 
             throw;
@@ -97,20 +73,20 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
     [Fact]
     public void WhenSendingInParallel_ThenCanSendToRtgs()
     {
-        const int PublisherCount = 5;
+        const int BrokerCount = 5;
 
         using var sendRequestsSignal = new ManualResetEventSlim();
 
-        var sendRequestTasks = Enumerable.Range(1, PublisherCount)
+        var sendRequestTasks = Enumerable.Range(1, BrokerCount)
             .Select(request => Task.Run(async () =>
             {
                 _toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-                await using var rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+                var rtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 
                 sendRequestsSignal.Wait();
 
-                await _rtgsConnectionBroker.SendInvitationAsync();
+                await rtgsConnectionBroker.SendInvitationAsync();
             })).ToArray();
 
         sendRequestsSignal.Set();
@@ -119,6 +95,39 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
         allCompleted.Should().BeTrue();
 
         var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-        receiver.Connections.Count.Should().Be(PublisherCount);
+        receiver.Connections.Count.Should().Be(BrokerCount);
     }
+
+	[Fact]
+	public async Task WhenSendingSequentially_ThenCanSendToRtgs()
+	{
+		const int BrokerCount = 5;
+
+		var rtgsConnectionBroker1 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
+		var rtgsConnectionBroker2 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
+		var rtgsConnectionBroker3 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
+		var rtgsConnectionBroker4 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
+		var rtgsConnectionBroker5 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
+
+		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+		await rtgsConnectionBroker1.SendInvitationAsync();
+
+		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+		await rtgsConnectionBroker2.SendInvitationAsync();
+
+		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+		await rtgsConnectionBroker3.SendInvitationAsync();
+
+		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+		await rtgsConnectionBroker4.SendInvitationAsync();
+
+		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+		await rtgsConnectionBroker5.SendInvitationAsync();
+
+		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+
+		using var _ = new AssertionScope();
+		receiver.Connections.Count.Should().Be(BrokerCount);
+		receiver.Connections.SelectMany(connection => connection.Requests).Count().Should().Be(5);
+	}
 }
