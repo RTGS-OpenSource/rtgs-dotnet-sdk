@@ -6,6 +6,10 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
+
+env:
+  SOLUTION_FOLDER: ./src/RTGS.DotNetSDK/
+
 jobs:
   build:
     name: Build
@@ -47,5 +51,5 @@ jobs:
         shell: powershell
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"RTGS-OpenSource_rtgs-dotnet-sdk" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
-          dotnet build
+          dotnet build ${{env.SOLUTION_FOLDER}}
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
