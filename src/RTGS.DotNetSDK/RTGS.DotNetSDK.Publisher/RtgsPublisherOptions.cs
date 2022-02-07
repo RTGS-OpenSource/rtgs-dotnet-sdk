@@ -46,17 +46,17 @@ public record RtgsPublisherOptions
 	/// <summary>
 	/// Address of the ID Crypt Cloud Agent API.
 	/// </summary>
-	public Uri IdCryptApiAddress { get; set; }
+	public Uri IdCryptApiAddress { get; }
 
 	/// <summary>
 	/// API Key for the ID Crypt Cloud Agent API.
 	/// </summary>
-	public string IdCryptApiKey { get; set; }
+	public string IdCryptApiKey { get; }
 
 	/// <summary>
 	/// Address of the ID Crypt Cloud Agent Service Endpoint.
 	/// </summary>
-	public Uri IdCryptServiceEndPointAddress { get; set; }
+	public Uri IdCryptServiceEndPointAddress { get; }
 
 	/// <summary>
 	/// A builder for <see cref="RtgsPublisherOptions"/>.

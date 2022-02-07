@@ -5,7 +5,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.HttpHandlers;
 
 internal class StatusCodeHttpHandler : DelegatingHandler
 {
-	private HttpResponseMessage _response;
+	private readonly HttpResponseMessage _response;
 
 	public HttpRequestMessage Request { get; private set; }
 
