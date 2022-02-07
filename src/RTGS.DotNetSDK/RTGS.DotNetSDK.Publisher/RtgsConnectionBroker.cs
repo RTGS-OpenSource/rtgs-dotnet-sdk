@@ -43,9 +43,9 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 
 	private async Task<ConnectionInviteResponseModel> CreateIdCryptInvitationAsync(string alias)
 	{
-		var autoAccept = true;
-		var multiUse = false;
-		var usePublicDid = false;
+		const bool autoAccept = true;
+		const bool multiUse = false;
+		const bool usePublicDid = false;
 
 		var idCryptIdentityConnectionClient = _identityClient.Connection;
 
@@ -61,9 +61,9 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 				multiUse,
 				usePublicDid);
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			_logger.LogError(e, "Error occurred when calling ID Crypt Cloud Agent");
+			_logger.LogError(ex, "Error occurred when calling ID Crypt Cloud Agent");
 
 			throw;
 		}

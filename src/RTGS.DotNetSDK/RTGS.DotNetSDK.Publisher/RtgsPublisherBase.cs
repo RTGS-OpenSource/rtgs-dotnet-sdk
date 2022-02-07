@@ -29,7 +29,12 @@ internal abstract class RtgsPublisherBase : IAsyncDisposable
 		_options = options;
 	}
 
-	protected async Task<SendResult> SendMessage<T>(T message, string messageIdentifier, CancellationToken cancellationToken, Dictionary<string, string> headers = null, [CallerMemberName] string callingMethod = null)
+	protected async Task<SendResult> SendMessage<T>(
+		T message,
+		string messageIdentifier,
+		CancellationToken cancellationToken,
+		Dictionary<string, string> headers = null,
+		[CallerMemberName] string callingMethod = null)
 	{
 		if (_disposed)
 		{
