@@ -22,7 +22,7 @@ internal abstract class RtgsPublisherBase : IAsyncDisposable
 	private bool _disposed;
 	private bool _resetConnection;
 
-	public RtgsPublisherBase(ILogger<RtgsPublisher> logger, Payment.PaymentClient paymentClient, RtgsPublisherOptions options)
+	protected RtgsPublisherBase(ILogger<RtgsPublisher> logger, Payment.PaymentClient paymentClient, RtgsPublisherOptions options)
 	{
 		_logger = logger;
 		_paymentClient = paymentClient;
