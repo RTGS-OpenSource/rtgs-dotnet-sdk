@@ -67,11 +67,11 @@ public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcSe
 	{
 		const int PublisherCount = 1;
 
-		await using var rtgsPublisher1 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
-		await using var rtgsPublisher2 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
-		await using var rtgsPublisher3 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
-		await using var rtgsPublisher4 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
-		await using var rtgsPublisher5 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+		var rtgsPublisher1 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+		var rtgsPublisher2 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+		var rtgsPublisher3 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+		var rtgsPublisher4 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+		var rtgsPublisher5 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 		await rtgsPublisher1.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);

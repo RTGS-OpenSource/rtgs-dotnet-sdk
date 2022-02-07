@@ -63,15 +63,12 @@ public class GivenServerStops : IAsyncLifetime
 		}
 	}
 
-	public async Task DisposeAsync()
+	public Task DisposeAsync()
 	{
-		if (_rtgsPublisher is not null)
-		{
-			await _rtgsPublisher.DisposeAsync();
-		}
-
 		_clientHost?.Dispose();
 		_grpcServer.Dispose();
+
+		return Task.CompletedTask;
 	}
 
 	[Fact]
@@ -102,7 +99,7 @@ public class GivenServerStops : IAsyncLifetime
 
 		await _grpcServer.StopAsync();
 
-		await _rtgsPublisher.DisposeAsync();
+		_clientHost?.Dispose();
 
 		var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
 		errorLogs.Should().BeEquivalentTo(new[]

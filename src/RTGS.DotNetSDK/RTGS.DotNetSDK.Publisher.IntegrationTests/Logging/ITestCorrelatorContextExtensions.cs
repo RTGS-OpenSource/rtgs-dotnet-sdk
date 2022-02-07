@@ -5,7 +5,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.Logging;
 public static class ITestCorrelatorContextExtensions
 {
 	public static IEnumerable<LogEntry> PublisherLogs(this ITestCorrelatorContext testCorrelatorContext, LogEventLevel logEventLevel) =>
-		Logs(testCorrelatorContext, "RTGS.DotNetSDK.Publisher.RtgsPublisher", logEventLevel);
+		Logs(testCorrelatorContext, "RTGS.DotNetSDK.Publisher.MessagePublisher", logEventLevel);
 
 	public static IEnumerable<LogEntry> ConnectionBrokerLogs(this ITestCorrelatorContext testCorrelatorContext, LogEventLevel logEventLevel) =>
 		Logs(testCorrelatorContext, "RTGS.DotNetSDK.Publisher.RtgsConnectionBroker", logEventLevel);

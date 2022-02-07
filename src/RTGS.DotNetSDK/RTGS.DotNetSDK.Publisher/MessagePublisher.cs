@@ -7,9 +7,9 @@ using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Publisher;
 
-internal abstract class RtgsPublisherBase : IAsyncDisposable
+internal class MessagePublisher : IAsyncDisposable, IMessagePublisher
 {
-	private readonly ILogger<RtgsPublisher> _logger;
+	private readonly ILogger<MessagePublisher> _logger;
 	private readonly Payment.PaymentClient _paymentClient;
 	private readonly RtgsPublisherOptions _options;
 	private readonly CancellationTokenSource _sharedTokenSource = new();
@@ -22,14 +22,14 @@ internal abstract class RtgsPublisherBase : IAsyncDisposable
 	private bool _disposed;
 	private bool _resetConnection;
 
-	protected RtgsPublisherBase(ILogger<RtgsPublisher> logger, Payment.PaymentClient paymentClient, RtgsPublisherOptions options)
+	public MessagePublisher(ILogger<MessagePublisher> logger, Payment.PaymentClient paymentClient, RtgsPublisherOptions options)
 	{
 		_logger = logger;
 		_paymentClient = paymentClient;
 		_options = options;
 	}
 
-	protected async Task<SendResult> SendMessage<T>(
+	public async Task<SendResult> SendMessage<T>(
 		T message,
 		string messageIdentifier,
 		CancellationToken cancellationToken,

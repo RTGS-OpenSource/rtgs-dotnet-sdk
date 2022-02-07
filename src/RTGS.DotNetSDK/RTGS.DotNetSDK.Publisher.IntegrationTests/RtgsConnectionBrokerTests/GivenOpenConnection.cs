@@ -14,7 +14,7 @@ public class GivenOpenConnection
 	{
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 		private static readonly string IdCryptApiKey = "id-crypt-api-key";
-		private static readonly Uri IdCryptApiUri = new Uri("http://id-crypt-cloud-agent-api.com");
+		private static readonly Uri IdCryptApiUri = new("http://id-crypt-cloud-agent-api.com");
 
 		private readonly GrpcServerFixture _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;

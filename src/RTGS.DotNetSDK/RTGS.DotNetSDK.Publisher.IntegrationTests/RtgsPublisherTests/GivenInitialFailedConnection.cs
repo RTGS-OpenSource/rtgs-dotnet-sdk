@@ -1,6 +1,6 @@
 ﻿namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsPublisherTests;
 
-public class GivenInitialFailedConnection : IAsyncLifetime, IClassFixture<GrpcServerFixture>
+public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private const string BankPartnerDid = "bank-partner-did";
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
@@ -14,9 +14,11 @@ public class GivenInitialFailedConnection : IAsyncLifetime, IClassFixture<GrpcSe
 	public GivenInitialFailedConnection(GrpcServerFixture grpcServer)
 	{
 		_grpcServer = grpcServer;
+
+		SetupDependencies();
 	}
 
-	public async Task InitializeAsync()
+	private void SetupDependencies()
 	{
 		try
 		{
@@ -39,21 +41,14 @@ public class GivenInitialFailedConnection : IAsyncLifetime, IClassFixture<GrpcSe
 		}
 		catch (Exception)
 		{
-			// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
-			// See https://github.com/xunit/xunit/discussions/2313 for further details.
-			await DisposeAsync();
+			Dispose();
 
 			throw;
 		}
 	}
 
-	public async Task DisposeAsync()
+	public void Dispose()
 	{
-		if (_rtgsPublisher is not null)
-		{
-			await _rtgsPublisher.DisposeAsync();
-		}
-
 		_clientHost?.Dispose();
 
 		_grpcServer.Reset();

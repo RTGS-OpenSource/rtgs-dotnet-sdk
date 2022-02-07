@@ -1,16 +1,16 @@
-﻿using Microsoft.Extensions.Logging;
-using RTGS.DotNetSDK.Publisher.Messages;
-using RTGS.Public.Payment.V3;
+﻿using RTGS.DotNetSDK.Publisher.Messages;
 
 namespace RTGS.DotNetSDK.Publisher;
 
-internal class RtgsInternalPublisher : RtgsPublisherBase, IRtgsInternalPublisher
+internal class RtgsInternalPublisher : IRtgsInternalPublisher
 {
-	public RtgsInternalPublisher(ILogger<RtgsPublisher> logger, Payment.PaymentClient paymentClient, RtgsPublisherOptions options)
-		: base(logger, paymentClient, options)
+	private readonly IMessagePublisher _messagePublisher;
+
+	public RtgsInternalPublisher(IMessagePublisher messagePublisher)
 	{
+		_messagePublisher = messagePublisher;
 	}
 
 	public Task<SendResult> SendIdCryptInvitationAsync(IdCryptInvitationV1 message, CancellationToken cancellationToken) =>
-		SendMessage(message, "idcrypt.invitation.v1", cancellationToken);
+		_messagePublisher.SendMessage(message, "idcrypt.invitation.v1", cancellationToken);
 }
