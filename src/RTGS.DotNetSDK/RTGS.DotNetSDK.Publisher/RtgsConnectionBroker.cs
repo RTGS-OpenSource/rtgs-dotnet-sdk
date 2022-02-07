@@ -21,7 +21,7 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		_rtgsInternalPublisher = rtgsInternalPublisher;
 	}
 
-	public async Task<SendInvitationResult> SendInvitationAsync(CancellationToken cancellationToken)
+	public async Task<SendInvitationResult> SendInvitationAsync(CancellationToken cancellationToken = default)
 	{
 		var alias = Guid.NewGuid().ToString();
 

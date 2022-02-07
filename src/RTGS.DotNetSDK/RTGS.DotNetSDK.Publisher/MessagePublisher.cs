@@ -7,7 +7,7 @@ using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Publisher;
 
-internal class MessagePublisher : IAsyncDisposable, IMessagePublisher
+internal class MessagePublisher : IMessagePublisher
 {
 	private readonly ILogger<MessagePublisher> _logger;
 	private readonly Payment.PaymentClient _paymentClient;
