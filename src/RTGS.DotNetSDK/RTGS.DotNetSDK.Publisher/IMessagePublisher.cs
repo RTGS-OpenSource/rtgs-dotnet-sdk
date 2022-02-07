@@ -5,7 +5,7 @@ namespace RTGS.DotNetSDK.Publisher;
 
 internal interface IMessagePublisher : IAsyncDisposable
 {
-	Task<SendResult> SendMessage<TMessage>(
+	Task<SendResult> SendMessageAsync<TMessage>(
 		TMessage message,
 		string messageIdentifier,
 		CancellationToken cancellationToken,

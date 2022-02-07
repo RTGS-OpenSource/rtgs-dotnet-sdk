@@ -29,7 +29,7 @@ internal class MessagePublisher : IAsyncDisposable, IMessagePublisher
 		_options = options;
 	}
 
-	public async Task<SendResult> SendMessage<T>(
+	public async Task<SendResult> SendMessageAsync<T>(
 		T message,
 		string messageIdentifier,
 		CancellationToken cancellationToken,

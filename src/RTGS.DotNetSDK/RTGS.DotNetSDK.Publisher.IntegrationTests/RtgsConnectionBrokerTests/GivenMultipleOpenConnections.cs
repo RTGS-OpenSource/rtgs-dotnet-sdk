@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http;
-using IDCryptGlobal.Cloud.Agent.Identity;
-using Microsoft.Extensions.Options;
+using System.Net.Http.Json;
+using RTGS.DotNetSDK.Publisher.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.HttpHandlers;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests;
@@ -42,15 +42,7 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 				.ConfigureServices(services => services
 					.AddRtgsPublisher(rtgsPublisherOptions)
-					.AddSingleton(idCryptMessageHandler)
-					.AddHttpClient<IIdentityClient, IdentityClient>((httpClient, serviceProvider) =>
-					{
-						var identityOptions = serviceProvider.GetRequiredService<IOptions<IdentityConfig>>();
-						var identityClient = new IdentityClient(httpClient, identityOptions);
-
-						return identityClient;
-					})
-					.AddHttpMessageHandler<StatusCodeHttpHandler>())
+					.AddTestIdCryptHttpClient(idCryptMessageHandler))
 				.Build();
 
 			_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();

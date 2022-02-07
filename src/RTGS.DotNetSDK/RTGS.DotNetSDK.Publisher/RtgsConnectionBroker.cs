@@ -51,7 +51,7 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 
 		ConnectionInviteResponseModel response;
 
-		_logger.LogDebug("Sending CreateInvitation request to ID Crypt Cloud Agent");
+		_logger.LogDebug("Sending CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", alias);
 
 		try
 		{

@@ -53,8 +53,6 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddTransient<IIdentityClient, IdentityClient>();
 		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
 
-
-
 		return serviceCollection;
 	}
 }

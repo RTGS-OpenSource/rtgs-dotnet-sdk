@@ -12,5 +12,5 @@ internal class RtgsInternalPublisher : IRtgsInternalPublisher
 	}
 
 	public Task<SendResult> SendIdCryptInvitationAsync(IdCryptInvitationV1 message, CancellationToken cancellationToken) =>
-		_messagePublisher.SendMessage(message, "idcrypt.invitation.v1", cancellationToken);
+		_messagePublisher.SendMessageAsync(message, "idcrypt.invitation.v1", cancellationToken);
 }

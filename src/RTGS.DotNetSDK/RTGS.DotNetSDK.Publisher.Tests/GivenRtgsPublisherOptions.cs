@@ -167,27 +167,27 @@ public class GivenRtgsPublisherOptions
 
 	[Fact]
 	public void WhenIdCryptApiAddressIsNull_ThenThrowArgumentNullException() =>
-	FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
-			"bank-did",
-			new Uri("http://example.org"),
-			null,
-			"idcrypt-api-key",
-			new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
-		.Should()
-		.Throw<ArgumentNullException>()
-		.WithMessage("Value cannot be null. (Parameter 'idCryptApiAddress')");
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+				"bank-did",
+				new Uri("http://example.org"),
+				null,
+				"idcrypt-api-key",
+				new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
+			.Should()
+			.Throw<ArgumentNullException>()
+			.WithMessage("Value cannot be null. (Parameter 'idCryptApiAddress')");
 
 	[Fact]
 	public void WhenIdCryptApiKeyIsNull_ThenThrowArgumentNullException() =>
-	FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
-			"bank-did",
-			new Uri("http://example.org"),
-			new Uri("http://id-crypt-cloud-agent.com"),
-			null,
-			new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
-		.Should()
-		.Throw<ArgumentNullException>()
-		.WithMessage("Value cannot be null. (Parameter 'idCryptApiKey')");
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+				"bank-did",
+				new Uri("http://example.org"),
+				new Uri("http://id-crypt-cloud-agent.com"),
+				null,
+				new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
+			.Should()
+			.Throw<ArgumentNullException>()
+			.WithMessage("Value cannot be null. (Parameter 'idCryptApiKey')");
 
 	[Theory]
 	[InlineData("")]
