@@ -38,7 +38,7 @@ public static class ServiceCollectionExtensions
 		configureGrpcClient?.Invoke(grpcClientBuilder);
 
 		serviceCollection.AddSingleton<IMessagePublisher, MessagePublisher>();
-		
+
 		serviceCollection.AddSingleton<IRtgsPublisher, RtgsPublisher>();
 		serviceCollection.AddSingleton<IRtgsInternalPublisher, RtgsInternalPublisher>();
 

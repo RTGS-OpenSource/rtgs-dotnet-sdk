@@ -2,7 +2,7 @@
 
 namespace RTGS.DotNetSDK.Publisher;
 
-internal interface IRtgsInternalPublisher 
+internal interface IRtgsInternalPublisher
 {
 	Task<SendResult> SendIdCryptInvitationAsync(IdCryptInvitationV1 message, CancellationToken cancellationToken);
 }
