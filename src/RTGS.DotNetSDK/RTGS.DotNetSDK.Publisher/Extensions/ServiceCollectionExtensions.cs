@@ -51,7 +51,7 @@ public static class ServiceCollectionExtensions
 
 		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
 		serviceCollection.AddTransient<IIdentityClient, IdentityClient>();
-		serviceCollection.AddSingleton<IRtgsConnectionBroker, RtgsConnectionBroker>();
+		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
 
 
 

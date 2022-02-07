@@ -86,19 +86,6 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 	}
 
 	[Fact]
-	public async Task WhenSendingBigMessage_ThenThrowException()
-	{
-		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-
-		receiver.ThrowOnConnection = true;
-
-		await FluentActions
-			.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
-			.Should()
-			.ThrowAsync<Exception>();
-	}
-
-	[Fact]
 	public async Task WhenSubsequentConnectionCanBeOpened_ThenCanSendSubsequentMessagesToRtgs()
 	{
 		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();

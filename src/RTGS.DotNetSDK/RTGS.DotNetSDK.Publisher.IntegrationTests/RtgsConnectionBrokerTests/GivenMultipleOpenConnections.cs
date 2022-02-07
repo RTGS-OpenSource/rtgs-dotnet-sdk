@@ -71,15 +71,6 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
 	}
 
 	[Fact]
-	public void WhenRequestingMultipleConnectionBrokers_ThenSameConnectionBrokerIsReturned()
-	{
-		var connectionBroker1 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
-		var connectionBroker2 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
-
-		connectionBroker1.Should().BeSameAs(connectionBroker2);
-	}
-
-	[Fact]
 	public async Task WhenSendingSequentially_ThenCanSendToRtgs()
 	{
 		const int PublisherCount = 1;

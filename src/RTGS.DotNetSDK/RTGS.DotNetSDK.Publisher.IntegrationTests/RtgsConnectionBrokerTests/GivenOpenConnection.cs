@@ -309,7 +309,7 @@ public class GivenOpenConnection
 		}
 
 		[Fact]
-		public async Task WhenCallingIdCryptAgentAndResultIsNotSuccess_ThenExceptionIsThrown()
+		public async Task ThenExceptionIsThrown()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
@@ -320,7 +320,7 @@ public class GivenOpenConnection
 		}
 
 		[Fact]
-		public async Task WhenCallingIdCryptAgentAndExceptionIsThrown_ThenMessageNotSent()
+		public async Task ThenMessageNotSent()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
@@ -331,12 +331,11 @@ public class GivenOpenConnection
 
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
-			var receivedMessage = receiver.Connections
-			   .Should().BeEmpty();
+			receiver.Connections.Should().BeEmpty();
 		}
 
 		[Fact]
-		public async Task WhenCallingIdCryptAgentAndExceptionIsThrown_ThenLog()
+		public async Task ThenLog()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
@@ -527,7 +526,7 @@ public class GivenOpenConnection
 		}
 
 		[Fact]
-		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader()
+		public async Task ThenSeeBankDidInRequestHeader()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
@@ -627,11 +626,11 @@ public class GivenOpenConnection
 
 			using var _ = new AssertionScope();
 
-			result1.SendResult.Should().Be(SendResult.Success);
 			result1.ConnectionId.Should().Be(IdCryptTestMessages.ConnectionInviteResponse.ConnectionID);
+			result1.SendResult.Should().Be(SendResult.Success);
 
-			result2.SendResult.Should().Be(SendResult.Timeout);
 			result2.ConnectionId.Should().BeNull();
+			result2.SendResult.Should().Be(SendResult.Timeout);
 		}
 
 		[Fact]
@@ -642,12 +641,12 @@ public class GivenOpenConnection
 
 			var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
-			result.SendResult.Should().Be(SendResult.Timeout);
 			result.ConnectionId.Should().BeNull();
+			result.SendResult.Should().Be(SendResult.Timeout);
 		}
 
 		[Fact]
-		public async Task WhenBankMessageApiReturnsUnexpectedAcknowledgementBeforeFailureAcknowledgement_ThenReturnRejected()
+		public async Task WhenBankMessageApiReturnsUnexpectedAcknowledgementBeforeFailureAcknowledgement_ThenReturnRejectedAndConnectionIdIsNull()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 			{
@@ -657,11 +656,12 @@ public class GivenOpenConnection
 
 			var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
+			result.ConnectionId.Should().BeNull();
 			result.SendResult.Should().Be(SendResult.Rejected);
 		}
 
 		[Fact]
-		public async Task WhenBankMessageApiReturnsFailureAcknowledgementBeforeUnexpectedAcknowledgement_ThenReturnRejected()
+		public async Task WhenBankMessageApiReturnsFailureAcknowledgementBeforeUnexpectedAcknowledgement_ThenReturnRejectedAndConnectionIdIsNull()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 			{
@@ -671,6 +671,7 @@ public class GivenOpenConnection
 
 			var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
+			result.ConnectionId.Should().BeNull();
 			result.SendResult.Should().Be(SendResult.Rejected);
 		}
 
@@ -770,8 +771,6 @@ public class GivenOpenConnection
 			}
 			catch (Exception)
 			{
-				// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
-				// See https://github.com/xunit/xunit/discussions/2313 for further details.
 				Dispose();
 
 				throw;
