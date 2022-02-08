@@ -8,7 +8,7 @@ namespace RTGS.DotNetSDK.Publisher;
 /// <summary>
 /// The IRtgsPublisher interface, implementations of this interface are responsible for publishing messages to the RTGS platform
 /// </summary>
-public interface IRtgsPublisher : IAsyncDisposable
+public interface IRtgsPublisher
 {
 	/// <summary>
 	/// Sends an <see cref="AtomicLockRequestV1"/> to initiate a transaction.

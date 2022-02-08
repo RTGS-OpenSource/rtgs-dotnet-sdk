@@ -1,4 +1,4 @@
-﻿namespace RTGS.DotNetSDK.Publisher.IntegrationTests;
+﻿namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsPublisherTests;
 
 public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 {
@@ -18,7 +18,12 @@ public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcSe
 	{
 		try
 		{
-			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, _grpcServer.ServerUri)
+			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
+					ValidMessages.BankDid,
+					_grpcServer.ServerUri,
+					new Uri("http://id-crypt-cloud-agent-api.com"),
+					"id-crypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 
@@ -62,11 +67,11 @@ public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcSe
 	{
 		const int PublisherCount = 1;
 
-		await using var rtgsPublisher1 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
-		await using var rtgsPublisher2 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
-		await using var rtgsPublisher3 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
-		await using var rtgsPublisher4 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
-		await using var rtgsPublisher5 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+		var rtgsPublisher1 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+		var rtgsPublisher2 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+		var rtgsPublisher3 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+		var rtgsPublisher4 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+		var rtgsPublisher5 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 		await rtgsPublisher1.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);

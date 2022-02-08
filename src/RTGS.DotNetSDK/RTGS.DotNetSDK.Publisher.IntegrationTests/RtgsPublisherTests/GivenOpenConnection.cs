@@ -1,10 +1,10 @@
 ﻿using Newtonsoft.Json;
 
-namespace RTGS.DotNetSDK.Publisher.IntegrationTests;
+namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsPublisherTests;
 
 public class GivenOpenConnection
 {
-	public class AndShortTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>
+	public class AndShortTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private const string BankPartnerDid = "bank-partner-did";
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
@@ -22,6 +22,8 @@ public class GivenOpenConnection
 
 			SetupSerilogLogger();
 
+			SetupDependencies();
+
 			_serilogContext = TestCorrelator.CreateContext();
 		}
 
@@ -34,11 +36,16 @@ public class GivenOpenConnection
 				.WriteTo.TestCorrelator()
 				.CreateLogger();
 
-		public async Task InitializeAsync()
+		private void SetupDependencies()
 		{
 			try
 			{
-				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, _grpcServer.ServerUri)
+				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
+						ValidMessages.BankDid,
+						_grpcServer.ServerUri,
+						new Uri("http://id-crypt-cloud-agent-api.com"),
+						"id-crypt-api-key",
+						new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
@@ -55,49 +62,17 @@ public class GivenOpenConnection
 			}
 			catch (Exception)
 			{
-				// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
-				// See https://github.com/xunit/xunit/discussions/2313 for further details.
-				await DisposeAsync();
+				Dispose();
 
 				throw;
 			}
 		}
 
-		public async Task DisposeAsync()
+		public void Dispose()
 		{
-			if (_rtgsPublisher is not null)
-			{
-				await _rtgsPublisher.DisposeAsync();
-			}
-
 			_clientHost?.Dispose();
 
 			_grpcServer.Reset();
-		}
-
-		[Fact]
-		public async Task WhenDisposingInParallel_ThenCanDispose()
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler =>
-				handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);
-
-			using var disposeSignal = new ManualResetEventSlim();
-			const int concurrentDisposableThreads = 20;
-			var disposeTasks = Enumerable.Range(1, concurrentDisposableThreads)
-				.Select(request => Task.Run(async () =>
-				{
-					disposeSignal.Wait();
-
-					await _rtgsPublisher.DisposeAsync();
-				}))
-				.ToArray();
-
-			disposeSignal.Set();
-
-			var allCompleted = Task.WaitAll(disposeTasks, TimeSpan.FromSeconds(5));
-			allCompleted.Should().BeTrue();
 		}
 
 		[Fact]
@@ -206,7 +181,7 @@ public class GivenOpenConnection
 		[ClassData(typeof(PublisherActionData))]
 		public async Task AndDisposedPublisher_WhenSending_ThenThrow<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
-			await _rtgsPublisher.DisposeAsync();
+			_clientHost?.Dispose();
 
 			await FluentActions
 				.Awaiting(() => publisherAction.InvokeSendDelegateAsync(_rtgsPublisher))
@@ -445,7 +420,7 @@ public class GivenOpenConnection
 		}
 	}
 
-	public class AndLongTestWaitForAcknowledgementDuration : IAsyncLifetime, IClassFixture<GrpcServerFixture>
+	public class AndLongTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(30);
 		private static readonly TimeSpan TestWaitForSendDuration = TimeSpan.FromSeconds(15);
@@ -458,13 +433,20 @@ public class GivenOpenConnection
 		public AndLongTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
 		{
 			_grpcServer = grpcServer;
+
+			SetupDependencies();
 		}
 
-		public async Task InitializeAsync()
+		private void SetupDependencies()
 		{
 			try
 			{
-				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, _grpcServer.ServerUri)
+				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
+						ValidMessages.BankDid,
+						_grpcServer.ServerUri,
+						new Uri("http://id-crypt-cloud-agent-api.com"),
+						Guid.NewGuid().ToString(),
+						new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
@@ -477,21 +459,14 @@ public class GivenOpenConnection
 			}
 			catch (Exception)
 			{
-				// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
-				// See https://github.com/xunit/xunit/discussions/2313 for further details.
-				await DisposeAsync();
+				Dispose();
 
 				throw;
 			}
 		}
 
-		public async Task DisposeAsync()
+		public void Dispose()
 		{
-			if (_rtgsPublisher is not null)
-			{
-				await _rtgsPublisher.DisposeAsync();
-			}
-
 			_clientHost?.Dispose();
 
 			_grpcServer.Reset();
@@ -564,7 +539,7 @@ public class GivenOpenConnection
 
 			messageReceivedSignal.Wait(TestWaitForSendDuration);
 
-			await _rtgsPublisher.DisposeAsync();
+			_clientHost?.Dispose();
 
 			await messageTask;
 		}
@@ -596,7 +571,7 @@ public class GivenOpenConnection
 				.Should()
 				.ThrowAsync<OperationCanceledException>();
 
-			await _rtgsPublisher.DisposeAsync();
+			_clientHost?.Dispose();
 
 			// Release the semaphore for other threads
 			firstMessageCancellationTokenSource.Cancel();

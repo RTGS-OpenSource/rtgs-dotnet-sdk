@@ -1,15 +1,19 @@
-﻿namespace RTGS.DotNetSDK.Publisher.IntegrationTests;
+﻿using System.Net;
+using System.Net.Http;
+using RTGS.DotNetSDK.Publisher.IntegrationTests.Extensions;
+using RTGS.DotNetSDK.Publisher.IntegrationTests.HttpHandlers;
+
+namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests;
 
 public class GivenServerStops : IAsyncLifetime
 {
-	private const string BankPartnerDid = "bank-partner-did";
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 	private readonly GrpcTestServer _grpcServer;
 	private readonly ITestCorrelatorContext _serilogContext;
-	private IRtgsPublisher _rtgsPublisher;
 	private ToRtgsMessageHandler _toRtgsMessageHandler;
 	private IHost _clientHost;
+	private IRtgsConnectionBroker _rtgsConnectionBroker;
 
 	public GivenServerStops()
 	{
@@ -35,17 +39,28 @@ public class GivenServerStops : IAsyncLifetime
 		{
 			var serverUri = await _grpcServer.StartAsync();
 
-			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(ValidMessages.BankDid, serverUri)
+			var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
+					ValidMessages.BankDid,
+					serverUri,
+					new Uri("http://id-crypt-cloud-agent-api.com"),
+					"id-crypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 
+			var idCryptMessageHandler = new StatusCodeHttpHandler(
+				HttpStatusCode.OK,
+				new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
+
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
-				.ConfigureServices(services => services.AddRtgsPublisher(rtgsPublisherOptions))
+				.ConfigureServices(services => services
+					.AddRtgsPublisher(rtgsPublisherOptions)
+					.AddTestIdCryptHttpClient(idCryptMessageHandler))
 				.UseSerilog()
 				.Build();
 
-			_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
+			_rtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 			_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
 		}
 		catch (Exception)
@@ -58,15 +73,13 @@ public class GivenServerStops : IAsyncLifetime
 		}
 	}
 
-	public async Task DisposeAsync()
+	public Task DisposeAsync()
 	{
-		if (_rtgsPublisher is not null)
-		{
-			await _rtgsPublisher.DisposeAsync();
-		}
-
 		_clientHost?.Dispose();
+
 		_grpcServer.Dispose();
+
+		return Task.CompletedTask;
 	}
 
 	[Fact]
@@ -74,12 +87,12 @@ public class GivenServerStops : IAsyncLifetime
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-		var result = await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);
-		result.Should().Be(SendResult.Success);
+		var result = await _rtgsConnectionBroker.SendInvitationAsync();
+		result.SendResult.Should().Be(SendResult.Success);
 
 		await _grpcServer.StopAsync();
 
-		var exceptionAssertions = await FluentActions.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid))
+		var exceptionAssertions = await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
 			.Should().ThrowAsync<Exception>();
 
 		// One of two exceptions can be thrown depending on how far along the call is.
@@ -93,11 +106,11 @@ public class GivenServerStops : IAsyncLifetime
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-		await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);
+		await _rtgsConnectionBroker.SendInvitationAsync();
 
 		await _grpcServer.StopAsync();
 
-		await _rtgsPublisher.DisposeAsync();
+		_clientHost.Dispose();
 
 		var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
 		errorLogs.Should().BeEquivalentTo(new[]

@@ -11,7 +11,12 @@ public class GivenRtgsPublisherOptions
 	[Theory]
 	[MemberData(nameof(TimeSpansLessThanOneSecond))]
 	public void WhenKeepAlivePingDelayIsLessThanOneSecond_ThenThrowArgumentOutOfRangeException(TimeSpan duration) =>
-		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew("bank-did", new Uri("http://example.org"))
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+					"bank-did",
+					new Uri("http://example.org"),
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.KeepAlivePingDelay(duration))
 			.Should()
 			.Throw<ArgumentOutOfRangeException>()
@@ -19,7 +24,12 @@ public class GivenRtgsPublisherOptions
 
 	[Fact]
 	public void WhenKeepAlivePingDelayIsInfinite_ThenDoNotThrowArgumentOutOfRangeException() =>
-		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew("bank-did", new Uri("http://example.org"))
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+					"bank-did",
+					new Uri("http://example.org"),
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.KeepAlivePingDelay(Timeout.InfiniteTimeSpan))
 			.Should()
 			.NotThrow<ArgumentOutOfRangeException>();
@@ -27,7 +37,12 @@ public class GivenRtgsPublisherOptions
 	[Theory]
 	[MemberData(nameof(TimeSpansAtLeastOneSecond))]
 	public void WhenKeepAlivePingDelayIsAtLeastOneSecond_ThenDoNotThrowArgumentOutOfRangeException(TimeSpan duration) =>
-		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew("bank-did", new Uri("http://example.org"))
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+					"bank-did",
+					new Uri("http://example.org"),
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.KeepAlivePingDelay(duration))
 			.Should()
 			.NotThrow<ArgumentOutOfRangeException>();
@@ -35,7 +50,12 @@ public class GivenRtgsPublisherOptions
 	[Theory]
 	[MemberData(nameof(TimeSpansLessThanOneSecond))]
 	public void WhenKeepAlivePingTimeoutLessThanOneSecond_ThenThrowArgumentOutOfRangeException(TimeSpan duration) =>
-		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew("bank-did", new Uri("http://example.org"))
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+					"bank-did",
+					new Uri("http://example.org"),
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.KeepAlivePingTimeout(duration))
 			.Should()
 			.Throw<ArgumentOutOfRangeException>()
@@ -43,7 +63,12 @@ public class GivenRtgsPublisherOptions
 
 	[Fact]
 	public void WhenKeepAlivePingTimeoutIsInfinite_ThenDoNotThrowArgumentOutOfRangeException() =>
-		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew("bank-did", new Uri("http://example.org"))
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+					"bank-did",
+					new Uri("http://example.org"),
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.KeepAlivePingTimeout(Timeout.InfiniteTimeSpan))
 			.Should()
 			.NotThrow<ArgumentOutOfRangeException>();
@@ -51,21 +76,36 @@ public class GivenRtgsPublisherOptions
 	[Theory]
 	[MemberData(nameof(TimeSpansAtLeastOneSecond))]
 	public void WhenKeepAlivePingTimeoutIsAtLeastOneSecond_ThenDoNotThrowArgumentOutOfRangeException(TimeSpan duration) =>
-		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew("bank-did", new Uri("http://example.org"))
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+					"bank-did",
+					new Uri("http://example.org"),
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.KeepAlivePingTimeout(duration))
 			.Should()
 			.NotThrow<ArgumentOutOfRangeException>();
 
 	[Fact]
 	public void WhenRemoteHostAddressIsNull_ThenThrowArgumentNullException() =>
-		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew("bank-did", null))
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+				"bank-did",
+				null,
+				new Uri("http://id-crypt-cloud-agent.com"),
+				"idcrypt-api-key",
+				new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
 			.Should()
 			.Throw<ArgumentNullException>()
 			.WithMessage("Value cannot be null. (Parameter 'remoteHostAddress')");
 
 	[Fact]
 	public void WhenBankDidIsNull_ThenThrowArgumentNullException() =>
-		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(null, new Uri("http://example.org")))
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+				null,
+				new Uri("http://example.org"),
+				new Uri("http://id-crypt-cloud-agent.com"),
+				"idcrypt-api-key",
+				new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
 			.Should()
 			.Throw<ArgumentNullException>()
 			.WithMessage("Value cannot be null. (Parameter 'bankDid')");
@@ -74,7 +114,12 @@ public class GivenRtgsPublisherOptions
 	[InlineData("")]
 	[InlineData(" ")]
 	public void WhenBankDidIsWhiteSpace_ThenThrowArgumentException(string whiteSpace) =>
-		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(whiteSpace, new Uri("http://example.org")))
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+				whiteSpace,
+				new Uri("http://example.org"),
+				new Uri("http://id-crypt-cloud-agent.com"),
+				"idcrypt-api-key",
+				new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
 			.Should()
 			.Throw<ArgumentException>()
 			.WithMessage("Value cannot be white space. (Parameter 'bankDid')");
@@ -82,7 +127,12 @@ public class GivenRtgsPublisherOptions
 	[Theory]
 	[MemberData(nameof(TimeSpansLessThanOneSecond))]
 	public void WhenWaitForAcknowledgementDurationIsLessThanOneSecond_ThenThrowArgumentOutOfRangeException(TimeSpan duration) =>
-		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew("bank-did", new Uri("http://example.org"))
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+					"bank-did",
+					new Uri("http://example.org"),
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.WaitForAcknowledgementDuration(duration))
 			.Should()
 			.Throw<ArgumentOutOfRangeException>()
@@ -90,7 +140,12 @@ public class GivenRtgsPublisherOptions
 
 	[Fact]
 	public void WhenWaitForAcknowledgementDurationIsInfinite_ThenThrowArgumentOutOfRangeException() =>
-		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew("bank-did", new Uri("http://example.org"))
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+					"bank-did",
+					new Uri("http://example.org"),
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.WaitForAcknowledgementDuration(Timeout.InfiniteTimeSpan))
 			.Should()
 			.Throw<ArgumentOutOfRangeException>()
@@ -99,11 +154,66 @@ public class GivenRtgsPublisherOptions
 	[Theory]
 	[MemberData(nameof(TimeSpansGreaterThanThirtySeconds))]
 	public void WhenWaitForAcknowledgementDurationIsGreaterThan30_ThenThrowArgumentOutOfRangeException(TimeSpan duration) =>
-		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew("bank-did", new Uri("http://example.org"))
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+					"bank-did",
+					new Uri("http://example.org"),
+					new Uri("http://id-crypt-cloud-agent.com"),
+					"idcrypt-api-key",
+					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.WaitForAcknowledgementDuration(duration))
 			.Should()
 			.Throw<ArgumentOutOfRangeException>()
 			.WithMessage($"Value must be between 1 and 30 seconds. (Parameter 'duration'){Environment.NewLine}Actual value was {duration.TotalSeconds}.");
+
+	[Fact]
+	public void WhenIdCryptApiAddressIsNull_ThenThrowArgumentNullException() =>
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+				"bank-did",
+				new Uri("http://example.org"),
+				null,
+				"idcrypt-api-key",
+				new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
+			.Should()
+			.Throw<ArgumentNullException>()
+			.WithMessage("Value cannot be null. (Parameter 'idCryptApiAddress')");
+
+	[Fact]
+	public void WhenIdCryptApiKeyIsNull_ThenThrowArgumentNullException() =>
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+				"bank-did",
+				new Uri("http://example.org"),
+				new Uri("http://id-crypt-cloud-agent.com"),
+				null,
+				new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
+			.Should()
+			.Throw<ArgumentNullException>()
+			.WithMessage("Value cannot be null. (Parameter 'idCryptApiKey')");
+
+	[Theory]
+	[InlineData("")]
+	[InlineData(" ")]
+	public void WhenIdCryptApiKeyIsWhiteSpace_ThenThrowArgumentException(string whiteSpace) =>
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+				"bank-did",
+				new Uri("http://example.org"),
+				new Uri("http://id-crypt-cloud-agent.com"),
+				whiteSpace,
+				new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
+			.Should()
+			.Throw<ArgumentException>()
+			.WithMessage("Value cannot be white space. (Parameter 'idCryptApiKey')");
+
+	[Fact]
+	public void WhenIdServiceEndpointAddressIsNull_ThenThrowArgumentNullException() =>
+		FluentActions.Invoking(() => RtgsPublisherOptions.Builder.CreateNew(
+			"bank-did",
+			new Uri("http://example.org"),
+			new Uri("http://id-crypt-cloud-agent.com"),
+			"idcrypt-api-key",
+			null))
+		.Should()
+		.Throw<ArgumentNullException>()
+		.WithMessage("Value cannot be null. (Parameter 'idCryptServiceEndPointAddress')");
 
 	public static IEnumerable<object[]> TimeSpansLessThanOneSecond =>
 		new List<object[]>
