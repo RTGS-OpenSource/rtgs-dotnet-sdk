@@ -7,7 +7,7 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.Extensions;
 internal static class IServiceCollectionExtensions
 {
 	public static IServiceCollection AddTestIdCryptHttpClient(
-		this IServiceCollection serviceCollection, 
+		this IServiceCollection serviceCollection,
 		StatusCodeHttpHandler statusCodeHttpHandler)
 	{
 		serviceCollection

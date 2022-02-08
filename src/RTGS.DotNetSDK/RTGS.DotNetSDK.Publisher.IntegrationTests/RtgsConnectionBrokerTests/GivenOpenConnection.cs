@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.Extensions;
@@ -275,7 +274,7 @@ public class GivenOpenConnection
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 					.ConfigureServices(services => services
 						.AddRtgsPublisher(rtgsPublisherOptions)
-						.AddTestIdCryptHttpClient(_idCryptMessageHandler))	
+						.AddTestIdCryptHttpClient(_idCryptMessageHandler))
 					.UseSerilog()
 					.Build();
 
