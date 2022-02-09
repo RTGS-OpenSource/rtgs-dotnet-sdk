@@ -216,11 +216,6 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 
 		try
 		{
-			if (_executingTask is null)
-			{
-				throw new InvalidOperationException("RTGS Subscriber is not running");
-			}
-
 			_logger.LogInformation("RTGS Subscriber stopping");
 
 			_isStopRequested = true;

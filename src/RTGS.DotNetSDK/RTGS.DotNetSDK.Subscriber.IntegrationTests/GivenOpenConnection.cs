@@ -524,7 +524,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 	}
 
 	[Fact]
-	public async Task WhenStoppingInParallel_ThenOnlyOneSucceeds()
+	public async Task WhenStoppingInParallel_ThenAllSucceed()
 	{
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
@@ -553,6 +553,6 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 
 		Task.WaitAll(stopTasks, TimeSpan.FromSeconds(5));
 
-		invalidOperationExceptions.Count.Should().Be(concurrentStopThreadsCount - 1);
+		invalidOperationExceptions.Should().BeEmpty();
 	}
 }

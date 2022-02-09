@@ -134,10 +134,10 @@ public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 	}
 
 	[Fact]
-	public async Task WhenStopIsCalledButSubscriberNotRunning_ThenThrowInvalidOperationException() =>
+	public async Task WhenStopIsCalledButSubscriberNotRunning_ThenDoNotThrow() =>
 		await FluentActions.Awaiting(() => _rtgsSubscriber.StopAsync())
-			.Should().ThrowExactlyAsync<InvalidOperationException>()
-			.WithMessage("RTGS Subscriber is not running");
+			.Should()
+			.NotThrowAsync();
 
 	[Fact]
 	public async Task AndSubscriberHasBeenDisposed_WhenStarting_ThenThrow()
