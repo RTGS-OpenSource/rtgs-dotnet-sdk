@@ -227,7 +227,14 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 		}
 		finally
 		{
-			_startStopSignal.Release();
+			try
+			{
+				_startStopSignal.Release();
+			}
+			catch (ObjectDisposedException)
+			{
+				_logger.LogInformation("Attempted to call Release on _startStopSignal when it was disposed.");
+			}
 		}
 	}
 
