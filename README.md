@@ -31,4 +31,4 @@ PM> Install-Package RTGS.DotNetSDK.Subscriber
 The SDK can be built in any IDE that supports .NET 6 (e.g. Visual Studio 2022 or Rider 2021.3).
 
 ## License
-To be confirmed
+Licensed under the [MIT](LICENSE.md) license.
