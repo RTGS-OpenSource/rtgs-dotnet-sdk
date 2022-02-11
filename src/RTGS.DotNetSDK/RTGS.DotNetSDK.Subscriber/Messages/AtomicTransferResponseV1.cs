@@ -1,4 +1,4 @@
-﻿using RTGS.Public.Payment.V1.Pacs;
+﻿using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.Subscriber.Messages;
 
@@ -11,9 +11,9 @@ public class AtomicTransferResponseV1
 	/// The PACS008 message used for the transfer.
 	/// </summary>
 	/// <remarks>
-	/// The <see cref="FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer" /> type is from NuGet package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
+	/// The <see cref="FIToFICustomerCreditTransferV10" /> type is from NuGet package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
 	/// </remarks>
-	public FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer FullFIToFICstmrCdtTrf { get; init; }
+	public FIToFICustomerCreditTransferV10 FullFIToFICstmrCdtTrf { get; init; }
 
 	/// <summary>
 	/// The response status code.
@@ -28,6 +28,9 @@ public class AtomicTransferResponseV1
 	/// <summary>
 	/// The supplementary data included in the transfer.
 	/// </summary>
+	/// <remarks>
+	/// The <see cref="SupplementaryData1" /> type is from NuGet package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
+	/// </remarks>
 	public SupplementaryData1[] SplmtryData { get; init; }
 
 	/// <summary>

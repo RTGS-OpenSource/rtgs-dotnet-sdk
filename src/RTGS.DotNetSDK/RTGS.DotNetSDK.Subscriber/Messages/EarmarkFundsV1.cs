@@ -1,4 +1,4 @@
-﻿using RTGS.Public.Payment.V1.Pacs;
+﻿using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.Subscriber.Messages;
 
@@ -16,9 +16,9 @@ public record EarmarkFundsV1
 	/// The account to use when earmarking funds.
 	/// </summary>
 	/// <remarks>
-	/// The <see cref="CashAccount38" /> type is from NuGet package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
+	/// The <see cref="CashAccount40" /> type is from NuGet package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
 	/// </remarks>
-	public CashAccount38 LiquidityPoolAccount { get; init; }
+	public CashAccount40 LiquidityPoolAccount { get; init; }
 
 	/// <summary>
 	/// The amount to earmark.

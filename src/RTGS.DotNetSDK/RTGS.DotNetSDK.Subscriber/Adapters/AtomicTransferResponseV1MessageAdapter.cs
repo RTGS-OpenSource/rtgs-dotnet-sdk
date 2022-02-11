@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.DotNetSDK.Subscriber.Messages;
 using RTGS.Public.Payment.V3;
@@ -11,7 +11,7 @@ internal class AtomicTransferResponseV1MessageAdapter : IMessageAdapter<AtomicTr
 
 	public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<AtomicTransferResponseV1> handler)
 	{
-		var atomicTransferResponseMessage = JsonConvert.DeserializeObject<AtomicTransferResponseV1>(rtgsMessage.Data);
+		var atomicTransferResponseMessage = JsonSerializer.Deserialize<AtomicTransferResponseV1>(rtgsMessage.Data);
 		await handler.HandleMessageAsync(atomicTransferResponseMessage);
 	}
 }

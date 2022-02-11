@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.DotNetSDK.Subscriber.Messages;
 using RTGS.Public.Payment.V3;
@@ -11,7 +11,7 @@ internal class AtomicLockResponseV1MessageAdapter : IMessageAdapter<AtomicLockRe
 
 	public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<AtomicLockResponseV1> handler)
 	{
-		var atomicLockResponseMessage = JsonConvert.DeserializeObject<AtomicLockResponseV1>(rtgsMessage.Data);
+		var atomicLockResponseMessage = JsonSerializer.Deserialize<AtomicLockResponseV1>(rtgsMessage.Data);
 		await handler.HandleMessageAsync(atomicLockResponseMessage);
 	}
 }
