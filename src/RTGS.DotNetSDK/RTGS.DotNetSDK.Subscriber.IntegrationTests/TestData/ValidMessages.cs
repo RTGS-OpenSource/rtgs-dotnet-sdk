@@ -1,5 +1,4 @@
 ﻿using RTGS.DotNetSDK.Subscriber.Messages;
-using RTGS.Public.Payment.V1.Pacs;
 
 namespace RTGS.DotNetSDK.Subscriber.IntegrationTests.TestData;
 
@@ -83,21 +82,19 @@ public static class ValidMessages
 	public static readonly AtomicTransferResponseV1 AtomicTransferResponseV1 = new()
 	{
 		LckId = "30fc2ac5-5f4d-4abc-b5b9-038df91b9832",
-		FullFIToFICstmrCdtTrf = new FinancialInstitutionToFinancialInstitutionCustomerCreditTransfer
+		FullFIToFICstmrCdtTrf = new ISO20022.Messages.Pacs_008_001.V10.FIToFICustomerCreditTransferV10
 		{
-			GrpHdr = new GroupHeader93
+			GrpHdr = new ISO20022.Messages.Pacs_008_001.V10.GroupHeader96
 			{
 				MsgId = "message-id"
 			},
-			CdtTrfTxInf =
+			CdtTrfTxInf = new[]
 			{
+				new ISO20022.Messages.Pacs_008_001.V10.CreditTransferTransaction50
 				{
-					new CreditTransferTransaction39
+					PmtId = new ISO20022.Messages.Pacs_008_001.V10.PaymentIdentification13
 					{
-						PmtId = new PaymentIdentification7
-						{
-							EndToEndId = "end-to-end-id"
-						}
+						EndToEndId = "end-to-end-id"
 					}
 				}
 			}
@@ -113,10 +110,10 @@ public static class ValidMessages
 	public static readonly EarmarkFundsV1 EarmarkFundsV1 = new()
 	{
 		Amount = 1,
-		LiquidityPoolAccount = new CashAccount38
+		LiquidityPoolAccount = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
 			Nm = "name",
-			Id = new AccountIdentification4Choice
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
 			{
 				IBAN = "iban"
 			}
