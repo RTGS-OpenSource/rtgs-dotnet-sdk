@@ -15,7 +15,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.41.0" />
+		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.42.0" />
 		<PackageReference Include="IDC_SDK" Version="1.0.7" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
@@ -25,7 +25,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="RTGS.ISO20022.Messages" Version="1.0.68" />
-		<PackageReference Include="RTGS.Public.Payment.Client" Version="2.0.63" />
+		<PackageReference Include="RTGS.Public.Payment.Client" Version="2.0.65" />
 	</ItemGroup>
 
 	<ItemGroup>
