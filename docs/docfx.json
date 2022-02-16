@@ -5,7 +5,8 @@
         {
           "src": "..",
           "files": [
-            "src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/**.csproj"
+            "src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/**.csproj",
+            "src/RTGS.DotNetSDK/RTGS.DotNetSDK.Subscriber/**.csproj"
           ]
         }
       ],
@@ -21,9 +22,9 @@
   "build": {
     "postProcessors": [ "ExtractSearchIndex" ],
     "globalMetadata": {
-			"_appTitle": "RTGS Dotnet SDK documentation",
-			"_appFooter": "<span>Copyright © RTGS Global</span>"
-		},
+      "_appTitle": "RTGS Dotnet SDK documentation",
+      "_appFooter": "<span>Copyright &copy; RTGS Global</span>"
+    },
     "markdownEngineName": "markdig",
     "noLangKeyword": false,
     "keepFileLink": false,
@@ -65,9 +66,9 @@
     "xrefService": [ "https://xref.docs.microsoft.com/query?uid={uid}" ],
     "globalMetadataFiles": [],
     "fileMetadataFiles": [],
-		"template": [
-			"statictoc",
+    "template": [
+      "statictoc",
       "rtgs-template"
-		]
+    ]
   }
 }
