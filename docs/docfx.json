@@ -38,12 +38,8 @@
       },
       {
         "files": [
-          "articles/**.md",
-          "articles/**/toc.yml",
-          "guides/**.md",
-          "guides/**/toc.yml",
           "toc.yml",
-          "*.md"
+          "index.md"
         ]
       }
     ],
@@ -58,6 +54,10 @@
       {
         "files": [
           "apidoc/**.md"
+        ],
+        "exclude": [
+          "obj/**",
+          "_site/**"
         ]
       }
     ],
