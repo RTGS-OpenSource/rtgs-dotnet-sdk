@@ -1,2 +1,2 @@
-# PLACEHOLDER
-TODO: Add .NET projects to the *src* folder and run `docfx` to generate **REAL** *API Documentation*!
+# API documentation
+Search using the filter textbox or browse to read about the types exposed in the RTGS.global .NET SDK.
