@@ -1,6 +1,4 @@
 ﻿using System.Net;
-using System.Net.Http;
-using System.Text;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.HttpHandlers;
 

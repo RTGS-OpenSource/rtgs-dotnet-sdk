@@ -1,6 +1,4 @@
 ﻿using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.Extensions;
@@ -103,10 +101,10 @@ public class GivenOpenConnection
 				.Requests[path]
 				.Headers
 				.GetValues("X-API-Key")
-				.Single();		
+				.Single();
 
 			actualApiKey.Should().Be(IdCryptApiKey);
-		}		 
+		}
 
 		[Theory]
 		[InlineData(IdCryptEndPoints.PublicDidPath)]
@@ -385,7 +383,7 @@ public class GivenOpenConnection
 				.CreateLogger();
 
 		private void SetupDependencies()
-		{			
+		{
 			try
 			{
 				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(

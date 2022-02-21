@@ -28,7 +28,7 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		var idCryptResponse = await CreateIdCryptInvitationAsync(alias);
 		var publicDid = await GetPublicDid();
 		var sendToRtgsResult = await SendInvitationToRtgsAsync(alias, idCryptResponse.Invitation, publicDid, cancellationToken);
-		
+
 
 		var connectionId = sendToRtgsResult is SendResult.Success ?
 			idCryptResponse.ConnectionID :
