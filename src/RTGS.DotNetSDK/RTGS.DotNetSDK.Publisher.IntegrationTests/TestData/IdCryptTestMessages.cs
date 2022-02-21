@@ -1,5 +1,6 @@
 ﻿using IDCryptGlobal.Cloud.Agent.Identity.Connection;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
 
@@ -22,33 +23,32 @@ public static class IdCryptTestMessages
 	};
 
 	public static string ConnectionInviteResponseJson =>
-		JsonConvert.SerializeObject(ConnectionInviteResponse);
+		JsonSerializer.Serialize(ConnectionInviteResponse);
 
-	public static string PublicDIDResponseJson => JsonConvert.SerializeObject(new DIDCreated { Result = new DIDInformation { DID = "Test Did" } });
+	public static string PublicDIDResponseJson => JsonSerializer.Serialize(new DIDCreated { Result = new DIDInformation { DID = "Test Did" } });
 
 	public class DIDCreated
 	{
-		[JsonProperty("result")]
+		[JsonPropertyName("result")]
 		public DIDInformation Result { get; set; }
 
 	}
 
 	public class DIDInformation
 	{
-		[JsonProperty("did")]
+		[JsonPropertyName("did")]
 		public string DID { get; set; }
 
-		[JsonProperty("verkey")]
+		[JsonPropertyName("verkey")]
 		public string Verkey { get; set; }
 
-		[JsonProperty("key_type")]
+		[JsonPropertyName("key_type")]
 		public string KeyType { get; set; }
 
-		[JsonProperty("method")]
+		[JsonPropertyName("method")]
 		public string Method { get; set; }
 
-		[JsonProperty("posture")]
+		[JsonPropertyName("posture")]
 		public string Posture { get; set; }
-
 	}
 }
