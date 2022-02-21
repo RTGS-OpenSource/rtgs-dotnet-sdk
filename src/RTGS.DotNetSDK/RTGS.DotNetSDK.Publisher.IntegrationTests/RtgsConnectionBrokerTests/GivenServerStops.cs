@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http;
+using System.Text;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.HttpHandlers;
 
@@ -48,9 +49,8 @@ public class GivenServerStops : IAsyncLifetime
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 
-			var idCryptMessageHandler = new StatusCodeHttpHandler(
-				HttpStatusCode.OK,
-				new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
+
+			var idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, IdCryptEndPoints.HttpContentsMock);
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.Extensions;
@@ -60,7 +61,7 @@ public class GivenOpenConnection
 
 				_idCryptMessageHandler = new StatusCodeHttpHandler(
 					HttpStatusCode.OK,
-					new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
+					IdCryptEndPoints.HttpContentsMock);
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
@@ -68,7 +69,7 @@ public class GivenOpenConnection
 						.AddRtgsPublisher(rtgsPublisherOptions)
 						.AddTestIdCryptHttpClient(_idCryptMessageHandler))
 					.UseSerilog()
-					.Build();
+				.Build();
 
 				_rtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 				_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
@@ -88,8 +89,10 @@ public class GivenOpenConnection
 			_grpcServer.Reset();
 		}
 
-		[Fact]
-		public async Task WhenCallingIdCryptAgent_ThenApiKeyHeaderIsExpected()
+		[Theory]
+		[InlineData(IdCryptEndPoints.PublicDidPath)]
+		[InlineData(IdCryptEndPoints.InvitationPath)]
+		public async Task WhenCallingIdCryptAgent_ThenApiKeyHeaderIsExpected(string path)
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
@@ -97,16 +100,18 @@ public class GivenOpenConnection
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
 			var actualApiKey = _idCryptMessageHandler
-				.Request
+				.Requests[path]
 				.Headers
 				.GetValues("X-API-Key")
-				.Single();
+				.Single();		
 
 			actualApiKey.Should().Be(IdCryptApiKey);
-		}
+		}		 
 
-		[Fact]
-		public async Task WhenCallingIdCryptAgent_ThenUriIsExpected()
+		[Theory]
+		[InlineData(IdCryptEndPoints.PublicDidPath)]
+		[InlineData(IdCryptEndPoints.InvitationPath)]
+		public async Task WhenCallingIdCryptAgent_ThenUriIsExpected(string path)
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
@@ -114,7 +119,7 @@ public class GivenOpenConnection
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
 			var actualApiUri = _idCryptMessageHandler
-				.Request
+				.Requests[path]
 				.RequestUri
 				.GetLeftPart(UriPartial.Authority);
 
@@ -129,12 +134,12 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var inviteRequestQueryParams1 = QueryHelpers.ParseQuery(_idCryptMessageHandler.Request.RequestUri.Query);
+			var inviteRequestQueryParams1 = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
 			var alias1 = inviteRequestQueryParams1["alias"];
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var inviteRequestQueryParams2 = QueryHelpers.ParseQuery(_idCryptMessageHandler.Request.RequestUri.Query);
+			var inviteRequestQueryParams2 = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
 			var alias2 = inviteRequestQueryParams2["alias"];
 
 			alias2.Should().NotBeEquivalentTo(alias1);
@@ -148,7 +153,7 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Request.RequestUri.Query);
+			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
 			var autoAccept = bool.Parse(inviteRequestQueryParams["auto_accept"]);
 			var multiUse = bool.Parse(inviteRequestQueryParams["multi_use"]);
 			var usePublicDid = bool.Parse(inviteRequestQueryParams["public"]);
@@ -168,14 +173,16 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Request.RequestUri.Query);
+			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
 			var alias = inviteRequestQueryParams["alias"];
 
 			var expectedLogs = new List<LogEntry>
 			{
 				new($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new("Sent CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug)
-			};
+				new("Sent CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+				new("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+				new("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
+		};
 
 			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug);
 			debugLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
@@ -198,7 +205,7 @@ public class GivenOpenConnection
 			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.v1");
 			receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
 
-			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Request.RequestUri.Query);
+			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
 
 			var invitation = IdCryptTestMessages.ConnectionInviteResponse.Invitation;
 
@@ -209,7 +216,8 @@ public class GivenOpenConnection
 				RecipientKeys = invitation.RecipientKeys,
 				Id = invitation.ID,
 				Type = invitation.Type,
-				ServiceEndPoint = invitation.ServiceEndPoint
+				ServiceEndPoint = invitation.ServiceEndPoint,
+				PublicDid = "Test Did"
 			};
 
 			var actualMessageData = JsonSerializer
@@ -332,7 +340,7 @@ public class GivenOpenConnection
 			  .Should()
 			  .ThrowAsync<Exception>();
 
-			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Request.RequestUri.Query);
+			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
 			var alias = inviteRequestQueryParams["alias"];
 
 			using var _ = new AssertionScope();
@@ -377,7 +385,7 @@ public class GivenOpenConnection
 				.CreateLogger();
 
 		private void SetupDependencies()
-		{
+		{			
 			try
 			{
 				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
@@ -391,9 +399,7 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				var idCryptMessageHandler = new StatusCodeHttpHandler(
-					HttpStatusCode.OK,
-					new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
+				var idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, IdCryptEndPoints.HttpContentsMock);
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
@@ -714,6 +720,8 @@ public class GivenOpenConnection
 		{
 			try
 			{
+
+
 				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
 						ValidMessages.BankDid,
 						_grpcServer.ServerUri,
@@ -723,9 +731,7 @@ public class GivenOpenConnection
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
-				var idCryptMessageHandler = new StatusCodeHttpHandler(
-					HttpStatusCode.OK,
-					new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
+				var idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, IdCryptEndPoints.HttpContentsMock);
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
@@ -809,5 +815,6 @@ public class GivenOpenConnection
 		public string Id { get; init; }
 		public string Type { get; init; }
 		public string ServiceEndPoint { get; init; }
+		public string PublicDid { get; set; }
 	}
 }

@@ -34,9 +34,7 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 
-			var idCryptMessageHandler = new StatusCodeHttpHandler(
-				HttpStatusCode.OK,
-				new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
+			var idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, IdCryptEndPoints.HttpContentsMock);
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())

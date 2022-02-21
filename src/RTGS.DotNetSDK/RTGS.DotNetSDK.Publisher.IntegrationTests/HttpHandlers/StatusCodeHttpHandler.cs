@@ -5,24 +5,29 @@ namespace RTGS.DotNetSDK.Publisher.IntegrationTests.HttpHandlers;
 
 internal class StatusCodeHttpHandler : DelegatingHandler
 {
-	private readonly HttpResponseMessage _response;
+	private readonly HttpStatusCode _statusCode;
+	private readonly Dictionary<string, HttpContent> _contents;
 
-	public HttpRequestMessage Request { get; private set; }
+	public Dictionary<string, HttpRequestMessage> Requests { get; private set; }
 
-	public StatusCodeHttpHandler(HttpStatusCode statusCode, HttpContent content)
+	public StatusCodeHttpHandler(HttpStatusCode statusCode, Dictionary<string, HttpContent> contents)
 	{
-		_response = new HttpResponseMessage(statusCode)
-		{
-			Content = content
-		};
+		Requests = new Dictionary<string, HttpRequestMessage>();
+		_statusCode = statusCode;
+		_contents = contents;
 	}
 
 	protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 	{
-		Request = request;
+		Requests[request.RequestUri.LocalPath] = request;
 
-		_response.RequestMessage = request;
+		var response = new HttpResponseMessage(_statusCode)
+		{
+			Content = _contents[request.RequestUri.LocalPath]
+		};
 
-		return Task.FromResult(_response);
+		response.RequestMessage = request;
+
+		return Task.FromResult(response);
 	}
 }

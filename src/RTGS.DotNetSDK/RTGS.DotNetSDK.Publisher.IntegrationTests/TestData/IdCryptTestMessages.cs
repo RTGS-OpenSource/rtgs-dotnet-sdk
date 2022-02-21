@@ -23,4 +23,32 @@ public static class IdCryptTestMessages
 
 	public static string ConnectionInviteResponseJson =>
 		JsonConvert.SerializeObject(ConnectionInviteResponse);
+
+	public static string PublicDIDResponseJson => JsonConvert.SerializeObject(new DIDCreated { Result = new DIDInformation { DID = "Test Did" } });
+
+	public class DIDCreated
+	{
+		[JsonProperty("result")]
+		public DIDInformation Result { get; set; }
+
+	}
+
+	public class DIDInformation
+	{
+		[JsonProperty("did")]
+		public string DID { get; set; }
+
+		[JsonProperty("verkey")]
+		public string Verkey { get; set; }
+
+		[JsonProperty("key_type")]
+		public string KeyType { get; set; }
+
+		[JsonProperty("method")]
+		public string Method { get; set; }
+
+		[JsonProperty("posture")]
+		public string Posture { get; set; }
+
+	}
 }

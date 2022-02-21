@@ -18,9 +18,7 @@ public class GivenWrongRemoteHostAddress
 				new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 			.Build();
 
-		var idCryptMessageHandler = new StatusCodeHttpHandler(
-			HttpStatusCode.OK,
-			new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
+		var idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, IdCryptEndPoints.HttpContentsMock);
 
 		using var clientHost = Host.CreateDefaultBuilder()
 			.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())

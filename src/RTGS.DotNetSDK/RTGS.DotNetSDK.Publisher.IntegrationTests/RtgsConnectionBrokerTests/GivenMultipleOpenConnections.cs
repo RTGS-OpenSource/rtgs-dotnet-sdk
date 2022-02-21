@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Net.Http;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.HttpHandlers;
 
@@ -33,9 +32,7 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 
-			var idCryptMessageHandler = new StatusCodeHttpHandler(
-				HttpStatusCode.OK,
-				new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson));
+			var idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, IdCryptEndPoints.HttpContentsMock);
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
