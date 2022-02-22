@@ -206,7 +206,7 @@ public class GivenOpenConnection
 			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
 
 			var invitation = IdCryptTestMessages.ConnectionInviteResponse.Invitation;
-			var publicDid = IdCryptTestMessages.DIDCreated.Result.DID;
+			var agentPublicDid = IdCryptTestMessages.DIDCreated.Result.DID;
 
 			var expectedMessageData = new IdCryptInvitationV1
 			{
@@ -216,7 +216,7 @@ public class GivenOpenConnection
 				Id = invitation.ID,
 				Type = invitation.Type,
 				ServiceEndPoint = invitation.ServiceEndPoint,
-				PublicDid = publicDid
+				AgentPublicDid = agentPublicDid
 			};
 
 			var actualMessageData = JsonSerializer
@@ -814,6 +814,6 @@ public class GivenOpenConnection
 		public string Id { get; init; }
 		public string Type { get; init; }
 		public string ServiceEndPoint { get; init; }
-		public string PublicDid { get; set; }
+		public string AgentPublicDid { get; set; }
 	}
 }

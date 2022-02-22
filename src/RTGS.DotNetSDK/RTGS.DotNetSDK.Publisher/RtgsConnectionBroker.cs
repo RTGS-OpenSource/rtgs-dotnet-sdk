@@ -109,7 +109,7 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 			RecipientKeys = invitation.RecipientKeys,
 			ServiceEndPoint = invitation.ServiceEndPoint,
 			Type = invitation.Type,
-			PublicDid = publicDid
+			AgentPublicDid = publicDid
 		};
 
 		var sendResult = await _rtgsInternalPublisher
