@@ -53,11 +53,6 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 
 			_logger.LogDebug("Sent GetPublicDid request to ID Crypt Cloud Agent");
 
-			if (response is null)
-			{
-				throw new NullReferenceException("GetPublicDid response is null");
-			}
-
 			return response.Result.DID;
 		}
 		catch (Exception ex)
