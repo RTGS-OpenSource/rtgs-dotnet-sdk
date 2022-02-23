@@ -353,12 +353,11 @@ public class GivenOpenConnection
 			var alias = inviteRequestQueryParams["alias"];
 
 			using var _ = new AssertionScope();
+			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug).FirstOrDefault();
+			debugLogs.Message.Should().Be($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent");
 
-			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug);
-			debugLogs.Select(log => log.Message).Should().Contain($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent");
-
-			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error);
-			errorLogs.Select(log => log.Message).Should().Contain("Error occurred when sending CreateInvitation request to ID Crypt Cloud Agent");
+			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error).FirstOrDefault();
+			errorLogs.Message.Should().Be("Error occurred when sending CreateInvitation request to ID Crypt Cloud Agent");
 		}
 	}
 
@@ -489,13 +488,22 @@ public class GivenOpenConnection
 			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
 			var alias = inviteRequestQueryParams["alias"];
 
+			var expectedDebugLogs = new List<LogEntry>
+			{
+				new ($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
+				new ("Sent CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+				new ("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+				new ("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
+			};
+
+			var expectedErrorLogMessage = "Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent";
+
 			using var _ = new AssertionScope();
-
 			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug);
-			debugLogs.Select(log => log.Message).Should().Contain($"Sending GetPublicDid request to ID Crypt Cloud Agent");
+			debugLogs.Should().BeEquivalentTo(expectedDebugLogs);
 
-			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error);
-			errorLogs.Select(log => log.Message).Should().Contain("Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent");
+			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error).SingleOrDefault();
+			errorLogs.Message.Should().Be(expectedErrorLogMessage);
 		}
 	}
 
