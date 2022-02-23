@@ -25,7 +25,7 @@ public static class IdCryptTestMessages
 	public static string ConnectionInviteResponseJson =>
 		JsonConvert.SerializeObject(ConnectionInviteResponse);
 
-	public static DIDCreated DIDCreated => new()
+	public static DIDCreated GetPublicDidResponse => new()
 	{
 		Result = new DIDInformation
 		{
@@ -33,6 +33,6 @@ public static class IdCryptTestMessages
 		}
 	};
 
-	public static string AgentPublicDidResponseJson =>
-		JsonConvert.SerializeObject(DIDCreated);
+	public static string GetPublicDidResponseJson =>
+		JsonConvert.SerializeObject(GetPublicDidResponse);
 }

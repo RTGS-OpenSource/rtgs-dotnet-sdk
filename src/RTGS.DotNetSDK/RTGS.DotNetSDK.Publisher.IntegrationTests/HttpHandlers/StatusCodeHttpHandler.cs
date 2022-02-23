@@ -18,7 +18,7 @@ internal class StatusCodeHttpHandler : DelegatingHandler
 	{
 		Requests[request.RequestUri.LocalPath] = request;
 
-		var requestMock = _mockHttpResponses.FirstOrDefault(i => i.Path == request.RequestUri.LocalPath);
+		var requestMock = _mockHttpResponses.Single(i => i.Path == request.RequestUri.LocalPath);
 
 		var response = new HttpResponseMessage(requestMock.HttpStatusCode)
 		{

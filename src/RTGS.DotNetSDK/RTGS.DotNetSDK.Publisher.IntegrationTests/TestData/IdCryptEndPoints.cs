@@ -12,7 +12,7 @@ internal class IdCryptEndPoints
 	{
 		new MockHttpResponse
 		{
-			Content = new StringContent(IdCryptTestMessages.AgentPublicDidResponseJson),
+			Content = new StringContent(IdCryptTestMessages.GetPublicDidResponseJson),
 			HttpStatusCode = HttpStatusCode.OK,
 			Path = PublicDidPath
 		},

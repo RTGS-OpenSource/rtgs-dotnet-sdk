@@ -179,7 +179,7 @@ public class GivenOpenConnection
 				new("Sent CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
-		};
+			};
 
 			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug);
 			debugLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
@@ -205,7 +205,7 @@ public class GivenOpenConnection
 			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
 
 			var invitation = IdCryptTestMessages.ConnectionInviteResponse.Invitation;
-			var agentPublicDid = IdCryptTestMessages.DIDCreated.Result.DID;
+			var agentPublicDid = IdCryptTestMessages.GetPublicDidResponse.Result.DID;
 
 			var expectedMessageData = new IdCryptInvitationV1
 			{
@@ -274,7 +274,7 @@ public class GivenOpenConnection
 
 				var mockHttpResponses = new List<MockHttpResponse> {
 					new MockHttpResponse {
-						Content = new StringContent ( IdCryptTestMessages.AgentPublicDidResponseJson ),
+						Content = new StringContent(IdCryptTestMessages.GetPublicDidResponseJson),
 						HttpStatusCode = HttpStatusCode.OK,
 						Path = IdCryptEndPoints.PublicDidPath
 					},
@@ -353,11 +353,13 @@ public class GivenOpenConnection
 			var alias = inviteRequestQueryParams["alias"];
 
 			using var _ = new AssertionScope();
-			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug).FirstOrDefault();
-			debugLogs.Message.Should().Be($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent");
+			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug);
+			debugLogs.Select(log => log.Message)
+				.Should().ContainSingle(msg => msg == $"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent");
 
-			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error).FirstOrDefault();
-			errorLogs.Message.Should().Be("Error occurred when sending CreateInvitation request to ID Crypt Cloud Agent");
+			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error);
+			errorLogs.Select(log => log.Message)
+				.Should().ContainSingle(msg => msg == "Error occurred when sending CreateInvitation request to ID Crypt Cloud Agent");
 		}
 	}
 
