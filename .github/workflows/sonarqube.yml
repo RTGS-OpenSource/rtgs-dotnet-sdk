@@ -11,8 +11,8 @@ env:
   SOLUTION_FOLDER: ./src/RTGS.DotNetSDK/
 
 jobs:
-  build:
-    name: Build
+  build-with-sonarqube:
+    name: Build with Sonarqube
     runs-on: windows-latest
     steps:
       - name: Set up JDK 11
@@ -46,6 +46,7 @@ jobs:
           New-Item -Path .\.sonar\scanner -ItemType Directory
           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
       - name: Build and analyze
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
         shell: powershell
