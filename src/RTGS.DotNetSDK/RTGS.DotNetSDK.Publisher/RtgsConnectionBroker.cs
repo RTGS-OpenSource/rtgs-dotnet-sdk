@@ -49,11 +49,16 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		{
 			_logger.LogDebug("Sending GetPublicDid request to ID Crypt Cloud Agent");
 
-			var result = await _identityClient.Vault.GetPublicDID();
+			var response = await _identityClient.Vault.GetPublicDID();
 
 			_logger.LogDebug("Sent GetPublicDid request to ID Crypt Cloud Agent");
 
-			return result.Result.DID;
+			if (response is null)
+			{
+				throw new NullReferenceException("GetPublicDid response is null");
+			}
+
+			return response.Result.DID;
 		}
 		catch (Exception ex)
 		{
@@ -88,7 +93,7 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 			_logger.LogError(ex, "Error occurred when sending CreateInvitation request to ID Crypt Cloud Agent");
 
 			throw;
-		}		
+		}
 	}
 
 	private async Task<SendResult> SendInvitationToRtgsAsync(

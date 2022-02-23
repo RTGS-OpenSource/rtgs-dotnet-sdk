@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Http;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.Extensions;
@@ -57,9 +58,7 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				_idCryptMessageHandler = new StatusCodeHttpHandler(
-					HttpStatusCode.OK,
-					IdCryptEndPoints.HttpContentsMock);
+				_idCryptMessageHandler = new StatusCodeHttpHandler(IdCryptEndPoints.MockHttpResponses);
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
@@ -273,11 +272,20 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				var agentPublicDidContent = IdCryptEndPoints.HttpContentsMock
-					.Where(x => x.Key == IdCryptEndPoints.PublicDidPath)
-					.ToDictionary(k => k.Key, v => v.Value);
+				var mockHttpResponses = new List<MockHttpResponse> {
+					new MockHttpResponse {
+						Content = new StringContent ( IdCryptTestMessages.AgentPublicDidResponseJson ),
+						HttpStatusCode = HttpStatusCode.OK,
+						Path = IdCryptEndPoints.PublicDidPath
+					},
+					new MockHttpResponse {
+						Content = null,
+						HttpStatusCode = HttpStatusCode.ServiceUnavailable,
+						Path = IdCryptEndPoints.InvitationPath
+					}
+				};
 
-				_idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.ServiceUnavailable, agentPublicDidContent);
+				_idCryptMessageHandler = new StatusCodeHttpHandler(mockHttpResponses);
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
@@ -347,10 +355,10 @@ public class GivenOpenConnection
 			using var _ = new AssertionScope();
 
 			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug);
-			debugLogs.Select(log => log.Message).Should().ContainSingle($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent");
+			debugLogs.Select(log => log.Message).Should().Contain($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent");
 
 			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error);
-			errorLogs.Select(log => log.Message).Should().ContainSingle("Error occurred when calling ID Crypt Cloud Agent");
+			errorLogs.Select(log => log.Message).Should().Contain("Error occurred when sending CreateInvitation request to ID Crypt Cloud Agent");
 		}
 	}
 
@@ -401,11 +409,20 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				var createInvitationContent = IdCryptEndPoints.HttpContentsMock
-					.Where(x => x.Key == IdCryptEndPoints.InvitationPath)
-					.ToDictionary(k => k.Key, v => v.Value);
+				var mockHttpResponses = new List<MockHttpResponse> {
+					new MockHttpResponse {
+						Content = null ,
+						HttpStatusCode = HttpStatusCode.ServiceUnavailable,
+						Path = IdCryptEndPoints.PublicDidPath
+					},
+					new MockHttpResponse {
+						Content =new StringContent ( IdCryptTestMessages.ConnectionInviteResponseJson ),
+						HttpStatusCode = HttpStatusCode.OK,
+						Path = IdCryptEndPoints.InvitationPath
+					}
+				};
 
-				_idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.ServiceUnavailable, createInvitationContent);
+				_idCryptMessageHandler = new StatusCodeHttpHandler(mockHttpResponses);
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
@@ -475,10 +492,10 @@ public class GivenOpenConnection
 			using var _ = new AssertionScope();
 
 			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug);
-			debugLogs.Select(log => log.Message).Should().ContainSingle($"Sending GetPublicDid request to ID Crypt Cloud Agent");
+			debugLogs.Select(log => log.Message).Should().Contain($"Sending GetPublicDid request to ID Crypt Cloud Agent");
 
 			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error);
-			errorLogs.Select(log => log.Message).Should().ContainSingle("Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent");
+			errorLogs.Select(log => log.Message).Should().Contain("Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent");
 		}
 	}
 
@@ -528,7 +545,7 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				var idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, IdCryptEndPoints.HttpContentsMock);
+				var idCryptMessageHandler = new StatusCodeHttpHandler(IdCryptEndPoints.MockHttpResponses);
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
@@ -860,7 +877,7 @@ public class GivenOpenConnection
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
-				var idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, IdCryptEndPoints.HttpContentsMock);
+				var idCryptMessageHandler = new StatusCodeHttpHandler(IdCryptEndPoints.MockHttpResponses);
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())

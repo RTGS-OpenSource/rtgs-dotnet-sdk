@@ -1,5 +1,5 @@
-﻿using System.Net.Http;
-using System.Text;
+﻿using System.Net;
+using System.Net.Http;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
 
@@ -8,15 +8,19 @@ internal class IdCryptEndPoints
 	public const string InvitationPath = "/connections/create-invitation";
 	public const string PublicDidPath = "/wallet/did/public";
 
-	public static readonly Dictionary<string, HttpContent> HttpContentsMock = new()
+	public static List<MockHttpResponse> MockHttpResponses = new()
 	{
+		new MockHttpResponse
 		{
-			InvitationPath,
-			new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson, Encoding.UTF8)
+			Content = new StringContent(IdCryptTestMessages.AgentPublicDidResponseJson),
+			HttpStatusCode = HttpStatusCode.OK,
+			Path = PublicDidPath
 		},
+		new MockHttpResponse
 		{
-			PublicDidPath,
-			new StringContent(IdCryptTestMessages.AgentPublicDidResponseJson, Encoding.UTF8)
+			Content = new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson),
+			HttpStatusCode = HttpStatusCode.OK,
+			Path = InvitationPath
 		}
 	};
 }

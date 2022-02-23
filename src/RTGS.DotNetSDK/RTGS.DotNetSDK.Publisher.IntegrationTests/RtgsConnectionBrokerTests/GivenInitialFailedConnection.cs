@@ -1,5 +1,4 @@
-﻿using System.Net;
-using RTGS.DotNetSDK.Publisher.IntegrationTests.Extensions;
+﻿using RTGS.DotNetSDK.Publisher.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.Publisher.IntegrationTests.HttpHandlers;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.RtgsConnectionBrokerTests;
@@ -33,7 +32,7 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 
-			var idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.OK, IdCryptEndPoints.HttpContentsMock);
+			var idCryptMessageHandler = new StatusCodeHttpHandler(IdCryptEndPoints.MockHttpResponses);
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
