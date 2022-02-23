@@ -10,5 +10,5 @@ internal record IdCryptInvitationV1
 	public string Id { get; init; }
 	public string Type { get; init; }
 	public string ServiceEndPoint { get; init; }
-	public string AgentPublicDid { get; set; }
+	public string AgentPublicDid { get; init; }
 }

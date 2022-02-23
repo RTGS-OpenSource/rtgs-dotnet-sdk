@@ -226,7 +226,7 @@ public class GivenOpenConnection
 		}
 	}
 
-	public class AndIdCryptApiUnavailable : IDisposable, IClassFixture<GrpcServerFixture>
+	public class AndIdCryptCreateInvitationApiUnavailable : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
@@ -238,7 +238,7 @@ public class GivenOpenConnection
 		private IHost _clientHost;
 		private StatusCodeHttpHandler _idCryptMessageHandler;
 
-		public AndIdCryptApiUnavailable(GrpcServerFixture grpcServer)
+		public AndIdCryptCreateInvitationApiUnavailable(GrpcServerFixture grpcServer)
 		{
 			_grpcServer = grpcServer;
 
@@ -273,9 +273,11 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				_idCryptMessageHandler = new StatusCodeHttpHandler(
-					HttpStatusCode.ServiceUnavailable,
-					null);
+				var agentPublicDidContent = IdCryptEndPoints.HttpContentsMock
+					.Where(x => x.Key == IdCryptEndPoints.PublicDidPath)
+					.ToDictionary(k => k.Key, v => v.Value);
+
+				_idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.ServiceUnavailable, agentPublicDidContent);
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
@@ -349,6 +351,134 @@ public class GivenOpenConnection
 
 			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error);
 			errorLogs.Select(log => log.Message).Should().ContainSingle("Error occurred when calling ID Crypt Cloud Agent");
+		}
+	}
+
+	public class AndIdCryptGetPublicDIDApiUnavailable : IDisposable, IClassFixture<GrpcServerFixture>
+	{
+		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
+
+		private readonly GrpcServerFixture _grpcServer;
+		private readonly ITestCorrelatorContext _serilogContext;
+
+		private IRtgsConnectionBroker _rtgsConnectionBroker;
+		private ToRtgsMessageHandler _toRtgsMessageHandler;
+		private IHost _clientHost;
+		private StatusCodeHttpHandler _idCryptMessageHandler;
+
+		public AndIdCryptGetPublicDIDApiUnavailable(GrpcServerFixture grpcServer)
+		{
+			_grpcServer = grpcServer;
+
+			SetupSerilogLogger();
+
+			SetupDependencies();
+
+			_serilogContext = TestCorrelator.CreateContext();
+		}
+
+		private static void SetupSerilogLogger() =>
+			Log.Logger = new LoggerConfiguration()
+				.MinimumLevel.Debug()
+				.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+				.Enrich.FromLogContext()
+				.WriteTo.Console()
+				.WriteTo.TestCorrelator()
+				.CreateLogger();
+
+		private void SetupDependencies()
+		{
+			try
+			{
+				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
+						ValidMessages.BankDid,
+						_grpcServer.ServerUri,
+						new Uri("http://id-crypt-cloud-agent-api.com"),
+						"id-crypt-api-key",
+						new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
+					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
+					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
+					.Build();
+
+				var createInvitationContent = IdCryptEndPoints.HttpContentsMock
+					.Where(x => x.Key == IdCryptEndPoints.InvitationPath)
+					.ToDictionary(k => k.Key, v => v.Value);
+
+				_idCryptMessageHandler = new StatusCodeHttpHandler(HttpStatusCode.ServiceUnavailable, createInvitationContent);
+
+				_clientHost = Host.CreateDefaultBuilder()
+					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
+					.ConfigureServices(services => services
+						.AddRtgsPublisher(rtgsPublisherOptions)
+						.AddTestIdCryptHttpClient(_idCryptMessageHandler))
+					.UseSerilog()
+					.Build();
+
+				_rtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
+				_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
+			}
+			catch (Exception)
+			{
+				Dispose();
+
+				throw;
+			}
+		}
+
+		public void Dispose()
+		{
+			_clientHost?.Dispose();
+
+			_grpcServer.Reset();
+		}
+
+		[Fact]
+		public async Task ThenExceptionIsThrown()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+			  .Should()
+			  .ThrowAsync<Exception>();
+		}
+
+		[Fact]
+		public async Task ThenMessageNotSent()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+			  .Should()
+			  .ThrowAsync<Exception>();
+
+			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+
+			receiver.Connections.Should().BeEmpty();
+		}
+
+		[Fact]
+		public async Task ThenLog()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+			  .Should()
+			  .ThrowAsync<Exception>();
+
+			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
+			var alias = inviteRequestQueryParams["alias"];
+
+			using var _ = new AssertionScope();
+
+			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug);
+			debugLogs.Select(log => log.Message).Should().ContainSingle($"Sending GetPublicDid request to ID Crypt Cloud Agent");
+
+			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error);
+			errorLogs.Select(log => log.Message).Should().ContainSingle("Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent");
 		}
 	}
 

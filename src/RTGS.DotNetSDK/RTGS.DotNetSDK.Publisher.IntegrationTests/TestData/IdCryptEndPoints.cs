@@ -16,7 +16,7 @@ internal class IdCryptEndPoints
 		},
 		{
 			PublicDidPath,
-			new StringContent(IdCryptTestMessages.PublicDIDResponseJson, Encoding.UTF8)
+			new StringContent(IdCryptTestMessages.AgentPublicDidResponseJson, Encoding.UTF8)
 		}
 	};
 }

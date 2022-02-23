@@ -33,6 +33,6 @@ public static class IdCryptTestMessages
 		}
 	};
 
-	public static string PublicDIDResponseJson =>
+	public static string AgentPublicDidResponseJson =>
 		JsonConvert.SerializeObject(DIDCreated);
 }
