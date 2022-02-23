@@ -82,23 +82,8 @@ public static class ValidMessages
 	public static readonly AtomicTransferResponseV1 AtomicTransferResponseV1 = new()
 	{
 		LckId = "30fc2ac5-5f4d-4abc-b5b9-038df91b9832",
-		FullFIToFICstmrCdtTrf = new ISO20022.Messages.Pacs_008_001.V10.FIToFICustomerCreditTransferV10
-		{
-			GrpHdr = new ISO20022.Messages.Pacs_008_001.V10.GroupHeader96
-			{
-				MsgId = "message-id"
-			},
-			CdtTrfTxInf = new[]
-			{
-				new ISO20022.Messages.Pacs_008_001.V10.CreditTransferTransaction50
-				{
-					PmtId = new ISO20022.Messages.Pacs_008_001.V10.PaymentIdentification13
-					{
-						EndToEndId = "end-to-end-id"
-					}
-				}
-			}
-		}
+		StatusCode = ResponseStatusCodes.Ok,
+		Message = "the-message"
 	};
 
 	public static readonly AtomicTransferFundsV1 AtomicTransferFundsV1 = new()
