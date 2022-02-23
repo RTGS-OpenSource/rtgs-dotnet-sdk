@@ -1,28 +1,32 @@
-﻿using System.Net;
-using System.Net.Http;
+﻿using System.Net.Http;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.HttpHandlers;
 
 internal class StatusCodeHttpHandler : DelegatingHandler
 {
-	private readonly HttpResponseMessage _response;
+	private readonly IList<MockHttpResponse> _mockHttpResponses;
 
-	public HttpRequestMessage Request { get; private set; }
+	public Dictionary<string, HttpRequestMessage> Requests { get; private set; }
 
-	public StatusCodeHttpHandler(HttpStatusCode statusCode, HttpContent content)
+	public StatusCodeHttpHandler(IList<MockHttpResponse> mockHttpResponses)
 	{
-		_response = new HttpResponseMessage(statusCode)
-		{
-			Content = content
-		};
+		Requests = new Dictionary<string, HttpRequestMessage>();
+		_mockHttpResponses = mockHttpResponses;
 	}
 
 	protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 	{
-		Request = request;
+		Requests[request.RequestUri.LocalPath] = request;
 
-		_response.RequestMessage = request;
+		var requestMock = _mockHttpResponses.Single(i => i.Path == request.RequestUri.LocalPath);
 
-		return Task.FromResult(_response);
+		var response = new HttpResponseMessage(requestMock.HttpStatusCode)
+		{
+			Content = requestMock.Content
+		};
+
+		response.RequestMessage = request;
+
+		return Task.FromResult(response);
 	}
 }

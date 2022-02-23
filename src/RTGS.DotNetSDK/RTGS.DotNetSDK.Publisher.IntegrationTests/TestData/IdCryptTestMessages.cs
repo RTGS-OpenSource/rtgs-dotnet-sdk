@@ -1,4 +1,5 @@
 ﻿using IDCryptGlobal.Cloud.Agent.Identity.Connection;
+using IDCryptGlobal.Cloud.Agent.Identity.Vault;
 using Newtonsoft.Json;
 
 namespace RTGS.DotNetSDK.Publisher.IntegrationTests.TestData;
@@ -23,4 +24,15 @@ public static class IdCryptTestMessages
 
 	public static string ConnectionInviteResponseJson =>
 		JsonConvert.SerializeObject(ConnectionInviteResponse);
+
+	public static DIDCreated GetPublicDidResponse => new()
+	{
+		Result = new DIDInformation
+		{
+			DID = "Test Did"
+		}
+	};
+
+	public static string GetPublicDidResponseJson =>
+		JsonConvert.SerializeObject(GetPublicDidResponse);
 }
