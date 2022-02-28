@@ -7,7 +7,7 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters;
 
 internal class AtomicTransferResponseV1MessageAdapter : IMessageAdapter<AtomicTransferResponseV1>
 {
-	public string MessageIdentifier => "BlockResponse";
+	public string MessageIdentifier => "payment.block.v2";
 
 	public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<AtomicTransferResponseV1> handler)
 	{
