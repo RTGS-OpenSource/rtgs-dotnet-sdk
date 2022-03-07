@@ -160,4 +160,9 @@ public static class ValidMessages
 			}
 		}
 	};
+
+	public static readonly IdCryptInvitationConfirmationV1 IdCryptInvitationConfirmationV1 = new()
+	{
+		ConnectionId = new Guid("1d6f914b-3f9d-4cc4-a396-f4ba7154b7ae").ToString()
+	};
 }

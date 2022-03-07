@@ -116,4 +116,16 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
+
+	public override ISubscriberAction<IdCryptInvitationConfirmationV1> IdCryptInvitationConfirmationV1 =>
+		new SubscriberActionWithLogs<IdCryptInvitationConfirmationV1>(
+			SubscriberActions.IdCryptInvitationConfirmationV1,
+			new List<LogEntry>()
+			{
+				new("RTGS Subscriber started", LogEventLevel.Information),
+				new("idcrypt.invitation.v1 message received from RTGS", LogEventLevel.Information),
+				new("RTGS Subscriber stopping", LogEventLevel.Information),
+				new("RTGS Subscriber stopped", LogEventLevel.Information)
+			});
+
 }

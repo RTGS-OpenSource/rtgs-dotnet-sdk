@@ -92,6 +92,7 @@ public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 						 "Multiple handlers of type IEarmarkCompleteV1Handler were found." +
 						 "Multiple handlers of type IEarmarkFundsV1Handler were found." +
 						 "Multiple handlers of type IEarmarkReleaseV1Handler were found." +
+						 "Multiple handlers of type IIdCryptInvitationConfirmationV1Handler were found." +
 						 "Multiple handlers of type IMessageRejectV1Handler were found." +
 						 "Multiple handlers of type IPayawayFundsV1Handler were found." +
 						 "Multiple handlers of type IPayawayCompleteV1Handler were found. (Parameter 'handlers')");
