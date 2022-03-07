@@ -1,7 +1,7 @@
 ﻿namespace RTGS.DotNetSDK.Subscriber.Messages;
 
 /// <summary>
-/// Represents a confirmation for an accepted inviation.
+/// Represents a confirmation for an accepted invitation.
 /// </summary>
 public record IdCryptInvitationConfirmationV1
 {
