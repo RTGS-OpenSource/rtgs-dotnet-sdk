@@ -36,4 +36,7 @@ public class SubscriberActionData : BaseSubscriberActionData
 
 	public override ISubscriberAction<BankPartnersResponseV1> BankPartnersResponseV1 =>
 		SubscriberActions.BankPartnersResponseV1;
+
+	public override ISubscriberAction<IdCryptInvitationConfirmationV1> IdCryptInvitationConfirmationV1 =>
+		SubscriberActions.IdCryptInvitationConfirmationV1;
 }

@@ -14,6 +14,7 @@ internal class HandlerValidator : IHandlerValidator
 		typeof(IEarmarkCompleteV1Handler),
 		typeof(IEarmarkFundsV1Handler),
 		typeof(IEarmarkReleaseV1Handler),
+		typeof(IIdCryptInvitationConfirmationV1Handler),
 		typeof(IMessageRejectV1Handler),
 		typeof(IPayawayFundsV1Handler),
 		typeof(IPayawayCompleteV1Handler)
