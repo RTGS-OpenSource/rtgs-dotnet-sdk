@@ -2,7 +2,7 @@
 This repository contains the source code of the [RTGS.global](https://rtgs.global/) .NET SDK.
 
 ## Introduction
-The SDK allows clients to communicate with the RTGS platform. It consists of two packages.
+The SDK allows clients to communicate with the RTGS.global platform. It consists of two packages.
 
 1. Publisher to send messages
 2. Subscriber to receive messages
