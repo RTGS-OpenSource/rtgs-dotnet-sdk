@@ -37,7 +37,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-					TestData.ValidMessages.BankDid, 
+					TestData.ValidMessages.BankDid,
 					_grpcServer.ServerUri,
 					new Uri("http://id-crypt-cloud-agent-api.com"),
 					"id-crypt-api-key",

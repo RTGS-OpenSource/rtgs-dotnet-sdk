@@ -17,7 +17,7 @@ public class GivenWrongRemoteHostAddress : IAsyncDisposable
 		_serilogContext = TestCorrelator.CreateContext();
 
 		var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-				TestData.ValidMessages.BankDid, 
+				TestData.ValidMessages.BankDid,
 				new Uri("https://localhost:4567"),
 				new Uri("http://id-crypt-cloud-agent-api.com"),
 				"id-crypt-api-key",

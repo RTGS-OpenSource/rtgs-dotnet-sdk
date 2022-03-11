@@ -11,13 +11,12 @@ global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
 global using RTGS.DotNetSDK.Extensions;
 global using RTGS.DotNetSDK.IntegrationTests.Logging;
-global using RTGS.DotNetSDK.IntegrationTests.TestServer;
 global using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
-global using RTGS.DotNetSDK.Publisher.Messages;
-global using RTGS.DotNetSDK.Subscriber.Exceptions;
 global using RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 global using RTGS.DotNetSDK.IntegrationTests.Subscriber.TestHandlers;
-
+global using RTGS.DotNetSDK.IntegrationTests.TestServer;
+global using RTGS.DotNetSDK.Publisher.Messages;
+global using RTGS.DotNetSDK.Subscriber.Exceptions;
 global using Serilog;
 global using Serilog.Events;
 global using Serilog.Sinks.TestCorrelator;
