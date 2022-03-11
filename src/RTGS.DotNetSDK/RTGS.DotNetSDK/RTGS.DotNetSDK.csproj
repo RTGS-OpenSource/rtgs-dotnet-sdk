@@ -1,17 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>disable</Nullable>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <None Include="..\..\..\rtgs_global_logo.png" Link="rtgs_global_logo.png">
-      <PackagePath>\</PackagePath>
-      <Pack>true</Pack>
-    </None>
-  </ItemGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Authors>RTGS Global Limited</Authors>
+		<Company>RTGS Global Limited</Company>
+		<Product>RTGS Global DotNET SDK</Product>
+		<Copyright>RTGS Global Limited</Copyright>
+		<Description>SDK to send messages to, and to receive messages from, the RTGS Global network.</Description>
+		<RepositoryUrl>https://github.com/RTGS-OpenSource/rtgs-dotnet-sdk</RepositoryUrl>
+		<RootNamespace>RTGS.DotNetSDK</RootNamespace>
+		<PackageIcon>rtgs_global_logo.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Grpc.Net.ClientFactory" Version="2.42.0" />
@@ -27,5 +28,9 @@
 		<PackageReference Include="RTGS.Public.Payment.Client" Version="2.0.65" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<None Include="..\..\..\rtgs_global_logo.png" Pack="true" PackagePath="\" />
+		<None Include="..\..\..\README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 
 </Project>
