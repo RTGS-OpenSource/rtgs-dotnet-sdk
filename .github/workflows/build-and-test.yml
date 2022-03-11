@@ -50,7 +50,9 @@ jobs:
       - name: dotnet test
         run: |
           dotnet tool install dotnet-reportgenerator-globaltool --tool-path ./tools
-          dotnet test --configuration Release ${{env.SOLUTION_FOLDER}} --no-build --results-directory "./test_results" --logger "trx;LogFilePrefix=results;" --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true
+          dotnet test --configuration Release ${{env.SOLUTION_FOLDER}}RTGS.DotNetSDK.IntegrationTests --no-build --results-directory "./test_results" --logger "trx;LogFilePrefix=results;" --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true
+          ./tools/reportgenerator -reports:./test_results/**/coverage.cobertura.xml -targetdir:./test_results/CodeCoverage -reporttypes:Cobertura
+          dotnet test --configuration Release ${{env.SOLUTION_FOLDER}}RTGS.DotNetSDK.Tests --no-build --results-directory "./test_results" --logger "trx;LogFilePrefix=results;" --collect:"XPlat Code Coverage" -- RunConfiguration.DisableAppDomain=true
           ./tools/reportgenerator -reports:./test_results/**/coverage.cobertura.xml -targetdir:./test_results/CodeCoverage -reporttypes:Cobertura
 
       - name: Upload dotnet test results
