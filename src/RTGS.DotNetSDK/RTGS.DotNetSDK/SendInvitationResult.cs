@@ -6,6 +6,12 @@
 public record SendInvitationResult
 {
 	/// <summary>
+	/// The unique alias for this invitation.
+	/// Note, this will be null if sending the invitation to RTGS does not result in 'Success'.
+	/// </summary>
+	public string Alias { get; internal init; }
+
+	/// <summary>
 	/// The connection ID for this invitation.
 	/// Note, this will be null if sending the invitation to RTGS does not result in 'Success'.
 	/// </summary>

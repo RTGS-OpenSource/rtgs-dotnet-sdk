@@ -892,7 +892,6 @@ public class GivenOpenConnection
 			try
 			{
 
-
 				var rtgsPublisherOptions = RtgsPublisherOptions.Builder.CreateNew(
 						ValidMessages.BankDid,
 						_grpcServer.ServerUri,

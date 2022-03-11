@@ -29,14 +29,10 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		var agentPublicDid = await GetIdCryptAgentPublicDidAsync();
 		var sendToRtgsResult = await SendInvitationToRtgsAsync(alias, idCryptResponse.Invitation, agentPublicDid, cancellationToken);
 
-
-		var connectionId = sendToRtgsResult is SendResult.Success ?
-			idCryptResponse.ConnectionID :
-			null;
-
 		var sendInvitationResult = new SendInvitationResult
 		{
-			ConnectionId = connectionId,
+			Alias = sendToRtgsResult is SendResult.Success ? alias : null,
+			ConnectionId = sendToRtgsResult is SendResult.Success ? idCryptResponse.ConnectionID : null,
 			SendResult = sendToRtgsResult
 		};
 
