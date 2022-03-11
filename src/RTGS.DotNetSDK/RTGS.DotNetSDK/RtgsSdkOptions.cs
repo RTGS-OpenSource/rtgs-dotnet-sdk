@@ -1,7 +1,7 @@
 ﻿namespace RTGS.DotNetSDK;
 
 /// <summary>
-/// Represents the options used when sending messages to RTGS via a <see cref="IRtgsPublisher"/>.
+/// Represents the options used when sending messages to and receiving messages from RTGS via <see cref="IRtgsPublisher"/> and <see cref="IRtgsSubscriber"/>.
 /// </summary>
 public record RtgsSdkOptions
 {
