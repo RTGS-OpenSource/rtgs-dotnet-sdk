@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalMessages;
 using RTGS.DotNetSDK.Subscriber.Messages;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
@@ -16,6 +17,7 @@ public abstract class BaseSubscriberActionData : IEnumerable<object[]>
 	public abstract ISubscriberAction<EarmarkReleaseV1> EarmarkReleaseV1 { get; }
 	public abstract ISubscriberAction<BankPartnersResponseV1> BankPartnersResponseV1 { get; }
 	public abstract ISubscriberAction<IdCryptInvitationConfirmationV1> IdCryptInvitationConfirmationV1 { get; }
+	public abstract ISubscriberAction<IdCryptCreateInvitationRequestV1> IdCryptCreateInvitationRequestV1 { get; }
 
 	public IEnumerator<object[]> GetActions() =>
 		GetType().GetProperties()

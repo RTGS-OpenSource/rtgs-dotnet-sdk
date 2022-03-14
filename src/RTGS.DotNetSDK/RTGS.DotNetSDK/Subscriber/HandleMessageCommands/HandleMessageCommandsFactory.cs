@@ -31,7 +31,6 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 			new CommandCreator<EarmarkReleaseV1, IEarmarkReleaseV1Handler, IMessageAdapter<EarmarkReleaseV1>>(enumeratedMessageAdapters),
 			new CommandCreator<BankPartnersResponseV1, IBankPartnersResponseV1Handler, IMessageAdapter<BankPartnersResponseV1>>(enumeratedMessageAdapters),
 			new CommandCreator<IdCryptInvitationConfirmationV1, IIdCryptInvitationConfirmationV1Handler, IMessageAdapter<IdCryptInvitationConfirmationV1>>(enumeratedMessageAdapters),
-			new CommandCreator<IdCryptCreateInvitationRequestV1, IIdCryptCreateInvitationRequestV1Handler, IMessageAdapter<IdCryptCreateInvitationRequestV1>>(enumeratedMessageAdapters)
 		};
 
 		_dependentCommandCreators = new List<IDependentCommandCreator>
@@ -50,10 +49,11 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 			.ToList();
 
 		var userCommands = _commandCreators.Select(creator => creator.Create(userHandlers));
-		var internalCommands = _commandCreators.Select(creator => creator.Create(_internalHandlers.ToList()));
+		//var internalCommands = _commandCreators.Select(creator => creator.Create(_internalHandlers.ToList()));
 		var dependentCommands = _dependentCommandCreators.Select(creator => creator.Create(dependentHandlers));
 
-		var commands = internalCommands.Concat(userCommands);
+		//var commands = internalCommands.Concat(userCommands);
+		var commands = userCommands;
 
 		return commands;
 	}

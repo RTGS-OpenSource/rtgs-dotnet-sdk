@@ -1,4 +1,5 @@
-﻿using RTGS.DotNetSDK.Subscriber.Messages;
+﻿using RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalMessages;
+using RTGS.DotNetSDK.Subscriber.Messages;
 using RTGS.ISO20022.Messages.Admi_002_001.V01;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
@@ -40,4 +41,7 @@ public static class SubscriberActions
 
 	public static readonly SubscriberAction<IdCryptInvitationConfirmationV1> IdCryptInvitationConfirmationV1 =
 		new(new AllTestHandlers(), handlers => handlers.OfType<TestIdCryptInvitationConfirmationV1>().Single(), "idcrypt.invitation.v1", ValidMessages.IdCryptInvitationConfirmationV1);
+
+	public static readonly SubscriberAction<IdCryptCreateInvitationNotificationV1> IdCryptCreateInvitationNotificationV1 =
+		new(new AllTestHandlers(), handlers => handlers.OfType<TestIdCryptCreateInvitationNotificationV1>().Single(), "idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 }
