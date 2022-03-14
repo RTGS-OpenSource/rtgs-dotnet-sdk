@@ -5,8 +5,7 @@
         {
           "src": "..",
           "files": [
-            "src/RTGS.DotNetSDK/RTGS.DotNetSDK.Publisher/**.csproj",
-            "src/RTGS.DotNetSDK/RTGS.DotNetSDK.Subscriber/**.csproj"
+            "src/RTGS.DotNetSDK/RTGS.DotNetSDK/**.csproj"
           ]
         }
       ],
