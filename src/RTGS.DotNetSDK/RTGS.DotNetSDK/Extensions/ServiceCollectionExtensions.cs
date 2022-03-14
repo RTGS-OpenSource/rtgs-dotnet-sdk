@@ -6,6 +6,8 @@ using RTGS.DotNetSDK.Publisher;
 using RTGS.DotNetSDK.Subscriber;
 using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
+using RTGS.DotNetSDK.Subscriber.Handlers;
+using RTGS.DotNetSDK.Subscriber.Handlers.Internal;
 using RTGS.DotNetSDK.Subscriber.Validators;
 using RTGS.Public.Payment.V3;
 
@@ -102,7 +104,10 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddTransient<IMessageAdapter, EarmarkReleaseV1MessageAdapter>();
 		serviceCollection.AddTransient<IMessageAdapter, BankPartnersResponseV1MessageAdapter>();
 		serviceCollection.AddTransient<IMessageAdapter, IdCryptInvitationConfirmationV1MessageAdapter>();
+		serviceCollection.AddTransient<IMessageAdapter, IdCryptCreateInvitationRequestV1MessageAdapter>();
 		serviceCollection.AddSingleton<IHandlerValidator, HandlerValidator>();
+
+		serviceCollection.AddTransient<IDependentHandler, IdCryptCreateInvitationRequestV1Handler>();
 
 		return serviceCollection;
 	}
