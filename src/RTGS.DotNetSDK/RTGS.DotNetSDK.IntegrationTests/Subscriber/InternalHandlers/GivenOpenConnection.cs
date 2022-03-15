@@ -21,6 +21,9 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 	private readonly List<IHandler> _allTestHandlers = new AllTestHandlers().ToList();
 	private readonly AllTestHandlers.TestIdCryptCreateInvitationNotificationV1 _invitationNotificationHandler;
 
+	private const string IdCryptApiKey = "id-crypt-api-key";
+	private static readonly Uri IdCryptApiUri = new("http://id-crypt-cloud-agent-api.com");
+
 	public GivenOpenConnection(GrpcServerFixture grpcServer)
 	{
 		_grpcServer = grpcServer;
@@ -97,13 +100,11 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 	}
 
 	[Fact]
-	public async Task WhenReceivedExpectedMessageType_ThenPassToHandlerAndAcknowledge()
+	public async Task WhenReceivedIdCryptCreateInvitationMessage_ThenPassToHandlerAndAcknowledge()
 	{
 		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
-		var receivedMessage = ValidMessages.IdCryptCreateInvitationRequestV1;
-
-		var sentRtgsMessage = await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", receivedMessage);
+		var sentRtgsMessage = await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -122,110 +123,214 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		{
 			Alias = alias,
 			ConnectionId = IdCryptTestMessages.ConnectionInviteResponse.ConnectionID,
-			PartnerBankDid = receivedMessage.PartnerBankDid
+			PartnerBankDid = ValidMessages.IdCryptCreateInvitationRequestV1.PartnerBankDid
 		};
 		
 		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
 	}
 
-	[Theory]
-	[ClassData(typeof(SubscriberActionData))]
-	public async Task WhenSubscriberIsStopped_ThenCloseConnection<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	[Fact]
+	public async Task WhenCallingIdCryptAgent_ThenApiKeyHeaderIsExpected()
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		using var _ = new AssertionScope();
+
+		var actualApiKey = _idCryptMessageHandler
+			.Requests[IdCryptEndPoints.InvitationPath]
+			.Headers
+			.GetValues("X-API-Key")
+			.Single();
+
+		actualApiKey.Should().Be(IdCryptApiKey);
+	}
+
+	[Fact]
+	public async Task WhenCallingIdCryptAgent_ThenUriIsExpected()
+	{
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		using var _ = new AssertionScope();
+
+		var actualApiUri = _idCryptMessageHandler
+			.Requests[IdCryptEndPoints.InvitationPath]
+			.RequestUri
+			.GetLeftPart(UriPartial.Authority);
+
+		actualApiUri.Should().BeEquivalentTo(IdCryptApiUri.GetLeftPart(UriPartial.Authority));
+	}
+
+	[Fact]
+	public async Task WhenCallingIdCryptAgent_ThenDefaultQueryParamsAreCorrect()
+	{
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
+		var autoAccept = bool.Parse(inviteRequestQueryParams["auto_accept"]);
+		var multiUse = bool.Parse(inviteRequestQueryParams["multi_use"]);
+		var usePublicDid = bool.Parse(inviteRequestQueryParams["public"]);
+
+		using var _ = new AssertionScope();
+
+		autoAccept.Should().BeTrue();
+		multiUse.Should().BeFalse();
+		usePublicDid.Should().BeFalse();
+	}
+
+	[Fact]
+	public async Task WhenCallingIdCryptAgent_ThenLog()
+	{
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
+		var alias = inviteRequestQueryParams["alias"];
+
+		var expectedLogs = new List<LogEntry>
+		{
+			new($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
+			new("Sent CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+		};
+
+		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Debug);
+		debugLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
+	}
+
+
+	[Fact]
+	public async Task WhenSubscriberIsStopped_ThenCloseConnection()
+	{
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
-		subscriberAction.Handler.Reset();
+		_invitationNotificationHandler.Reset();
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		subscriberAction.Handler.ReceivedMessage.Should().BeNull();
+		_invitationNotificationHandler.ReceivedMessage.Should().BeNull();
 	}
 
-	[Theory]
-	[ClassData(typeof(SubscriberActionData))]
-	public async Task WhenSubscriberIsDisposed_ThenCloseConnection<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	[Fact]
+	public async Task WhenSubscriberIsDisposed_ThenCloseConnection()
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.DisposeAsync();
 
-		subscriberAction.Handler.Reset();
+		_invitationNotificationHandler.Reset();
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		subscriberAction.Handler.ReceivedMessage.Should().BeNull();
+		_invitationNotificationHandler.ReceivedMessage.Should().BeNull();
 	}
 
-	[Theory]
-	[ClassData(typeof(SubscriberActionWithLogsData))]
-	public async Task WhenMessageReceived_ThenLogInformation<TMessage>(SubscriberActionWithLogs<TMessage> subscriberAction)
+	[Fact]
+	public async Task WhenMessageReceived_ThenLogInformation()
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
 		var informationLogs = _serilogContext.SubscriberLogs(LogEventLevel.Information);
-		informationLogs.Should().BeEquivalentTo(subscriberAction.SubscriberLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
+		var expectedLogs = new List<LogEntry>()
+		{
+			new("RTGS Subscriber started", LogEventLevel.Information),
+			new("idcrypt.createinvitation.v1 message received from RTGS", LogEventLevel.Information),
+			new("RTGS Subscriber stopping", LogEventLevel.Information),
+			new("RTGS Subscriber stopped", LogEventLevel.Information)
+		};
+
+		informationLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
 	}
 
-	[Theory]
-	[ClassData(typeof(SubscriberActionData))]
-	public async Task WhenMessageWithIdentifierThatCannotBeHandledReceived_ThenSubsequentMessagesCanBeHandled<TRequest>(SubscriberAction<TRequest> subscriberAction)
+	[Fact]
+	public async Task WhenMessageWithIdentifierThatCannotBeHandledReceived_ThenSubsequentMessagesCanBeHandled()
 	{
 		_fromRtgsSender.SetExpectedAcknowledgementCount(2);
 
-		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 		await _fromRtgsSender.SendAsync(
 			"cannot be handled",
-			TestData.ValidMessages.AtomicLockResponseV1);
+			ValidMessages.AtomicLockResponseV1);
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		subscriberAction.Handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri?.Query);
+		var alias = inviteRequestQueryParams["alias"];
+
+		var message = new IdCryptCreateInvitationNotificationV1
+		{
+			Alias = alias,
+			ConnectionId = IdCryptTestMessages.ConnectionInviteResponse.ConnectionID,
+			PartnerBankDid = ValidMessages.IdCryptCreateInvitationRequestV1.PartnerBankDid
+		};
+
+		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
 
 		await _rtgsSubscriber.StopAsync();
 	}
 
-	[Theory]
-	[ClassData(typeof(SubscriberActionData))]
-	public async Task AndSubscriberIsStopped_WhenStarting_ThenReceiveMessages<TRequest>(SubscriberAction<TRequest> subscriberAction)
+	[Fact]
+	public async Task AndSubscriberIsStopped_WhenStarting_ThenReceiveMessages()
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 		await _rtgsSubscriber.StopAsync();
 
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
-		var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		var sentRtgsMessage = await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -235,52 +340,69 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
 													   && acknowledgement.Success);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		subscriberAction.Handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri?.Query);
+		var alias = inviteRequestQueryParams["alias"];
+
+		var message = new IdCryptCreateInvitationNotificationV1
+		{
+			Alias = alias,
+			ConnectionId = IdCryptTestMessages.ConnectionInviteResponse.ConnectionID,
+			PartnerBankDid = ValidMessages.IdCryptCreateInvitationRequestV1.PartnerBankDid
+		};
+
+		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
 	}
 
-	[Theory]
-	[ClassData(typeof(SubscriberActionData))]
-	public async Task WhenExceptionEventHandlerThrows_ThenSubsequentMessagesCanBeHandled<TRequest>(SubscriberAction<TRequest> subscriberAction)
+	[Fact]
+	public async Task WhenExceptionEventHandlerThrows_ThenSubsequentMessagesCanBeHandled()
 	{
 		_fromRtgsSender.SetExpectedAcknowledgementCount(2);
 
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 		_rtgsSubscriber.OnExceptionOccurred += (_, _) => throw new InvalidOperationException("test");
 
-		await _fromRtgsSender.SendAsync("will-throw", TestData.ValidMessages.AtomicLockResponseV1);
+		await _fromRtgsSender.SendAsync("will-throw", ValidMessages.AtomicLockResponseV1);
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		subscriberAction.Handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri?.Query);
+		var alias = inviteRequestQueryParams["alias"];
+
+		var message = new IdCryptCreateInvitationNotificationV1
+		{
+			Alias = alias,
+			ConnectionId = IdCryptTestMessages.ConnectionInviteResponse.ConnectionID,
+			PartnerBankDid = ValidMessages.IdCryptCreateInvitationRequestV1.PartnerBankDid
+		};
+
+		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
 	}
 
-	[Theory]
-	[ClassData(typeof(SubscriberActionData))]
-	public async Task AndMessageIsBeingProcessed_WhenStopping_ThenHandleGracefully<TRequest>(SubscriberAction<TRequest> subscriberAction)
+	[Fact]
+	public async Task AndMessageIsBeingProcessed_WhenStopping_ThenHandleGracefully()
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
 		await _rtgsSubscriber.StopAsync();
 
 		_serilogContext.SubscriberLogs(LogEventLevel.Error).Should().BeEmpty();
 	}
 
-	[Theory]
-	[ClassData(typeof(SubscriberActionData))]
-	public async Task AndMessageIsBeingProcessed_WhenDisposing_ThenHandleGracefully<TRequest>(SubscriberAction<TRequest> subscriberAction)
+	[Fact]
+	public async Task AndMessageIsBeingProcessed_WhenDisposing_ThenHandleGracefully()
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
 		await _rtgsSubscriber.DisposeAsync();
 

@@ -9,16 +9,16 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 {
 	private readonly ILogger<RtgsConnectionBroker> _logger;
 	private readonly IIdentityClient _identityClient;
-	private readonly IIdCryptPublisher _rtgsInternalPublisher;
+	private readonly IIdCryptPublisher _idCryptPublisher;
 
 	public RtgsConnectionBroker(
 		ILogger<RtgsConnectionBroker> logger,
 		IIdentityClient identityClient,
-		IIdCryptPublisher rtgsInternalPublisher)
+		IIdCryptPublisher idCryptPublisher)
 	{
 		_logger = logger;
 		_identityClient = identityClient;
-		_rtgsInternalPublisher = rtgsInternalPublisher;
+		_idCryptPublisher = idCryptPublisher;
 	}
 
 	public async Task<SendInvitationResult> SendInvitationAsync(CancellationToken cancellationToken = default)
@@ -104,7 +104,7 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 			AgentPublicDid = agentPublicDid
 		};
 
-		var sendResult = await _rtgsInternalPublisher
+		var sendResult = await _idCryptPublisher
 			.SendIdCryptInvitationAsync(invitationMessage, cancellationToken);
 
 		return sendResult;

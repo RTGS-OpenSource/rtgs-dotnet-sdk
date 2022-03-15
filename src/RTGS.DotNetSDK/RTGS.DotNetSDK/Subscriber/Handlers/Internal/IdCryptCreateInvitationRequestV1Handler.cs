@@ -1,6 +1,8 @@
 ﻿using IDCryptGlobal.Cloud.Agent.Identity;
 using IDCryptGlobal.Cloud.Agent.Identity.Connection;
 using Microsoft.Extensions.Logging;
+using RTGS.DotNetSDK.IdCrypt;
+using RTGS.DotNetSDK.Publisher.Messages;
 using RTGS.DotNetSDK.Subscriber.Messages;
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers.Internal;
@@ -9,13 +11,16 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 {
 	private readonly ILogger<IdCryptCreateInvitationRequestV1Handler> _logger;
 	private readonly IIdentityClient _identityClient;
+	private readonly IIdCryptPublisher _idCryptPublisher;
 
 	public IdCryptCreateInvitationRequestV1Handler(
 		ILogger<IdCryptCreateInvitationRequestV1Handler> logger,
-		IIdentityClient identityClient)
+		IIdentityClient identityClient,
+		IIdCryptPublisher idCryptPublisher)
 	{
 		_logger = logger;
 		_identityClient = identityClient;
+		_idCryptPublisher = idCryptPublisher;
 	}
 
 	public IHandler<IdCryptCreateInvitationNotificationV1> UserHandler { get; set; }
@@ -25,6 +30,8 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		var alias = Guid.NewGuid().ToString();
 
 		var invitation = await CreateIdCryptInvitationAsync(alias);
+
+		await SendInvitationToRtgsAsync(alias, invitation, "", default);
 
 		var invitationNotification = new IdCryptCreateInvitationNotificationV1
 		{
@@ -63,4 +70,28 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 			throw;
 		}
 	}
+
+	private async Task<SendResult> SendInvitationToRtgsAsync(
+		string alias,
+		ConnectionInvitation invitation,
+		string agentPublicDid,
+		CancellationToken cancellationToken)
+	{
+		var invitationMessage = new IdCryptInvitationV1
+		{
+			Alias = alias,
+			Id = invitation.ID,
+			Label = invitation.Label,
+			RecipientKeys = invitation.RecipientKeys,
+			ServiceEndPoint = invitation.ServiceEndPoint,
+			Type = invitation.Type,
+			AgentPublicDid = agentPublicDid
+		};
+
+		var sendResult = await _idCryptPublisher
+			.SendIdCryptInvitationAsync(invitationMessage, cancellationToken);
+
+		return sendResult;
+	}
+
 }

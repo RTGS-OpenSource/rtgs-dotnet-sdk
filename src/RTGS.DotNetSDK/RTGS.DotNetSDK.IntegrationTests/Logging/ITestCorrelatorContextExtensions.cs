@@ -13,6 +13,9 @@ public static class ITestCorrelatorContextExtensions
 	public static IEnumerable<LogEntry> ConnectionBrokerLogs(this ITestCorrelatorContext testCorrelatorContext, LogEventLevel logEventLevel) =>
 		Logs(testCorrelatorContext, "RTGS.DotNetSDK.IdCrypt.RtgsConnectionBroker", logEventLevel);
 
+	public static IEnumerable<LogEntry> LogsFor(this ITestCorrelatorContext testCorrelatorContext, string sourceContext, LogEventLevel logEventLevel) =>
+		Logs(testCorrelatorContext, sourceContext, logEventLevel);
+
 	private static IEnumerable<LogEntry> Logs(ITestCorrelatorContext testCorrelatorContext, string sourceContext, LogEventLevel logEventLevel) =>
 		TestCorrelator
 			.GetLogEventsFromContextGuid(testCorrelatorContext.Guid)
