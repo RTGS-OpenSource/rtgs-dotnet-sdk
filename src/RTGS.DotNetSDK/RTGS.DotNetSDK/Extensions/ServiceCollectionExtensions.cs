@@ -97,8 +97,8 @@ public static class ServiceCollectionExtensions
 			identityConfig.ServiceEndPoint = options.IdCryptServiceEndPointAddress.ToString();
 		});
 
-		//serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
-		//serviceCollection.AddTransient<IIdentityClient, IdentityClient>();
+		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
+		serviceCollection.AddTransient<IIdentityClient, IdentityClient>();
 
 		serviceCollection.AddSingleton<IRtgsSubscriber, RtgsSubscriber>();
 		serviceCollection.AddTransient<IHandleMessageCommandsFactory, HandleMessageCommandsFactory>();

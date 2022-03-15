@@ -40,7 +40,4 @@ public class SubscriberActionData : BaseSubscriberActionData
 
 	public override ISubscriberAction<IdCryptInvitationConfirmationV1> IdCryptInvitationConfirmationV1 =>
 		SubscriberActions.IdCryptInvitationConfirmationV1;
-	
-	public override ISubscriberAction<IdCryptCreateInvitationRequestV1> IdCryptCreateInvitationRequestV1 =>
-		SubscriberActions.IdCryptCreateInvitationNotificationV1;
 }

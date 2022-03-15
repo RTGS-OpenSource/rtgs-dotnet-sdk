@@ -41,7 +41,4 @@ public static class SubscriberActions
 
 	public static readonly SubscriberAction<IdCryptInvitationConfirmationV1> IdCryptInvitationConfirmationV1 =
 		new(new AllTestHandlers(), handlers => handlers.OfType<TestIdCryptInvitationConfirmationV1>().Single(), "idcrypt.invitation.v1", ValidMessages.IdCryptInvitationConfirmationV1);
-
-	public static readonly SubscriberAction<IdCryptCreateInvitationNotificationV1> IdCryptCreateInvitationNotificationV1 =
-		new(new AllTestHandlers(), handlers => handlers.OfType<TestIdCryptCreateInvitationNotificationV1>().Single(), "idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 }

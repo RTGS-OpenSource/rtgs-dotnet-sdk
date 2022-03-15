@@ -2,7 +2,7 @@
 using System.Net.Http;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
-using RTGS.DotNetSDK.IntegrationTests.Publisher.Extensions;
+using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.HttpHandlers;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.RtgsConnectionBrokerTests;

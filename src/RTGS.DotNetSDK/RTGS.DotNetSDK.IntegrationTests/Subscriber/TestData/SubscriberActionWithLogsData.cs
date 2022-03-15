@@ -128,15 +128,4 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
-
-	public override ISubscriberAction<IdCryptCreateInvitationRequestV1> IdCryptCreateInvitationRequestV1 =>
-		new SubscriberActionWithLogs<IdCryptCreateInvitationRequestV1>(
-			SubscriberActions.IdCryptCreateInvitationNotificationV1,
-			new List<LogEntry>()
-			{
-				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("idcrypt.createinvitation.v1 message received from RTGS", LogEventLevel.Information),
-				new("RTGS Subscriber stopping", LogEventLevel.Information),
-				new("RTGS Subscriber stopped", LogEventLevel.Information)
-			});
 }

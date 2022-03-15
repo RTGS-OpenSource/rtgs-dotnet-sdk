@@ -5,7 +5,7 @@ using RTGS.DotNetSDK.Subscriber.Messages;
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers.Internal;
 
-internal class IdCryptCreateInvitationRequestV1Handler : IDependentHandler<IdCryptCreateInvitationRequestV1, IdCryptCreateInvitationNotificationV1>, IIdCryptCreateInvitationRequestV1Handler
+internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitationRequestV1Handler
 {
 	private readonly ILogger<IdCryptCreateInvitationRequestV1Handler> _logger;
 	private readonly IIdentityClient _identityClient;
