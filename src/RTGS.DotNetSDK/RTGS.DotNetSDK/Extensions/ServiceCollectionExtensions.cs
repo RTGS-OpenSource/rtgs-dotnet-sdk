@@ -118,6 +118,9 @@ public static class ServiceCollectionExtensions
 
 		serviceCollection.AddTransient<IDependentHandler, IdCryptCreateInvitationRequestV1Handler>();
 
+		serviceCollection.AddSingleton<IIdCryptPublisher, IdCryptPublisher>();
+		serviceCollection.AddSingleton<IInternalPublisher, InternalPublisher>();
+
 		return serviceCollection;
 	}
 

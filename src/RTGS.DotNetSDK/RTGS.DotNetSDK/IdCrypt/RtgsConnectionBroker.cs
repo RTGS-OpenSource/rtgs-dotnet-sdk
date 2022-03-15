@@ -105,7 +105,7 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		};
 
 		var sendResult = await _idCryptPublisher
-			.SendIdCryptInvitationAsync(invitationMessage, cancellationToken);
+			.SendIdCryptInvitationToRtgsAsync(invitationMessage, cancellationToken);
 
 		return sendResult;
 	}

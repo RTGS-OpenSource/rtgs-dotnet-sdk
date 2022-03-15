@@ -169,6 +169,6 @@ public static class ValidMessages
 
 	public static readonly Internal.IdCryptCreateInvitationRequestV1 IdCryptCreateInvitationRequestV1 = new()
 	{
-		PartnerBankDid = "RTGS:GB123456GB"
+		BankPartnerDid = "RTGS:GB123456GB"
 	};
 }

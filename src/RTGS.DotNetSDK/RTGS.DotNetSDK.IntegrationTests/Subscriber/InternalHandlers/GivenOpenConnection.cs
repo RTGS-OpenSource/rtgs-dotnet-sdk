@@ -1,6 +1,8 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalMessages;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.DotNetSDK.Subscriber.Messages;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
@@ -9,7 +11,7 @@ namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers;
 
 public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 {
-	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(100);
+	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(5_000);
 	private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
 
 	private readonly GrpcServerFixture _grpcServer;
@@ -31,7 +33,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		SetupSerilogLogger();
 
 		_serilogContext = TestCorrelator.CreateContext();
-		
+
 		_idCryptMessageHandler = new StatusCodeHttpHandler(IdCryptEndPoints.MockHttpResponses);
 		_invitationNotificationHandler = _allTestHandlers.OfType<AllTestHandlers.TestIdCryptCreateInvitationNotificationV1>().Single();
 	}
@@ -50,7 +52,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-					TestData.ValidMessages.BankDid,
+					ValidMessages.BankDid,
 					_grpcServer.ServerUri,
 					new Uri("http://id-crypt-cloud-agent-api.com"),
 					"id-crypt-api-key",
@@ -67,6 +69,8 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 
 			_fromRtgsSender = _grpcServer.Services.GetRequiredService<FromRtgsSender>();
 			_rtgsSubscriber = _clientHost.Services.GetRequiredService<IRtgsSubscriber>();
+			var toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
+			toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 		}
 		catch (Exception)
 		{
@@ -91,16 +95,16 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 	public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader()
 	{
 		await _rtgsSubscriber.StartAsync(_allTestHandlers);
-	
+
 		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
-	
+
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
-	
+
 		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == ValidMessages.BankDid);
 	}
 
 	[Fact]
-	public async Task WhenReceivedIdCryptCreateInvitationMessage_ThenPassToHandlerAndAcknowledge()
+	public async Task WhenIdCryptCreateInvitationMessageReceived_ThenPassToHandlerAndAcknowledge()
 	{
 		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
@@ -113,9 +117,9 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		_fromRtgsSender.Acknowledgements
 			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
 													   && acknowledgement.Success);
-		
+
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
-		
+
 		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri?.Query);
 		var alias = inviteRequestQueryParams["alias"];
 
@@ -123,9 +127,9 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		{
 			Alias = alias,
 			ConnectionId = IdCryptTestMessages.ConnectionInviteResponse.ConnectionID,
-			PartnerBankDid = ValidMessages.IdCryptCreateInvitationRequestV1.PartnerBankDid
+			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
-		
+
 		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
 	}
 
@@ -166,7 +170,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 
 		var actualApiUri = _idCryptMessageHandler
 			.Requests[IdCryptEndPoints.InvitationPath]
-			.RequestUri
+			.RequestUri?
 			.GetLeftPart(UriPartial.Authority);
 
 		actualApiUri.Should().BeEquivalentTo(IdCryptApiUri.GetLeftPart(UriPartial.Authority));
@@ -183,7 +187,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri?.Query);
 		var autoAccept = bool.Parse(inviteRequestQueryParams["auto_accept"]);
 		var multiUse = bool.Parse(inviteRequestQueryParams["multi_use"]);
 		var usePublicDid = bool.Parse(inviteRequestQueryParams["public"]);
@@ -196,7 +200,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 	}
 
 	[Fact]
-	public async Task WhenCallingIdCryptAgent_ThenLog()
+	public async Task WhenIdCryptCreateInvitationMessageReceived_ThenLogDebug()
 	{
 		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
@@ -206,13 +210,15 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri?.Query);
 		var alias = inviteRequestQueryParams["alias"];
 
 		var expectedLogs = new List<LogEntry>
 		{
 			new($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 			new("Sent CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+			new("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+			new("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 		};
 
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Debug);
@@ -265,7 +271,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 	}
 
 	[Fact]
-	public async Task WhenMessageReceived_ThenLogInformation()
+	public async Task WhenIdCryptCreateInvitationMessageReceived_ThenLogInformation()
 	{
 		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
@@ -278,7 +284,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		await _rtgsSubscriber.StopAsync();
 
 		var informationLogs = _serilogContext.SubscriberLogs(LogEventLevel.Information);
-		var expectedLogs = new List<LogEntry>()
+		var expectedLogs = new List<LogEntry>
 		{
 			new("RTGS Subscriber started", LogEventLevel.Information),
 			new("idcrypt.createinvitation.v1 message received from RTGS", LogEventLevel.Information),
@@ -313,7 +319,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		{
 			Alias = alias,
 			ConnectionId = IdCryptTestMessages.ConnectionInviteResponse.ConnectionID,
-			PartnerBankDid = ValidMessages.IdCryptCreateInvitationRequestV1.PartnerBankDid
+			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
 
 		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -349,7 +355,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		{
 			Alias = alias,
 			ConnectionId = IdCryptTestMessages.ConnectionInviteResponse.ConnectionID,
-			PartnerBankDid = ValidMessages.IdCryptCreateInvitationRequestV1.PartnerBankDid
+			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
 
 		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -379,7 +385,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		{
 			Alias = alias,
 			ConnectionId = IdCryptTestMessages.ConnectionInviteResponse.ConnectionID,
-			PartnerBankDid = ValidMessages.IdCryptCreateInvitationRequestV1.PartnerBankDid
+			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
 
 		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -407,5 +413,47 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		await _rtgsSubscriber.DisposeAsync();
 
 		_serilogContext.SubscriberLogs(LogEventLevel.Error).Should().BeEmpty();
+	}
+
+	[Fact]
+	public async Task WhenIdCryptCreateInvitationMessageReceived_ThenIdCryptInvitationMessageIsPublishedToPartnerBank()
+	{
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
+
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+		var receivedMessage = receiver.Connections
+			.Should().ContainSingle().Which.Requests
+			.Should().ContainSingle().Subject;
+
+		using var _ = new AssertionScope();
+
+		receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.tobank.v1");
+		receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
+
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(
+			_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri?.Query);
+
+		var invitation = IdCryptTestMessages.ConnectionInviteResponse.Invitation;
+		var agentPublicDid = IdCryptTestMessages.GetPublicDidResponse.Result.DID;
+
+		var expectedMessageData = new IdCryptInvitationV1
+		{
+			Alias = inviteRequestQueryParams["alias"],
+			Label = invitation.Label,
+			RecipientKeys = invitation.RecipientKeys,
+			Id = invitation.ID,
+			Type = invitation.Type,
+			ServiceEndPoint = invitation.ServiceEndPoint,
+			AgentPublicDid = agentPublicDid
+		};
+
+		var actualMessageData = JsonSerializer
+			.Deserialize<IdCryptInvitationV1>(receivedMessage.Data);
+
+		actualMessageData.Should().BeEquivalentTo(expectedMessageData);
 	}
 }

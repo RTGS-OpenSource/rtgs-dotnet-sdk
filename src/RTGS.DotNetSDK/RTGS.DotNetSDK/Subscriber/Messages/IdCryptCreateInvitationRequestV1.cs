@@ -2,6 +2,6 @@
 
 internal record IdCryptCreateInvitationRequestV1
 {
-	public string PartnerBankDid { get; init; }
+	public string BankPartnerDid { get; init; }
 }
 

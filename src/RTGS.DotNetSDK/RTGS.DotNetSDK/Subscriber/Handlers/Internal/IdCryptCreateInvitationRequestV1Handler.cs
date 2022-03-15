@@ -30,17 +30,39 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		var alias = Guid.NewGuid().ToString();
 
 		var invitation = await CreateIdCryptInvitationAsync(alias);
+		var agentPublicDid = await GetIdCryptAgentPublicDidAsync();
+		var bankPartnerDid = createInvitationRequest.BankPartnerDid;
 
-		await SendInvitationToRtgsAsync(alias, invitation, "", default);
+		await SendInvitationToBankAsync(alias, invitation.Invitation, agentPublicDid, bankPartnerDid, default);
 
 		var invitationNotification = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
 			ConnectionId = invitation.ConnectionID,
-			PartnerBankDid = createInvitationRequest.PartnerBankDid
+			BankPartnerDid = bankPartnerDid
 		};
 
 		await UserHandler.HandleMessageAsync(invitationNotification);
+	}
+
+	private async Task<string> GetIdCryptAgentPublicDidAsync()
+	{
+		try
+		{
+			_logger.LogDebug("Sending GetPublicDid request to ID Crypt Cloud Agent");
+
+			var response = await _identityClient.Vault.GetPublicDID();
+
+			_logger.LogDebug("Sent GetPublicDid request to ID Crypt Cloud Agent");
+
+			return response.Result.DID;
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent");
+
+			throw;
+		}
 	}
 
 	private async Task<ConnectionInviteResponseModel> CreateIdCryptInvitationAsync(string alias)
@@ -71,10 +93,10 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		}
 	}
 
-	private async Task<SendResult> SendInvitationToRtgsAsync(
-		string alias,
+	private async Task<SendResult> SendInvitationToBankAsync(string alias,
 		ConnectionInvitation invitation,
 		string agentPublicDid,
+		string bankPartnerDid,
 		CancellationToken cancellationToken)
 	{
 		var invitationMessage = new IdCryptInvitationV1
@@ -89,7 +111,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		};
 
 		var sendResult = await _idCryptPublisher
-			.SendIdCryptInvitationAsync(invitationMessage, cancellationToken);
+			.SendIdCryptInvitationToBankAsync(invitationMessage, bankPartnerDid, cancellationToken);
 
 		return sendResult;
 	}
