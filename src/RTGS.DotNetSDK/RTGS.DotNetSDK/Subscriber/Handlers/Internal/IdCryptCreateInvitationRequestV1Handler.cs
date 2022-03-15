@@ -5,7 +5,7 @@ using RTGS.DotNetSDK.Subscriber.Messages;
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers.Internal;
 
-internal class IdCryptCreateInvitationRequestV1Handler : IDependentHandler<IdCryptCreateInvitationRequestV1, IdCryptCreateInvitationNotificationV1>
+internal class IdCryptCreateInvitationRequestV1Handler : IDependentHandler<IdCryptCreateInvitationRequestV1, IdCryptCreateInvitationNotificationV1>, IIdCryptCreateInvitationRequestV1Handler
 {
 	private readonly ILogger<IdCryptCreateInvitationRequestV1Handler> _logger;
 	private readonly IIdentityClient _identityClient;
@@ -18,7 +18,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IDependentHandler<IdCry
 		_identityClient = identityClient;
 	}
 
-	public IHandler<IdCryptCreateInvitationNotificationV1> DependentHandler { get; set; }
+	public IHandler<IdCryptCreateInvitationNotificationV1> UserHandler { get; set; }
 
 	public async Task HandleMessageAsync(IdCryptCreateInvitationRequestV1 createInvitationRequest)
 	{
@@ -33,7 +33,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IDependentHandler<IdCry
 			PartnerBankDid = createInvitationRequest.PartnerBankDid
 		};
 
-		await DependentHandler.HandleMessageAsync(invitationNotification);
+		await UserHandler.HandleMessageAsync(invitationNotification);
 	}
 
 	private async Task<ConnectionInviteResponseModel> CreateIdCryptInvitationAsync(string alias)

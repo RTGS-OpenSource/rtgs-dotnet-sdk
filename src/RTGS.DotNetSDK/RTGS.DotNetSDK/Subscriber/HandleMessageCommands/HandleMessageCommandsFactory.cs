@@ -12,9 +12,9 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 {
 	private readonly IEnumerable<ICommandCreator> _commandCreators;
 	private readonly List<IDependentCommandCreator> _dependentCommandCreators;
-	private readonly IEnumerable<IHandler> _internalHandlers;
+	private readonly IEnumerable<IDependentHandler> _dependentHAndlers;
 
-	public HandleMessageCommandsFactory(IEnumerable<IMessageAdapter> messageAdapters, IEnumerable<IHandler> internalHandlers)
+	public HandleMessageCommandsFactory(IEnumerable<IMessageAdapter> messageAdapters, IEnumerable<IDependentHandler> dependentHandlers)
 	{
 		IEnumerable<IMessageAdapter> enumeratedMessageAdapters = messageAdapters.ToList();
 
@@ -35,25 +35,24 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 
 		_dependentCommandCreators = new List<IDependentCommandCreator>
 		{
-			new DepdendentCommandCreator<IdCryptCreateInvitationRequestV1, IdCryptCreateInvitationNotificationV1, IIdCryptCreateInvitationRequestV1Handler, IMessageAdapter<IdCryptCreateInvitationRequestV1>>(enumeratedMessageAdapters)
+			new DepdendentCommandCreator<IdCryptCreateInvitationRequestV1, IdCryptCreateInvitationNotificationV1, IIdCryptCreateInvitationRequestV1Handler, IIdCryptCreateInvitationNotificationV1Handler, IMessageAdapter<IdCryptCreateInvitationRequestV1>>(enumeratedMessageAdapters)
 		};
 
-		_internalHandlers = internalHandlers;
+		_dependentHAndlers = dependentHandlers;
 	}
 
 	public IEnumerable<IHandleMessageCommand> CreateAll(IReadOnlyCollection<IHandler> userHandlers)
 	{
-		var dependentHandlers = _internalHandlers
+		var dependentHandlers = _dependentHAndlers
 			.Where(handler => handler is IDependentHandler)
 			.Cast<IDependentHandler>()
 			.ToList();
 
 		var userCommands = _commandCreators.Select(creator => creator.Create(userHandlers));
 		//var internalCommands = _commandCreators.Select(creator => creator.Create(_internalHandlers.ToList()));
-		var dependentCommands = _dependentCommandCreators.Select(creator => creator.Create(dependentHandlers));
+		var dependentCommands = _dependentCommandCreators.Select(creator => creator.Create(dependentHandlers, userHandlers));
 
-		//var commands = internalCommands.Concat(userCommands);
-		var commands = userCommands;
+		var commands = userCommands.Concat(dependentCommands);
 
 		return commands;
 	}
@@ -69,9 +68,9 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 			_messageAdapter = messageAdapters.OfType<TMessageAdapter>().Single();
 		}
 
-		public IHandleMessageCommand Create(IReadOnlyCollection<IHandler> handlers)
+		public IHandleMessageCommand Create(IReadOnlyCollection<IHandler> userHandlers)
 		{
-			var handler = handlers.OfType<THandler>().Single();
+			var handler = userHandlers.OfType<THandler>().Single();
 
 			return new HandleMessageCommand<TMessage>(_messageAdapter, handler);
 		}
@@ -79,12 +78,13 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 
 	private interface ICommandCreator
 	{
-		IHandleMessageCommand Create(IReadOnlyCollection<IHandler> handlers);
+		IHandleMessageCommand Create(IReadOnlyCollection<IHandler> userHandlers);
 	}
 
-	private class DepdendentCommandCreator<TMessage, TDependentMessage, TDependentHandler, TMessageAdapter> : IDependentCommandCreator
-		where TDependentHandler : IDependentHandler<TMessage, TDependentMessage>
-		where TMessageAdapter : IMessageAdapter<TMessage>
+	private class DepdendentCommandCreator<TReceivedMessage, THandledMessage, TDependentHandler, TUserHandler, TMessageAdapter> : IDependentCommandCreator
+		where TDependentHandler : IDependentHandler<TReceivedMessage, THandledMessage>
+		where TUserHandler : IHandler<THandledMessage>
+		where TMessageAdapter : IMessageAdapter<TReceivedMessage>
 	{
 		private readonly TMessageAdapter _messageAdapter;
 
@@ -93,17 +93,21 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 			_messageAdapter = messageAdapters.OfType<TMessageAdapter>().Single();
 		}
 
-		public IHandleMessageCommand Create(IReadOnlyCollection<IDependentHandler> handlers)
+		public IHandleMessageCommand Create(IReadOnlyCollection<IDependentHandler> dependentHandlers, IReadOnlyCollection<IHandler> userHandlers)
 		{
-			var dependentHandler = handlers.OfType<TDependentHandler>().Single();
+			var dependentHandler = dependentHandlers.OfType<TDependentHandler>().Single();
 
-			return new HandleMessageCommand<TMessage>(_messageAdapter, dependentHandler);
+			var userHandler = userHandlers.OfType<TUserHandler>().Single();
+
+			dependentHandler.UserHandler = userHandler;
+
+			return new HandleMessageCommand<TReceivedMessage>(_messageAdapter, dependentHandler);
 		}
 	}
 
 	private interface IDependentCommandCreator
 	{
-		IHandleMessageCommand Create(IReadOnlyCollection<IDependentHandler> dependentHandlers);
+		IHandleMessageCommand Create(IReadOnlyCollection<IDependentHandler> dependentHandlers, IReadOnlyCollection<IHandler> userHandlers);
 	}
 
 }
