@@ -45,26 +45,6 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		await UserHandler.HandleMessageAsync(invitationNotification);
 	}
 
-	private async Task<string> GetIdCryptAgentPublicDidAsync()
-	{
-		try
-		{
-			_logger.LogDebug("Sending GetPublicDid request to ID Crypt Cloud Agent");
-
-			var response = await _identityClient.Vault.GetPublicDID();
-
-			_logger.LogDebug("Sent GetPublicDid request to ID Crypt Cloud Agent");
-
-			return response.Result.DID;
-		}
-		catch (Exception ex)
-		{
-			_logger.LogError(ex, "Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent");
-
-			throw;
-		}
-	}
-
 	private async Task<ConnectionInviteResponseModel> CreateIdCryptInvitationAsync(string alias)
 	{
 		const bool autoAccept = true;
@@ -88,6 +68,26 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		catch (Exception ex)
 		{
 			_logger.LogError(ex, "Error occurred when sending CreateInvitation request to ID Crypt Cloud Agent");
+
+			throw;
+		}
+	}
+
+	private async Task<string> GetIdCryptAgentPublicDidAsync()
+	{
+		try
+		{
+			_logger.LogDebug("Sending GetPublicDid request to ID Crypt Cloud Agent");
+
+			var response = await _identityClient.Vault.GetPublicDID();
+
+			_logger.LogDebug("Sent GetPublicDid request to ID Crypt Cloud Agent");
+
+			return response.Result.DID;
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent");
 
 			throw;
 		}
