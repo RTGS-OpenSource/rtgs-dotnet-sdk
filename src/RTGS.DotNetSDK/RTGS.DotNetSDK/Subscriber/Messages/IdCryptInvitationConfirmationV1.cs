@@ -6,8 +6,8 @@
 public record IdCryptInvitationConfirmationV1
 {
 	/// <summary>
-	/// The ConnectionId of the accepted and confirmed invitation.
+	/// The Alias of the accepted and confirmed invitation.
 	/// </summary>
-	public string ConnectionId { get; init; }
+	public string Alias { get; init; }
 }
 
