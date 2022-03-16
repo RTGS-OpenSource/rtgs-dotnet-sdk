@@ -41,7 +41,6 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 		_internalHandlers = internalHandlers;
 	}
 
-	// TODO JLIQ - Refactor
 	public IEnumerable<IHandleMessageCommand> CreateAll(IReadOnlyCollection<IHandler> userHandlers)
 	{
 		var userCommands = _commandCreators.Select(creator => creator.Create(userHandlers));

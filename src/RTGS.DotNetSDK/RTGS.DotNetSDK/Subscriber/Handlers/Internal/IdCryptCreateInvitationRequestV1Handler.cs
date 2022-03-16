@@ -25,10 +25,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		_idCryptPublisher = idCryptPublisher;
 	}
 
-	public void SetUserHandler(IHandler<IdCryptCreateInvitationNotificationV1> userHandler)
-	{
-		_userHandler = userHandler;
-	}
+	public void SetUserHandler(IHandler<IdCryptCreateInvitationNotificationV1> userHandler) => _userHandler = userHandler;
 
 	public async Task HandleMessageAsync(IdCryptCreateInvitationRequestV1 createInvitationRequest)
 	{
@@ -98,7 +95,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		}
 	}
 
-	private async Task<SendResult> SendInvitationToBankAsync(
+	private async Task SendInvitationToBankAsync(
 		string alias,
 		ConnectionInvitation invitation,
 		string agentPublicDid,
@@ -139,8 +136,5 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		}
 
 		_logger.LogDebug("Sent Invitation with alias {Alias} to Bank '{BankPartnerDid}'", alias, bankPartnerDid);
-
-		return sendResult;
 	}
-
 }
