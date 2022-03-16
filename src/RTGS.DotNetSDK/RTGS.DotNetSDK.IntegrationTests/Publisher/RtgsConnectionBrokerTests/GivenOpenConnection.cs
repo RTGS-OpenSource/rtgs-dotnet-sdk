@@ -199,7 +199,7 @@ public class GivenOpenConnection
 
 			using var _ = new AssertionScope();
 
-			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.v1");
+			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.tortgs.v1");
 			receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
 
 			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
@@ -593,9 +593,9 @@ public class GivenOpenConnection
 
 			var expectedLogs = new List<LogEntry>
 			{
-				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
-				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
-				new("Received IdCryptInvitationV1 acknowledgement (acknowledged) from RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information)
+				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
+				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
+				new("Received IdCryptInvitationV1 acknowledgement (acknowledged) from RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information)
 			};
 
 			using var _ = new AssertionScope();
@@ -620,9 +620,9 @@ public class GivenOpenConnection
 
 			var expectedLogs = new List<LogEntry>
 			{
-				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
-				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
-				new("Received IdCryptInvitationV1 acknowledgement (rejected) from RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Error)
+				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
+				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
+				new("Received IdCryptInvitationV1 acknowledgement (rejected) from RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Error)
 			};
 
 			using var _ = new AssertionScope();
@@ -649,9 +649,9 @@ public class GivenOpenConnection
 
 			var expectedLogs = new List<LogEntry>
 			{
-				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
-				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
-				new("Error received when sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Error, typeof(RpcException))
+				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
+				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
+				new("Error received when sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Error, typeof(RpcException))
 			};
 
 			using var _ = new AssertionScope();

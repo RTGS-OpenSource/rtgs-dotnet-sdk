@@ -3,6 +3,7 @@ using IDCryptGlobal.Cloud.Agent.Identity.Connection;
 using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.IdCrypt;
 using RTGS.DotNetSDK.Publisher.Messages;
+using RTGS.DotNetSDK.Subscriber.Exceptions;
 using RTGS.DotNetSDK.Subscriber.Messages;
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers.Internal;
@@ -93,12 +94,15 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		}
 	}
 
-	private async Task<SendResult> SendInvitationToBankAsync(string alias,
+	private async Task<SendResult> SendInvitationToBankAsync(
+		string alias,
 		ConnectionInvitation invitation,
 		string agentPublicDid,
 		string bankPartnerDid,
 		CancellationToken cancellationToken)
 	{
+		_logger.LogDebug("Sending Invitation with alias {Alias} to Bank '{BankPartnerDid}'", alias, bankPartnerDid);
+
 		var invitationMessage = new IdCryptInvitationV1
 		{
 			Alias = alias,
@@ -110,8 +114,27 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 			AgentPublicDid = agentPublicDid
 		};
 
-		var sendResult = await _idCryptPublisher
-			.SendIdCryptInvitationToBankAsync(invitationMessage, bankPartnerDid, cancellationToken);
+		SendResult sendResult;
+		try
+		{
+			sendResult = await _idCryptPublisher
+				.SendIdCryptInvitationToBankAsync(invitationMessage, bankPartnerDid, cancellationToken);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Exception occurred when sending IdCrypt Invitation with alias {Alias} to Bank '{BankPartnerDid}'", alias, bankPartnerDid);
+			throw;
+		}
+
+		if (sendResult is not SendResult.Success)
+		{
+			_logger.LogError("Error occurred when sending IdCrypt Invitation with alias {Alias} to Bank '{BankPartnerDid}'", alias, bankPartnerDid);
+
+			throw new RtgsSubscriberException(
+				$"Error occurred when sending IdCrypt Invitation to Bank '{bankPartnerDid}'");
+		}
+
+		_logger.LogDebug("Sent Invitation with alias {Alias} to Bank '{BankPartnerDid}'", alias, bankPartnerDid);
 
 		return sendResult;
 	}
