@@ -36,10 +36,10 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 		_internalCommandCreators = new List<IInternalCommandCreator>
 		{
 			new InternalCommandCreator<
-				IdCryptCreateInvitationRequestV1, 
-				IdCryptCreateInvitationNotificationV1, 
-				IIdCryptCreateInvitationRequestV1Handler, 
-				IIdCryptCreateInvitationNotificationV1Handler, 
+				IdCryptCreateInvitationRequestV1,
+				IdCryptCreateInvitationNotificationV1,
+				IIdCryptCreateInvitationRequestV1Handler,
+				IIdCryptCreateInvitationNotificationV1Handler,
 				IMessageAdapter<IdCryptCreateInvitationRequestV1>>(enumeratedMessageAdapters)
 		};
 

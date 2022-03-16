@@ -11,7 +11,7 @@ using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidM
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers;
 
-public class GivenOpenSubscriberConnection 
+public class GivenOpenSubscriberConnection
 {
 	public class AndIdCryptApiAvailable : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 	{
@@ -544,7 +544,7 @@ public class GivenOpenSubscriberConnection
 						"id-crypt-api-key",
 						new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 					.Build();
-				
+
 				var mockHttpResponses = new List<MockHttpResponse> {
 					new MockHttpResponse {
 						Content = new StringContent(IdCryptTestMessages.GetPublicDidResponseJson),
@@ -909,7 +909,7 @@ public class GivenOpenSubscriberConnection
 			debugLogs.Should().BeEquivalentTo(expectedDebugLogs, options => options.WithStrictOrdering());
 
 			var errorLogs = _serilogContext.LogsFor(
-				"RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", 
+				"RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler",
 				LogEventLevel.Error)
 				.SingleOrDefault();
 
