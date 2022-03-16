@@ -16,8 +16,8 @@ public class GivenOpenSubscriberConnection
 	public class AndIdCryptApiAvailable : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(5_000);
-		private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
-		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
+		private static readonly TimeSpan WaitForSubscriberAcknowledgementDuration = TimeSpan.FromMilliseconds(100);
+		private static readonly TimeSpan WaitForPublisherAcknowledgementDuration = TimeSpan.FromMilliseconds(1_000);
 
 		private readonly GrpcServerFixture _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
@@ -63,7 +63,7 @@ public class GivenOpenSubscriberConnection
 						new Uri("http://id-crypt-cloud-agent-api.com"),
 						"id-crypt-api-key",
 						new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
-					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
+					.WaitForAcknowledgementDuration(WaitForPublisherAcknowledgementDuration)
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()
@@ -120,7 +120,7 @@ public class GivenOpenSubscriberConnection
 
 			var sentRtgsMessage = await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
-			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
 			using var _ = new AssertionScope();
 
@@ -154,7 +154,7 @@ public class GivenOpenSubscriberConnection
 
 			await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
-			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
 			_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
@@ -180,7 +180,7 @@ public class GivenOpenSubscriberConnection
 
 			await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
-			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
 			_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
@@ -203,7 +203,7 @@ public class GivenOpenSubscriberConnection
 
 			await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
-			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
 			_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
@@ -228,7 +228,7 @@ public class GivenOpenSubscriberConnection
 
 			await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
-			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
 			_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
@@ -259,7 +259,7 @@ public class GivenOpenSubscriberConnection
 
 			await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
-			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
 			_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
@@ -283,7 +283,7 @@ public class GivenOpenSubscriberConnection
 
 			await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
-			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
 			_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
@@ -307,7 +307,7 @@ public class GivenOpenSubscriberConnection
 
 			await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
-			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
 			_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
@@ -340,7 +340,7 @@ public class GivenOpenSubscriberConnection
 
 			await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
-			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
 			_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
@@ -372,7 +372,7 @@ public class GivenOpenSubscriberConnection
 
 			var sentRtgsMessage = await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
-			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
 			using var _ = new AssertionScope();
 
@@ -410,7 +410,7 @@ public class GivenOpenSubscriberConnection
 
 			await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
 
-			_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
 			_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 

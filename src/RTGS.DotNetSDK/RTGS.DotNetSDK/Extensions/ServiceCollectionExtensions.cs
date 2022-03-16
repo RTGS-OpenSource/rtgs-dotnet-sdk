@@ -116,7 +116,7 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddTransient<IMessageAdapter, IdCryptCreateInvitationRequestV1MessageAdapter>();
 		serviceCollection.AddSingleton<IHandlerValidator, HandlerValidator>();
 
-		serviceCollection.AddTransient<IDependentHandler, IdCryptCreateInvitationRequestV1Handler>();
+		serviceCollection.AddTransient<IInternalHandler, IdCryptCreateInvitationRequestV1Handler>();
 
 		serviceCollection.AddSingleton<IIdCryptPublisher, IdCryptPublisher>();
 		serviceCollection.AddSingleton<IInternalPublisher, InternalPublisher>();

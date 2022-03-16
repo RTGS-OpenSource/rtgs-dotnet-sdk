@@ -13,6 +13,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 	private readonly ILogger<IdCryptCreateInvitationRequestV1Handler> _logger;
 	private readonly IIdentityClient _identityClient;
 	private readonly IIdCryptPublisher _idCryptPublisher;
+	private IHandler<IdCryptCreateInvitationNotificationV1> _userHandler;
 
 	public IdCryptCreateInvitationRequestV1Handler(
 		ILogger<IdCryptCreateInvitationRequestV1Handler> logger,
@@ -24,7 +25,10 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		_idCryptPublisher = idCryptPublisher;
 	}
 
-	public IHandler<IdCryptCreateInvitationNotificationV1> UserHandler { get; set; }
+	public void SetUserHandler(IHandler<IdCryptCreateInvitationNotificationV1> userHandler)
+	{
+		_userHandler = userHandler;
+	}
 
 	public async Task HandleMessageAsync(IdCryptCreateInvitationRequestV1 createInvitationRequest)
 	{
@@ -43,14 +47,14 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 			BankPartnerDid = bankPartnerDid
 		};
 
-		await UserHandler.HandleMessageAsync(invitationNotification);
+		await _userHandler.HandleMessageAsync(invitationNotification);
 	}
 
 	private async Task<ConnectionInviteResponseModel> CreateIdCryptInvitationAsync(string alias)
 	{
-		const bool autoAccept = true;
-		const bool multiUse = false;
-		const bool usePublicDid = false;
+		const bool AutoAccept = true;
+		const bool MultiUse = false;
+		const bool UsePublicDid = false;
 
 		try
 		{
@@ -58,9 +62,9 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 
 			var response = await _identityClient.Connection.CreateInvitation(
 				alias,
-				autoAccept,
-				multiUse,
-				usePublicDid);
+				AutoAccept,
+				MultiUse,
+				UsePublicDid);
 
 			_logger.LogDebug("Sent CreateInvitation request to ID Crypt Cloud Agent");
 
