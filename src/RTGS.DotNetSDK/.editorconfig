@@ -329,7 +329,7 @@ csharp_style_prefer_not_pattern = true:suggestion
 csharp_prefer_braces = true:suggestion
 
 # https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0063#csharp_prefer_simple_using_statement
-csharp_prefer_simple_using_statement = true:suggestion
+csharp_prefer_simple_using_statement = true
 
 ## Formatting rules
 
@@ -445,10 +445,10 @@ dotnet_naming_symbols.private_fields.applicable_kinds = field
 dotnet_naming_symbols.private_fields.applicable_accessibilities = private
 dotnet_naming_symbols.private_fields.required_modifiers =
 
-dotnet_naming_symbols.const_fields.applicable_kinds = field
+dotnet_naming_symbols.const_fields.applicable_kinds = field 
 dotnet_naming_symbols.const_fields.required_modifiers = const
 
-dotnet_naming_symbols.const_locals.applicable_kinds = local
+dotnet_naming_symbols.const_locals.applicable_kinds = local 
 dotnet_naming_symbols.const_locals.required_modifiers = const
 
 dotnet_naming_symbols.static_readonly_fields.applicable_kinds = field
