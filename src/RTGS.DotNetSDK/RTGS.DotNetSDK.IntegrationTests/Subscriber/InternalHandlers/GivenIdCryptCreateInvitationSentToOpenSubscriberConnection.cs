@@ -11,7 +11,7 @@ using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidM
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers;
 
-public class GivenOpenSubscriberConnection
+public class GivenIdCryptCreateInvitationSentToOpenSubscriberConnection
 {
 	public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixture>
 	{
@@ -97,7 +97,7 @@ public class GivenOpenSubscriberConnection
 		}
 
 		[Fact]
-		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader()
+		public async Task WhenMessageReceived_ThenSeeBankDidInRequestHeader()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
@@ -111,7 +111,7 @@ public class GivenOpenSubscriberConnection
 		}
 
 		[Fact]
-		public async Task WhenIdCryptCreateInvitationMessageReceived_ThenPassToHandlerAndAcknowledge()
+		public async Task WhenMessageReceived_ThenPassToHandlerAndAcknowledge()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
@@ -163,9 +163,8 @@ public class GivenOpenSubscriberConnection
 				.Requests[path]
 				.Headers
 				.GetValues("X-API-Key")
-				.Single();
-
-			actualApiKey.Should().Be(IdCryptApiKey);
+				.Should().ContainSingle()
+				.Which.Should().Be(IdCryptApiKey);
 		}
 
 		[Theory]
@@ -764,14 +763,16 @@ public class GivenOpenSubscriberConnection
 				new ("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
 			};
 
-			var expectedErrorLogMessage = "Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent";
-
 			using var _ = new AssertionScope();
-			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Debug);
-			debugLogs.Should().BeEquivalentTo(expectedDebugLogs, options => options.WithStrictOrdering());
 
-			var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Error).SingleOrDefault();
-			errorLogs.Message.Should().Be(expectedErrorLogMessage);
+			_serilogContext
+				.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Debug)
+				.Should().BeEquivalentTo(expectedDebugLogs, options => options.WithStrictOrdering());
+
+			_serilogContext
+				.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Error)
+				.Should().ContainSingle()
+				.Which.Message.Should().Be("Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent");
 		}
 
 		[Fact]
@@ -785,7 +786,6 @@ public class GivenOpenSubscriberConnection
 
 			_invitationNotificationHandler.ReceivedMessage.Should().BeNull();
 		}
-
 	}
 
 	public class AndFailedPublisherConnection : IDisposable, IClassFixture<GrpcServerFixture>
@@ -794,15 +794,13 @@ public class GivenOpenSubscriberConnection
 
 		private readonly GrpcServerFixture _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
-		private AllTestHandlers.TestIdCryptCreateInvitationNotificationV1 _invitationNotificationHandler;
+		private readonly List<IHandler> _allTestHandlers = new AllTestHandlers().ToList();
 
+		private AllTestHandlers.TestIdCryptCreateInvitationNotificationV1 _invitationNotificationHandler;
 		private IHost _clientHost;
 		private FromRtgsSender _fromRtgsSender;
 		private IRtgsSubscriber _rtgsSubscriber;
-		private readonly List<IHandler> _allTestHandlers = new AllTestHandlers().ToList();
-
 		private StatusCodeHttpHandler _idCryptMessageHandler;
-
 
 		public AndFailedPublisherConnection(GrpcServerFixture grpcServer)
 		{
@@ -814,7 +812,6 @@ public class GivenOpenSubscriberConnection
 
 			_serilogContext = TestCorrelator.CreateContext();
 		}
-
 
 		private static void SetupSerilogLogger() =>
 			Log.Logger = new LoggerConfiguration()
@@ -895,22 +892,16 @@ public class GivenOpenSubscriberConnection
 				new ($"Sending Invitation with alias {alias} to Bank '{ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}'", LogEventLevel.Debug),
 			};
 
-			var expectedErrorLogMessage = $"Exception occurred when sending IdCrypt Invitation with alias {alias} to Bank '{ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}'";
-
 			using var _ = new AssertionScope();
-			var debugLogs = _serilogContext.LogsFor(
-				"RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler",
-				LogEventLevel.Debug
-				);
 
-			debugLogs.Should().BeEquivalentTo(expectedDebugLogs, options => options.WithStrictOrdering());
+			_serilogContext
+				.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Debug)
+				.Should().BeEquivalentTo(expectedDebugLogs, options => options.WithStrictOrdering());
 
-			var errorLogs = _serilogContext.LogsFor(
-				"RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler",
-				LogEventLevel.Error)
-				.SingleOrDefault();
-
-			errorLogs.Message.Should().Be(expectedErrorLogMessage);
+			_serilogContext
+				.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Error)
+				.Should().ContainSingle()
+				.Which.Message.Should().Be($"Exception occurred when sending IdCrypt Invitation with alias {alias} to Bank '{ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}'");
 		}
 	}
 }

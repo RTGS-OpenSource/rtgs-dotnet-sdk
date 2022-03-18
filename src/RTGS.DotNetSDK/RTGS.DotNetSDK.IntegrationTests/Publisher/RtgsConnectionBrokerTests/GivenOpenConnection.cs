@@ -101,9 +101,8 @@ public class GivenOpenConnection
 				.Requests[path]
 				.Headers
 				.GetValues("X-API-Key")
-				.Single();
-
-			actualApiKey.Should().Be(IdCryptApiKey);
+				.Should().ContainSingle()
+				.Which.Should().Be(IdCryptApiKey);
 		}
 
 		[Theory]
