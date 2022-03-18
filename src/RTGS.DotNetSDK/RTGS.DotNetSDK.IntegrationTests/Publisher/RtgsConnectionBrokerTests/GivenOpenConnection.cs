@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
+using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.HttpHandlers;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.RtgsConnectionBrokerTests;
@@ -176,7 +177,7 @@ public class GivenOpenConnection
 			var expectedLogs = new List<LogEntry>
 			{
 				new($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new("Sent CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+				new($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
 			};
@@ -359,7 +360,7 @@ public class GivenOpenConnection
 
 			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error);
 			errorLogs.Select(log => log.Message)
-				.Should().ContainSingle(msg => msg == "Error occurred when sending CreateInvitation request to ID Crypt Cloud Agent");
+				.Should().ContainSingle(msg => msg == $"Error occurred when sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent");
 		}
 	}
 
@@ -493,7 +494,7 @@ public class GivenOpenConnection
 			var expectedDebugLogs = new List<LogEntry>
 			{
 				new ($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new ("Sent CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+				new ($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new ("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new ("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
 			};
@@ -961,16 +962,5 @@ public class GivenOpenConnection
 
 			receiver.Connections.Single().Requests.Count().Should().Be(1, "the second message should not have been sent as the semaphore should not be entered");
 		}
-	}
-
-	private record IdCryptInvitationV1
-	{
-		public string Alias { get; init; }
-		public string Label { get; init; }
-		public IEnumerable<string> RecipientKeys { get; init; }
-		public string Id { get; init; }
-		public string Type { get; init; }
-		public string ServiceEndPoint { get; init; }
-		public string AgentPublicDid { get; set; }
 	}
 }

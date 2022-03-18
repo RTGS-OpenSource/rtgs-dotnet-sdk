@@ -11,12 +11,11 @@ namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 {
 	private readonly IEnumerable<ICommandCreator> _commandCreators;
-	private readonly IEnumerable<IInternalCommandCreator> _internalCommandCreators;
-	private readonly IEnumerable<IInternalHandler> _internalHandlers;
 
 	public HandleMessageCommandsFactory(IEnumerable<IMessageAdapter> messageAdapters, IEnumerable<IInternalHandler> internalHandlers)
 	{
 		IEnumerable<IMessageAdapter> enumeratedMessageAdapters = messageAdapters.ToList();
+		IEnumerable<IInternalHandler> enumeratedInternalHandlers = internalHandlers.ToList();
 
 		_commandCreators = new List<ICommandCreator>
 		{
@@ -31,27 +30,19 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 			new CommandCreator<EarmarkReleaseV1, IEarmarkReleaseV1Handler, IMessageAdapter<EarmarkReleaseV1>>(enumeratedMessageAdapters),
 			new CommandCreator<BankPartnersResponseV1, IBankPartnersResponseV1Handler, IMessageAdapter<BankPartnersResponseV1>>(enumeratedMessageAdapters),
 			new CommandCreator<IdCryptInvitationConfirmationV1, IIdCryptInvitationConfirmationV1Handler, IMessageAdapter<IdCryptInvitationConfirmationV1>>(enumeratedMessageAdapters),
-		};
 
-		_internalCommandCreators = new List<IInternalCommandCreator>
-		{
 			new InternalCommandCreator<
 				IdCryptCreateInvitationRequestV1,
 				IdCryptCreateInvitationNotificationV1,
 				IIdCryptCreateInvitationRequestV1Handler,
 				IIdCryptCreateInvitationNotificationV1Handler,
-				IMessageAdapter<IdCryptCreateInvitationRequestV1>>(enumeratedMessageAdapters)
+				IMessageAdapter<IdCryptCreateInvitationRequestV1>>(enumeratedMessageAdapters, enumeratedInternalHandlers)
 		};
-
-		_internalHandlers = internalHandlers;
 	}
 
 	public IEnumerable<IHandleMessageCommand> CreateAll(IReadOnlyCollection<IHandler> userHandlers)
 	{
-		var userCommands = _commandCreators.Select(creator => creator.Create(userHandlers));
-		var internalCommands = _internalCommandCreators.Select(creator => creator.Create(_internalHandlers.ToList(), userHandlers));
-
-		var commands = userCommands.Concat(internalCommands);
+		var commands = _commandCreators.Select(creator => creator.Create(userHandlers));
 
 		return commands;
 	}
@@ -75,26 +66,23 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 		}
 	}
 
-	private interface ICommandCreator
-	{
-		IHandleMessageCommand Create(IReadOnlyCollection<IHandler> userHandlers);
-	}
-
-	private class InternalCommandCreator<TReceivedMessage, THandledMessage, TInternalHandler, TUserHandler, TMessageAdapter> : IInternalCommandCreator
+	private class InternalCommandCreator<TReceivedMessage, THandledMessage, TInternalHandler, TUserHandler, TMessageAdapter> : ICommandCreator
 		where TInternalHandler : IInternalHandler<TReceivedMessage, THandledMessage>
 		where TUserHandler : IHandler<THandledMessage>
 		where TMessageAdapter : IMessageAdapter<TReceivedMessage>
 	{
 		private readonly TMessageAdapter _messageAdapter;
+		private readonly IEnumerable<IInternalHandler> _internalHandlers;
 
-		public InternalCommandCreator(IEnumerable<IMessageAdapter> messageAdapters)
+		public InternalCommandCreator(IEnumerable<IMessageAdapter> messageAdapters, IEnumerable<IInternalHandler> internalHandlers)
 		{
 			_messageAdapter = messageAdapters.OfType<TMessageAdapter>().Single();
+			_internalHandlers = internalHandlers;
 		}
 
-		public IHandleMessageCommand Create(IReadOnlyCollection<IInternalHandler> internalHandlers, IReadOnlyCollection<IHandler> userHandlers)
+		public IHandleMessageCommand Create(IReadOnlyCollection<IHandler> userHandlers)
 		{
-			var internalHandler = internalHandlers.OfType<TInternalHandler>().Single();
+			var internalHandler = _internalHandlers.OfType<TInternalHandler>().Single();
 
 			var userHandler = userHandlers.OfType<TUserHandler>().Single();
 
@@ -104,8 +92,8 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 		}
 	}
 
-	private interface IInternalCommandCreator
+	private interface ICommandCreator
 	{
-		IHandleMessageCommand Create(IReadOnlyCollection<IInternalHandler> internalHandlers, IReadOnlyCollection<IHandler> userHandlers);
+		IHandleMessageCommand Create(IReadOnlyCollection<IHandler> userHandlers);
 	}
 }

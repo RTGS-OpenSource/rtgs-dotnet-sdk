@@ -1,4 +1,4 @@
-﻿namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalMessages;
+﻿namespace RTGS.DotNetSDK.IntegrationTests.InternalMessages;
 
 public record IdCryptCreateInvitationRequestV1
 {

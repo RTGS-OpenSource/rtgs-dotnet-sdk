@@ -75,13 +75,13 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 				multiUse,
 				usePublicDid);
 
-			_logger.LogDebug("Sent CreateInvitation request to ID Crypt Cloud Agent");
+			_logger.LogDebug("Sent CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", alias);
 
 			return response;
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Error occurred when sending CreateInvitation request to ID Crypt Cloud Agent");
+			_logger.LogError(ex, "Error occurred when sending CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", alias);
 
 			throw;
 		}

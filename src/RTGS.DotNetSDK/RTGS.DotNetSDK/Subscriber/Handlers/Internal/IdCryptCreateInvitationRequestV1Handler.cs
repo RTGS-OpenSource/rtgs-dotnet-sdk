@@ -25,10 +25,18 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		_idCryptPublisher = idCryptPublisher;
 	}
 
-	public void SetUserHandler(IHandler<IdCryptCreateInvitationNotificationV1> userHandler) => _userHandler = userHandler;
+	public void SetUserHandler(IHandler<IdCryptCreateInvitationNotificationV1> userHandler) =>
+		_userHandler = userHandler;
 
 	public async Task HandleMessageAsync(IdCryptCreateInvitationRequestV1 createInvitationRequest)
 	{
+		if (_userHandler is null)
+		{
+			throw new RtgsSubscriberException(
+				$"User Handler not set in {nameof(IdCryptCreateInvitationRequestV1Handler)} when invoking {nameof(HandleMessageAsync)}(). " +
+				$"Ensure {nameof(SetUserHandler)}() has been called first.");
+		}
+
 		var alias = Guid.NewGuid().ToString();
 
 		var invitation = await CreateIdCryptInvitationAsync(alias);
@@ -63,13 +71,13 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 				MultiUse,
 				UsePublicDid);
 
-			_logger.LogDebug("Sent CreateInvitation request to ID Crypt Cloud Agent");
+			_logger.LogDebug("Sent CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", alias);
 
 			return response;
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Error occurred when sending CreateInvitation request to ID Crypt Cloud Agent");
+			_logger.LogError(ex, "Error occurred when sending CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", alias);
 
 			throw;
 		}
@@ -132,7 +140,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 			_logger.LogError("Error occurred when sending IdCrypt Invitation with alias {Alias} to Bank '{BankPartnerDid}'", alias, bankPartnerDid);
 
 			throw new RtgsSubscriberException(
-				$"Error occurred when sending IdCrypt Invitation to Bank '{bankPartnerDid}'");
+				$"Error occurred when sending IdCrypt Invitation with alias {alias} to Bank '{bankPartnerDid}'");
 		}
 
 		_logger.LogDebug("Sent Invitation with alias {Alias} to Bank '{BankPartnerDid}'", alias, bankPartnerDid);

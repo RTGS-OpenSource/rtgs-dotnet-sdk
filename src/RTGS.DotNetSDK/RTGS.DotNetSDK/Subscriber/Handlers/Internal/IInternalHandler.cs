@@ -2,7 +2,7 @@
 
 internal interface IInternalHandler : IHandler { }
 
-internal interface IInternalHandler<TReceivedMessage, TUserHandledMessage> : IInternalHandler, IHandler<TReceivedMessage>
+internal interface IInternalHandler<in TReceivedMessage, out TUserHandledMessage> : IInternalHandler, IHandler<TReceivedMessage>
 {
 	void SetUserHandler(IHandler<TUserHandledMessage> userHandler);
 }

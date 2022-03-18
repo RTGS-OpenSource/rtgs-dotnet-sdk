@@ -3,8 +3,8 @@ using System.Net.Http;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
+using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.HttpHandlers;
-using RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalMessages;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.DotNetSDK.Subscriber.Messages;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
@@ -13,7 +13,7 @@ namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers;
 
 public class GivenOpenSubscriberConnection
 {
-	public class AndIdCryptApiAvailable : IAsyncLifetime, IClassFixture<GrpcServerFixture>
+	public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(5_000);
 		private static readonly TimeSpan WaitForSubscriberAcknowledgementDuration = TimeSpan.FromMilliseconds(100);
@@ -21,12 +21,13 @@ public class GivenOpenSubscriberConnection
 
 		private readonly GrpcServerFixture _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
+		private readonly List<IHandler> _allTestHandlers = new AllTestHandlers().ToList();
+
 		private IHost _clientHost;
 		private FromRtgsSender _fromRtgsSender;
 		private IRtgsSubscriber _rtgsSubscriber;
-		private readonly StatusCodeHttpHandler _idCryptMessageHandler;
-		private readonly List<IHandler> _allTestHandlers = new AllTestHandlers().ToList();
-		private readonly AllTestHandlers.TestIdCryptCreateInvitationNotificationV1 _invitationNotificationHandler;
+		private StatusCodeHttpHandler _idCryptMessageHandler;
+		private AllTestHandlers.TestIdCryptCreateInvitationNotificationV1 _invitationNotificationHandler;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 
 		private const string IdCryptApiKey = "id-crypt-api-key";
@@ -38,23 +39,25 @@ public class GivenOpenSubscriberConnection
 
 			SetupSerilogLogger();
 
-			_serilogContext = TestCorrelator.CreateContext();
+			SetupDependencies();
 
-			_idCryptMessageHandler = new StatusCodeHttpHandler(IdCryptEndPoints.MockHttpResponses);
-			_invitationNotificationHandler = _allTestHandlers.OfType<AllTestHandlers.TestIdCryptCreateInvitationNotificationV1>().Single();
+			_serilogContext = TestCorrelator.CreateContext();
 		}
 
 		private static void SetupSerilogLogger() =>
-			Log.Logger = new LoggerConfiguration()
-				.MinimumLevel.Debug()
-				.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-				.Enrich.FromLogContext()
-				.WriteTo.Console()
-				.WriteTo.TestCorrelator()
-				.CreateLogger();
+		Log.Logger = new LoggerConfiguration()
+			.MinimumLevel.Debug()
+			.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+			.Enrich.FromLogContext()
+			.WriteTo.Console()
+			.WriteTo.TestCorrelator()
+			.CreateLogger();
 
-		public async Task InitializeAsync()
+		private void SetupDependencies()
 		{
+			_idCryptMessageHandler = new StatusCodeHttpHandler(IdCryptEndPoints.MockHttpResponses);
+			_invitationNotificationHandler = _allTestHandlers.OfType<AllTestHandlers.TestIdCryptCreateInvitationNotificationV1>().Single();
+
 			try
 			{
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
@@ -80,21 +83,17 @@ public class GivenOpenSubscriberConnection
 			}
 			catch (Exception)
 			{
-				// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
-				// See https://github.com/xunit/xunit/discussions/2313 for further details.
-				await DisposeAsync();
+				Dispose();
 
 				throw;
 			}
 		}
 
-		public Task DisposeAsync()
+		public void Dispose()
 		{
 			_clientHost?.Dispose();
 
 			_grpcServer.Reset();
-
-			return Task.CompletedTask;
 		}
 
 		[Fact]
@@ -238,7 +237,7 @@ public class GivenOpenSubscriberConnection
 			var expectedLogs = new List<LogEntry>
 			{
 				new($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new("Sent CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+				new($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new ($"Sending Invitation with alias {alias} to Bank '{ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}'", LogEventLevel.Debug),
@@ -500,18 +499,19 @@ public class GivenOpenSubscriberConnection
 		}
 	}
 
-	public class AndIdCryptCreateInvitationApiIsNotAvailable : IAsyncLifetime, IClassFixture<GrpcServerFixture>
+	public class AndIdCryptCreateInvitationApiIsNotAvailable : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1_000);
 
 		private readonly GrpcServerFixture _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
+		private readonly List<IHandler> _allTestHandlers = new AllTestHandlers().ToList();
+
 		private IHost _clientHost;
 		private FromRtgsSender _fromRtgsSender;
 		private IRtgsSubscriber _rtgsSubscriber;
 		private StatusCodeHttpHandler _idCryptMessageHandler;
-		private readonly List<IHandler> _allTestHandlers = new AllTestHandlers().ToList();
-		private readonly AllTestHandlers.TestIdCryptCreateInvitationNotificationV1 _invitationNotificationHandler;
+		private AllTestHandlers.TestIdCryptCreateInvitationNotificationV1 _invitationNotificationHandler;
 
 		public AndIdCryptCreateInvitationApiIsNotAvailable(GrpcServerFixture grpcServer)
 		{
@@ -519,9 +519,9 @@ public class GivenOpenSubscriberConnection
 
 			SetupSerilogLogger();
 
-			_serilogContext = TestCorrelator.CreateContext();
+			SetupDependencies();
 
-			_invitationNotificationHandler = _allTestHandlers.OfType<AllTestHandlers.TestIdCryptCreateInvitationNotificationV1>().Single();
+			_serilogContext = TestCorrelator.CreateContext();
 		}
 
 		private static void SetupSerilogLogger() =>
@@ -533,7 +533,7 @@ public class GivenOpenSubscriberConnection
 				.WriteTo.TestCorrelator()
 				.CreateLogger();
 
-		public async Task InitializeAsync()
+		private void SetupDependencies()
 		{
 			try
 			{
@@ -572,24 +572,22 @@ public class GivenOpenSubscriberConnection
 				_rtgsSubscriber = _clientHost.Services.GetRequiredService<IRtgsSubscriber>();
 				var toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
 				toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+				_invitationNotificationHandler = _allTestHandlers.OfType<AllTestHandlers.TestIdCryptCreateInvitationNotificationV1>().Single();
 			}
 			catch (Exception)
 			{
-				// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
-				// See https://github.com/xunit/xunit/discussions/2313 for further details.
-				await DisposeAsync();
+				Dispose();
 
 				throw;
 			}
 		}
 
-		public Task DisposeAsync()
+		public void Dispose()
 		{
 			_clientHost?.Dispose();
 
 			_grpcServer.Reset();
-
-			return Task.CompletedTask;
 		}
 
 		[Fact]
@@ -625,7 +623,7 @@ public class GivenOpenSubscriberConnection
 
 			var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Error);
 			errorLogs.Select(log => log.Message)
-				.Should().ContainSingle(msg => msg == "Error occurred when sending CreateInvitation request to ID Crypt Cloud Agent");
+				.Should().ContainSingle(msg => msg == $"Error occurred when sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent");
 		}
 
 		[Fact]
@@ -641,18 +639,19 @@ public class GivenOpenSubscriberConnection
 		}
 	}
 
-	public class AndIdCryptCreateGetPublicDidApiIsNotAvailable : IAsyncLifetime, IClassFixture<GrpcServerFixture>
+	public class AndIdCryptCreateGetPublicDidApiIsNotAvailable : IClassFixture<GrpcServerFixture>
 	{
-		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1_000);
+		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1_500);
 
 		private readonly GrpcServerFixture _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
+		private readonly List<IHandler> _allTestHandlers = new AllTestHandlers().ToList();
+
 		private IHost _clientHost;
 		private FromRtgsSender _fromRtgsSender;
 		private IRtgsSubscriber _rtgsSubscriber;
 		private StatusCodeHttpHandler _idCryptMessageHandler;
-		private readonly List<IHandler> _allTestHandlers = new AllTestHandlers().ToList();
-		private readonly AllTestHandlers.TestIdCryptCreateInvitationNotificationV1 _invitationNotificationHandler;
+		private AllTestHandlers.TestIdCryptCreateInvitationNotificationV1 _invitationNotificationHandler;
 
 		public AndIdCryptCreateGetPublicDidApiIsNotAvailable(GrpcServerFixture grpcServer)
 		{
@@ -660,9 +659,9 @@ public class GivenOpenSubscriberConnection
 
 			SetupSerilogLogger();
 
-			_serilogContext = TestCorrelator.CreateContext();
+			SetupDependencies();
 
-			_invitationNotificationHandler = _allTestHandlers.OfType<AllTestHandlers.TestIdCryptCreateInvitationNotificationV1>().Single();
+			_serilogContext = TestCorrelator.CreateContext();
 		}
 
 		private static void SetupSerilogLogger() =>
@@ -674,7 +673,7 @@ public class GivenOpenSubscriberConnection
 				.WriteTo.TestCorrelator()
 				.CreateLogger();
 
-		public async Task InitializeAsync()
+		private void SetupDependencies()
 		{
 			try
 			{
@@ -713,24 +712,22 @@ public class GivenOpenSubscriberConnection
 				_rtgsSubscriber = _clientHost.Services.GetRequiredService<IRtgsSubscriber>();
 				var toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
 				toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+				_invitationNotificationHandler = _allTestHandlers.OfType<AllTestHandlers.TestIdCryptCreateInvitationNotificationV1>().Single();
 			}
 			catch (Exception)
 			{
-				// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
-				// See https://github.com/xunit/xunit/discussions/2313 for further details.
-				await DisposeAsync();
+				Dispose();
 
 				throw;
 			}
 		}
 
-		public Task DisposeAsync()
+		public void Dispose()
 		{
 			_clientHost?.Dispose();
 
 			_grpcServer.Reset();
-
-			return Task.CompletedTask;
 		}
 
 		[Fact]
@@ -762,7 +759,7 @@ public class GivenOpenSubscriberConnection
 			var expectedDebugLogs = new List<LogEntry>
 			{
 				new ($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new ("Sent CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+				new ($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new ("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new ("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
 			};
@@ -791,17 +788,18 @@ public class GivenOpenSubscriberConnection
 
 	}
 
-	public class AndFailedPublisherConnection : IAsyncLifetime, IClassFixture<GrpcServerFixture>
+	public class AndFailedPublisherConnection : IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1_000);
 
 		private readonly GrpcServerFixture _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
+		private AllTestHandlers.TestIdCryptCreateInvitationNotificationV1 _invitationNotificationHandler;
+
 		private IHost _clientHost;
 		private FromRtgsSender _fromRtgsSender;
 		private IRtgsSubscriber _rtgsSubscriber;
 		private readonly List<IHandler> _allTestHandlers = new AllTestHandlers().ToList();
-		private readonly AllTestHandlers.TestIdCryptCreateInvitationNotificationV1 _invitationNotificationHandler;
 
 		private StatusCodeHttpHandler _idCryptMessageHandler;
 
@@ -812,9 +810,9 @@ public class GivenOpenSubscriberConnection
 
 			SetupSerilogLogger();
 
-			_serilogContext = TestCorrelator.CreateContext();
+			SetupDependencies();
 
-			_invitationNotificationHandler = _allTestHandlers.OfType<AllTestHandlers.TestIdCryptCreateInvitationNotificationV1>().Single();
+			_serilogContext = TestCorrelator.CreateContext();
 		}
 
 
@@ -827,7 +825,7 @@ public class GivenOpenSubscriberConnection
 				.WriteTo.TestCorrelator()
 				.CreateLogger();
 
-		public async Task InitializeAsync()
+		private void SetupDependencies()
 		{
 			try
 			{
@@ -853,24 +851,23 @@ public class GivenOpenSubscriberConnection
 				_rtgsSubscriber = _clientHost.Services.GetRequiredService<IRtgsSubscriber>();
 				var toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
 				toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+				_invitationNotificationHandler = _allTestHandlers.OfType<AllTestHandlers.TestIdCryptCreateInvitationNotificationV1>().Single();
 			}
 			catch (Exception)
 			{
-				// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
-				// See https://github.com/xunit/xunit/discussions/2313 for further details.
-				await DisposeAsync();
+				Dispose();
 
 				throw;
 			}
 		}
 
-		public Task DisposeAsync()
+		public void Dispose()
 		{
 			_clientHost?.Dispose();
 
 			_grpcServer.Reset();
 
-			return Task.CompletedTask;
 		}
 
 		[Fact]
@@ -892,7 +889,7 @@ public class GivenOpenSubscriberConnection
 			var expectedDebugLogs = new List<LogEntry>
 			{
 				new ($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new ("Sent CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+				new ($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new ("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new ("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new ($"Sending Invitation with alias {alias} to Bank '{ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}'", LogEventLevel.Debug),
