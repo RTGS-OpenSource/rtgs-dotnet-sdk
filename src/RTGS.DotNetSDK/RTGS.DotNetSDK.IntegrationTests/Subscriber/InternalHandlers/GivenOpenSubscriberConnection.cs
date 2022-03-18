@@ -3,8 +3,8 @@ using System.Net.Http;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
+using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
-using RTGS.DotNetSDK.IntegrationTests.Publisher.HttpHandlers;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.DotNetSDK.Subscriber.Messages;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
@@ -639,9 +639,9 @@ public class GivenOpenSubscriberConnection
 		}
 	}
 
-	public class AndIdCryptCreateGetPublicDidApiIsNotAvailable : IClassFixture<GrpcServerFixture>
+	public class AndIdCryptCreateGetPublicDidApiIsNotAvailable : IDisposable, IClassFixture<GrpcServerFixture>
 	{
-		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1_500);
+		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1_000);
 
 		private readonly GrpcServerFixture _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
@@ -788,7 +788,7 @@ public class GivenOpenSubscriberConnection
 
 	}
 
-	public class AndFailedPublisherConnection : IClassFixture<GrpcServerFixture>
+	public class AndFailedPublisherConnection : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1_000);
 

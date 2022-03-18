@@ -1,5 +1,5 @@
 ﻿using RTGS.DotNetSDK.IntegrationTests.Extensions;
-using RTGS.DotNetSDK.IntegrationTests.Publisher.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.RtgsConnectionBrokerTests;
 
