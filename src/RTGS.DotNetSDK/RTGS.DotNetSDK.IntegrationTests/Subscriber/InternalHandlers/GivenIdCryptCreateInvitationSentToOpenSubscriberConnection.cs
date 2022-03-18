@@ -159,7 +159,7 @@ public class GivenIdCryptCreateInvitationSentToOpenSubscriberConnection
 
 			using var _ = new AssertionScope();
 
-			var actualApiKey = _idCryptMessageHandler
+			_idCryptMessageHandler
 				.Requests[path]
 				.Headers
 				.GetValues("X-API-Key")
