@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
 
-namespace RTGS.DotNetSDK.IntegrationTests.Publisher.HttpHandlers;
+namespace RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 
 internal class StatusCodeHttpHandler : DelegatingHandler
 {

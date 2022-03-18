@@ -2,8 +2,9 @@
 using System.Net.Http;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
-using RTGS.DotNetSDK.IntegrationTests.Publisher.Extensions;
-using RTGS.DotNetSDK.IntegrationTests.Publisher.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Extensions;
+using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.RtgsConnectionBrokerTests;
 
@@ -100,9 +101,8 @@ public class GivenOpenConnection
 				.Requests[path]
 				.Headers
 				.GetValues("X-API-Key")
-				.Single();
-
-			actualApiKey.Should().Be(IdCryptApiKey);
+				.Should().ContainSingle()
+				.Which.Should().Be(IdCryptApiKey);
 		}
 
 		[Theory]
@@ -176,7 +176,7 @@ public class GivenOpenConnection
 			var expectedLogs = new List<LogEntry>
 			{
 				new($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new("Sent CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+				new($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
 			};
@@ -199,7 +199,7 @@ public class GivenOpenConnection
 
 			using var _ = new AssertionScope();
 
-			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.v1");
+			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.tortgs.v1");
 			receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
 
 			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri.Query);
@@ -359,7 +359,7 @@ public class GivenOpenConnection
 
 			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error);
 			errorLogs.Select(log => log.Message)
-				.Should().ContainSingle(msg => msg == "Error occurred when sending CreateInvitation request to ID Crypt Cloud Agent");
+				.Should().ContainSingle(msg => msg == $"Error occurred when sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent");
 		}
 	}
 
@@ -493,7 +493,7 @@ public class GivenOpenConnection
 			var expectedDebugLogs = new List<LogEntry>
 			{
 				new ($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new ("Sent CreateInvitation request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+				new ($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new ("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new ("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
 			};
@@ -593,9 +593,9 @@ public class GivenOpenConnection
 
 			var expectedLogs = new List<LogEntry>
 			{
-				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
-				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
-				new("Received IdCryptInvitationV1 acknowledgement (acknowledged) from RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information)
+				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
+				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
+				new("Received IdCryptInvitationV1 acknowledgement (acknowledged) from RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information)
 			};
 
 			using var _ = new AssertionScope();
@@ -620,9 +620,9 @@ public class GivenOpenConnection
 
 			var expectedLogs = new List<LogEntry>
 			{
-				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
-				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
-				new("Received IdCryptInvitationV1 acknowledgement (rejected) from RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Error)
+				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
+				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
+				new("Received IdCryptInvitationV1 acknowledgement (rejected) from RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Error)
 			};
 
 			using var _ = new AssertionScope();
@@ -649,9 +649,9 @@ public class GivenOpenConnection
 
 			var expectedLogs = new List<LogEntry>
 			{
-				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
-				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Information),
-				new("Error received when sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationAsync)", LogEventLevel.Error, typeof(RpcException))
+				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
+				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
+				new("Error received when sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Error, typeof(RpcException))
 			};
 
 			using var _ = new AssertionScope();
@@ -961,16 +961,5 @@ public class GivenOpenConnection
 
 			receiver.Connections.Single().Requests.Count().Should().Be(1, "the second message should not have been sent as the semaphore should not be entered");
 		}
-	}
-
-	private record IdCryptInvitationV1
-	{
-		public string Alias { get; init; }
-		public string Label { get; init; }
-		public IEnumerable<string> RecipientKeys { get; init; }
-		public string Id { get; init; }
-		public string Type { get; init; }
-		public string ServiceEndPoint { get; init; }
-		public string AgentPublicDid { get; set; }
 	}
 }

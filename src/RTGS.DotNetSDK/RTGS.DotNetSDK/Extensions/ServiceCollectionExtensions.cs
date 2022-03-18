@@ -6,6 +6,7 @@ using RTGS.DotNetSDK.Publisher;
 using RTGS.DotNetSDK.Subscriber;
 using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
+using RTGS.DotNetSDK.Subscriber.Handlers.Internal;
 using RTGS.DotNetSDK.Subscriber.Validators;
 using RTGS.Public.Payment.V3;
 
@@ -20,23 +21,23 @@ public static class ServiceCollectionExtensions
 	/// Adds <seealso cref="IRtgsPublisher"/> with supplied client configuration of <seealso cref="RtgsPublisherOptions"/>.
 	/// </summary>
 	/// <param name="serviceCollection">The service collection</param>
-	/// <param name="publisherOptions">The options used to build the publisher</param>
+	/// <param name="options">The options used to build the publisher</param>
 	/// <param name="configureGrpcClient">The client configure action (optional)</param>
 	/// <returns>The service collection so that additional calls can be chained.</returns>
 	public static IServiceCollection AddRtgsPublisher(
 		this IServiceCollection serviceCollection,
-		RtgsSdkOptions publisherOptions,
+		RtgsSdkOptions options,
 		Action<IHttpClientBuilder> configureGrpcClient = null)
 	{
-		serviceCollection.AddSingleton(publisherOptions);
+		serviceCollection.AddSingleton(options);
 
 		var grpcClientBuilder = serviceCollection
-			.AddGrpcClient<Payment.PaymentClient>(clientOptions => clientOptions.Address = publisherOptions.RemoteHostAddress)
+			.AddGrpcClient<Payment.PaymentClient>(clientOptions => clientOptions.Address = options.RemoteHostAddress)
 			.ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
 			{
 				PooledConnectionIdleTimeout = Timeout.InfiniteTimeSpan,
-				KeepAlivePingDelay = publisherOptions.KeepAlivePingDelay,
-				KeepAlivePingTimeout = publisherOptions.KeepAlivePingTimeout,
+				KeepAlivePingDelay = options.KeepAlivePingDelay,
+				KeepAlivePingTimeout = options.KeepAlivePingTimeout,
 				EnableMultipleHttp2Connections = true,
 				KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always
 			});
@@ -50,9 +51,9 @@ public static class ServiceCollectionExtensions
 
 		serviceCollection.Configure<IdentityConfig>(identityConfig =>
 		{
-			identityConfig.ApiUrl = publisherOptions.IdCryptApiAddress.ToString();
-			identityConfig.Apikey = publisherOptions.IdCryptApiKey;
-			identityConfig.ServiceEndPoint = publisherOptions.IdCryptServiceEndPointAddress.ToString();
+			identityConfig.ApiUrl = options.IdCryptApiAddress.ToString();
+			identityConfig.Apikey = options.IdCryptApiKey;
+			identityConfig.ServiceEndPoint = options.IdCryptServiceEndPointAddress.ToString();
 		});
 
 		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
@@ -89,6 +90,16 @@ public static class ServiceCollectionExtensions
 
 		configureGrpcClient?.Invoke(grpcClientBuilder);
 
+		serviceCollection.Configure<IdentityConfig>(identityConfig =>
+		{
+			identityConfig.ApiUrl = options.IdCryptApiAddress.ToString();
+			identityConfig.Apikey = options.IdCryptApiKey;
+			identityConfig.ServiceEndPoint = options.IdCryptServiceEndPointAddress.ToString();
+		});
+
+		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
+		serviceCollection.AddTransient<IIdentityClient, IdentityClient>();
+
 		serviceCollection.AddSingleton<IRtgsSubscriber, RtgsSubscriber>();
 		serviceCollection.AddTransient<IHandleMessageCommandsFactory, HandleMessageCommandsFactory>();
 		serviceCollection.AddTransient<IMessageAdapter, AtomicLockResponseV1MessageAdapter>();
@@ -102,7 +113,13 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddTransient<IMessageAdapter, EarmarkReleaseV1MessageAdapter>();
 		serviceCollection.AddTransient<IMessageAdapter, BankPartnersResponseV1MessageAdapter>();
 		serviceCollection.AddTransient<IMessageAdapter, IdCryptInvitationConfirmationV1MessageAdapter>();
+		serviceCollection.AddTransient<IMessageAdapter, IdCryptCreateInvitationRequestV1MessageAdapter>();
 		serviceCollection.AddSingleton<IHandlerValidator, HandlerValidator>();
+
+		serviceCollection.AddTransient<IInternalHandler, IdCryptCreateInvitationRequestV1Handler>();
+
+		serviceCollection.AddSingleton<IIdCryptPublisher, IdCryptPublisher>();
+		serviceCollection.AddSingleton<IInternalPublisher, InternalPublisher>();
 
 		return serviceCollection;
 	}

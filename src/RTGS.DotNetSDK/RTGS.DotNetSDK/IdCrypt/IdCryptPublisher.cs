@@ -12,6 +12,15 @@ internal class IdCryptPublisher : IIdCryptPublisher
 		_internalPublisher = internalPublisher;
 	}
 
-	public Task<SendResult> SendIdCryptInvitationAsync(IdCryptInvitationV1 message, CancellationToken cancellationToken) =>
-		_internalPublisher.SendMessageAsync(message, "idcrypt.invitation.v1", cancellationToken);
+	public Task<SendResult> SendIdCryptInvitationToRtgsAsync(IdCryptInvitationV1 message, CancellationToken cancellationToken) =>
+		_internalPublisher.SendMessageAsync(message, "idcrypt.invitation.tortgs.v1", cancellationToken);
+
+	public Task<SendResult> SendIdCryptInvitationToBankAsync(
+		IdCryptInvitationV1 message,
+		string bankPartnerDid,
+		CancellationToken cancellationToken)
+	{
+		var headers = new Dictionary<string, string> { { "bankpartnerdid", bankPartnerDid } };
+		return _internalPublisher.SendMessageAsync(message, "idcrypt.invitation.tobank.v1", cancellationToken, headers);
+	}
 }

@@ -336,6 +336,9 @@ csharp_prefer_simple_using_statement = true
 # https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/formatting-rules#csharp_using_directive_placement
 csharp_using_directive_placement = outside_namespace:error
 
+# https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/formatting-rules#csharp_style_namespace_declarations	
+csharp_style_namespace_declarations = file_scoped:warning
+
 # https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/formatting-rules#dotnet_sort_system_directives_first
 dotnet_sort_system_directives_first = true
 

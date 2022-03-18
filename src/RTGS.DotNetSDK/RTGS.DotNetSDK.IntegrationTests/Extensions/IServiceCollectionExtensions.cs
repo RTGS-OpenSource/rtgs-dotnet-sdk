@@ -1,8 +1,8 @@
 ﻿using IDCryptGlobal.Cloud.Agent.Identity;
 using Microsoft.Extensions.Options;
-using RTGS.DotNetSDK.IntegrationTests.Publisher.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 
-namespace RTGS.DotNetSDK.IntegrationTests.Publisher.Extensions;
+namespace RTGS.DotNetSDK.IntegrationTests.Extensions;
 
 internal static class IServiceCollectionExtensions
 {

@@ -1,4 +1,5 @@
-﻿using RTGS.DotNetSDK.Subscriber.Messages;
+﻿using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
+using RTGS.DotNetSDK.Subscriber.Messages;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 
@@ -164,5 +165,10 @@ public static class ValidMessages
 	public static readonly IdCryptInvitationConfirmationV1 IdCryptInvitationConfirmationV1 = new()
 	{
 		Alias = new Guid("1d6f914b-3f9d-4cc4-a396-f4ba7154b7ae").ToString()
+	};
+
+	public static readonly IdCryptCreateInvitationRequestV1 IdCryptCreateInvitationRequestV1 = new()
+	{
+		BankPartnerDid = "RTGS:GB123456GB"
 	};
 }
