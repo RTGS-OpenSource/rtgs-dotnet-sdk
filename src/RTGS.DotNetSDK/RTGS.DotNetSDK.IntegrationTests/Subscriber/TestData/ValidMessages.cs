@@ -1,4 +1,5 @@
-﻿using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
+﻿using RTGS.DotNetSDK.IdCrypt.Messages;
+using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
 using RTGS.DotNetSDK.Subscriber.Messages;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;

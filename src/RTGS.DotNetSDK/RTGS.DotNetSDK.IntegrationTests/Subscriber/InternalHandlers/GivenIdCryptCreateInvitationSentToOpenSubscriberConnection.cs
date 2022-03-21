@@ -2,11 +2,11 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
+using RTGS.DotNetSDK.IdCrypt.Messages;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
 using RTGS.DotNetSDK.Subscriber.Handlers;
-using RTGS.DotNetSDK.Subscriber.Messages;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers;

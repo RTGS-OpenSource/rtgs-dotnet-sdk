@@ -2,9 +2,8 @@
 using IDCryptGlobal.Cloud.Agent.Identity.Connection;
 using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.IdCrypt;
-using RTGS.DotNetSDK.Publisher.Messages;
+using RTGS.DotNetSDK.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Exceptions;
-using RTGS.DotNetSDK.Subscriber.Messages;
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers.Internal;
 

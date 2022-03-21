@@ -1,5 +1,5 @@
-﻿using RTGS.DotNetSDK.Publisher;
-using RTGS.DotNetSDK.Publisher.Messages;
+﻿using RTGS.DotNetSDK.IdCrypt.Messages;
+using RTGS.DotNetSDK.Publisher;
 
 namespace RTGS.DotNetSDK.IdCrypt;
 

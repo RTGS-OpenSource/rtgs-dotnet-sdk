@@ -1,4 +1,4 @@
-﻿namespace RTGS.DotNetSDK.Subscriber.Messages;
+﻿namespace RTGS.DotNetSDK.IdCrypt.Messages;
 
 /// <summary>
 /// Represents a confirmation for an accepted invitation.
