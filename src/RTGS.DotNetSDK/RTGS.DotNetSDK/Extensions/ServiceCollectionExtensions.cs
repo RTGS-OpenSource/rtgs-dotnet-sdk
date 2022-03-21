@@ -51,9 +51,9 @@ public static class ServiceCollectionExtensions
 
 		serviceCollection.Configure<IdentityConfig>(identityConfig =>
 		{
-			identityConfig.ApiUrl = options.IdCryptApiAddress.ToString();
-			identityConfig.Apikey = options.IdCryptApiKey;
-			identityConfig.ServiceEndPoint = options.IdCryptServiceEndPointAddress.ToString();
+			identityConfig.IdCryptApiAddress = options.IdCryptApiAddress.ToString();
+			identityConfig.IdCryptApiKey = options.IdCryptApiKey;
+			identityConfig.IdCryptServiceEndpointAddress = options.IdCryptServiceEndPointAddress.ToString();
 		});
 
 		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
@@ -92,9 +92,9 @@ public static class ServiceCollectionExtensions
 
 		serviceCollection.Configure<IdentityConfig>(identityConfig =>
 		{
-			identityConfig.ApiUrl = options.IdCryptApiAddress.ToString();
-			identityConfig.Apikey = options.IdCryptApiKey;
-			identityConfig.ServiceEndPoint = options.IdCryptServiceEndPointAddress.ToString();
+			identityConfig.IdCryptApiAddress = options.IdCryptApiAddress.ToString();
+			identityConfig.IdCryptApiKey = options.IdCryptApiKey;
+			identityConfig.IdCryptServiceEndpointAddress = options.IdCryptServiceEndPointAddress.ToString();
 		});
 
 		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
