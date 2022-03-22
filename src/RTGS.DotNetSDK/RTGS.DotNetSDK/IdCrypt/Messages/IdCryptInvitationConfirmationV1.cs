@@ -9,5 +9,7 @@ public record IdCryptInvitationConfirmationV1
 	/// The Alias of the accepted and confirmed invitation.
 	/// </summary>
 	public string Alias { get; init; }
+	
+	// TODO JLIQ - Add Agent Public DID
 }
 
