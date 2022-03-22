@@ -26,10 +26,10 @@ internal class IdCryptPublisher : IIdCryptPublisher
 
 	public Task<SendResult> SendIdCryptInvitationConfirmationAsync(
 		IdCryptInvitationConfirmationV1 message,
-		string fromBankDid,
+		string bankPartnerDid,
 		CancellationToken cancellationToken)
 	{
-		var headers = new Dictionary<string, string> { { "bankpartnerdid", fromBankDid } };
-		return _internalPublisher.SendMessageAsync(message, "idcrypt.invitation.tobank.confirmation.v1", cancellationToken, headers);
+		var headers = new Dictionary<string, string> { { "bankpartnerdid", bankPartnerDid } };
+		return _internalPublisher.SendMessageAsync(message, "idcrypt.invitationconfirmation.v1", cancellationToken, headers);
 	}
 }

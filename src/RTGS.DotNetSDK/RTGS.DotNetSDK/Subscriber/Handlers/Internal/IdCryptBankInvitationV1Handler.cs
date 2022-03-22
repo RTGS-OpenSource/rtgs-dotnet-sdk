@@ -39,7 +39,6 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 
 		var connection = await AcceptInviteAsync(bankInvitation);
 
-
 		// TODO JLIQ - Check connection state here
 		//  if active, call _userHandler and _idCryptPublisher
 		//  else trigger polling
@@ -97,9 +96,6 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 
 			if (connection.State is "active")
 			{
-				// TODO JLIQ - Should the user handler be called first?
-				//  if so this breaks the test as we use `WaitForMessage` on the user handler
-				//  and the publisher hasn't been called at that point. How do we wait on the publisher?
 				var invitationConfirmation = new IdCryptInvitationConfirmationV1 { Alias = connection.Alias };
 
 				await _idCryptPublisher.SendIdCryptInvitationConfirmationAsync(invitationConfirmation, fromBankDid, CancellationToken.None);

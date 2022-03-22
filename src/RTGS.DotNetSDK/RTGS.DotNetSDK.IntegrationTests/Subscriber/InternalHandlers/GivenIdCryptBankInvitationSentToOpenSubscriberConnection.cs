@@ -475,7 +475,7 @@ public class GivenIdCryptBankInvitationSentToOpenSubscriberConnection
 
 			using var _ = new AssertionScope();
 
-			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.tobank.confirmation.v1");
+			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitationconfirmation.v1");
 			receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
 
 			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(
