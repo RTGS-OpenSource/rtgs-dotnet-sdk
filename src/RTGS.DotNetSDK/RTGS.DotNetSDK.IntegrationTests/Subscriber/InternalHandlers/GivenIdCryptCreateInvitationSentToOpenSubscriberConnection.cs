@@ -247,7 +247,6 @@ public class GivenIdCryptCreateInvitationSentToOpenSubscriberConnection
 			debugLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
 		}
 
-
 		[Fact]
 		public async Task WhenSubscriberIsStopped_ThenCloseConnection()
 		{

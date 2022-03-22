@@ -23,4 +23,13 @@ internal class IdCryptPublisher : IIdCryptPublisher
 		var headers = new Dictionary<string, string> { { "bankpartnerdid", bankPartnerDid } };
 		return _internalPublisher.SendMessageAsync(message, "idcrypt.invitation.tobank.v1", cancellationToken, headers);
 	}
+
+	public Task<SendResult> SendIdCryptInvitationConfirmationAsync(
+		IdCryptInvitationConfirmationV1 message,
+		string fromBankDid,
+		CancellationToken cancellationToken)
+	{
+		var headers = new Dictionary<string, string> { { "bankpartnerdid", fromBankDid } };
+		return _internalPublisher.SendMessageAsync(message, "idcrypt.invitation.tobank.confirmation.v1", cancellationToken, headers);
+	}
 }

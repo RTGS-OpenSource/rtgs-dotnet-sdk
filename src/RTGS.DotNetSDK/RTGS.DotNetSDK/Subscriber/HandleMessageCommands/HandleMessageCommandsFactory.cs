@@ -37,7 +37,14 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 				IdCryptCreateInvitationNotificationV1,
 				IIdCryptCreateInvitationRequestV1Handler,
 				IIdCryptCreateInvitationNotificationV1Handler,
-				IMessageAdapter<IdCryptCreateInvitationRequestV1>>(enumeratedMessageAdapters, enumeratedInternalHandlers)
+				IMessageAdapter<IdCryptCreateInvitationRequestV1>>(enumeratedMessageAdapters, enumeratedInternalHandlers),
+
+			new InternalCommandCreator<
+				IdCryptBankInvitationV1,
+				IdCryptBankInvitationNotificationV1,
+				IIdCryptBankInvitationV1Handler,
+				IIdCryptBankInvitationNotificationV1Handler,
+				IMessageAdapter<IdCryptBankInvitationV1>>(enumeratedMessageAdapters, enumeratedInternalHandlers)
 		};
 	}
 

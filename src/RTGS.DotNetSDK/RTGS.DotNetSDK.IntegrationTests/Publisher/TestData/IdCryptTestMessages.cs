@@ -35,4 +35,34 @@ public static class IdCryptTestMessages
 
 	public static string GetPublicDidResponseJson =>
 		JsonConvert.SerializeObject(GetPublicDidResponse);
+
+	public static ConnectionReceived ReceiveInvitationResponse => new()
+	{
+		Alias = "385ba215-7d4e-4cdc-a7a7-f14955741e70",
+		ConnectionID = "6dd0dd5b-39e2-402d-aca0-890780241ede",
+		State = "active"
+	};
+
+	public static string ReceiveInvitationResponseJson =>
+		JsonConvert.SerializeObject(ReceiveInvitationResponse);
+
+	public static ConnectionAccepted ConnectionAcceptedResponse => new()
+	{
+		Alias = "385ba215-7d4e-4cdc-a7a7-f14955741e70",
+		ConnectionID = "6dd0dd5b-39e2-402d-aca0-890780241ede",
+		State = "invitation"
+	};
+
+	public static string ConnectionAcceptedResponseJson =>
+		JsonConvert.SerializeObject(ConnectionAcceptedResponse);
+
+	public static ConnectionAccepted GetConnectionResponse => new()
+	{
+		Alias = "385ba215-7d4e-4cdc-a7a7-f14955741e70",
+		ConnectionID = "6dd0dd5b-39e2-402d-aca0-890780241ede",
+		State = "active"
+	};
+
+	public static string GetConnectionResponseJson =>
+		JsonConvert.SerializeObject(GetConnectionResponse);
 }
