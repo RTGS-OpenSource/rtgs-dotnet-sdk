@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace RTGS.DotNetSDK.Extensions;
+﻿namespace RTGS.DotNetSDK.Extensions;
 
 public static class TaskExtensions
 {
