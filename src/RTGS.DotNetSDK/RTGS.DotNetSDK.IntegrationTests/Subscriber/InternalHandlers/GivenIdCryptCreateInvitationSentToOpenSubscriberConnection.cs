@@ -637,7 +637,7 @@ public class GivenIdCryptCreateInvitationSentToOpenSubscriberConnection
 		}
 	}
 
-	public class AndIdCryptCreateGetPublicDidApiIsNotAvailable : IDisposable, IClassFixture<GrpcServerFixture>
+	public class AndIdCryptGetPublicDidApiIsNotAvailable : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1_000);
 
@@ -651,7 +651,7 @@ public class GivenIdCryptCreateInvitationSentToOpenSubscriberConnection
 		private StatusCodeHttpHandler _idCryptMessageHandler;
 		private AllTestHandlers.TestIdCryptCreateInvitationNotificationV1 _invitationNotificationHandler;
 
-		public AndIdCryptCreateGetPublicDidApiIsNotAvailable(GrpcServerFixture grpcServer)
+		public AndIdCryptGetPublicDidApiIsNotAvailable(GrpcServerFixture grpcServer)
 		{
 			_grpcServer = grpcServer;
 

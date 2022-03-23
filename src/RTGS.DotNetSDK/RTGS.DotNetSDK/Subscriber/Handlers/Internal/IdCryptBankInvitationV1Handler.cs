@@ -74,8 +74,8 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 		catch (Exception ex)
 		{
 			_logger.LogError(ex,
-				"Error occurred when sending ReceiveAcceptInvitation request with alias {Alias} to ID Crypt Cloud Agent",
-				invitation.Alias);
+				"Error occurred when sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank '{BankDid}'",
+				bankInvitation.FromBankDid);
 			throw;
 		}
 	}
@@ -89,16 +89,17 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 			ConnectionAccepted connection;
 			do
 			{
-				// _logger.LogDebug("");
-				connection = await _identityClient.Connection.GetConnection(connectionId);
-				// _logger.LogDebug("");
+				connection = await GetConnection(connectionId);
 			} while (connection.State is not "active" and not "error");
 
 			if (connection.State is "active")
 			{
 				var invitationConfirmation = new IdCryptInvitationConfirmationV1 { Alias = connection.Alias };
 
-				await _idCryptPublisher.SendIdCryptInvitationConfirmationAsync(invitationConfirmation, fromBankDid, CancellationToken.None);
+				await _idCryptPublisher.SendIdCryptInvitationConfirmationAsync(
+					invitationConfirmation, 
+					fromBankDid, 
+					CancellationToken.None);
 
 				var invitationNotification = new IdCryptBankInvitationNotificationV1
 				{
@@ -109,6 +110,35 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 
 				await _userHandler.HandleMessageAsync(invitationNotification);
 			}
-		}).Forget(_logger);
+		}).Forget(exception => _logger.LogError(exception, "Something went wrong!"));
+	}
+
+	private async Task<ConnectionAccepted> GetConnection(string connectionId)
+	{
+		try
+		{
+			_logger.LogDebug("Sending GetConnection request to ID Crypt with connection Id '{ConnectionId}'",
+				connectionId);
+
+			var connection = await _identityClient.Connection.GetConnection(connectionId);
+
+			if (connection is null)
+			{
+				throw new RtgsSubscriberException(
+					$"Unexpected null value returned when sending GetConnection request to ID Crypt with connection Id '{connectionId}'");
+			}
+
+			_logger.LogDebug("Sent GetConnection request to ID Crypt with connection Id '{ConnectionId}'",
+				connectionId);
+
+			return connection;
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex,
+				"Error occurred when sending GetConnection request to ID Crypt with connection Id '{ConnectionId}'",
+				connectionId);
+			throw;
+		}
 	}
 }
