@@ -10,5 +10,8 @@ public record IdCryptInvitationConfirmationV1
 	/// </summary>
 	public string Alias { get; init; }
 
-	// TODO JLIQ - Add Agent Public DID
+	/// <summary>
+	/// The Public DID for the ID Crypt agent that accepted the invitation.
+	/// </summary>
+	public string AgentPublicDid { get; init; }
 }

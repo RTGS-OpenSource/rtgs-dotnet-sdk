@@ -94,7 +94,9 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 
 			if (connection.State is "active")
 			{
-				await SendInvitationConfirmationAsync(connection.Alias, fromBankDid);
+				var agentPublicDid = await GetIdCryptAgentPublicDidAsync();
+
+				await SendInvitationConfirmationAsync(connection.Alias, agentPublicDid, fromBankDid);
 
 				await InvokeUserHandler(fromBankDid, connection);
 			}
@@ -134,11 +136,41 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 		}
 	}
 
-	private async Task SendInvitationConfirmationAsync(string alias, string fromBankDid)
+	private async Task<string> GetIdCryptAgentPublicDidAsync()
+	{
+		try
+		{
+			_logger.LogDebug("Sending GetPublicDid request to ID Crypt Cloud Agent");
+
+			var response = await _identityClient.Vault.GetPublicDID();
+
+			if (response is null)
+			{
+				throw new RtgsSubscriberException(
+					"Unexpected null value returned when sending GetPublicDid request to ID Crypt Cloud Agent");
+			}
+
+			_logger.LogDebug("Sent GetPublicDid request to ID Crypt Cloud Agent");
+
+			return response.Result.DID;
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent");
+
+			throw;
+		}
+	}
+
+	private async Task SendInvitationConfirmationAsync(string alias, string agentPublicDid, string fromBankDid)
 	{
 		_logger.LogDebug("Sending ID Crypt invitation confirmation to bank '{FromBankDid}'", fromBankDid);
 
-		var invitationConfirmation = new IdCryptInvitationConfirmationV1 { Alias = alias };
+		var invitationConfirmation = new IdCryptInvitationConfirmationV1
+		{
+			Alias = alias,
+			AgentPublicDid = agentPublicDid
+		};
 
 		SendResult sendResult;
 		try
