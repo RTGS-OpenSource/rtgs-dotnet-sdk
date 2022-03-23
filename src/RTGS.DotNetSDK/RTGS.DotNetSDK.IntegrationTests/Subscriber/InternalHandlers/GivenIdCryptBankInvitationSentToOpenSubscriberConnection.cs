@@ -249,7 +249,9 @@ public class GivenIdCryptBankInvitationSentToOpenSubscriberConnection
 				new($"ID Crypt invitation from bank '{bankDid}' accepted", LogEventLevel.Debug),
 				new($"Polling for connection '{connectionId}' state for invitation from bank '{bankDid}'", LogEventLevel.Debug),
 				new($"Sending GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug)
+				new($"Sent GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
+				new($"Sending ID Crypt invitation confirmation to bank '{bankDid}'", LogEventLevel.Debug),
+				new($"Sent ID Crypt invitation confirmation to bank '{bankDid}'", LogEventLevel.Debug),
 			};
 
 			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
@@ -543,19 +545,19 @@ public class GivenIdCryptBankInvitationSentToOpenSubscriberConnection
 					.Build();
 
 				var mockHttpResponses = new List<MockHttpResponse> {
-					new MockHttpResponse
+					new()
 					{
 						Content = null,
 						HttpStatusCode = HttpStatusCode.ServiceUnavailable,
 						Path = IdCryptEndPoints.ReceiveInvitationPath
 					},
-					new MockHttpResponse
+					new()
 					{
 						Content = new StringContent(IdCryptTestMessages.ConnectionAcceptedResponseJson),
 						HttpStatusCode = HttpStatusCode.OK,
 						Path = IdCryptEndPoints.AcceptInvitationPath
 					},
-					new MockHttpResponse
+					new()
 					{
 						Content = new StringContent(IdCryptTestMessages.GetConnectionResponseJson),
 						HttpStatusCode = HttpStatusCode.OK,
@@ -601,7 +603,7 @@ public class GivenIdCryptBankInvitationSentToOpenSubscriberConnection
 			await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 			await _fromRtgsSender.SendAsync(
-				"idcrypt.invitation.tobank.v1", 
+				"idcrypt.invitation.tobank.v1",
 				ValidMessages.IdCryptBankInvitationV1);
 
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
@@ -640,7 +642,7 @@ public class GivenIdCryptBankInvitationSentToOpenSubscriberConnection
 			await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 			await _fromRtgsSender.SendAsync(
-				"idcrypt.invitation.tobank.v1", 
+				"idcrypt.invitation.tobank.v1",
 				ValidMessages.IdCryptBankInvitationV1);
 
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
@@ -654,7 +656,7 @@ public class GivenIdCryptBankInvitationSentToOpenSubscriberConnection
 			await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 			await _fromRtgsSender.SendAsync(
-				"idcrypt.invitation.tobank.v1", 
+				"idcrypt.invitation.tobank.v1",
 				ValidMessages.IdCryptBankInvitationV1);
 
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
@@ -712,19 +714,19 @@ public class GivenIdCryptBankInvitationSentToOpenSubscriberConnection
 					.Build();
 
 				var mockHttpResponses = new List<MockHttpResponse> {
-					new MockHttpResponse
+					new()
 					{
 						Content = new StringContent(IdCryptTestMessages.ReceiveInvitationResponseJson),
 						HttpStatusCode = HttpStatusCode.OK,
 						Path = IdCryptEndPoints.ReceiveInvitationPath
 					},
-					new MockHttpResponse
+					new()
 					{
 						Content = new StringContent(IdCryptTestMessages.ConnectionAcceptedResponseJson),
 						HttpStatusCode = HttpStatusCode.OK,
 						Path = IdCryptEndPoints.AcceptInvitationPath
 					},
-					new MockHttpResponse
+					new()
 					{
 						Content = null,
 						HttpStatusCode = HttpStatusCode.ServiceUnavailable,
@@ -921,7 +923,14 @@ public class GivenIdCryptBankInvitationSentToOpenSubscriberConnection
 				new($"ID Crypt invitation from bank '{bankDid}' accepted", LogEventLevel.Debug),
 				new($"Polling for connection '{connectionId}' state for invitation from bank '{bankDid}'", LogEventLevel.Debug),
 				new($"Sending GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug)
+				new($"Sent GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
+				new($"Sending ID Crypt invitation confirmation to bank '{bankDid}'", LogEventLevel.Debug)
+			};
+
+			var expectedErrorLogs = new List<LogEntry>
+			{
+				new($"Exception occurred when sending ID Crypt invitation confirmation to bank '{bankDid}'", LogEventLevel.Error, typeof(RpcException)),
+				new($"Error occured when polling for connection '{connectionId}' state for invitation from bank '{bankDid}'", LogEventLevel.Error, typeof(RpcException)),
 			};
 
 			using var _ = new AssertionScope();
@@ -930,8 +939,126 @@ public class GivenIdCryptBankInvitationSentToOpenSubscriberConnection
 			debugLogs.Should().BeEquivalentTo(expectedDebugLogs, options => options.WithStrictOrdering());
 
 			var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Error);
-			errorLogs.Should().ContainSingle()
-				.Which.Message.Should().Be("Something went wrong!");
+			errorLogs.Should().BeEquivalentTo(expectedErrorLogs, options => options.WithStrictOrdering());
+		}
+	}
+
+	public class AndNonSuccessResultWhenPublishing : IDisposable, IClassFixture<GrpcServerFixture>
+	{
+		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1_000);
+
+		private readonly GrpcServerFixture _grpcServer;
+		private readonly ITestCorrelatorContext _serilogContext;
+		private readonly List<IHandler> _allTestHandlers = new AllTestHandlers().ToList();
+
+		private AllTestHandlers.TestIdCryptCreateInvitationNotificationV1 _invitationNotificationHandler;
+		private IHost _clientHost;
+		private FromRtgsSender _fromRtgsSender;
+		private IRtgsSubscriber _rtgsSubscriber;
+		private StatusCodeHttpHandler _idCryptMessageHandler;
+
+		public AndNonSuccessResultWhenPublishing(GrpcServerFixture grpcServer)
+		{
+			_grpcServer = grpcServer;
+
+			SetupSerilogLogger();
+
+			SetupDependencies();
+
+			_serilogContext = TestCorrelator.CreateContext();
+		}
+
+		private static void SetupSerilogLogger() =>
+			Log.Logger = new LoggerConfiguration()
+				.MinimumLevel.Debug()
+				.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+				.Enrich.FromLogContext()
+				.WriteTo.Console()
+				.WriteTo.TestCorrelator()
+				.CreateLogger();
+
+		private void SetupDependencies()
+		{
+			try
+			{
+				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
+						ValidMessages.BankDid,
+						_grpcServer.ServerUri,
+						new Uri("http://id-crypt-cloud-agent-api.com"),
+						"id-crypt-api-key",
+						new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+					.Build();
+
+				_idCryptMessageHandler = new StatusCodeHttpHandler(IdCryptEndPoints.MockHttpResponses);
+
+				_clientHost = Host.CreateDefaultBuilder()
+					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
+					.ConfigureServices(services => services
+						.AddRtgsSubscriber(rtgsSdkOptions)
+						.AddTestIdCryptHttpClient(_idCryptMessageHandler))
+					.UseSerilog()
+					.Build();
+
+				_fromRtgsSender = _grpcServer.Services.GetRequiredService<FromRtgsSender>();
+				_rtgsSubscriber = _clientHost.Services.GetRequiredService<IRtgsSubscriber>();
+				var toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
+				toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithFailure());
+
+				_invitationNotificationHandler = _allTestHandlers.OfType<AllTestHandlers.TestIdCryptCreateInvitationNotificationV1>().Single();
+			}
+			catch (Exception)
+			{
+				Dispose();
+
+				throw;
+			}
+		}
+
+		public void Dispose()
+		{
+			_clientHost?.Dispose();
+
+			_grpcServer.Reset();
+
+		}
+
+		[Fact]
+		public async Task ThenLog()
+		{
+			await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+			await _fromRtgsSender.SendAsync(
+				"idcrypt.invitation.tobank.v1",
+				ValidMessages.IdCryptBankInvitationV1);
+
+			_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
+
+			var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
+			var connectionId = IdCryptTestMessages.ReceiveInvitationResponse.ConnectionID;
+
+			var expectedDebugLogs = new List<LogEntry>
+			{
+				new($"Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank '{bankDid}'", LogEventLevel.Debug),
+				new($"ID Crypt invitation from bank '{bankDid}' accepted", LogEventLevel.Debug),
+				new($"Polling for connection '{connectionId}' state for invitation from bank '{bankDid}'", LogEventLevel.Debug),
+				new($"Sending GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
+				new($"Sent GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
+				new($"Sending ID Crypt invitation confirmation to bank '{bankDid}'", LogEventLevel.Debug)
+			};
+
+			var expectedErrorLogs = new List<LogEntry>
+			{
+				new($"Error occurred when sending ID Crypt invitation confirmation to bank '{bankDid}'", LogEventLevel.Error),
+				new($"Error occured when polling for connection '{connectionId}' state for invitation from bank '{bankDid}'", LogEventLevel.Error, typeof(RtgsSubscriberException)),
+			};
+
+			using var _ = new AssertionScope();
+
+			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
+			debugLogs.Should().BeEquivalentTo(expectedDebugLogs, options => options.WithStrictOrdering());
+
+			var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Error);
+			errorLogs.Should().BeEquivalentTo(expectedErrorLogs, options => options.WithStrictOrdering());
 		}
 	}
 }

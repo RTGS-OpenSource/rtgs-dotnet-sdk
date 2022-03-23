@@ -94,23 +94,15 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 
 			if (connection.State is "active")
 			{
-				var invitationConfirmation = new IdCryptInvitationConfirmationV1 { Alias = connection.Alias };
+				await SendInvitationConfirmationAsync(connection.Alias, fromBankDid);
 
-				await _idCryptPublisher.SendIdCryptInvitationConfirmationAsync(
-					invitationConfirmation, 
-					fromBankDid, 
-					CancellationToken.None);
-
-				var invitationNotification = new IdCryptBankInvitationNotificationV1
-				{
-					BankPartnerDid = fromBankDid,
-					Alias = connection.Alias,
-					ConnectionId = connection.ConnectionID
-				};
-
-				await _userHandler.HandleMessageAsync(invitationNotification);
+				await InvokeUserHandler(fromBankDid, connection);
 			}
-		}).Forget(exception => _logger.LogError(exception, "Something went wrong!"));
+		}).Forget(exception => _logger.LogError(
+			exception,
+			"Error occured when polling for connection '{ConnectionId}' state for invitation from bank '{BankDid}'",
+			connectionId,
+			fromBankDid));
 	}
 
 	private async Task<ConnectionAccepted> GetConnection(string connectionId)
@@ -140,5 +132,47 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 				connectionId);
 			throw;
 		}
+	}
+
+	private async Task SendInvitationConfirmationAsync(string alias, string fromBankDid)
+	{
+		_logger.LogDebug("Sending ID Crypt invitation confirmation to bank '{FromBankDid}'", fromBankDid);
+
+		var invitationConfirmation = new IdCryptInvitationConfirmationV1 { Alias = alias };
+
+		SendResult sendResult;
+		try
+		{
+			sendResult = await _idCryptPublisher.SendIdCryptInvitationConfirmationAsync(
+				invitationConfirmation,
+				fromBankDid,
+				default);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Exception occurred when sending ID Crypt invitation confirmation to bank '{FromBankDid}'", fromBankDid);
+			throw;
+		}
+
+		if (sendResult is not SendResult.Success)
+		{
+			_logger.LogError("Error occurred when sending ID Crypt invitation confirmation to bank '{FromBankDid}'", fromBankDid);
+
+			throw new RtgsSubscriberException($"Error occurred when sending ID Crypt invitation confirmation to bank '{fromBankDid}'");
+		}
+
+		_logger.LogDebug("Sent ID Crypt invitation confirmation to bank '{FromBankDid}'", fromBankDid);
+	}
+
+	private async Task InvokeUserHandler(string fromBankDid, ConnectionAccepted connection)
+	{
+		var invitationNotification = new IdCryptBankInvitationNotificationV1
+		{
+			BankPartnerDid = fromBankDid,
+			Alias = connection.Alias,
+			ConnectionId = connection.ConnectionID
+		};
+
+		await _userHandler.HandleMessageAsync(invitationNotification);
 	}
 }

@@ -6,7 +6,7 @@ internal class StatusCodeHttpHandler : DelegatingHandler
 {
 	private readonly IList<MockHttpResponse> _mockHttpResponses;
 
-	public Dictionary<string, HttpRequestMessage> Requests { get; private set; }
+	public Dictionary<string, HttpRequestMessage> Requests { get; }
 
 	public StatusCodeHttpHandler(IList<MockHttpResponse> mockHttpResponses)
 	{
