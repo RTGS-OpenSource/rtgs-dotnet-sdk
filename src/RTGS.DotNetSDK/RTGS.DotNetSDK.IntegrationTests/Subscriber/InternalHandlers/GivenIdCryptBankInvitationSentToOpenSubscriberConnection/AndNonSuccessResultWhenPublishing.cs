@@ -111,7 +111,7 @@ public class AndNonSuccessResultWhenPublishing : IDisposable, IClassFixture<Grpc
 			.Should().ContainSingle(msg => msg == $"Sending ID Crypt invitation confirmation to bank '{bankDid}'");
 
 		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Error);
-			
+
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
 			$"Error occurred when sending ID Crypt invitation confirmation to bank '{bankDid}'",
 			LogEventLevel.Error));

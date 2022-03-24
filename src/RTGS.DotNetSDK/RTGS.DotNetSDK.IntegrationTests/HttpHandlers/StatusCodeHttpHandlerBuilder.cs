@@ -9,7 +9,7 @@ internal class StatusCodeHttpHandlerBuilder
 	private Dictionary<string, Queue<MockHttpResponse>> Responses { get; } = new();
 
 	public static StatusCodeHttpHandlerBuilder Create() => new();
-	
+
 	public StatusCodeHttpHandlerBuilder WithServiceUnavailableResponse(string path) =>
 		WithResponse(path, null, HttpStatusCode.ServiceUnavailable);
 

@@ -127,7 +127,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_fromRtgsSender.Acknowledgements
 			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
-			                                           && acknowledgement.Success);
+													   && acknowledgement.Success);
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
@@ -383,7 +383,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_fromRtgsSender.Acknowledgements
 			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
-			                                           && acknowledgement.Success);
+													   && acknowledgement.Success);
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 

@@ -6,7 +6,7 @@ namespace RTGS.DotNetSDK.IntegrationTests.Extensions;
 
 // ReSharper disable once InconsistentNaming
 
-internal static class IServiceCollectionExtensions 
+internal static class IServiceCollectionExtensions
 {
 	public static IServiceCollection AddTestIdCryptHttpClient(
 		this IServiceCollection serviceCollection,

@@ -6,7 +6,7 @@ namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 internal static class CreateInvitation
 {
 	public const string Path = "/connections/create-invitation";
-	
+
 	public static ConnectionInviteResponseModel Response => new()
 	{
 		ConnectionID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",

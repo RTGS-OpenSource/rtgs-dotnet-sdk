@@ -138,7 +138,7 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 			await _rtgsConnectionBroker.SendInvitationAsync();
-			
+
 			var inviteRequestQueryParams1 = QueryHelpers.ParseQuery(_idCryptMessageHandler
 				.Requests[CreateInvitation.Path].First().RequestUri!.Query);
 			var alias1 = inviteRequestQueryParams1["alias"];

@@ -79,7 +79,7 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 	private async Task WaitForActiveConnectionAndSendConfirmation(string connectionId, string fromBankDid)
 	{
 		_logger.LogDebug("Polling for connection '{ConnectionId}' state for invitation from bank '{FromBankDid}'", connectionId, fromBankDid);
-		
+
 		ConnectionAccepted connection;
 		try
 		{
@@ -93,9 +93,9 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 				fromBankDid);
 			throw;
 		}
-		
+
 		_logger.LogDebug("Finished polling for connection '{ConnectionId}' state for invitation from bank '{FromBankDid}'", connectionId, fromBankDid);
-		
+
 		if (connection.State is "active")
 		{
 			await HandleInvitationConfirmation(fromBankDid, connection);
@@ -110,7 +110,7 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 	{
 		var maxPollTime = TimeSpan.FromSeconds(30);
 		var pollInterval = TimeSpan.FromSeconds(10);
-		
+
 		ConnectionAccepted connection;
 
 		var watch = Stopwatch.StartNew();
@@ -163,7 +163,7 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 			throw;
 		}
 	}
-	
+
 	private async Task HandleInvitationConfirmation(string fromBankDid, ConnectionAccepted connection)
 	{
 		var agentPublicDid = await GetIdCryptAgentPublicDidAsync();
