@@ -40,7 +40,7 @@ public static class IdCryptTestMessages
 	{
 		Alias = "385ba215-7d4e-4cdc-a7a7-f14955741e70",
 		ConnectionID = "6dd0dd5b-39e2-402d-aca0-890780241ede",
-		State = "active"
+		State = "invitation"
 	};
 
 	public static string ReceiveInvitationResponseJson =>
@@ -50,7 +50,7 @@ public static class IdCryptTestMessages
 	{
 		Alias = "385ba215-7d4e-4cdc-a7a7-f14955741e70",
 		ConnectionID = "6dd0dd5b-39e2-402d-aca0-890780241ede",
-		State = "invitation"
+		State = "request"
 	};
 
 	public static string ConnectionAcceptedResponseJson =>

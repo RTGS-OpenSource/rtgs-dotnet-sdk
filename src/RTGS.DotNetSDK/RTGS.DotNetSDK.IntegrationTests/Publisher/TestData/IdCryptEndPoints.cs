@@ -11,7 +11,7 @@ internal class IdCryptEndPoints
 	public const string AcceptInvitationPath = "/connections/6dd0dd5b-39e2-402d-aca0-890780241ede/accept-invitation";
 	public const string GetConnectionPath = "/connections/6dd0dd5b-39e2-402d-aca0-890780241ede";
 
-	public static List<MockHttpResponse> MockHttpResponses = new()
+	public static readonly List<MockHttpResponse> MockHttpResponses = new()
 	{
 		new MockHttpResponse
 		{

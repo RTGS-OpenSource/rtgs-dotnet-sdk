@@ -1,7 +1,7 @@
-﻿using IDCryptGlobal.Cloud.Agent.Identity;
+﻿using System.Diagnostics;
+using IDCryptGlobal.Cloud.Agent.Identity;
 using IDCryptGlobal.Cloud.Agent.Identity.Connection;
 using Microsoft.Extensions.Logging;
-using RTGS.DotNetSDK.Extensions;
 using RTGS.DotNetSDK.IdCrypt;
 using RTGS.DotNetSDK.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Exceptions;
@@ -39,11 +39,7 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 
 		var connection = await AcceptInviteAsync(bankInvitation);
 
-		// TODO JLIQ - Check connection state here
-		//  if active, call _userHandler and _idCryptPublisher
-		//  else trigger polling
-
-		PollConnectionState(connection.ConnectionID, bankInvitation.FromBankDid);
+		_ = WaitForActiveConnectionAndSendConfirmation(connection.ConnectionID, bankInvitation.FromBankDid);
 	}
 
 	private async Task<ConnectionAccepted> AcceptInviteAsync(IdCryptBankInvitationV1 bankInvitation)
@@ -61,12 +57,12 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 
 		try
 		{
-			_logger.LogDebug("Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank '{BankDid}'",
+			_logger.LogDebug("Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank '{FromBankDid}'",
 				bankInvitation.FromBankDid);
 
 			var response = await _identityClient.Connection.ReceiveAcceptInvitation(connectionInvite);
 
-			_logger.LogDebug("ID Crypt invitation from bank '{BankDid}' accepted",
+			_logger.LogDebug("Sent ReceiveAcceptInvitation request to ID Crypt for invitation from bank '{FromBankDid}'",
 				bankInvitation.FromBankDid);
 
 			return response;
@@ -74,37 +70,69 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 		catch (Exception ex)
 		{
 			_logger.LogError(ex,
-				"Error occurred when sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank '{BankDid}'",
+				"Error occurred when sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank '{FromBankDid}'",
 				bankInvitation.FromBankDid);
 			throw;
 		}
 	}
 
-	private void PollConnectionState(string connectionId, string fromBankDid)
+	private async Task WaitForActiveConnectionAndSendConfirmation(string connectionId, string fromBankDid)
 	{
-		_logger.LogDebug("Polling for connection '{ConnectionId}' state for invitation from bank '{BankDid}'", connectionId, fromBankDid);
-
-		Task.Run(async () =>
+		_logger.LogDebug("Polling for connection '{ConnectionId}' state for invitation from bank '{FromBankDid}'", connectionId, fromBankDid);
+		
+		ConnectionAccepted connection;
+		try
 		{
-			ConnectionAccepted connection;
-			do
-			{
-				connection = await GetConnection(connectionId);
-			} while (connection.State is not "active" and not "error");
+			connection = await PollConnectionState(connectionId);
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex,
+				"Error occured when polling for connection '{ConnectionId}' state for invitation from bank '{FromBankDid}'",
+				connectionId,
+				fromBankDid);
+			throw;
+		}
+		
+		_logger.LogDebug("Finished polling for connection '{ConnectionId}' state for invitation from bank '{FromBankDid}'", connectionId, fromBankDid);
+		
+		if (connection.State is "active")
+		{
+			await HandleInvitationConfirmation(fromBankDid, connection);
+		}
+		else
+		{
+			throw new RtgsSubscriberException("Unexpected ID Crypt connection state after polling.");
+		}
+	}
+
+	private async Task<ConnectionAccepted> PollConnectionState(string connectionId)
+	{
+		var maxPollTime = TimeSpan.FromSeconds(30);
+		var pollInterval = TimeSpan.FromSeconds(10);
+		
+		ConnectionAccepted connection;
+
+		var watch = Stopwatch.StartNew();
+		while (true)
+		{
+			connection = await GetConnection(connectionId);
 
 			if (connection.State is "active")
 			{
-				var agentPublicDid = await GetIdCryptAgentPublicDidAsync();
-
-				await SendInvitationConfirmationAsync(connection.Alias, agentPublicDid, fromBankDid);
-
-				await InvokeUserHandler(fromBankDid, connection);
+				break;
 			}
-		}).Forget(exception => _logger.LogError(
-			exception,
-			"Error occured when polling for connection '{ConnectionId}' state for invitation from bank '{BankDid}'",
-			connectionId,
-			fromBankDid));
+
+			if (watch.Elapsed > maxPollTime)
+			{
+				throw new RtgsSubscriberException(
+					"Polling for ID Crypt connection state took longer than the maximum time allowed.");
+			}
+
+			await Task.Delay(pollInterval);
+		}
+
+		return connection;
 	}
 
 	private async Task<ConnectionAccepted> GetConnection(string connectionId)
@@ -134,6 +162,15 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 				connectionId);
 			throw;
 		}
+	}
+	
+	private async Task HandleInvitationConfirmation(string fromBankDid, ConnectionAccepted connection)
+	{
+		var agentPublicDid = await GetIdCryptAgentPublicDidAsync();
+
+		await SendInvitationConfirmationAsync(connection.Alias, agentPublicDid, fromBankDid);
+
+		await InvokeUserHandler(fromBankDid, connection);
 	}
 
 	private async Task<string> GetIdCryptAgentPublicDidAsync()
