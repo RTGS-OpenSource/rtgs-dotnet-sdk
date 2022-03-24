@@ -1,5 +1,6 @@
 ﻿using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.RtgsConnectionBrokerTests;
 
@@ -16,7 +17,11 @@ public class GivenWrongRemoteHostAddress
 				new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 			.Build();
 
-		var idCryptMessageHandler = new StatusCodeHttpHandler(IdCryptEndPoints.MockHttpResponses);
+		var idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+			.Create()
+			.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
+			.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+			.Build();
 
 		using var clientHost = Host.CreateDefaultBuilder()
 			.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())

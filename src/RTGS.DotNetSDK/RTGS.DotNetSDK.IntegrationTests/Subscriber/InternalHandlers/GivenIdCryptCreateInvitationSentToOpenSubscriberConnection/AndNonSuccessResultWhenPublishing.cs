@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
@@ -52,7 +53,11 @@ public class AndNonSuccessResultWhenPublishing : IDisposable, IClassFixture<Grpc
 					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.Build();
 
-			_idCryptMessageHandler = new StatusCodeHttpHandler(IdCryptEndPoints.MockHttpResponses);
+			_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+				.Create()
+				.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
+				.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
@@ -94,7 +99,8 @@ public class AndNonSuccessResultWhenPublishing : IDisposable, IClassFixture<Grpc
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri!.Query);
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(
+			_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 		var alias = inviteRequestQueryParams["alias"];
 
 		var expectedDebugLogs = new List<LogEntry>

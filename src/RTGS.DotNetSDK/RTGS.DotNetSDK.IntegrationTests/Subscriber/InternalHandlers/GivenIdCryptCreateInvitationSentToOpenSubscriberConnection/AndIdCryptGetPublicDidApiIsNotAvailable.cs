@@ -1,8 +1,7 @@
-﻿using System.Net;
-using System.Net.Http;
-using Microsoft.AspNetCore.WebUtilities;
+﻿using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
@@ -54,20 +53,11 @@ public class AndIdCryptGetPublicDidApiIsNotAvailable : IDisposable, IClassFixtur
 					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.Build();
 
-			var mockHttpResponses = new List<MockHttpResponse> {
-				new MockHttpResponse {
-					Content = null,
-					HttpStatusCode = HttpStatusCode.ServiceUnavailable,
-					Path = IdCryptEndPoints.PublicDidPath
-				},
-				new MockHttpResponse {
-					Content = new StringContent(IdCryptTestMessages.ConnectionInviteResponseJson),
-					HttpStatusCode = HttpStatusCode.OK,
-					Path = IdCryptEndPoints.InvitationPath
-				}
-			};
-
-			_idCryptMessageHandler = new StatusCodeHttpHandler(mockHttpResponses);
+			_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+				.Create()
+				.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
+				.WithServiceUnavailableResponse(GetPublicDid.Path)
+				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
@@ -122,7 +112,7 @@ public class AndIdCryptGetPublicDidApiIsNotAvailable : IDisposable, IClassFixtur
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri!.Query);
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 		var alias = inviteRequestQueryParams["alias"];
 
 		var expectedDebugLogs = new List<LogEntry>

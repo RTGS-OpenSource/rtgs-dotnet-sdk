@@ -1,5 +1,6 @@
 ﻿using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
@@ -51,7 +52,13 @@ public class AndFailedPublisherConnection : IDisposable, IClassFixture<GrpcServe
 					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.Build();
 
-			_idCryptMessageHandler = new StatusCodeHttpHandler(IdCryptEndPoints.MockHttpResponses);
+			_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+					.Create()
+					.WithOkResponse(ReceiveInvitation.HttpRequestResponseContext)
+					.WithOkResponse(AcceptInvitation.HttpRequestResponseContext)
+					.WithOkResponse(GetConnection.HttpRequestResponseContext)
+					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+					.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())

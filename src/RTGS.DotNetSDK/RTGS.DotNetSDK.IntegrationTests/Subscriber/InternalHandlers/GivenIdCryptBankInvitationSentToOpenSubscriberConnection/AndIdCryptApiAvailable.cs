@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.IdCrypt.Messages;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
@@ -53,7 +54,13 @@ public class AndIdCryptApiAvailable
 
 		private void SetupDependencies()
 		{
-			_idCryptMessageHandler = new StatusCodeHttpHandler(IdCryptEndPoints.MockHttpResponses);
+			_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+				.Create()
+				.WithOkResponse(ReceiveInvitation.HttpRequestResponseContext)
+				.WithOkResponse(AcceptInvitation.HttpRequestResponseContext)
+				.WithOkResponse(GetConnection.HttpRequestResponseContext)
+				.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+				.Build();
 
 			_bankInvitationNotificationHandler = _allTestHandlers
 				.OfType<AllTestHandlers.TestIdCryptBankInvitationNotificationV1>().Single();
@@ -129,23 +136,24 @@ public class AndIdCryptApiAvailable
 
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.ReceiveInvitationPath].RequestUri?.Query);
+			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+				.Requests[ReceiveInvitation.Path].Single().RequestUri!.Query);
 			var alias = receiveInvitationRequestQueryParams["alias"];
 
 			var message = new IdCryptBankInvitationNotificationV1
 			{
 				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
 				Alias = alias,
-				ConnectionId = IdCryptTestMessages.ReceiveInvitationResponse.ConnectionID
+				ConnectionId = ReceiveInvitation.Response.ConnectionID
 			};
 
 			_bankInvitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
 		}
 
 		[Theory]
-		[InlineData(IdCryptEndPoints.ReceiveInvitationPath)]
-		[InlineData(IdCryptEndPoints.AcceptInvitationPath)]
-		[InlineData(IdCryptEndPoints.GetConnectionPath)]
+		[InlineData(ReceiveInvitation.Path)]
+		[InlineData(AcceptInvitation.Path)]
+		[InlineData(GetConnection.Path)]
 		public async Task WhenCallingIdCryptAgent_ThenApiKeyHeaderIsExpected(string path)
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
@@ -162,6 +170,7 @@ public class AndIdCryptApiAvailable
 
 			_idCryptMessageHandler
 				.Requests[path]
+				.Single()
 				.Headers
 				.GetValues("X-API-Key")
 				.Should().ContainSingle()
@@ -169,9 +178,9 @@ public class AndIdCryptApiAvailable
 		}
 
 		[Theory]
-		[InlineData(IdCryptEndPoints.ReceiveInvitationPath)]
-		[InlineData(IdCryptEndPoints.AcceptInvitationPath)]
-		[InlineData(IdCryptEndPoints.GetConnectionPath)]
+		[InlineData(ReceiveInvitation.Path)]
+		[InlineData(AcceptInvitation.Path)]
+		[InlineData(GetConnection.Path)]
 		public async Task WhenCallingIdCryptAgent_ThenUriIsExpected(string path)
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
@@ -188,7 +197,8 @@ public class AndIdCryptApiAvailable
 
 			var actualApiUri = _idCryptMessageHandler
 				.Requests[path]
-				.RequestUri?
+				.Single()
+				.RequestUri!
 				.GetLeftPart(UriPartial.Authority);
 
 			actualApiUri.Should().BeEquivalentTo(IdCryptApiUri.GetLeftPart(UriPartial.Authority));
@@ -207,8 +217,9 @@ public class AndIdCryptApiAvailable
 
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-			var content = await _idCryptMessageHandler.Requests[IdCryptEndPoints.ReceiveInvitationPath].Content
-				!.ReadAsStringAsync();
+			var content =
+				await _idCryptMessageHandler.Requests[ReceiveInvitation.Path].Single().Content!
+					.ReadAsStringAsync();
 
 			var actualRequestBody = Newtonsoft.Json.JsonConvert.DeserializeObject<ConnectionInvite>(content);
 
@@ -240,7 +251,7 @@ public class AndIdCryptApiAvailable
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 			var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
-			var connectionId = IdCryptTestMessages.ReceiveInvitationResponse.ConnectionID;
+			var connectionId = ReceiveInvitation.Response.ConnectionID;
 
 			var expectedLogs = new List<LogEntry>
 			{
@@ -354,14 +365,15 @@ public class AndIdCryptApiAvailable
 
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.ReceiveInvitationPath].RequestUri?.Query);
+			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+				.Requests[ReceiveInvitation.Path].Single().RequestUri!.Query);
 			var alias = receiveInvitationRequestQueryParams["alias"];
 
 			var message = new IdCryptBankInvitationNotificationV1
 			{
 				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
 				Alias = alias,
-				ConnectionId = IdCryptTestMessages.ReceiveInvitationResponse.ConnectionID
+				ConnectionId = ReceiveInvitation.Response.ConnectionID
 			};
 
 			_bankInvitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -392,14 +404,15 @@ public class AndIdCryptApiAvailable
 
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.ReceiveInvitationPath].RequestUri?.Query);
+			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+				.Requests[ReceiveInvitation.Path].Single().RequestUri!.Query);
 			var alias = receiveInvitationRequestQueryParams["alias"];
 
 			var message = new IdCryptBankInvitationNotificationV1
 			{
 				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
 				Alias = alias,
-				ConnectionId = IdCryptTestMessages.ReceiveInvitationResponse.ConnectionID
+				ConnectionId = ReceiveInvitation.Response.ConnectionID
 			};
 
 			_bankInvitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -424,14 +437,15 @@ public class AndIdCryptApiAvailable
 
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.ReceiveInvitationPath].RequestUri?.Query);
+			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+				.Requests[ReceiveInvitation.Path].Single().RequestUri!.Query);
 			var alias = receiveInvitationRequestQueryParams["alias"];
 
 			var message = new IdCryptBankInvitationNotificationV1
 			{
 				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
 				Alias = alias,
-				ConnectionId = IdCryptTestMessages.ReceiveInvitationResponse.ConnectionID
+				ConnectionId = ReceiveInvitation.Response.ConnectionID
 			};
 
 			_bankInvitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -486,13 +500,13 @@ public class AndIdCryptApiAvailable
 			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitationconfirmation.v1");
 			receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
 
-			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(
-				_idCryptMessageHandler.Requests[IdCryptEndPoints.ReceiveInvitationPath].RequestUri?.Query);
+			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+				.Requests[ReceiveInvitation.Path].Single().RequestUri!.Query);
 
 			var expectedMessageData = new IdCryptInvitationConfirmationV1
 			{
 				Alias = receiveInvitationRequestQueryParams["alias"],
-				AgentPublicDid = IdCryptTestMessages.GetPublicDidResponse.Result.DID
+				AgentPublicDid = GetPublicDid.Response.Result.DID
 			};
 
 			var actualMessageData = JsonSerializer.Deserialize<IdCryptInvitationConfirmationV1>(receivedMessage.Data);

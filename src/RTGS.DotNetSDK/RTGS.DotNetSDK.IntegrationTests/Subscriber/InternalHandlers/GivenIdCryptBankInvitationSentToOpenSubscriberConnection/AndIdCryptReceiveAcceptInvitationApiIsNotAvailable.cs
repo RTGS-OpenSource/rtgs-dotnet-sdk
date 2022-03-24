@@ -1,12 +1,10 @@
-﻿using System.Net;
-using System.Net.Http;
-using RTGS.DotNetSDK.IntegrationTests.Extensions;
+﻿using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers.GivenIdCryptBankInvitationSentToOpenSubscriberConnection;
-
 
 public class AndIdCryptReceiveAcceptInvitationApiIsNotAvailable : IDisposable, IClassFixture<GrpcServerFixture>
 {
@@ -54,28 +52,12 @@ public class AndIdCryptReceiveAcceptInvitationApiIsNotAvailable : IDisposable, I
 					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.Build();
 
-			var mockHttpResponses = new List<MockHttpResponse> {
-				new()
-				{
-					Content = null,
-					HttpStatusCode = HttpStatusCode.ServiceUnavailable,
-					Path = IdCryptEndPoints.ReceiveInvitationPath
-				},
-				new()
-				{
-					Content = new StringContent(IdCryptTestMessages.ConnectionAcceptedResponseJson),
-					HttpStatusCode = HttpStatusCode.OK,
-					Path = IdCryptEndPoints.AcceptInvitationPath
-				},
-				new()
-				{
-					Content = new StringContent(IdCryptTestMessages.GetConnectionResponseJson),
-					HttpStatusCode = HttpStatusCode.OK,
-					Path = IdCryptEndPoints.GetConnectionPath
-				}
-			};
-
-			_idCryptMessageHandler = new StatusCodeHttpHandler(mockHttpResponses);
+			_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+				.Create()
+				.WithServiceUnavailableResponse(ReceiveInvitation.Path)
+				.WithOkResponse(AcceptInvitation.HttpRequestResponseContext)
+				.WithOkResponse(GetConnection.HttpRequestResponseContext)
+				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
@@ -172,7 +154,7 @@ public class AndIdCryptReceiveAcceptInvitationApiIsNotAvailable : IDisposable, I
 		_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		_idCryptMessageHandler.Requests
-			.ContainsKey(IdCryptEndPoints.GetConnectionPath)
+			.ContainsKey(GetConnection.Path)
 			.Should().BeFalse();
 	}
 
@@ -188,7 +170,7 @@ public class AndIdCryptReceiveAcceptInvitationApiIsNotAvailable : IDisposable, I
 		_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		_idCryptMessageHandler.Requests
-			.ContainsKey(IdCryptEndPoints.PublicDidPath)
+			.ContainsKey(GetPublicDid.Path)
 			.Should().BeFalse();
 	}
 }

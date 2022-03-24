@@ -1,5 +1,6 @@
 ﻿using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.RtgsConnectionBrokerTests;
 
@@ -47,7 +48,13 @@ public class GivenServerStops : IAsyncLifetime
 				.Build();
 
 
-			var idCryptMessageHandler = new StatusCodeHttpHandler(IdCryptEndPoints.MockHttpResponses);
+			var idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+					.Create()
+					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
+					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
+					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+					.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())

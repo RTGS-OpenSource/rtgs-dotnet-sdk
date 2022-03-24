@@ -4,7 +4,9 @@ using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Extensions;
 
-internal static class IServiceCollectionExtensions
+// ReSharper disable once InconsistentNaming
+
+internal static class IServiceCollectionExtensions 
 {
 	public static IServiceCollection AddTestIdCryptHttpClient(
 		this IServiceCollection serviceCollection,

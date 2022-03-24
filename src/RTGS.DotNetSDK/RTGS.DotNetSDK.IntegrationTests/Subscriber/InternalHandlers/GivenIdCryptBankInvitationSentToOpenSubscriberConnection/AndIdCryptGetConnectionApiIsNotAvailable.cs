@@ -1,7 +1,6 @@
-﻿using System.Net;
-using System.Net.Http;
-using RTGS.DotNetSDK.IntegrationTests.Extensions;
+﻿using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
@@ -53,28 +52,12 @@ public class AndIdCryptGetConnectionApiIsNotAvailable : IDisposable, IClassFixtu
 					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.Build();
 
-			var mockHttpResponses = new List<MockHttpResponse> {
-				new()
-				{
-					Content = new StringContent(IdCryptTestMessages.ReceiveInvitationResponseJson),
-					HttpStatusCode = HttpStatusCode.OK,
-					Path = IdCryptEndPoints.ReceiveInvitationPath
-				},
-				new()
-				{
-					Content = new StringContent(IdCryptTestMessages.ConnectionAcceptedResponseJson),
-					HttpStatusCode = HttpStatusCode.OK,
-					Path = IdCryptEndPoints.AcceptInvitationPath
-				},
-				new()
-				{
-					Content = null,
-					HttpStatusCode = HttpStatusCode.ServiceUnavailable,
-					Path = IdCryptEndPoints.GetConnectionPath
-				}
-			};
-
-			_idCryptMessageHandler = new StatusCodeHttpHandler(mockHttpResponses);
+			_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+				.Create()
+				.WithOkResponse(ReceiveInvitation.HttpRequestResponseContext)
+				.WithOkResponse(AcceptInvitation.HttpRequestResponseContext)
+				.WithServiceUnavailableResponse(GetConnection.Path)
+				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
@@ -134,7 +117,7 @@ public class AndIdCryptGetConnectionApiIsNotAvailable : IDisposable, IClassFixtu
 		_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
-		var connectionId = IdCryptTestMessages.ReceiveInvitationResponse.ConnectionID;
+		var connectionId = ReceiveInvitation.Response.ConnectionID;
 
 		var expectedErrorLogs = new List<LogEntry>
 		{
@@ -178,7 +161,7 @@ public class AndIdCryptGetConnectionApiIsNotAvailable : IDisposable, IClassFixtu
 		_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		_idCryptMessageHandler.Requests
-			.ContainsKey(IdCryptEndPoints.PublicDidPath)
+			.ContainsKey(GetPublicDid.Path)
 			.Should().BeFalse();
 	}
 }

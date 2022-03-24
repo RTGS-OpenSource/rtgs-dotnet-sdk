@@ -4,6 +4,7 @@ using RTGS.DotNetSDK.IdCrypt.Messages;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
+using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
@@ -51,7 +52,12 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 	private void SetupDependencies()
 	{
-		_idCryptMessageHandler = new StatusCodeHttpHandler(IdCryptEndPoints.MockHttpResponses);
+		_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+			.Create()
+			.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
+			.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+			.Build();
+
 		_invitationNotificationHandler = _allTestHandlers.OfType<AllTestHandlers.TestIdCryptCreateInvitationNotificationV1>().Single();
 
 		try
@@ -125,13 +131,14 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri?.Query);
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 		var alias = inviteRequestQueryParams["alias"];
 
 		var message = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
-			ConnectionId = IdCryptTestMessages.ConnectionInviteResponse.ConnectionID,
+			ConnectionId = CreateInvitation.Response.ConnectionID,
 			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
 
@@ -139,8 +146,8 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 	}
 
 	[Theory]
-	[InlineData(IdCryptEndPoints.PublicDidPath)]
-	[InlineData(IdCryptEndPoints.InvitationPath)]
+	[InlineData(CreateInvitation.Path)]
+	[InlineData(GetPublicDid.Path)]
 	public async Task WhenCallingIdCryptAgent_ThenApiKeyHeaderIsExpected(string path)
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
@@ -157,6 +164,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_idCryptMessageHandler
 			.Requests[path]
+			.Single()
 			.Headers
 			.GetValues("X-API-Key")
 			.Should().ContainSingle()
@@ -164,8 +172,8 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 	}
 
 	[Theory]
-	[InlineData(IdCryptEndPoints.PublicDidPath)]
-	[InlineData(IdCryptEndPoints.InvitationPath)]
+	[InlineData(CreateInvitation.Path)]
+	[InlineData(GetPublicDid.Path)]
 	public async Task WhenCallingIdCryptAgent_ThenUriIsExpected(string path)
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
@@ -182,7 +190,8 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		var actualApiUri = _idCryptMessageHandler
 			.Requests[path]
-			.RequestUri?
+			.Single()
+			.RequestUri!
 			.GetLeftPart(UriPartial.Authority);
 
 		actualApiUri.Should().BeEquivalentTo(IdCryptApiUri.GetLeftPart(UriPartial.Authority));
@@ -201,7 +210,8 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri?.Query);
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 		var autoAccept = bool.Parse(inviteRequestQueryParams["auto_accept"]);
 		var multiUse = bool.Parse(inviteRequestQueryParams["multi_use"]);
 		var usePublicDid = bool.Parse(inviteRequestQueryParams["public"]);
@@ -226,7 +236,8 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri?.Query);
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 		var alias = inviteRequestQueryParams["alias"];
 
 		var expectedLogs = new List<LogEntry>
@@ -337,13 +348,14 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri?.Query);
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 		var alias = inviteRequestQueryParams["alias"];
 
 		var message = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
-			ConnectionId = IdCryptTestMessages.ConnectionInviteResponse.ConnectionID,
+			ConnectionId = CreateInvitation.Response.ConnectionID,
 			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
 
@@ -375,13 +387,14 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri?.Query);
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 		var alias = inviteRequestQueryParams["alias"];
 
 		var message = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
-			ConnectionId = IdCryptTestMessages.ConnectionInviteResponse.ConnectionID,
+			ConnectionId = CreateInvitation.Response.ConnectionID,
 			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
 
@@ -407,13 +420,14 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri?.Query);
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 		var alias = inviteRequestQueryParams["alias"];
 
 		var message = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
-			ConnectionId = IdCryptTestMessages.ConnectionInviteResponse.ConnectionID,
+			ConnectionId = CreateInvitation.Response.ConnectionID,
 			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
 
@@ -469,11 +483,11 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.tobank.v1");
 		receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
 
-		var inviteRequestQueryParams = QueryHelpers.ParseQuery(
-			_idCryptMessageHandler.Requests[IdCryptEndPoints.InvitationPath].RequestUri?.Query);
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 
-		var invitation = IdCryptTestMessages.ConnectionInviteResponse.Invitation;
-		var agentPublicDid = IdCryptTestMessages.GetPublicDidResponse.Result.DID;
+		var invitation = CreateInvitation.Response.Invitation;
+		var agentPublicDid = GetPublicDid.Response.Result.DID;
 
 		var expectedMessageData = new IdCryptInvitationV1
 		{

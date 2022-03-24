@@ -2,6 +2,7 @@
 
 namespace RTGS.DotNetSDK.IntegrationTests.Logging;
 
+// ReSharper disable once InconsistentNaming
 public static class ITestCorrelatorContextExtensions
 {
 	public static IEnumerable<LogEntry> PublisherLogs(this ITestCorrelatorContext testCorrelatorContext, LogEventLevel logEventLevel) =>

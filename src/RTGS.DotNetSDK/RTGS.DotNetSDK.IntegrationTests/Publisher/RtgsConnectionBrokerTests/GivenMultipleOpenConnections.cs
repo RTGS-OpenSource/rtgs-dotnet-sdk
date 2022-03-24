@@ -1,5 +1,6 @@
 ﻿using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.RtgsConnectionBrokerTests;
 
@@ -31,7 +32,19 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 
-			var idCryptMessageHandler = new StatusCodeHttpHandler(IdCryptEndPoints.MockHttpResponses);
+			var idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+					.Create()
+					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
+					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
+					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
+					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
+					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
+					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+					.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
@@ -60,7 +73,7 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
 	[Fact]
 	public async Task WhenSendingSequentially_ThenCanSendToRtgs()
 	{
-		const int PublisherCount = 1;
+		const int publisherCount = 1;
 
 		var rtgsConnectionBroker1 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 		var rtgsConnectionBroker2 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
@@ -86,7 +99,7 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
 		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
 		using var _ = new AssertionScope();
-		receiver.Connections.Count.Should().Be(PublisherCount);
+		receiver.Connections.Count.Should().Be(publisherCount);
 		receiver.Connections.SelectMany(connection => connection.Requests).Count().Should().Be(5);
 	}
 }
