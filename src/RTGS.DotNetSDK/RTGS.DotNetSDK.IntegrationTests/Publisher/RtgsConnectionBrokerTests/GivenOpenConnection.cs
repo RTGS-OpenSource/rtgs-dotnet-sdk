@@ -139,12 +139,12 @@ public class GivenOpenConnection
 			await _rtgsConnectionBroker.SendInvitationAsync();
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var inviteRequestQueryParams1 = QueryHelpers.ParseQuery(_idCryptMessageHandler
-				.Requests[CreateInvitation.Path].First().RequestUri!.Query);
+			var inviteRequestQueryParams1 = QueryHelpers.ParseQuery(
+				_idCryptMessageHandler.Requests[CreateInvitation.Path].First().RequestUri!.Query);
 			var alias1 = inviteRequestQueryParams1["alias"];
 
-			var inviteRequestQueryParams2 = QueryHelpers.ParseQuery(_idCryptMessageHandler
-				.Requests[CreateInvitation.Path].Skip(1).First().RequestUri!.Query);
+			var inviteRequestQueryParams2 = QueryHelpers.ParseQuery(
+				_idCryptMessageHandler.Requests[CreateInvitation.Path].Skip(1).First().RequestUri!.Query);
 			var alias2 = inviteRequestQueryParams2["alias"];
 
 			alias2.Should().NotBeEquivalentTo(alias1);
@@ -158,8 +158,8 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
-				.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
+			var inviteRequestQueryParams = QueryHelpers.ParseQuery(
+				_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 			var autoAccept = bool.Parse(inviteRequestQueryParams["auto_accept"]);
 			var multiUse = bool.Parse(inviteRequestQueryParams["multi_use"]);
 			var usePublicDid = bool.Parse(inviteRequestQueryParams["public"]);
@@ -179,10 +179,11 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
+			var inviteRequestQueryParams = QueryHelpers.ParseQuery(
+				_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 			var alias = inviteRequestQueryParams["alias"];
 
-			var expectedLogs = new List<LogEntry>
+			var expectedDebugLogs = new List<LogEntry>
 			{
 				new($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
@@ -191,7 +192,7 @@ public class GivenOpenConnection
 			};
 
 			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug);
-			debugLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
+			debugLogs.Should().BeEquivalentTo(expectedDebugLogs, options => options.WithStrictOrdering());
 		}
 
 		[Fact]
@@ -211,7 +212,8 @@ public class GivenOpenConnection
 			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.tortgs.v1");
 			receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
 
-			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
+			var inviteRequestQueryParams = QueryHelpers.ParseQuery
+				(_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 
 			var invitation = CreateInvitation.Response.Invitation;
 			var agentPublicDid = GetPublicDid.Response.Result.DID;
@@ -349,8 +351,8 @@ public class GivenOpenConnection
 			  .Should()
 			  .ThrowAsync<Exception>();
 
-			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
-				.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
+			var inviteRequestQueryParams = QueryHelpers.ParseQuery(
+				_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 			var alias = inviteRequestQueryParams["alias"];
 
 			using var _ = new AssertionScope();
@@ -479,8 +481,8 @@ public class GivenOpenConnection
 			  .Should()
 			  .ThrowAsync<Exception>();
 
-			var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
-				.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
+			var inviteRequestQueryParams = QueryHelpers.ParseQuery(
+				_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 			var alias = inviteRequestQueryParams["alias"];
 
 			var expectedDebugLogs = new List<LogEntry>
@@ -590,7 +592,7 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var expectedLogs = new List<LogEntry>
+			var expectedInformationLogs = new List<LogEntry>
 			{
 				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
 				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
@@ -600,7 +602,7 @@ public class GivenOpenConnection
 			using var _ = new AssertionScope();
 
 			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
-			informationLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
+			informationLogs.Should().BeEquivalentTo(expectedInformationLogs, options => options.WithStrictOrdering());
 
 			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
 			warningLogs.Should().BeEmpty();
@@ -617,7 +619,7 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var expectedLogs = new List<LogEntry>
+			var expectedInformationLogs = new List<LogEntry>
 			{
 				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
 				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
@@ -627,13 +629,15 @@ public class GivenOpenConnection
 			using var _ = new AssertionScope();
 
 			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
-			informationLogs.Should().BeEquivalentTo(expectedLogs.Where(log => log.LogLevel is LogEventLevel.Information), options => options.WithStrictOrdering());
+			informationLogs.Should().BeEquivalentTo(expectedInformationLogs
+				.Where(log => log.LogLevel is LogEventLevel.Information), options => options.WithStrictOrdering());
 
 			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
 			warningLogs.Should().BeEmpty();
 
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
-			errorLogs.Should().BeEquivalentTo(expectedLogs.Where(log => log.LogLevel is LogEventLevel.Error), options => options.WithStrictOrdering());
+			errorLogs.Should().BeEquivalentTo(expectedInformationLogs
+				.Where(log => log.LogLevel is LogEventLevel.Error), options => options.WithStrictOrdering());
 		}
 
 		[Fact]
@@ -646,7 +650,7 @@ public class GivenOpenConnection
 				.Should()
 				.ThrowAsync<RpcException>();
 
-			var expectedLogs = new List<LogEntry>
+			var expectedInformationLogs = new List<LogEntry>
 			{
 				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
 				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
@@ -656,13 +660,15 @@ public class GivenOpenConnection
 			using var _ = new AssertionScope();
 
 			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
-			informationLogs.Should().BeEquivalentTo(expectedLogs.Where(log => log.LogLevel is LogEventLevel.Information), options => options.WithStrictOrdering());
+			informationLogs.Should().BeEquivalentTo(expectedInformationLogs
+				.Where(log => log.LogLevel is LogEventLevel.Information), options => options.WithStrictOrdering());
 
 			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
 			warningLogs.Should().BeEmpty();
 
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
-			errorLogs.Should().BeEquivalentTo(expectedLogs.Where(log => log.LogLevel is LogEventLevel.Error), options => options.WithStrictOrdering());
+			errorLogs.Should().BeEquivalentTo(expectedInformationLogs
+				.Where(log => log.LogLevel is LogEventLevel.Error), options => options.WithStrictOrdering());
 		}
 
 		[Fact]

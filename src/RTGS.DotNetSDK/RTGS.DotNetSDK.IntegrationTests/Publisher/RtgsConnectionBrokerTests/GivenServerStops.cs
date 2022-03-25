@@ -49,12 +49,12 @@ public class GivenServerStops : IAsyncLifetime
 
 
 			var idCryptMessageHandler = StatusCodeHttpHandlerBuilder
-					.Create()
-					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
-					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
-					.Build();
+				.Create()
+				.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
+				.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
+				.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+				.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
