@@ -114,9 +114,11 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddTransient<IMessageAdapter, BankPartnersResponseV1MessageAdapter>();
 		serviceCollection.AddTransient<IMessageAdapter, IdCryptInvitationConfirmationV1MessageAdapter>();
 		serviceCollection.AddTransient<IMessageAdapter, IdCryptCreateInvitationRequestV1MessageAdapter>();
+		serviceCollection.AddTransient<IMessageAdapter, IdCryptBankInvitationV1MessageAdapter>();
 		serviceCollection.AddSingleton<IHandlerValidator, HandlerValidator>();
 
 		serviceCollection.AddTransient<IInternalHandler, IdCryptCreateInvitationRequestV1Handler>();
+		serviceCollection.AddTransient<IInternalHandler, IdCryptBankInvitationV1Handler>();
 
 		serviceCollection.AddSingleton<IIdCryptPublisher, IdCryptPublisher>();
 		serviceCollection.AddSingleton<IInternalPublisher, InternalPublisher>();

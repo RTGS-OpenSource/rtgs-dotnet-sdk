@@ -65,7 +65,7 @@ public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcSe
 	[Fact]
 	public async Task WhenSendingSequentially_ThenCanSendToRtgs()
 	{
-		const int PublisherCount = 1;
+		const int publisherCount = 1;
 
 		var rtgsPublisher1 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
 		var rtgsPublisher2 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
@@ -91,7 +91,7 @@ public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcSe
 		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
 		using var _ = new AssertionScope();
-		receiver.Connections.Count.Should().Be(PublisherCount);
+		receiver.Connections.Count.Should().Be(publisherCount);
 		receiver.Connections.SelectMany(connection => connection.Requests).Count().Should().Be(5);
 	}
 }

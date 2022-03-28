@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using RTGS.DotNetSDK.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.DotNetSDK.Subscriber.Messages;
 using RTGS.ISO20022.Messages.Admi_002_001.V01;
@@ -35,6 +36,7 @@ public class AllTestHandlers : IEnumerable<IHandler>
 	public class TestBankPartnersResponseV1 : TestHandler<BankPartnersResponseV1>, IBankPartnersResponseV1Handler { }
 	public class TestIdCryptInvitationConfirmationV1 : TestHandler<IdCryptInvitationConfirmationV1>, IIdCryptInvitationConfirmationV1Handler { }
 	public class TestIdCryptCreateInvitationNotificationV1 : TestHandler<IdCryptCreateInvitationNotificationV1>, IIdCryptCreateInvitationNotificationV1Handler { }
+	public class TestIdCryptBankInvitationNotificationV1 : TestHandler<IdCryptBankInvitationNotificationV1>, IIdCryptBankInvitationNotificationV1Handler { }
 
 	public abstract class TestHandler<TMessage> : ITestHandler<TMessage>
 	{

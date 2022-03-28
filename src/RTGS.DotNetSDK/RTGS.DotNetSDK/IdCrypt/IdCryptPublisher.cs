@@ -1,5 +1,5 @@
-﻿using RTGS.DotNetSDK.Publisher;
-using RTGS.DotNetSDK.Publisher.Messages;
+﻿using RTGS.DotNetSDK.IdCrypt.Messages;
+using RTGS.DotNetSDK.Publisher;
 
 namespace RTGS.DotNetSDK.IdCrypt;
 
@@ -22,5 +22,14 @@ internal class IdCryptPublisher : IIdCryptPublisher
 	{
 		var headers = new Dictionary<string, string> { { "bankpartnerdid", bankPartnerDid } };
 		return _internalPublisher.SendMessageAsync(message, "idcrypt.invitation.tobank.v1", cancellationToken, headers);
+	}
+
+	public Task<SendResult> SendIdCryptInvitationConfirmationAsync(
+		IdCryptInvitationConfirmationV1 message,
+		string bankPartnerDid,
+		CancellationToken cancellationToken)
+	{
+		var headers = new Dictionary<string, string> { { "bankpartnerdid", bankPartnerDid } };
+		return _internalPublisher.SendMessageAsync(message, "idcrypt.invitationconfirmation.v1", cancellationToken, headers);
 	}
 }

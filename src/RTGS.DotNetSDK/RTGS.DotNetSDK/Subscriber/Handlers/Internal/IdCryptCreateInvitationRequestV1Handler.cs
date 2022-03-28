@@ -2,9 +2,8 @@
 using IDCryptGlobal.Cloud.Agent.Identity.Connection;
 using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.IdCrypt;
-using RTGS.DotNetSDK.Publisher.Messages;
+using RTGS.DotNetSDK.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Exceptions;
-using RTGS.DotNetSDK.Subscriber.Messages;
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers.Internal;
 
@@ -57,9 +56,9 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 
 	private async Task<ConnectionInviteResponseModel> CreateIdCryptInvitationAsync(string alias)
 	{
-		const bool AutoAccept = true;
-		const bool MultiUse = false;
-		const bool UsePublicDid = false;
+		const bool autoAccept = true;
+		const bool multiUse = false;
+		const bool usePublicDid = false;
 
 		try
 		{
@@ -67,9 +66,9 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 
 			var response = await _identityClient.Connection.CreateInvitation(
 				alias,
-				AutoAccept,
-				MultiUse,
-				UsePublicDid);
+				autoAccept,
+				multiUse,
+				usePublicDid);
 
 			_logger.LogDebug("Sent CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", alias);
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using RTGS.DotNetSDK.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Messages;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;

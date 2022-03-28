@@ -1,4 +1,4 @@
-﻿namespace RTGS.DotNetSDK.Subscriber.Messages;
+﻿namespace RTGS.DotNetSDK.IdCrypt.Messages;
 
 /// <summary>
 /// Represents a notification of an ID Crypt invitation being sent to a bank partner.

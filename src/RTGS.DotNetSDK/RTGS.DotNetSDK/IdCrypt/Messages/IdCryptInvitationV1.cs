@@ -1,4 +1,4 @@
-﻿namespace RTGS.DotNetSDK.Publisher.Messages;
+﻿namespace RTGS.DotNetSDK.IdCrypt.Messages;
 
 internal record IdCryptInvitationV1
 {
