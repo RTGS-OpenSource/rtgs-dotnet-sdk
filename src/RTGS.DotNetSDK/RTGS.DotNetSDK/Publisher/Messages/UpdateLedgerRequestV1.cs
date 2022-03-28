@@ -10,7 +10,6 @@ public class UpdateLedgerRequestV1
 	/// </summary>
 	public string AccountIdentifier { get; init; }
 
-
 	/// <summary>
 	/// The amount now available.
 	/// </summary>

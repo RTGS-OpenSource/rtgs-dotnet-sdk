@@ -11,7 +11,7 @@ public static class ValidMessages
 
 	public static readonly AtomicLockRequestV1 AtomicLockRequest = new()
 	{
-		DbtrToRtgsId = new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
+		DebtorRtgsId = new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
 		{
 			Id = BankDid
 		},
@@ -64,7 +64,7 @@ public static class ValidMessages
 				new CreditTransferTransaction50 { PoolgAdjstmntDt = DateTime.Parse("2021-01-01") }
 			}
 		},
-		LckId = "B27C2536-27F8-403F-ABBD-7AC4190FBBD3"
+		LockId = Guid.Parse("B27C2536-27F8-403F-ABBD-7AC4190FBBD3")
 	};
 
 	public static readonly EarmarkConfirmationV1 EarmarkConfirmation = new()
