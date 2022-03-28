@@ -87,7 +87,6 @@ public class AndNonSuccessResultWhenPublishing : IDisposable, IClassFixture<Grpc
 		_clientHost?.Dispose();
 
 		_grpcServer.Reset();
-
 	}
 
 	[Fact]

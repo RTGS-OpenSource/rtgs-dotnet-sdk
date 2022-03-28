@@ -15,6 +15,8 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 	private readonly IIdCryptPublisher _idCryptPublisher;
 	private IHandler<IdCryptBankInvitationNotificationV1> _userHandler;
 
+	private const string ActiveConnectionState = "active";
+
 	public IdCryptBankInvitationV1Handler(
 		ILogger<IdCryptBankInvitationV1Handler> logger,
 		IIdentityClient identityClient,
@@ -96,13 +98,19 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 
 		_logger.LogDebug("Finished polling for connection '{ConnectionId}' state for invitation from bank '{FromBankDid}'", connectionId, fromBankDid);
 
-		if (connection.State is "active")
+		if (connection.State is ActiveConnectionState)
 		{
 			await HandleInvitationConfirmation(fromBankDid, connection);
 		}
 		else
 		{
-			throw new RtgsSubscriberException("Unexpected ID Crypt connection state after polling.");
+			_logger.LogError(
+				"Unexpected ID Crypt connection state '{State}' after polling for connection '{ConnectionId}' state for invitation from bank '{FromBankDid}'",
+				connection.State,
+				connectionId,
+				fromBankDid);
+
+			throw new RtgsSubscriberException($"Unexpected ID Crypt connection state '{connection.State}' after polling for connection '{connectionId}' state for invitation from bank '{fromBankDid}'");
 		}
 	}
 
@@ -118,7 +126,7 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 		{
 			connection = await GetConnection(connectionId);
 
-			if (connection.State is "active")
+			if (connection.State is ActiveConnectionState)
 			{
 				break;
 			}

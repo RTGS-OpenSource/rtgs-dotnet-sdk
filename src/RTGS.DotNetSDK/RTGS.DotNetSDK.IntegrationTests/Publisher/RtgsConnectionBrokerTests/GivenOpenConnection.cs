@@ -619,21 +619,21 @@ public class GivenOpenConnection
 			{
 				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
 				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
-				new("Received IdCryptInvitationV1 acknowledgement (rejected) from RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Error)
+
 			};
 
 			using var _ = new AssertionScope();
 
 			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
-			informationLogs.Should().BeEquivalentTo(expectedInformationLogs
-				.Where(log => log.LogLevel is LogEventLevel.Information), options => options.WithStrictOrdering());
+			informationLogs.Should().BeEquivalentTo(expectedInformationLogs, options => options.WithStrictOrdering());
 
 			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
 			warningLogs.Should().BeEmpty();
 
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
-			errorLogs.Should().BeEquivalentTo(expectedInformationLogs
-				.Where(log => log.LogLevel is LogEventLevel.Error), options => options.WithStrictOrdering());
+			errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
+				"Received IdCryptInvitationV1 acknowledgement (rejected) from RTGS (SendIdCryptInvitationToRtgsAsync)",
+				LogEventLevel.Error));
 		}
 
 		[Fact]
@@ -649,22 +649,22 @@ public class GivenOpenConnection
 			var expectedInformationLogs = new List<LogEntry>
 			{
 				new("Sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
-				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information),
-				new("Error received when sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Error, typeof(RpcException))
+				new("Sent IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)", LogEventLevel.Information)
 			};
 
 			using var _ = new AssertionScope();
 
 			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
-			informationLogs.Should().BeEquivalentTo(expectedInformationLogs
-				.Where(log => log.LogLevel is LogEventLevel.Information), options => options.WithStrictOrdering());
+			informationLogs.Should().BeEquivalentTo(expectedInformationLogs, options => options.WithStrictOrdering());
 
 			var warningLogs = _serilogContext.PublisherLogs(LogEventLevel.Warning);
 			warningLogs.Should().BeEmpty();
 
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
-			errorLogs.Should().BeEquivalentTo(expectedInformationLogs
-				.Where(log => log.LogLevel is LogEventLevel.Error), options => options.WithStrictOrdering());
+			errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
+				"Error received when sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)",
+				LogEventLevel.Error,
+				typeof(RpcException)));
 		}
 
 		[Fact]
