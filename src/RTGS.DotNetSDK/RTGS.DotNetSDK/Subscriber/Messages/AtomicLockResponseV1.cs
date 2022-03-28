@@ -10,18 +10,12 @@ public record AtomicLockResponseV1
 	/// <summary>
 	/// The id of the lock.
 	/// </summary>
-	/// <remarks>
-	/// Guid value represented as a string.
-	/// </remarks>
-	public string LckId { get; init; }
+	public Guid LockId { get; init; }
 
 	/// <summary>
 	/// When the lock expires.
 	/// </summary>
-	/// <remarks>
-	/// DateTime value represented using ISO 8601 format.
-	/// </remarks>
-	public string LckExpry { get; init; }
+	public DateTimeOffset LockExpiry { get; init; }
 
 	/// <summary>
 	/// The response status code.

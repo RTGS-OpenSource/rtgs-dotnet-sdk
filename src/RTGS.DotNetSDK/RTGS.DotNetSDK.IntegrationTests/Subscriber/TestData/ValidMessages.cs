@@ -73,7 +73,7 @@ public static class ValidMessages
 
 	public static readonly AtomicLockResponseV1 AtomicLockResponseV1 = new()
 	{
-		LckId = "9e4d8f43-eb2e-4408-9461-0aba281792af",
+		LockId = Guid.Parse("9e4d8f43-eb2e-4408-9461-0aba281792af"),
 		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
 		{
 			Ccy = "GBP",
@@ -83,7 +83,7 @@ public static class ValidMessages
 
 	public static readonly AtomicTransferResponseV1 AtomicTransferResponseV1 = new()
 	{
-		LckId = "30fc2ac5-5f4d-4abc-b5b9-038df91b9832",
+		LockId = Guid.Parse("30fc2ac5-5f4d-4abc-b5b9-038df91b9832"),
 		StatusCode = ResponseStatusCodes.Ok,
 		Message = "the-message"
 	};
@@ -125,17 +125,17 @@ public static class ValidMessages
 			{
 				Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "iban1" }
 			},
-		BkPtnrs = new List<BankPartnersResponseV1.BankPartner>
+		BankPartners = new List<BankPartnersResponseV1.BankPartner>
 		{
 			new BankPartnersResponseV1.BankPartner
 			{
-				Id =
+				RtgsId =
 					new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
 					{
 						Id = "id1"
 					},
-				Ccy = "PLN",
-				BkNm = "Bank",
+				Currency = "PLN",
+				Name = "Bank",
 				CdtrAcct =
 					new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 					{
