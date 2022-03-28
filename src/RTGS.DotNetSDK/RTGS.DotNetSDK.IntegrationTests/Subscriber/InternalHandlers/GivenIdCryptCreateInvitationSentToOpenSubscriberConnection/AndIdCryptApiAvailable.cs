@@ -52,7 +52,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 	private void SetupDependencies()
 	{
-		_idCryptMessageHandler = HttpHandlerBuilder
+		_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 			.Create()
 			.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
 			.WithOkResponse(GetPublicDid.HttpRequestResponseContext)

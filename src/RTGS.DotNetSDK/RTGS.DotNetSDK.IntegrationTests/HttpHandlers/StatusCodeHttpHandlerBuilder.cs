@@ -3,7 +3,7 @@ using System.Net.Http;
 
 namespace RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 
-internal class HttpHandlerBuilder
+internal class StatusCodeHttpHandlerBuilderFactory
 {
 	public static StatusCodeHttpHandlerBuilder Create() => new();
 

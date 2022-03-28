@@ -17,7 +17,7 @@ public class GivenWrongRemoteHostAddress
 				new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 			.Build();
 
-		var idCryptMessageHandler = HttpHandlerBuilder
+		var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 			.Create()
 			.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
 			.WithOkResponse(GetPublicDid.HttpRequestResponseContext)

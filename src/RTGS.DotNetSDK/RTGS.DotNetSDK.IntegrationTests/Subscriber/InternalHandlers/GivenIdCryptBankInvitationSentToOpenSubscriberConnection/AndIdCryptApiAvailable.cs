@@ -54,7 +54,7 @@ public class AndIdCryptApiAvailable
 
 		private void SetupDependencies()
 		{
-			_idCryptMessageHandler = HttpHandlerBuilder
+			_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 				.CreateQueueable()
 				.WithOkResponse(ReceiveInvitation.HttpRequestResponseContext)
 				.WithOkResponse(AcceptInvitation.HttpRequestResponseContext)
@@ -554,7 +554,7 @@ public class AndIdCryptApiAvailable
 
 		private void SetupDependencies()
 		{
-			_idCryptMessageHandler = HttpHandlerBuilder
+			_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 				.CreateQueueable()
 				.WithOkResponse(ReceiveInvitation.HttpRequestResponseContext)
 				.WithOkResponse(AcceptInvitation.HttpRequestResponseContext)
@@ -715,7 +715,7 @@ public class AndIdCryptApiAvailable
 
 		private void SetupDependencies()
 		{
-			_idCryptMessageHandler = HttpHandlerBuilder
+			_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 				.CreateQueueable()
 				.WithOkResponse(ReceiveInvitation.HttpRequestResponseContext)
 				.WithOkResponse(AcceptInvitation.HttpRequestResponseContext)

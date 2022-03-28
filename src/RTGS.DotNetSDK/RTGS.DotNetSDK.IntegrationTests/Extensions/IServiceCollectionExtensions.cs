@@ -8,9 +8,9 @@ namespace RTGS.DotNetSDK.IntegrationTests.Extensions;
 
 internal static class IServiceCollectionExtensions
 {
-	public static IServiceCollection AddTestIdCryptHttpClient<T>(
+	public static IServiceCollection AddTestIdCryptHttpClient<THandler>(
 		this IServiceCollection serviceCollection,
-		T statusCodeHttpHandler) where T : DelegatingHandler
+		THandler statusCodeHttpHandler) where THandler : DelegatingHandler
 	{
 		serviceCollection
 			.AddSingleton(statusCodeHttpHandler)
@@ -21,7 +21,7 @@ internal static class IServiceCollectionExtensions
 
 				return identityClient;
 			})
-			.AddHttpMessageHandler<T>();
+			.AddHttpMessageHandler<THandler>();
 
 		return serviceCollection;
 	}

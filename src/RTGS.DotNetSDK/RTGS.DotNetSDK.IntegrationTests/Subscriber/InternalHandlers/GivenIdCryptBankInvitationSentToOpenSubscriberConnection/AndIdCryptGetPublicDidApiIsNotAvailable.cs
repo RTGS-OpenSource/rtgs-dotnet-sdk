@@ -52,7 +52,7 @@ public class AndIdCryptGetPublicDidApiIsNotAvailable : IDisposable, IClassFixtur
 					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.Build();
 
-			_idCryptMessageHandler = HttpHandlerBuilder
+			_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 				.CreateQueueable()
 				.WithOkResponse(ReceiveInvitation.HttpRequestResponseContext)
 				.WithOkResponse(AcceptInvitation.HttpRequestResponseContext)

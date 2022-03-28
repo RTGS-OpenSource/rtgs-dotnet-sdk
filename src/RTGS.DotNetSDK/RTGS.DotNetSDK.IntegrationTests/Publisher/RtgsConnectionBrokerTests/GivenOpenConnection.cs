@@ -58,7 +58,7 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				_idCryptMessageHandler = HttpHandlerBuilder
+				_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
 					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
 					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
@@ -142,7 +142,7 @@ public class GivenOpenConnection
 			var alias1 = inviteRequestQueryParams1["alias"];
 
 			var inviteRequestQueryParams2 = QueryHelpers.ParseQuery(
-				_idCryptMessageHandler.Requests[CreateInvitation.Path].Skip(1).First().RequestUri!.Query);
+				_idCryptMessageHandler.Requests[CreateInvitation.Path][1].RequestUri!.Query);
 			var alias2 = inviteRequestQueryParams2["alias"];
 
 			alias2.Should().NotBeEquivalentTo(alias1);
@@ -281,7 +281,7 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				_idCryptMessageHandler = HttpHandlerBuilder
+				_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
 					.WithServiceUnavailableResponse(CreateInvitation.Path)
 					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
@@ -411,7 +411,7 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				_idCryptMessageHandler = HttpHandlerBuilder
+				_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
 					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
 					.WithServiceUnavailableResponse(GetPublicDid.Path)
@@ -548,7 +548,7 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				var idCryptMessageHandler = HttpHandlerBuilder
+				var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
 					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
 					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
@@ -886,7 +886,7 @@ public class GivenOpenConnection
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
-				var idCryptMessageHandler = HttpHandlerBuilder
+				var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
 					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
 					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)

@@ -32,7 +32,7 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 
-			var idCryptMessageHandler = HttpHandlerBuilder
+			var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
 				.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
 				.WithOkResponse(GetPublicDid.HttpRequestResponseContext)

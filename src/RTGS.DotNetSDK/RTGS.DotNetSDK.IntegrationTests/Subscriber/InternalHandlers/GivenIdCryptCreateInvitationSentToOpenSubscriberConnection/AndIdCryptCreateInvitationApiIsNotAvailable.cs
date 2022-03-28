@@ -53,7 +53,7 @@ public class AndIdCryptCreateInvitationApiIsNotAvailable : IDisposable, IClassFi
 					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.Build();
 
-			_idCryptMessageHandler = HttpHandlerBuilder
+			_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
 				.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
 				.WithServiceUnavailableResponse(CreateInvitation.Path)
