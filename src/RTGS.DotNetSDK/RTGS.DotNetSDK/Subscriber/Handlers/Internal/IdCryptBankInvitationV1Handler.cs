@@ -15,8 +15,6 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 	private readonly IIdCryptPublisher _idCryptPublisher;
 	private IHandler<IdCryptBankInvitationNotificationV1> _userHandler;
 
-	private const string ActiveConnectionState = "active";
-
 	public IdCryptBankInvitationV1Handler(
 		ILogger<IdCryptBankInvitationV1Handler> logger,
 		IIdentityClient identityClient,
@@ -98,20 +96,7 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 
 		_logger.LogDebug("Finished polling for connection '{ConnectionId}' state for invitation from bank '{FromBankDid}'", connectionId, fromBankDid);
 
-		if (connection.State is ActiveConnectionState)
-		{
-			await HandleInvitationConfirmation(fromBankDid, connection);
-		}
-		else
-		{
-			_logger.LogError(
-				"Unexpected ID Crypt connection state '{State}' after polling for connection '{ConnectionId}' state for invitation from bank '{FromBankDid}'",
-				connection.State,
-				connectionId,
-				fromBankDid);
-
-			throw new RtgsSubscriberException($"Unexpected ID Crypt connection state '{connection.State}' after polling for connection '{connectionId}' state for invitation from bank '{fromBankDid}'");
-		}
+		await HandleInvitationConfirmation(fromBankDid, connection);
 	}
 
 	private async Task<ConnectionAccepted> PollConnectionState(string connectionId)
@@ -126,15 +111,14 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 		{
 			connection = await GetConnection(connectionId);
 
-			if (connection.State is ActiveConnectionState)
+			if (connection.State is "active")
 			{
 				break;
 			}
 
 			if (watch.Elapsed > maxPollTime)
 			{
-				throw new RtgsSubscriberException(
-					"Polling for ID Crypt connection state took longer than the maximum time allowed.");
+				throw new RtgsSubscriberException("Timeout whilst waiting for ID Crypt invitation to be accepted");
 			}
 
 			await Task.Delay(pollInterval);

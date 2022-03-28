@@ -676,7 +676,7 @@ public class AndIdCryptApiAvailable
 		}
 	}
 
-	public class WhenGetConnectionPollingExceedsMaxPollTime : IDisposable, IClassFixture<GrpcServerFixture>
+	public class WhenGetConnectionPollingTimesOut : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(31_000);
 		private static readonly TimeSpan WaitForSubscriberAcknowledgementDuration = TimeSpan.FromMilliseconds(100);
@@ -693,7 +693,7 @@ public class AndIdCryptApiAvailable
 		private AllTestHandlers.TestIdCryptBankInvitationNotificationV1 _bankInvitationNotificationHandler;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 
-		public WhenGetConnectionPollingExceedsMaxPollTime(GrpcServerFixture grpcServer)
+		public WhenGetConnectionPollingTimesOut(GrpcServerFixture grpcServer)
 		{
 			_grpcServer = grpcServer;
 
