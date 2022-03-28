@@ -53,7 +53,7 @@ public class AndNonSuccessResultWhenPublishing : IDisposable, IClassFixture<Grpc
 					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.Build();
 
-			_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+			_idCryptMessageHandler = HttpHandlerBuilder
 				.Create()
 				.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
 				.WithOkResponse(GetPublicDid.HttpRequestResponseContext)

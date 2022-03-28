@@ -1,6 +1,6 @@
-﻿using IDCryptGlobal.Cloud.Agent.Identity;
+﻿using System.Net.Http;
+using IDCryptGlobal.Cloud.Agent.Identity;
 using Microsoft.Extensions.Options;
-using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Extensions;
 
@@ -8,9 +8,9 @@ namespace RTGS.DotNetSDK.IntegrationTests.Extensions;
 
 internal static class IServiceCollectionExtensions
 {
-	public static IServiceCollection AddTestIdCryptHttpClient(
+	public static IServiceCollection AddTestIdCryptHttpClient<T>(
 		this IServiceCollection serviceCollection,
-		StatusCodeHttpHandler statusCodeHttpHandler)
+		T statusCodeHttpHandler) where T : DelegatingHandler
 	{
 		serviceCollection
 			.AddSingleton(statusCodeHttpHandler)
@@ -21,7 +21,7 @@ internal static class IServiceCollectionExtensions
 
 				return identityClient;
 			})
-			.AddHttpMessageHandler<StatusCodeHttpHandler>();
+			.AddHttpMessageHandler<T>();
 
 		return serviceCollection;
 	}

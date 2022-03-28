@@ -18,7 +18,7 @@ public class AndNonSuccessResultWhenPublishing : IDisposable, IClassFixture<Grpc
 	private IHost _clientHost;
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
-	private StatusCodeHttpHandler _idCryptMessageHandler;
+	private QueueableStatusCodeHttpHandler _idCryptMessageHandler;
 
 	public AndNonSuccessResultWhenPublishing(GrpcServerFixture grpcServer)
 	{
@@ -52,8 +52,8 @@ public class AndNonSuccessResultWhenPublishing : IDisposable, IClassFixture<Grpc
 					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.Build();
 
-			_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
-				.Create()
+			_idCryptMessageHandler = HttpHandlerBuilder
+				.CreateQueueable()
 				.WithOkResponse(ReceiveInvitation.HttpRequestResponseContext)
 				.WithOkResponse(AcceptInvitation.HttpRequestResponseContext)
 				.WithOkResponse(GetConnection.HttpRequestResponseContext)

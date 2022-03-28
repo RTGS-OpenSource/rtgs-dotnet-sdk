@@ -17,7 +17,7 @@ public class AndIdCryptGetPublicDidApiIsNotAvailable : IDisposable, IClassFixtur
 	private IHost _clientHost;
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
-	private StatusCodeHttpHandler _idCryptMessageHandler;
+	private QueueableStatusCodeHttpHandler _idCryptMessageHandler;
 	private AllTestHandlers.TestIdCryptBankInvitationNotificationV1 _bankInvitationNotificationHandler;
 
 	public AndIdCryptGetPublicDidApiIsNotAvailable(GrpcServerFixture grpcServer)
@@ -52,8 +52,8 @@ public class AndIdCryptGetPublicDidApiIsNotAvailable : IDisposable, IClassFixtur
 					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.Build();
 
-			_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
-				.Create()
+			_idCryptMessageHandler = HttpHandlerBuilder
+				.CreateQueueable()
 				.WithOkResponse(ReceiveInvitation.HttpRequestResponseContext)
 				.WithOkResponse(AcceptInvitation.HttpRequestResponseContext)
 				.WithOkResponse(GetConnection.HttpRequestResponseContext)

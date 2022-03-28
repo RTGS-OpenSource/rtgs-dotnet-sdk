@@ -3,39 +3,74 @@ using System.Net.Http;
 
 namespace RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 
-internal class StatusCodeHttpHandlerBuilder
+internal class HttpHandlerBuilder
 {
-	private Dictionary<string, Queue<MockHttpResponse>> Responses { get; } = new();
-
 	public static StatusCodeHttpHandlerBuilder Create() => new();
 
-	public StatusCodeHttpHandlerBuilder WithServiceUnavailableResponse(string path) =>
-		WithResponse(path, null, HttpStatusCode.ServiceUnavailable);
+	public static QueueableStatusCodeHttpHandlerBuilder CreateQueueable() => new();
 
-	public StatusCodeHttpHandlerBuilder WithOkResponse(HttpRequestResponseContext httpRequestResponseContext) =>
-		WithResponse(
-			httpRequestResponseContext.RequestPath,
-			new StringContent(httpRequestResponseContext.ResponseContent),
-			HttpStatusCode.OK);
-
-	public StatusCodeHttpHandler Build() => new(Responses);
-
-	private StatusCodeHttpHandlerBuilder WithResponse(string path, HttpContent content, HttpStatusCode statusCode)
+	internal class StatusCodeHttpHandlerBuilder
 	{
-		var mockResponse = new MockHttpResponse
-		{
-			Path = path,
-			HttpStatusCode = statusCode,
-			Content = content
-		};
+		private Dictionary<string, MockHttpResponse> Responses { get; } = new();
 
-		if (!Responses.ContainsKey(path))
+		public StatusCodeHttpHandlerBuilder WithServiceUnavailableResponse(string path) =>
+			WithResponse(path, null, HttpStatusCode.ServiceUnavailable);
+
+		public StatusCodeHttpHandlerBuilder WithOkResponse(HttpRequestResponseContext httpRequestResponseContext) =>
+			WithResponse(
+				httpRequestResponseContext.RequestPath,
+				new StringContent(httpRequestResponseContext.ResponseContent),
+				HttpStatusCode.OK);
+
+		public StatusCodeHttpHandler Build() => new(Responses);
+
+		private StatusCodeHttpHandlerBuilder WithResponse(string path, HttpContent content, HttpStatusCode statusCode)
 		{
-			Responses[path] = new Queue<MockHttpResponse>();
+			var mockResponse = new MockHttpResponse
+			{
+				Path = path,
+				HttpStatusCode = statusCode,
+				Content = content
+			};
+
+			Responses[path] = mockResponse;
+
+			return this;
 		}
+	}
 
-		Responses[path].Enqueue(mockResponse);
+	internal class QueueableStatusCodeHttpHandlerBuilder
+	{
+		private Dictionary<string, Queue<MockHttpResponse>> Responses { get; } = new();
 
-		return this;
+		public QueueableStatusCodeHttpHandlerBuilder WithServiceUnavailableResponse(string path) =>
+			WithResponse(path, null, HttpStatusCode.ServiceUnavailable);
+
+		public QueueableStatusCodeHttpHandlerBuilder WithOkResponse(HttpRequestResponseContext httpRequestResponseContext) =>
+			WithResponse(
+				httpRequestResponseContext.RequestPath,
+				new StringContent(httpRequestResponseContext.ResponseContent),
+				HttpStatusCode.OK);
+
+		public QueueableStatusCodeHttpHandler Build() => new(Responses);
+
+		private QueueableStatusCodeHttpHandlerBuilder WithResponse(string path, HttpContent content, HttpStatusCode statusCode)
+		{
+			var mockResponse = new MockHttpResponse
+			{
+				Path = path,
+				HttpStatusCode = statusCode,
+				Content = content
+			};
+
+			if (!Responses.ContainsKey(path))
+			{
+				Responses[path] = new Queue<MockHttpResponse>();
+			}
+
+			Responses[path].Enqueue(mockResponse);
+
+			return this;
+		}
 	}
 }

@@ -48,11 +48,9 @@ public class GivenServerStops : IAsyncLifetime
 				.Build();
 
 
-			var idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+			var idCryptMessageHandler = HttpHandlerBuilder
 				.Create()
 				.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-				.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-				.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
 				.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
 				.Build();
 

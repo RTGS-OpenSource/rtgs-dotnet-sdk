@@ -2,13 +2,13 @@
 
 namespace RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 
-internal class StatusCodeHttpHandler : DelegatingHandler
+internal class QueueableStatusCodeHttpHandler : DelegatingHandler
 {
-	private readonly Dictionary<string, MockHttpResponse> _mockHttpResponses;
+	private readonly Dictionary<string, Queue<MockHttpResponse>> _mockHttpResponses;
 
 	public Dictionary<string, IList<HttpRequestMessage>> Requests { get; }
 
-	public StatusCodeHttpHandler(Dictionary<string, MockHttpResponse> mockHttpResponses)
+	public QueueableStatusCodeHttpHandler(Dictionary<string, Queue<MockHttpResponse>> mockHttpResponses)
 	{
 		Requests = new Dictionary<string, IList<HttpRequestMessage>>();
 		_mockHttpResponses = mockHttpResponses;
@@ -24,7 +24,7 @@ internal class StatusCodeHttpHandler : DelegatingHandler
 		}
 		Requests[requestPath].Add(request);
 
-		var requestMock = _mockHttpResponses[requestPath];
+		var requestMock = _mockHttpResponses[requestPath].Dequeue();
 
 		var response = new HttpResponseMessage(requestMock.HttpStatusCode)
 		{

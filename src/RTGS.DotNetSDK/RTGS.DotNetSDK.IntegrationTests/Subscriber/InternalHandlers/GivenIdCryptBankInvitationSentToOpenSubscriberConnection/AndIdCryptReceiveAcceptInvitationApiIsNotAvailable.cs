@@ -17,7 +17,7 @@ public class AndIdCryptReceiveAcceptInvitationApiIsNotAvailable : IDisposable, I
 	private IHost _clientHost;
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
-	private StatusCodeHttpHandler _idCryptMessageHandler;
+	private QueueableStatusCodeHttpHandler _idCryptMessageHandler;
 	private AllTestHandlers.TestIdCryptBankInvitationNotificationV1 _bankInvitationNotificationHandler;
 
 	public AndIdCryptReceiveAcceptInvitationApiIsNotAvailable(GrpcServerFixture grpcServer)
@@ -52,8 +52,8 @@ public class AndIdCryptReceiveAcceptInvitationApiIsNotAvailable : IDisposable, I
 					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.Build();
 
-			_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
-				.Create()
+			_idCryptMessageHandler = HttpHandlerBuilder
+				.CreateQueueable()
 				.WithServiceUnavailableResponse(ReceiveInvitation.Path)
 				.WithOkResponse(AcceptInvitation.HttpRequestResponseContext)
 				.WithOkResponse(GetConnection.HttpRequestResponseContext)

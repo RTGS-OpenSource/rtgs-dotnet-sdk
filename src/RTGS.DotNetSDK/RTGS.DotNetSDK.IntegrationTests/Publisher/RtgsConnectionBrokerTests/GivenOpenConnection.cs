@@ -58,11 +58,9 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+				_idCryptMessageHandler = HttpHandlerBuilder
 					.Create()
 					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
 					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
 					.Build();
 
@@ -283,7 +281,7 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+				_idCryptMessageHandler = HttpHandlerBuilder
 					.Create()
 					.WithServiceUnavailableResponse(CreateInvitation.Path)
 					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
@@ -413,7 +411,7 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+				_idCryptMessageHandler = HttpHandlerBuilder
 					.Create()
 					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
 					.WithServiceUnavailableResponse(GetPublicDid.Path)
@@ -550,11 +548,9 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				var idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+				var idCryptMessageHandler = HttpHandlerBuilder
 					.Create()
 					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
 					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
 					.Build();
 
@@ -890,11 +886,9 @@ public class GivenOpenConnection
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
-				var idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+				var idCryptMessageHandler = HttpHandlerBuilder
 					.Create()
 					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
 					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
 					.Build();
 

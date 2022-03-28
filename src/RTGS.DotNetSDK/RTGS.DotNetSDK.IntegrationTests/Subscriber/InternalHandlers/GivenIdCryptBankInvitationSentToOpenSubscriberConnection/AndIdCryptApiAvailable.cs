@@ -25,7 +25,7 @@ public class AndIdCryptApiAvailable
 		private IHost _clientHost;
 		private FromRtgsSender _fromRtgsSender;
 		private IRtgsSubscriber _rtgsSubscriber;
-		private StatusCodeHttpHandler _idCryptMessageHandler;
+		private QueueableStatusCodeHttpHandler _idCryptMessageHandler;
 		private AllTestHandlers.TestIdCryptBankInvitationNotificationV1 _bankInvitationNotificationHandler;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 
@@ -54,8 +54,8 @@ public class AndIdCryptApiAvailable
 
 		private void SetupDependencies()
 		{
-			_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
-				.Create()
+			_idCryptMessageHandler = HttpHandlerBuilder
+				.CreateQueueable()
 				.WithOkResponse(ReceiveInvitation.HttpRequestResponseContext)
 				.WithOkResponse(AcceptInvitation.HttpRequestResponseContext)
 				.WithOkResponse(GetConnection.HttpRequestResponseContext)
@@ -528,7 +528,7 @@ public class AndIdCryptApiAvailable
 		private IHost _clientHost;
 		private FromRtgsSender _fromRtgsSender;
 		private IRtgsSubscriber _rtgsSubscriber;
-		private StatusCodeHttpHandler _idCryptMessageHandler;
+		private QueueableStatusCodeHttpHandler _idCryptMessageHandler;
 		private AllTestHandlers.TestIdCryptBankInvitationNotificationV1 _bankInvitationNotificationHandler;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 
@@ -554,8 +554,8 @@ public class AndIdCryptApiAvailable
 
 		private void SetupDependencies()
 		{
-			_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
-				.Create()
+			_idCryptMessageHandler = HttpHandlerBuilder
+				.CreateQueueable()
 				.WithOkResponse(ReceiveInvitation.HttpRequestResponseContext)
 				.WithOkResponse(AcceptInvitation.HttpRequestResponseContext)
 				.WithOkResponse(GetConnection.HttpRequestResponseContextWithState("request"))
@@ -689,7 +689,7 @@ public class AndIdCryptApiAvailable
 		private IHost _clientHost;
 		private FromRtgsSender _fromRtgsSender;
 		private IRtgsSubscriber _rtgsSubscriber;
-		private StatusCodeHttpHandler _idCryptMessageHandler;
+		private QueueableStatusCodeHttpHandler _idCryptMessageHandler;
 		private AllTestHandlers.TestIdCryptBankInvitationNotificationV1 _bankInvitationNotificationHandler;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 
@@ -715,8 +715,8 @@ public class AndIdCryptApiAvailable
 
 		private void SetupDependencies()
 		{
-			_idCryptMessageHandler = StatusCodeHttpHandlerBuilder
-				.Create()
+			_idCryptMessageHandler = HttpHandlerBuilder
+				.CreateQueueable()
 				.WithOkResponse(ReceiveInvitation.HttpRequestResponseContext)
 				.WithOkResponse(AcceptInvitation.HttpRequestResponseContext)
 				.WithOkResponse(GetConnection.HttpRequestResponseContextWithState("request"))

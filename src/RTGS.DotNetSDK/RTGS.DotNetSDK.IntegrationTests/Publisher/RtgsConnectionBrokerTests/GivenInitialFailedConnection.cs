@@ -33,11 +33,9 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 
-			var idCryptMessageHandler = StatusCodeHttpHandlerBuilder
+			var idCryptMessageHandler = HttpHandlerBuilder
 				.Create()
 				.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-				.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-				.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
 				.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
 				.Build();
 
