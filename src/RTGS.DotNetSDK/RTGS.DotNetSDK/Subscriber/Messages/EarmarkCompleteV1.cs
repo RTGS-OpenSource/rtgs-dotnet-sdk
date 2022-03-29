@@ -8,5 +8,5 @@ public record EarmarkCompleteV1
 	/// <summary>
 	/// The id of the lock.
 	/// </summary>
-	public Guid LockId { get; init; }
+	public Guid LckId { get; init; }
 }

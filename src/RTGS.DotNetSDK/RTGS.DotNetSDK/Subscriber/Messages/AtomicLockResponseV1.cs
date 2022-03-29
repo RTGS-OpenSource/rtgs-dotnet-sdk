@@ -10,22 +10,22 @@ public record AtomicLockResponseV1
 	/// <summary>
 	/// The id of the lock.
 	/// </summary>
-	public Guid LockId { get; init; }
+	public Guid LckId { get; init; }
 
 	/// <summary>
 	/// When the lock expires.
 	/// </summary>
-	public DateTimeOffset LockExpiry { get; init; }
+	public DateTimeOffset LckXpry { get; init; }
 
 	/// <summary>
 	/// The response status code.
 	/// </summary>
-	public ResponseStatusCodes StatusCode { get; init; }
+	public ResponseStatusCodes StsCd { get; init; }
 
 	/// <summary>
 	/// The message.
 	/// </summary>
-	public string Message { get; init; }
+	public string Msg { get; init; }
 
 	/// <summary>
 	/// Debtor amount - the converted amount in the debtor currency.

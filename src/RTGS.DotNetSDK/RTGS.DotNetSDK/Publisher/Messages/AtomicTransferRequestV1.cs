@@ -18,5 +18,5 @@ public record AtomicTransferRequestV1
 	/// <summary>
 	/// Lock Id - a GUID to link this atomic transfer to its corresponding atomic lock.
 	/// </summary>
-	public Guid LockId { get; init; }
+	public Guid LckId { get; init; }
 }

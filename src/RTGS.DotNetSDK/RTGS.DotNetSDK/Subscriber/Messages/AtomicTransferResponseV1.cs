@@ -8,15 +8,15 @@ public class AtomicTransferResponseV1
 	/// <summary>
 	/// The response status code.
 	/// </summary>
-	public ResponseStatusCodes StatusCode { get; init; }
+	public ResponseStatusCodes StsCd { get; init; }
 
 	/// <summary>
 	/// The message.
 	/// </summary>
-	public string Message { get; init; }
+	public string Msg { get; init; }
 
 	/// <summary>
 	/// The id of the lock.
 	/// </summary>
-	public Guid LockId { get; init; }
+	public Guid LckId { get; init; }
 }

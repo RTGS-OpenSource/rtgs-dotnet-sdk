@@ -11,7 +11,7 @@ public static class ValidMessages
 
 	public static readonly AtomicLockRequestV1 AtomicLockRequest = new()
 	{
-		DebtorRtgsId = new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
+		DbtrRtgsId = new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
 		{
 			Id = BankDid
 		},
@@ -50,7 +50,6 @@ public static class ValidMessages
 			Ccy = "USD",
 			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00CREDITORAGENTACCOUNT" }
 		},
-		SplmtryData = "some-extra-data",
 		EndToEndId = "end-to-end-id"
 	};
 
@@ -64,25 +63,31 @@ public static class ValidMessages
 				new CreditTransferTransaction50 { PoolgAdjstmntDt = DateTime.Parse("2021-01-01") }
 			}
 		},
-		LockId = Guid.Parse("B27C2536-27F8-403F-ABBD-7AC4190FBBD3")
+		LckId = Guid.Parse("B27C2536-27F8-403F-ABBD-7AC4190FBBD3")
 	};
 
 	public static readonly EarmarkConfirmationV1 EarmarkConfirmation = new()
 	{
-		LockId = new Guid("159C6010-82CB-4775-8C87-05E6EC203E8E"),
-		Success = true
+		LckId = new Guid("159C6010-82CB-4775-8C87-05E6EC203E8E"),
+		Sccs = true
 	};
 
 	public static readonly AtomicTransferConfirmationV1 AtomicTransferConfirmation = new()
 	{
-		LockId = new Guid("B30E15E3-CD54-4FA6-B0EB-B9BAE32976F9"),
-		Success = true
+		LckId = new Guid("B30E15E3-CD54-4FA6-B0EB-B9BAE32976F9"),
+		Sccs = true
 	};
 
 	public static readonly UpdateLedgerRequestV1 UpdateLedgerRequest = new()
 	{
-		Amount = 1.23m,
-		AccountIdentifier = "GB33BUKB20201555555555"
+		Amt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
+		{
+			Value = 1.23m
+		},
+		AcctId = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+		{
+			IBAN = "GB33BUKB20201555555555"
+		}
 	};
 
 	public static readonly FIToFICustomerCreditTransferV10 PayawayCreate = new()

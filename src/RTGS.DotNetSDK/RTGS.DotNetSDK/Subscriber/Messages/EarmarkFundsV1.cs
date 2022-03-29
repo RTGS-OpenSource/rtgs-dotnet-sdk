@@ -10,7 +10,7 @@ public record EarmarkFundsV1
 	/// <summary>
 	/// The id of the lock.
 	/// </summary>
-	public Guid LockId { get; init; }
+	public Guid LckId { get; init; }
 
 	/// <summary>
 	/// The account to use when earmarking funds.
@@ -18,10 +18,10 @@ public record EarmarkFundsV1
 	/// <remarks>
 	/// The <see cref="CashAccount40" /> type is from NuGet package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
 	/// </remarks>
-	public CashAccount40 LiquidityPoolAccount { get; init; }
+	public CashAccount40 Acct { get; init; }
 
 	/// <summary>
 	/// The amount to earmark.
 	/// </summary>
-	public decimal Amount { get; init; }
+	public ActiveCurrencyAndAmount Amt { get; init; }
 }

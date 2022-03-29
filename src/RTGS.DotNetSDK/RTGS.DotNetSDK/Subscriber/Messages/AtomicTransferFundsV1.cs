@@ -1,4 +1,6 @@
-﻿namespace RTGS.DotNetSDK.Subscriber.Messages;
+﻿using RTGS.ISO20022.Messages.Pacs_008_001.V10;
+
+namespace RTGS.DotNetSDK.Subscriber.Messages;
 
 /// <summary>
 /// Represents an atomic transfer funds message.
@@ -6,12 +8,12 @@
 public record AtomicTransferFundsV1
 {
 	/// <summary>
-	/// The PACS008 message represented using JSON.
+	/// The PACS008 message.
 	/// </summary>
-	public string PacsJson { get; set; }
+	public FIToFICustomerCreditTransferV10 FIToFICstmrCdtTrf { get; set; }
 
 	/// <summary>
 	/// The id of the lock.
 	/// </summary>
-	public Guid LockId { get; set; }
+	public Guid LckId { get; set; }
 }

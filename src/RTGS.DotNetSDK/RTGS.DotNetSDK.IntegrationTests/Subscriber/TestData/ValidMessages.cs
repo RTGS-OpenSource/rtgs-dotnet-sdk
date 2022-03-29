@@ -1,6 +1,7 @@
 ﻿using RTGS.DotNetSDK.IdCrypt.Messages;
 using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
 using RTGS.DotNetSDK.Subscriber.Messages;
+using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 
@@ -8,15 +9,15 @@ public static class ValidMessages
 {
 	public const string BankDid = "test-bank-did";
 
-	public static readonly ISO20022.Messages.Pacs_008_001.V10.FIToFICustomerCreditTransferV10 PayawayFunds = new()
+	public static readonly FIToFICustomerCreditTransferV10 PayawayFunds = new()
 	{
-		GrpHdr = new ISO20022.Messages.Pacs_008_001.V10.GroupHeader96
+		GrpHdr = new GroupHeader96
 		{
 			MsgId = "message-id"
 		},
 		CdtTrfTxInf = new[]
 		{
-			new ISO20022.Messages.Pacs_008_001.V10.CreditTransferTransaction50
+			new CreditTransferTransaction50
 			{
 				PoolgAdjstmntDt = new DateTime(2021, 2, 2)
 			}
@@ -73,8 +74,8 @@ public static class ValidMessages
 
 	public static readonly AtomicLockResponseV1 AtomicLockResponseV1 = new()
 	{
-		LockId = Guid.Parse("9e4d8f43-eb2e-4408-9461-0aba281792af"),
-		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
+		LckId = Guid.Parse("9e4d8f43-eb2e-4408-9461-0aba281792af"),
+		DbtrAmt = new ActiveCurrencyAndAmount
 		{
 			Ccy = "GBP",
 			Value = 1.99m
@@ -83,78 +84,78 @@ public static class ValidMessages
 
 	public static readonly AtomicTransferResponseV1 AtomicTransferResponseV1 = new()
 	{
-		LockId = Guid.Parse("30fc2ac5-5f4d-4abc-b5b9-038df91b9832"),
-		StatusCode = ResponseStatusCodes.Ok,
-		Message = "the-message"
+		LckId = Guid.Parse("30fc2ac5-5f4d-4abc-b5b9-038df91b9832"),
+		StsCd = ResponseStatusCodes.Ok,
+		Msg = "the-message"
 	};
 
 	public static readonly AtomicTransferFundsV1 AtomicTransferFundsV1 = new()
 	{
-		PacsJson = "pacs-json",
-		LockId = new Guid("6051b46f-a930-40fd-80ee-a08570900c87")
+		FIToFICstmrCdtTrf = new FIToFICustomerCreditTransferV10(),
+		LckId = new Guid("6051b46f-a930-40fd-80ee-a08570900c87")
 	};
 
 	public static readonly EarmarkFundsV1 EarmarkFundsV1 = new()
 	{
-		Amount = 1,
-		LiquidityPoolAccount = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		Amt = new ActiveCurrencyAndAmount { Value = 1 },
+		Acct = new CashAccount40
 		{
 			Nm = "name",
-			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+			Id = new AccountIdentification4Choice
 			{
 				IBAN = "iban"
 			}
 		},
-		LockId = new Guid("ff1bee59-92ac-4183-939f-6c67e16f22fb")
+		LckId = new Guid("ff1bee59-92ac-4183-939f-6c67e16f22fb")
 	};
 
 	public static readonly EarmarkCompleteV1 EarmarkCompleteV1 = new()
 	{
-		LockId = new Guid("4584e888-bce6-41de-b100-8ca553ad097c")
+		LckId = new Guid("4584e888-bce6-41de-b100-8ca553ad097c")
 	};
 
 	public static readonly EarmarkReleaseV1 EarmarkReleaseV1 = new()
 	{
-		LockId = new Guid("19968ca5-d019-4019-9849-9f8002a3b06b")
+		LckId = new Guid("19968ca5-d019-4019-9849-9f8002a3b06b")
 	};
 
 	public static readonly BankPartnersResponseV1 BankPartnersResponseV1 = new()
 	{
 		DbtrAcct =
-			new ISO20022.Messages.Pacs_008_001.V10.CashAccount40()
+			new CashAccount40()
 			{
-				Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "iban1" }
+				Id = new AccountIdentification4Choice { IBAN = "iban1" }
 			},
-		BankPartners = new List<BankPartnersResponseV1.BankPartner>
+		BnkPrtnrs = new List<BankPartnersResponseV1.BankPartner>
 		{
 			new BankPartnersResponseV1.BankPartner
 			{
 				RtgsId =
-					new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
+					new GenericFinancialIdentification1
 					{
 						Id = "id1"
 					},
-				Currency = "PLN",
-				Name = "Bank",
+				Ccy = "PLN",
+				Nm = "Bank",
 				CdtrAcct =
-					new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+					new CashAccount40
 					{
-						Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+						Id = new AccountIdentification4Choice
 						{
 							IBAN = "CdtrAcctIban"
 						}
 					},
 				CdtrAgtAcct =
-					new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+					new CashAccount40
 					{
-						Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+						Id = new AccountIdentification4Choice
 						{
 							IBAN = "CdtrAgtAcctIban"
 						}
 					},
-				DbtrAgtAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+				DbtrAgtAcct = new CashAccount40
 				{
-					Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+					Id = new AccountIdentification4Choice
 					{
 						IBAN = "DbtrAgtAcctIban"
 					}

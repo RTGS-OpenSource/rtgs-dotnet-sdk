@@ -4,14 +4,14 @@ namespace RTGS.DotNetSDK.Subscriber.Messages;
 
 public record BankPartnersResponseV1
 {
-	public IEnumerable<BankPartner> BankPartners { get; init; }
+	public IEnumerable<BankPartner> BnkPrtnrs { get; init; }
 
 	public CashAccount40 DbtrAcct { get; init; }
 
 	public record BankPartner
 	{
-		public string Currency { get; init; }
-		public string Name { get; init; }
+		public string Ccy { get; init; }
+		public string Nm { get; init; }
 		public GenericFinancialIdentification1 RtgsId { get; init; }
 		public CashAccount40 DbtrAgtAcct { get; init; }
 		public CashAccount40 CdtrAcct { get; init; }
