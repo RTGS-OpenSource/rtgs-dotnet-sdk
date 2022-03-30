@@ -1,38 +1,76 @@
-﻿using System.Net.Http;
+﻿using System.Net;
+using System.Net.Http;
 
 namespace RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 
-internal class StatusCodeHttpHandler : DelegatingHandler
+internal class StatusCodeHttpHandlerBuilderFactory
 {
-	private readonly Dictionary<string, MockHttpResponse> _mockHttpResponses;
+	public static StatusCodeHttpHandlerBuilder Create() => new();
 
-	public Dictionary<string, IList<HttpRequestMessage>> Requests { get; }
+	public static QueueableStatusCodeHttpHandlerBuilder CreateQueueable() => new();
 
-	public StatusCodeHttpHandler(Dictionary<string, MockHttpResponse> mockHttpResponses)
+	internal class StatusCodeHttpHandlerBuilder
 	{
-		Requests = new Dictionary<string, IList<HttpRequestMessage>>();
-		_mockHttpResponses = mockHttpResponses;
+		private Dictionary<string, MockHttpResponse> Responses { get; } = new();
+
+		public StatusCodeHttpHandlerBuilder WithServiceUnavailableResponse(string path) =>
+			WithResponse(path, null, HttpStatusCode.ServiceUnavailable);
+
+		public StatusCodeHttpHandlerBuilder WithOkResponse(HttpRequestResponseContext httpRequestResponseContext) =>
+			WithResponse(
+				httpRequestResponseContext.RequestPath,
+				new StringContent(httpRequestResponseContext.ResponseContent),
+				HttpStatusCode.OK);
+
+		public StatusCodeHttpHandler Build() => new(Responses);
+
+		private StatusCodeHttpHandlerBuilder WithResponse(string path, HttpContent content, HttpStatusCode statusCode)
+		{
+			var mockResponse = new MockHttpResponse
+			{
+				Path = path,
+				HttpStatusCode = statusCode,
+				Content = content
+			};
+
+			Responses[path] = mockResponse;
+
+			return this;
+		}
 	}
 
-	protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+	internal class QueueableStatusCodeHttpHandlerBuilder
 	{
-		var requestPath = request.RequestUri!.LocalPath;
+		private Dictionary<string, Queue<MockHttpResponse>> Responses { get; } = new();
 
-		if (!Requests.ContainsKey(requestPath))
+		public QueueableStatusCodeHttpHandlerBuilder WithServiceUnavailableResponse(string path) =>
+			WithResponse(path, null, HttpStatusCode.ServiceUnavailable);
+
+		public QueueableStatusCodeHttpHandlerBuilder WithOkResponse(HttpRequestResponseContext httpRequestResponseContext) =>
+			WithResponse(
+				httpRequestResponseContext.RequestPath,
+				new StringContent(httpRequestResponseContext.ResponseContent),
+				HttpStatusCode.OK);
+
+		public QueueableStatusCodeHttpHandler Build() => new(Responses);
+
+		private QueueableStatusCodeHttpHandlerBuilder WithResponse(string path, HttpContent content, HttpStatusCode statusCode)
 		{
-			Requests[requestPath] = new List<HttpRequestMessage>();
+			var mockResponse = new MockHttpResponse
+			{
+				Path = path,
+				HttpStatusCode = statusCode,
+				Content = content
+			};
+
+			if (!Responses.ContainsKey(path))
+			{
+				Responses[path] = new Queue<MockHttpResponse>();
+			}
+
+			Responses[path].Enqueue(mockResponse);
+
+			return this;
 		}
-		Requests[requestPath].Add(request);
-
-		var requestMock = _mockHttpResponses[requestPath];
-
-		var response = new HttpResponseMessage(requestMock.HttpStatusCode)
-		{
-			Content = requestMock.Content
-		};
-
-		response.RequestMessage = request;
-
-		return Task.FromResult(response);
 	}
 }
