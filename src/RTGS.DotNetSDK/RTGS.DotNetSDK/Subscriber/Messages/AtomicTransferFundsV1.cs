@@ -8,12 +8,15 @@ namespace RTGS.DotNetSDK.Subscriber.Messages;
 public record AtomicTransferFundsV1
 {
 	/// <summary>
-	/// The PACS008 message.
+	/// FIToFICustomerCreditTransfer: Financial institution to financial institution customer credit transfer.
 	/// </summary>
+	/// <remarks>
+	/// The <c>FIToFICustomerCreditTransferV10</c> type is from NuGet package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
+	/// </remarks>
 	public FIToFICustomerCreditTransferV10 FIToFICstmrCdtTrf { get; set; }
 
 	/// <summary>
-	/// The id of the lock.
+	/// LockId: The id of the lock.
 	/// </summary>
 	public Guid LckId { get; set; }
 }

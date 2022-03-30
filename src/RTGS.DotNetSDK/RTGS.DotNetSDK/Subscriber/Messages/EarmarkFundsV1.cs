@@ -8,20 +8,23 @@ namespace RTGS.DotNetSDK.Subscriber.Messages;
 public record EarmarkFundsV1
 {
 	/// <summary>
-	/// The id of the lock.
+	/// LockId: The id of the lock.
 	/// </summary>
 	public Guid LckId { get; init; }
 
 	/// <summary>
-	/// The account to use when earmarking funds.
+	/// Account: The account to use when earmarking funds.
 	/// </summary>
 	/// <remarks>
-	/// The <see cref="CashAccount40" /> type is from NuGet package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
+	/// The <c>CashAccount40</c> type is from NuGet package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
 	/// </remarks>
 	public CashAccount40 Acct { get; init; }
 
 	/// <summary>
-	/// The amount to earmark.
+	/// Amount: The amount to earmark.
 	/// </summary>
+	/// <remarks>
+	/// The <c>ActiveCurrencyAndAmount</c> type is from NuGet package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
+	/// </remarks>
 	public ActiveCurrencyAndAmount Amt { get; init; }
 }

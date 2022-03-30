@@ -6,12 +6,12 @@
 public record EarmarkConfirmationV1
 {
 	/// <summary>
-	/// The lock Id for which to initiate earmark confirmation.
+	/// LockId: The lock Id for which to initiate earmark confirmation.
 	/// </summary>
 	public Guid LckId { get; init; }
 
 	/// <summary>
-	/// True to confirm, false otherwise.
+	/// Success: True to confirm, false otherwise.
 	/// </summary>
 	public bool Sccs { get; init; }
 }

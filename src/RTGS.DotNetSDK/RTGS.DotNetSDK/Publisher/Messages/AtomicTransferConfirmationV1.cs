@@ -6,12 +6,12 @@
 public class AtomicTransferConfirmationV1
 {
 	/// <summary>
-	/// The lock Id used to correlate this transfer with the original atomic lock request.
+	/// LockId: The lock Id used to correlate this transfer with the original atomic lock request.
 	/// </summary>
 	public Guid LckId { get; init; }
 
 	/// <summary>
-	/// True to confirm, false otherwise.
+	/// Success: True to confirm, false otherwise.
 	/// </summary>
 	public bool Sccs { get; init; }
 }
