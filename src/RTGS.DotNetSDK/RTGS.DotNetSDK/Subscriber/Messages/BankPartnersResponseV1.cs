@@ -36,7 +36,7 @@ public record BankPartnersResponseV1
 		/// The <c>GenericFinancialIdentification1</c> type is from NuGet package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
 		/// </remarks>
 		public GenericFinancialIdentification1 RtgsId { get; init; }
-		
+
 		/// <summary>
 		/// DebtorAgentAccount: Debtor agent account details.
 		/// </summary>
