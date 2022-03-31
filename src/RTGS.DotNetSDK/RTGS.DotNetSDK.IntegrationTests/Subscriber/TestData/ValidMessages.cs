@@ -1,7 +1,6 @@
 ﻿using RTGS.DotNetSDK.IdCrypt.Messages;
 using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
 using RTGS.DotNetSDK.Subscriber.Messages;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 
@@ -9,15 +8,15 @@ public static class ValidMessages
 {
 	public const string BankDid = "test-bank-did";
 
-	public static readonly FIToFICustomerCreditTransferV10 PayawayFunds = new()
+	public static readonly ISO20022.Messages.Pacs_008_001.V10.FIToFICustomerCreditTransferV10 PayawayFunds = new()
 	{
-		GrpHdr = new GroupHeader96
+		GrpHdr = new ISO20022.Messages.Pacs_008_001.V10.GroupHeader96
 		{
 			MsgId = "message-id"
 		},
 		CdtTrfTxInf = new[]
 		{
-			new CreditTransferTransaction50
+			new ISO20022.Messages.Pacs_008_001.V10.CreditTransferTransaction50
 			{
 				PoolgAdjstmntDt = new DateTime(2021, 2, 2)
 			}
@@ -75,7 +74,7 @@ public static class ValidMessages
 	public static readonly AtomicLockResponseV1 AtomicLockResponseV1 = new()
 	{
 		LckId = Guid.Parse("9e4d8f43-eb2e-4408-9461-0aba281792af"),
-		DbtrAmt = new ActiveCurrencyAndAmount
+		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
 		{
 			Ccy = "GBP",
 			Value = 1.99m
@@ -91,17 +90,17 @@ public static class ValidMessages
 
 	public static readonly AtomicTransferFundsV1 AtomicTransferFundsV1 = new()
 	{
-		FIToFICstmrCdtTrf = new FIToFICustomerCreditTransferV10(),
+		FIToFICstmrCdtTrf = new ISO20022.Messages.Pacs_008_001.V10.FIToFICustomerCreditTransferV10(),
 		LckId = new Guid("6051b46f-a930-40fd-80ee-a08570900c87")
 	};
 
 	public static readonly EarmarkFundsV1 EarmarkFundsV1 = new()
 	{
-		Amt = new ActiveCurrencyAndAmount { Value = 1 },
-		Acct = new CashAccount40
+		Amt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Value = 1 },
+		Acct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
 			Nm = "name",
-			Id = new AccountIdentification4Choice
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
 			{
 				IBAN = "iban"
 			}
@@ -122,40 +121,40 @@ public static class ValidMessages
 	public static readonly BankPartnersResponseV1 BankPartnersResponseV1 = new()
 	{
 		DbtrAcct =
-			new CashAccount40()
+			new ISO20022.Messages.Pacs_008_001.V10.CashAccount40()
 			{
-				Id = new AccountIdentification4Choice { IBAN = "iban1" }
+				Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "iban1" }
 			},
 		BkPrtnrs = new List<BankPartnersResponseV1.BankPartner>
 		{
 			new BankPartnersResponseV1.BankPartner
 			{
 				RtgsId =
-					new GenericFinancialIdentification1
+					new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
 					{
 						Id = "id1"
 					},
 				Ccy = "PLN",
 				Nm = "Bank",
 				CdtrAcct =
-					new CashAccount40
+					new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 					{
-						Id = new AccountIdentification4Choice
+						Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
 						{
 							IBAN = "CdtrAcctIban"
 						}
 					},
 				CdtrAgtAcct =
-					new CashAccount40
+					new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 					{
-						Id = new AccountIdentification4Choice
+						Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
 						{
 							IBAN = "CdtrAgtAcctIban"
 						}
 					},
-				DbtrAgtAcct = new CashAccount40
+				DbtrAgtAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 				{
-					Id = new AccountIdentification4Choice
+					Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
 					{
 						IBAN = "DbtrAgtAcctIban"
 					}
