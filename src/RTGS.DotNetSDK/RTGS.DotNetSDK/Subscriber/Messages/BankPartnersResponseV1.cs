@@ -7,7 +7,7 @@ public record BankPartnersResponseV1
 	/// <summary>
 	/// BankPartners: List of bank partners.
 	/// </summary>
-	public IEnumerable<BankPartner> BnkPrtnrs { get; init; }
+	public IEnumerable<BankPartner> BkPrtnrs { get; init; }
 
 	/// <summary>
 	/// DebtorAccount: Debtor account details.

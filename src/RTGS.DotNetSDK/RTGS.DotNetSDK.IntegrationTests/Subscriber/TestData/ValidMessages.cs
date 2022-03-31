@@ -126,7 +126,7 @@ public static class ValidMessages
 			{
 				Id = new AccountIdentification4Choice { IBAN = "iban1" }
 			},
-		BnkPrtnrs = new List<BankPartnersResponseV1.BankPartner>
+		BkPrtnrs = new List<BankPartnersResponseV1.BankPartner>
 		{
 			new BankPartnersResponseV1.BankPartner
 			{
