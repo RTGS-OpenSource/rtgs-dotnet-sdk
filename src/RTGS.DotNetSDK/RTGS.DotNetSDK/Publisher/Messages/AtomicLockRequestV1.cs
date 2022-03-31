@@ -8,15 +8,15 @@ namespace RTGS.DotNetSDK.Publisher.Messages;
 public record AtomicLockRequestV1
 {
 	/// <summary>
-	/// Bank RTGS id, the identifier of the bank initiating the transaction.
+	/// DebtorRtgsId: Bank RTGS id, the identifier of the bank initiating the transaction.
 	/// </summary>
 	/// <remarks>
 	/// The <c>GenericFinancialIdentification1</c> type is from NuGet package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
 	/// </remarks>
-	public GenericFinancialIdentification1 DbtrToRtgsId { get; init; }
+	public GenericFinancialIdentification1 DbtrRtgsId { get; init; }
 
 	/// <summary>
-	/// Creditor amount - describes the value and currency of the transfer.
+	/// CreditorAmount: describes the value and currency of the transfer.
 	/// </summary>
 	/// <remarks>
 	/// The <c>ActiveCurrencyAndAmount</c> type is from NuGet package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
@@ -24,7 +24,7 @@ public record AtomicLockRequestV1
 	public ActiveCurrencyAndAmount CdtrAmt { get; init; }
 
 	/// <summary>
-	/// Debtor account.
+	/// DebtorAccount: Debtor account details.
 	/// </summary>
 	/// <remarks>
 	/// The <c>CashAccount40</c> type is from NuGet package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
@@ -32,7 +32,7 @@ public record AtomicLockRequestV1
 	public CashAccount40 DbtrAcct { get; init; }
 
 	/// <summary>
-	/// Debtor agent account.
+	/// DebtorAgentAccount: Debtor agent account details.
 	/// </summary>
 	/// <remarks>
 	/// The <c>CashAccount40</c> type is from NuGet package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
@@ -40,7 +40,7 @@ public record AtomicLockRequestV1
 	public CashAccount40 DbtrAgntAcct { get; init; }
 
 	/// <summary>
-	/// Creditor account.
+	/// CreditorAccount: Creditor account details.
 	/// </summary>
 	/// <remarks>
 	/// The <c>CashAccount40</c> type is from NuGet package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
@@ -48,7 +48,7 @@ public record AtomicLockRequestV1
 	public CashAccount40 CdtrAcct { get; init; }
 
 	/// <summary>
-	/// Creditor agent account.
+	/// CreditorAgentAccount: Creditor agent account details.
 	/// </summary>
 	/// <remarks>
 	/// The <c>CashAccount40</c> type is from NuGet package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
@@ -56,7 +56,7 @@ public record AtomicLockRequestV1
 	public CashAccount40 CdtrAgntAcct { get; init; }
 
 	/// <summary>
-	/// Ultimate debtor account.
+	/// UltimateDebtorAccount: Ultimate debtor account details.
 	/// </summary>
 	/// <remarks>
 	/// The <c>CashAccount40</c> type is from NuGet package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
@@ -64,18 +64,12 @@ public record AtomicLockRequestV1
 	public CashAccount40 UltmtDbtrAcct { get; init; }
 
 	/// <summary>
-	/// Ultimate creditor account.
+	/// UltimateCreditorAccount: Ultimate creditor account details.
 	/// </summary>
 	/// <remarks>
 	/// The <c>CashAccount40</c> type is from NuGet package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
 	/// </remarks>
 	public CashAccount40 UltmtCdtrAcct { get; init; }
-
-	/// <summary>
-	/// Supplementary data.
-	/// <br/>This field is optional.
-	/// </summary>
-	public string SplmtryData { get; init; }
 
 	/// <summary>
 	/// End to end id, typically a GUID used to correlate an atomic lock request with its response.

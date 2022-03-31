@@ -73,7 +73,7 @@ public static class ValidMessages
 
 	public static readonly AtomicLockResponseV1 AtomicLockResponseV1 = new()
 	{
-		LckId = "9e4d8f43-eb2e-4408-9461-0aba281792af",
+		LckId = Guid.Parse("9e4d8f43-eb2e-4408-9461-0aba281792af"),
 		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
 		{
 			Ccy = "GBP",
@@ -83,21 +83,21 @@ public static class ValidMessages
 
 	public static readonly AtomicTransferResponseV1 AtomicTransferResponseV1 = new()
 	{
-		LckId = "30fc2ac5-5f4d-4abc-b5b9-038df91b9832",
-		StatusCode = ResponseStatusCodes.Ok,
-		Message = "the-message"
+		LckId = Guid.Parse("30fc2ac5-5f4d-4abc-b5b9-038df91b9832"),
+		StsCd = ResponseStatusCodes.Ok,
+		Msg = "the-message"
 	};
 
 	public static readonly AtomicTransferFundsV1 AtomicTransferFundsV1 = new()
 	{
-		PacsJson = "pacs-json",
-		LockId = new Guid("6051b46f-a930-40fd-80ee-a08570900c87")
+		FIToFICstmrCdtTrf = new ISO20022.Messages.Pacs_008_001.V10.FIToFICustomerCreditTransferV10(),
+		LckId = new Guid("6051b46f-a930-40fd-80ee-a08570900c87")
 	};
 
 	public static readonly EarmarkFundsV1 EarmarkFundsV1 = new()
 	{
-		Amount = 1,
-		LiquidityPoolAccount = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		Amt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Value = 1 },
+		Acct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
 			Nm = "name",
 			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
@@ -105,17 +105,17 @@ public static class ValidMessages
 				IBAN = "iban"
 			}
 		},
-		LockId = new Guid("ff1bee59-92ac-4183-939f-6c67e16f22fb")
+		LckId = new Guid("ff1bee59-92ac-4183-939f-6c67e16f22fb")
 	};
 
 	public static readonly EarmarkCompleteV1 EarmarkCompleteV1 = new()
 	{
-		LockId = new Guid("4584e888-bce6-41de-b100-8ca553ad097c")
+		LckId = new Guid("4584e888-bce6-41de-b100-8ca553ad097c")
 	};
 
 	public static readonly EarmarkReleaseV1 EarmarkReleaseV1 = new()
 	{
-		LockId = new Guid("19968ca5-d019-4019-9849-9f8002a3b06b")
+		LckId = new Guid("19968ca5-d019-4019-9849-9f8002a3b06b")
 	};
 
 	public static readonly BankPartnersResponseV1 BankPartnersResponseV1 = new()
@@ -125,17 +125,17 @@ public static class ValidMessages
 			{
 				Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "iban1" }
 			},
-		BkPtnrs = new List<BankPartnersResponseV1.BankPartner>
+		BkPrtnrs = new List<BankPartnersResponseV1.BankPartner>
 		{
 			new BankPartnersResponseV1.BankPartner
 			{
-				Id =
+				RtgsId =
 					new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
 					{
 						Id = "id1"
 					},
 				Ccy = "PLN",
-				BkNm = "Bank",
+				Nm = "Bank",
 				CdtrAcct =
 					new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 					{
