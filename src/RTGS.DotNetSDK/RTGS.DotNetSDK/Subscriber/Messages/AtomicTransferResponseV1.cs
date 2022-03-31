@@ -6,20 +6,17 @@
 public class AtomicTransferResponseV1
 {
 	/// <summary>
-	/// The response status code.
+	/// StatusCode: The response status code.
 	/// </summary>
-	public ResponseStatusCodes StatusCode { get; init; }
+	public ResponseStatusCodes StsCd { get; init; }
 
 	/// <summary>
-	/// The message.
+	/// Message: The message.
 	/// </summary>
-	public string Message { get; init; }
+	public string Msg { get; init; }
 
 	/// <summary>
-	/// The id of the lock.
+	/// LockId: The id of the lock.
 	/// </summary>
-	/// <remarks>
-	/// Guid value represented as a string.
-	/// </remarks>
-	public string LckId { get; init; }
+	public Guid LckId { get; init; }
 }

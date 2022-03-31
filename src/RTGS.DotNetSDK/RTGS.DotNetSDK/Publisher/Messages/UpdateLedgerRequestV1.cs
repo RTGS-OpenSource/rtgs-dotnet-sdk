@@ -1,4 +1,6 @@
-﻿namespace RTGS.DotNetSDK.Publisher.Messages;
+﻿using RTGS.ISO20022.Messages.Pacs_008_001.V10;
+
+namespace RTGS.DotNetSDK.Publisher.Messages;
 
 /// <summary>
 /// Represents the message sent to RTGS to indicate a change to the available funds of a bank.
@@ -6,13 +8,18 @@
 public class UpdateLedgerRequestV1
 {
 	/// <summary>
-	/// IBAN (International Bank Account Number).
+	/// AccountIdentifier: Identifier for the account related to this change.
 	/// </summary>
-	public string AccountIdentifier { get; init; }
-
+	/// <remarks>
+	/// The <c>AccountIdentification4Choice</c> type is from NuGet package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
+	/// </remarks>
+	public AccountIdentification4Choice AcctId { get; init; }
 
 	/// <summary>
-	/// The amount now available.
+	/// Amount: The amount now available.
 	/// </summary>
-	public decimal Amount { get; init; }
+	/// <remarks>
+	/// The <c>ActiveCurrencyAndAmount</c> type is from NuGet package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
+	/// </remarks>
+	public ActiveCurrencyAndAmount Amt { get; init; }
 }
