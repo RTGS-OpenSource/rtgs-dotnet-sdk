@@ -40,5 +40,5 @@ public static class SubscriberActions
 		new(new AllTestHandlers(), handlers => handlers.OfType<TestBankPartnersResponseV1>().Single(), "bank.partners.v1", ValidMessages.BankPartnersResponseV1);
 
 	public static readonly SubscriberAction<IdCryptInvitationConfirmationV1> IdCryptInvitationConfirmationV1 =
-		new(new AllTestHandlers(), handlers => handlers.OfType<TestIdCryptInvitationConfirmationV1>().Single(), "idcrypt.invitation.v1", ValidMessages.IdCryptInvitationConfirmationV1);
+		new(new AllTestHandlers(), handlers => handlers.OfType<TestIdCryptInvitationConfirmationV1>().Single(), "idcrypt.invitationconfirmation.v1", ValidMessages.IdCryptInvitationConfirmationV1);
 }
