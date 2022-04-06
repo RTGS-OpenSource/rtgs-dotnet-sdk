@@ -24,11 +24,11 @@ internal class QueueableStatusCodeHttpHandler : DelegatingHandler
 		}
 		Requests[requestPath].Add(request);
 
-		var requestMock = _mockHttpResponses[requestPath].Dequeue();
+		var responseMock = _mockHttpResponses[requestPath].Dequeue();
 
-		var response = new HttpResponseMessage(requestMock.HttpStatusCode)
+		var response = new HttpResponseMessage(responseMock.HttpStatusCode)
 		{
-			Content = requestMock.Content
+			Content = responseMock.Content
 		};
 
 		response.RequestMessage = request;

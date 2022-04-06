@@ -7,7 +7,7 @@ namespace RTGS.DotNetSDK.Subscriber.Adapters;
 
 internal class IdCryptInvitationConfirmationV1MessageAdapter : IMessageAdapter<IdCryptInvitationConfirmationV1>
 {
-	public string MessageIdentifier => "idcrypt.invitation.v1";
+	public string MessageIdentifier => "idcrypt.invitationconfirmation.v1";
 
 	public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<IdCryptInvitationConfirmationV1> handler)
 	{

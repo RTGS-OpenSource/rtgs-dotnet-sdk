@@ -124,7 +124,7 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			new List<LogEntry>()
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("idcrypt.invitation.v1 message received from RTGS", LogEventLevel.Information),
+				new("idcrypt.invitationconfirmation.v1 message received from RTGS", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
