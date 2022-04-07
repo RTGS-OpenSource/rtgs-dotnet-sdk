@@ -53,7 +53,7 @@ public static class ServiceCollectionExtensions
 		{
 			identityConfig.IdCryptApiAddress = options.IdCryptApiAddress.ToString();
 			identityConfig.IdCryptApiKey = options.IdCryptApiKey;
-			identityConfig.IdCryptServiceEndpointAddress = options.IdCryptServiceEndPointAddress.ToString();
+			identityConfig.IdCryptServiceEndpointAddress = options.IdCryptServiceEndPointAddress.ToString().TrimEnd('/');
 		});
 
 		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
@@ -94,7 +94,7 @@ public static class ServiceCollectionExtensions
 		{
 			identityConfig.IdCryptApiAddress = options.IdCryptApiAddress.ToString();
 			identityConfig.IdCryptApiKey = options.IdCryptApiKey;
-			identityConfig.IdCryptServiceEndpointAddress = options.IdCryptServiceEndPointAddress.ToString();
+			identityConfig.IdCryptServiceEndpointAddress = options.IdCryptServiceEndPointAddress.ToString().TrimEnd('/');
 		});
 
 		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
