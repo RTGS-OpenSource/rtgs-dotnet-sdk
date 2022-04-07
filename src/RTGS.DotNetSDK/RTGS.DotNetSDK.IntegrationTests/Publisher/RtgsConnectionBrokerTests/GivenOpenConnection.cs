@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net.Http;
+using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
@@ -22,6 +23,7 @@ public class GivenOpenConnection
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
 		private StatusCodeHttpHandler _idCryptMessageHandler;
+		private SecondaryStatusCodeHttpHandler _idCryptMessageHandler2;
 
 		public AndIdCryptApiAvailable(GrpcServerFixture grpcServer)
 		{
@@ -33,6 +35,10 @@ public class GivenOpenConnection
 
 			_serilogContext = TestCorrelator.CreateContext();
 		}
+
+		public Dictionary<string, IList<HttpRequestMessage>> AllRequests =>
+			_idCryptMessageHandler.Requests.Concat(_idCryptMessageHandler2.Requests)
+				.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
 		private static void SetupSerilogLogger() =>
 			Log.Logger = new LoggerConfiguration()
@@ -61,6 +67,10 @@ public class GivenOpenConnection
 				_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
 					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
+					.Build();
+
+				_idCryptMessageHandler2 = StatusCodeHttpHandlerBuilderFactory
+					.CreateSecondary()
 					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
 					.Build();
 
@@ -68,7 +78,8 @@ public class GivenOpenConnection
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 					.ConfigureServices(services => services
 						.AddRtgsPublisher(rtgsSdkOptions)
-						.AddTestIdCryptHttpClient(_idCryptMessageHandler))
+						.AddTestIdCryptHttpClient(_idCryptMessageHandler)
+						.AddAgentHttpClientMessageHandler(_idCryptMessageHandler2))
 					.UseSerilog()
 				.Build();
 
@@ -100,8 +111,7 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			_idCryptMessageHandler
-				.Requests[path]
+			AllRequests[path]
 				.Single()
 				.Headers
 				.GetValues("X-API-Key")
@@ -119,8 +129,7 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var actualApiUri = _idCryptMessageHandler
-				.Requests[path]
+			var actualApiUri = AllRequests[path]
 				.Single()
 				.RequestUri
 				!.GetLeftPart(UriPartial.Authority);
@@ -138,11 +147,11 @@ public class GivenOpenConnection
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
 			var inviteRequestQueryParams1 = QueryHelpers.ParseQuery(
-				_idCryptMessageHandler.Requests[CreateInvitation.Path].First().RequestUri!.Query);
+				AllRequests[CreateInvitation.Path].First().RequestUri!.Query);
 			var alias1 = inviteRequestQueryParams1["alias"];
 
 			var inviteRequestQueryParams2 = QueryHelpers.ParseQuery(
-				_idCryptMessageHandler.Requests[CreateInvitation.Path][1].RequestUri!.Query);
+				AllRequests[CreateInvitation.Path][1].RequestUri!.Query);
 			var alias2 = inviteRequestQueryParams2["alias"];
 
 			alias2.Should().NotBeEquivalentTo(alias1);

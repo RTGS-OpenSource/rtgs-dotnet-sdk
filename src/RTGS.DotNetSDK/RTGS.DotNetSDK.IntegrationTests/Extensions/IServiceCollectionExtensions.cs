@@ -25,4 +25,16 @@ internal static class IServiceCollectionExtensions
 
 		return serviceCollection;
 	}
+
+	public static IServiceCollection AddAgentHttpClientMessageHandler<THandler>(
+		this IServiceCollection serviceCollection,
+		THandler statusCodeHttpHandler) where THandler : DelegatingHandler
+	{
+		serviceCollection
+			.AddSingleton(statusCodeHttpHandler)
+			.AddHttpClient("AgentHttpClient")
+			.AddHttpMessageHandler<THandler>();
+
+		return serviceCollection;
+	}
 }

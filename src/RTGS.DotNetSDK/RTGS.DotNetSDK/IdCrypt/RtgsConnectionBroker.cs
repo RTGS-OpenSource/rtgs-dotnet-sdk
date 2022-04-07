@@ -2,6 +2,7 @@
 using IDCryptGlobal.Cloud.Agent.Identity.Connection;
 using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.IdCrypt.Messages;
+using RTGS.IDCryptSDK.Wallet;
 
 namespace RTGS.DotNetSDK.IdCrypt;
 
@@ -10,15 +11,18 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 	private readonly ILogger<RtgsConnectionBroker> _logger;
 	private readonly IIdentityClient _identityClient;
 	private readonly IIdCryptPublisher _idCryptPublisher;
+	private readonly IWalletClient _walletClient;
 
 	public RtgsConnectionBroker(
 		ILogger<RtgsConnectionBroker> logger,
 		IIdentityClient identityClient,
-		IIdCryptPublisher idCryptPublisher)
+		IIdCryptPublisher idCryptPublisher,
+		IWalletClient walletClient)
 	{
 		_logger = logger;
 		_identityClient = identityClient;
 		_idCryptPublisher = idCryptPublisher;
+		_walletClient = walletClient;
 	}
 
 	public async Task<SendInvitationResult> SendInvitationAsync(CancellationToken cancellationToken = default)
@@ -26,7 +30,7 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		var alias = Guid.NewGuid().ToString();
 
 		var idCryptResponse = await CreateIdCryptInvitationAsync(alias);
-		var agentPublicDid = await GetIdCryptAgentPublicDidAsync();
+		var agentPublicDid = await GetIdCryptAgentPublicDidAsync(cancellationToken);
 		var sendToRtgsResult = await SendInvitationToRtgsAsync(alias, idCryptResponse.Invitation, agentPublicDid, cancellationToken);
 
 		var sendInvitationResult = new SendInvitationResult
@@ -39,17 +43,17 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		return sendInvitationResult;
 	}
 
-	private async Task<string> GetIdCryptAgentPublicDidAsync()
+	private async Task<string> GetIdCryptAgentPublicDidAsync(CancellationToken cancellationToken)
 	{
 		try
 		{
 			_logger.LogDebug("Sending GetPublicDid request to ID Crypt Cloud Agent");
 
-			var response = await _identityClient.Vault.GetPublicDID();
+			var response = await _walletClient.GetPublicDidAsync(cancellationToken);
 
 			_logger.LogDebug("Sent GetPublicDid request to ID Crypt Cloud Agent");
 
-			return response.Result.DID;
+			return response;
 		}
 		catch (Exception ex)
 		{

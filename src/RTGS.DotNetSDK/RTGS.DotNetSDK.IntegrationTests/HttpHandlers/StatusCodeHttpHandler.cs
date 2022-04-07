@@ -2,6 +2,14 @@
 
 namespace RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 
+internal class SecondaryStatusCodeHttpHandler : StatusCodeHttpHandler
+{
+	public SecondaryStatusCodeHttpHandler(Dictionary<string, MockHttpResponse> mockHttpResponses) : base(mockHttpResponses)
+	{
+
+	}
+}
+
 internal class StatusCodeHttpHandler : DelegatingHandler
 {
 	private readonly Dictionary<string, MockHttpResponse> _mockHttpResponses;
@@ -28,7 +36,7 @@ internal class StatusCodeHttpHandler : DelegatingHandler
 
 		var response = new HttpResponseMessage(responseMock.HttpStatusCode)
 		{
-			Content = responseMock.Content
+			Content = new StringContent(responseMock.Content)
 		};
 
 		response.RequestMessage = request;

@@ -1,12 +1,11 @@
 ﻿using System.Net;
-using System.Net.Http;
 
 namespace RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 
 internal class StatusCodeHttpHandlerBuilderFactory
 {
 	public static StatusCodeHttpHandlerBuilder Create() => new();
-
+	public static SecondaryStatusCodeHttpHandlerBuilder CreateSecondary() => new();
 	public static QueueableStatusCodeHttpHandlerBuilder CreateQueueable() => new();
 
 	internal class StatusCodeHttpHandlerBuilder
@@ -19,12 +18,41 @@ internal class StatusCodeHttpHandlerBuilderFactory
 		public StatusCodeHttpHandlerBuilder WithOkResponse(HttpRequestResponseContext httpRequestResponseContext) =>
 			WithResponse(
 				httpRequestResponseContext.RequestPath,
-				new StringContent(httpRequestResponseContext.ResponseContent),
+				httpRequestResponseContext.ResponseContent,
 				HttpStatusCode.OK);
 
 		public StatusCodeHttpHandler Build() => new(Responses);
 
-		private StatusCodeHttpHandlerBuilder WithResponse(string path, HttpContent content, HttpStatusCode statusCode)
+		private StatusCodeHttpHandlerBuilder WithResponse(string path, string content, HttpStatusCode statusCode)
+		{
+			var mockResponse = new MockHttpResponse
+			{
+				Path = path,
+				HttpStatusCode = statusCode,
+				Content = content
+			};
+
+			Responses[path] = mockResponse;
+
+			return this;
+		}
+	}
+	internal class SecondaryStatusCodeHttpHandlerBuilder
+	{
+		private Dictionary<string, MockHttpResponse> Responses { get; } = new();
+
+		public SecondaryStatusCodeHttpHandlerBuilder WithServiceUnavailableResponse(string path) =>
+			WithResponse(path, null, HttpStatusCode.ServiceUnavailable);
+
+		public SecondaryStatusCodeHttpHandlerBuilder WithOkResponse(HttpRequestResponseContext httpRequestResponseContext) =>
+			WithResponse(
+				httpRequestResponseContext.RequestPath,
+				httpRequestResponseContext.ResponseContent,
+				HttpStatusCode.OK);
+
+		public SecondaryStatusCodeHttpHandler Build() => new(Responses);
+
+		private SecondaryStatusCodeHttpHandlerBuilder WithResponse(string path, string content, HttpStatusCode statusCode)
 		{
 			var mockResponse = new MockHttpResponse
 			{
@@ -49,12 +77,12 @@ internal class StatusCodeHttpHandlerBuilderFactory
 		public QueueableStatusCodeHttpHandlerBuilder WithOkResponse(HttpRequestResponseContext httpRequestResponseContext) =>
 			WithResponse(
 				httpRequestResponseContext.RequestPath,
-				new StringContent(httpRequestResponseContext.ResponseContent),
+				httpRequestResponseContext.ResponseContent,
 				HttpStatusCode.OK);
 
 		public QueueableStatusCodeHttpHandler Build() => new(Responses);
 
-		private QueueableStatusCodeHttpHandlerBuilder WithResponse(string path, HttpContent content, HttpStatusCode statusCode)
+		private QueueableStatusCodeHttpHandlerBuilder WithResponse(string path, string content, HttpStatusCode statusCode)
 		{
 			var mockResponse = new MockHttpResponse
 			{

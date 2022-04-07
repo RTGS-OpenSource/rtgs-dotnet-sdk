@@ -8,6 +8,8 @@ using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 using RTGS.DotNetSDK.Subscriber.Handlers.Internal;
 using RTGS.DotNetSDK.Subscriber.Validators;
+using RTGS.IDCryptSDK;
+using RTGS.IDCryptSDK.Extensions;
 using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Extensions;
@@ -59,6 +61,11 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
 		serviceCollection.AddTransient<IIdentityClient, IdentityClient>();
 		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
+
+		serviceCollection.AddIdCryptSdk(new IdCryptSdkConfiguration(
+			options.IdCryptApiAddress,
+			options.IdCryptApiKey,
+			options.IdCryptServiceEndPointAddress));
 
 		return serviceCollection;
 	}
