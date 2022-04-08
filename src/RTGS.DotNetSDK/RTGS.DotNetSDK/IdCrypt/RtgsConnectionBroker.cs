@@ -1,7 +1,7 @@
-﻿using IDCryptGlobal.Cloud.Agent.Identity;
-using IDCryptGlobal.Cloud.Agent.Identity.Connection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.IdCrypt.Messages;
+using RTGS.IDCryptSDK.Connections;
+using RTGS.IDCryptSDK.Connections.Models;
 using RTGS.IDCryptSDK.Wallet;
 
 namespace RTGS.DotNetSDK.IdCrypt;
@@ -9,34 +9,34 @@ namespace RTGS.DotNetSDK.IdCrypt;
 internal class RtgsConnectionBroker : IRtgsConnectionBroker
 {
 	private readonly ILogger<RtgsConnectionBroker> _logger;
-	private readonly IIdentityClient _identityClient;
 	private readonly IIdCryptPublisher _idCryptPublisher;
 	private readonly IWalletClient _walletClient;
+	private readonly IConnectionsClient _connectionsClient;
 
 	public RtgsConnectionBroker(
 		ILogger<RtgsConnectionBroker> logger,
-		IIdentityClient identityClient,
 		IIdCryptPublisher idCryptPublisher,
-		IWalletClient walletClient)
+		IWalletClient walletClient,
+		IConnectionsClient connectionsClient)
 	{
 		_logger = logger;
-		_identityClient = identityClient;
 		_idCryptPublisher = idCryptPublisher;
 		_walletClient = walletClient;
+		_connectionsClient = connectionsClient;
 	}
 
 	public async Task<SendInvitationResult> SendInvitationAsync(CancellationToken cancellationToken = default)
 	{
 		var alias = Guid.NewGuid().ToString();
 
-		var idCryptResponse = await CreateIdCryptInvitationAsync(alias);
+		var idCryptResponse = await CreateIdCryptInvitationAsync(alias, cancellationToken);
 		var agentPublicDid = await GetIdCryptAgentPublicDidAsync(cancellationToken);
 		var sendToRtgsResult = await SendInvitationToRtgsAsync(alias, idCryptResponse.Invitation, agentPublicDid, cancellationToken);
 
 		var sendInvitationResult = new SendInvitationResult
 		{
 			Alias = sendToRtgsResult is SendResult.Success ? alias : null,
-			ConnectionId = sendToRtgsResult is SendResult.Success ? idCryptResponse.ConnectionID : null,
+			ConnectionId = sendToRtgsResult is SendResult.Success ? idCryptResponse.ConnectionId : null,
 			SendResult = sendToRtgsResult
 		};
 
@@ -63,7 +63,7 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		}
 	}
 
-	private async Task<ConnectionInviteResponseModel> CreateIdCryptInvitationAsync(string alias)
+	private async Task<CreateInvitationResponse> CreateIdCryptInvitationAsync(string alias, CancellationToken cancellationToken)
 	{
 		const bool autoAccept = true;
 		const bool multiUse = false;
@@ -73,11 +73,12 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		{
 			_logger.LogDebug("Sending CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", alias);
 
-			var response = await _identityClient.Connection.CreateInvitation(
+			var response = await _connectionsClient.CreateInvitationAsync(
 				alias,
 				autoAccept,
 				multiUse,
-				usePublicDid);
+				usePublicDid,
+				cancellationToken);
 
 			_logger.LogDebug("Sent CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", alias);
 
@@ -100,7 +101,7 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		var invitationMessage = new IdCryptInvitationV1
 		{
 			Alias = alias,
-			Id = invitation.ID,
+			Id = invitation.Id,
 			Label = invitation.Label,
 			RecipientKeys = invitation.RecipientKeys,
 			ServiceEndPoint = invitation.ServiceEndPoint,

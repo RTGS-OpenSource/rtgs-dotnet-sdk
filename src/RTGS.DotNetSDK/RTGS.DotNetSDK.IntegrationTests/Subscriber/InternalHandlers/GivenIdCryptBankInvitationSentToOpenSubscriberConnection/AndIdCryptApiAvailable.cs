@@ -1,11 +1,11 @@
 ﻿using System.Text.Json;
-using IDCryptGlobal.Cloud.Agent.Identity.Connection;
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.IdCrypt.Messages;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Handlers;
+using RTGS.IDCryptSDK.Connections.Models;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers.GivenIdCryptBankInvitationSentToOpenSubscriberConnection;
@@ -144,7 +144,7 @@ public class AndIdCryptApiAvailable
 			{
 				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
 				Alias = alias,
-				ConnectionId = ReceiveInvitation.Response.ConnectionID
+				ConnectionId = ReceiveInvitation.Response.ConnectionId
 			};
 
 			_bankInvitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -217,19 +217,19 @@ public class AndIdCryptApiAvailable
 
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-			var content =
-				await _idCryptMessageHandler.Requests[ReceiveInvitation.Path].Single().Content!
-					.ReadAsStringAsync();
+			var content = await _idCryptMessageHandler.Requests[ReceiveInvitation.Path]
+				.Single().Content!
+				.ReadAsStringAsync();
 
-			var actualRequestBody = Newtonsoft.Json.JsonConvert.DeserializeObject<ConnectionInvite>(content);
+			var actualRequestBody = Newtonsoft.Json.JsonConvert.DeserializeObject<ReceiveAndAcceptInvitationRequest>(content);
 
 			var invitation = ValidMessages.IdCryptBankInvitationV1.Invitation;
-			var expectedRequestBody = new ConnectionInvite
+			var expectedRequestBody = new ReceiveAndAcceptInvitationRequest
 			{
 				Alias = invitation.Alias,
 				Label = invitation.Label,
 				RecipientKeys = invitation.RecipientKeys.ToArray(),
-				ID = invitation.Id,
+				Id = invitation.Id,
 				Type = invitation.Type,
 				ServiceEndPoint = invitation.ServiceEndPoint
 			};
@@ -251,7 +251,7 @@ public class AndIdCryptApiAvailable
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 			var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
-			var connectionId = ReceiveInvitation.Response.ConnectionID;
+			var connectionId = ReceiveInvitation.Response.ConnectionId;
 
 			var expectedLogs = new List<LogEntry>
 			{
@@ -373,7 +373,7 @@ public class AndIdCryptApiAvailable
 			{
 				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
 				Alias = alias,
-				ConnectionId = ReceiveInvitation.Response.ConnectionID
+				ConnectionId = ReceiveInvitation.Response.ConnectionId
 			};
 
 			_bankInvitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -412,7 +412,7 @@ public class AndIdCryptApiAvailable
 			{
 				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
 				Alias = alias,
-				ConnectionId = ReceiveInvitation.Response.ConnectionID
+				ConnectionId = ReceiveInvitation.Response.ConnectionId
 			};
 
 			_bankInvitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -445,7 +445,7 @@ public class AndIdCryptApiAvailable
 			{
 				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
 				Alias = alias,
-				ConnectionId = ReceiveInvitation.Response.ConnectionID
+				ConnectionId = ReceiveInvitation.Response.ConnectionId
 			};
 
 			_bankInvitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -506,7 +506,7 @@ public class AndIdCryptApiAvailable
 			var expectedMessageData = new IdCryptInvitationConfirmationV1
 			{
 				Alias = receiveInvitationRequestQueryParams["alias"],
-				AgentPublicDid = GetPublicDid.Response.Result.DID
+				AgentPublicDid = GetPublicDid.ExpectedDid
 			};
 
 			var actualMessageData = JsonSerializer.Deserialize<IdCryptInvitationConfirmationV1>(receivedMessage.Data);
@@ -618,7 +618,7 @@ public class AndIdCryptApiAvailable
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 			var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
-			var connectionId = ReceiveInvitation.Response.ConnectionID;
+			var connectionId = ReceiveInvitation.Response.ConnectionId;
 
 			var expectedLogs = new List<LogEntry>
 			{
@@ -667,7 +667,7 @@ public class AndIdCryptApiAvailable
 			var expectedMessageData = new IdCryptInvitationConfirmationV1
 			{
 				Alias = receiveInvitationRequestQueryParams["alias"],
-				AgentPublicDid = GetPublicDid.Response.Result.DID
+				AgentPublicDid = GetPublicDid.ExpectedDid
 			};
 
 			var actualMessageData = JsonSerializer.Deserialize<IdCryptInvitationConfirmationV1>(receivedMessage.Data);
@@ -782,7 +782,7 @@ public class AndIdCryptApiAvailable
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 			var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
-			var connectionId = ReceiveInvitation.Response.ConnectionID;
+			var connectionId = ReceiveInvitation.Response.ConnectionId;
 
 			var expectedLogs = new List<LogEntry>
 			{

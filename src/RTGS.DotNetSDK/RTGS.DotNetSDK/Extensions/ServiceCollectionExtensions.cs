@@ -1,5 +1,4 @@
 ﻿using System.Net.Http;
-using IDCryptGlobal.Cloud.Agent.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using RTGS.DotNetSDK.IdCrypt;
 using RTGS.DotNetSDK.Publisher;
@@ -51,15 +50,6 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddSingleton<IRtgsPublisher, RtgsPublisher>();
 		serviceCollection.AddSingleton<IIdCryptPublisher, IdCryptPublisher>();
 
-		serviceCollection.Configure<IdentityConfig>(identityConfig =>
-		{
-			identityConfig.IdCryptApiAddress = options.IdCryptApiAddress.ToString();
-			identityConfig.IdCryptApiKey = options.IdCryptApiKey;
-			identityConfig.IdCryptServiceEndpointAddress = options.IdCryptServiceEndPointAddress.ToString();
-		});
-
-		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
-		serviceCollection.AddTransient<IIdentityClient, IdentityClient>();
 		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
 
 		serviceCollection.AddIdCryptSdk(new IdCryptSdkConfiguration(
@@ -97,16 +87,6 @@ public static class ServiceCollectionExtensions
 
 		configureGrpcClient?.Invoke(grpcClientBuilder);
 
-		serviceCollection.Configure<IdentityConfig>(identityConfig =>
-		{
-			identityConfig.IdCryptApiAddress = options.IdCryptApiAddress.ToString();
-			identityConfig.IdCryptApiKey = options.IdCryptApiKey;
-			identityConfig.IdCryptServiceEndpointAddress = options.IdCryptServiceEndPointAddress.ToString();
-		});
-
-		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
-		serviceCollection.AddTransient<IIdentityClient, IdentityClient>();
-
 		serviceCollection.AddSingleton<IRtgsSubscriber, RtgsSubscriber>();
 		serviceCollection.AddTransient<IHandleMessageCommandsFactory, HandleMessageCommandsFactory>();
 		serviceCollection.AddTransient<IMessageAdapter, AtomicLockResponseV1MessageAdapter>();
@@ -129,6 +109,11 @@ public static class ServiceCollectionExtensions
 
 		serviceCollection.AddSingleton<IIdCryptPublisher, IdCryptPublisher>();
 		serviceCollection.AddSingleton<IInternalPublisher, InternalPublisher>();
+
+		serviceCollection.AddIdCryptSdk(new IdCryptSdkConfiguration(
+			options.IdCryptApiAddress,
+			options.IdCryptApiKey,
+			options.IdCryptServiceEndPointAddress));
 
 		return serviceCollection;
 	}

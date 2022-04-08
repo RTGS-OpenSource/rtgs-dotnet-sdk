@@ -138,7 +138,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		var message = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
-			ConnectionId = CreateInvitation.Response.ConnectionID,
+			ConnectionId = CreateInvitation.Response.ConnectionId,
 			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
 
@@ -355,7 +355,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		var message = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
-			ConnectionId = CreateInvitation.Response.ConnectionID,
+			ConnectionId = CreateInvitation.Response.ConnectionId,
 			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
 
@@ -394,7 +394,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		var message = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
-			ConnectionId = CreateInvitation.Response.ConnectionID,
+			ConnectionId = CreateInvitation.Response.ConnectionId,
 			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
 
@@ -427,7 +427,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		var message = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
-			ConnectionId = CreateInvitation.Response.ConnectionID,
+			ConnectionId = CreateInvitation.Response.ConnectionId,
 			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
 
@@ -487,14 +487,14 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 
 		var invitation = CreateInvitation.Response.Invitation;
-		var agentPublicDid = GetPublicDid.Response.Result.DID;
+		var agentPublicDid = GetPublicDid.ExpectedDid;
 
 		var expectedMessageData = new IdCryptInvitationV1
 		{
 			Alias = inviteRequestQueryParams["alias"],
 			Label = invitation.Label,
 			RecipientKeys = invitation.RecipientKeys,
-			Id = invitation.ID,
+			Id = invitation.Id,
 			Type = invitation.Type,
 			ServiceEndPoint = invitation.ServiceEndPoint,
 			AgentPublicDid = agentPublicDid

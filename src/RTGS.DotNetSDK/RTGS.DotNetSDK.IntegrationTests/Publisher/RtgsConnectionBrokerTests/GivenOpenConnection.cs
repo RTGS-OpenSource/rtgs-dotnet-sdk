@@ -1,5 +1,4 @@
-﻿using System.Net.Http;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
@@ -23,7 +22,6 @@ public class GivenOpenConnection
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
 		private IHost _clientHost;
 		private StatusCodeHttpHandler _idCryptMessageHandler;
-		private SecondaryStatusCodeHttpHandler _idCryptMessageHandler2;
 
 		public AndIdCryptApiAvailable(GrpcServerFixture grpcServer)
 		{
@@ -35,10 +33,6 @@ public class GivenOpenConnection
 
 			_serilogContext = TestCorrelator.CreateContext();
 		}
-
-		public Dictionary<string, IList<HttpRequestMessage>> AllRequests =>
-			_idCryptMessageHandler.Requests.Concat(_idCryptMessageHandler2.Requests)
-				.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
 		private static void SetupSerilogLogger() =>
 			Log.Logger = new LoggerConfiguration()
@@ -67,10 +61,6 @@ public class GivenOpenConnection
 				_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
 					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-					.Build();
-
-				_idCryptMessageHandler2 = StatusCodeHttpHandlerBuilderFactory
-					.CreateSecondary()
 					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
 					.Build();
 
@@ -78,8 +68,7 @@ public class GivenOpenConnection
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 					.ConfigureServices(services => services
 						.AddRtgsPublisher(rtgsSdkOptions)
-						.AddTestIdCryptHttpClient(_idCryptMessageHandler)
-						.AddAgentHttpClientMessageHandler(_idCryptMessageHandler2))
+						.AddTestIdCryptHttpClient(_idCryptMessageHandler))
 					.UseSerilog()
 				.Build();
 
@@ -111,7 +100,7 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			AllRequests[path]
+			_idCryptMessageHandler.Requests[path]
 				.Single()
 				.Headers
 				.GetValues("X-API-Key")
@@ -129,7 +118,7 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var actualApiUri = AllRequests[path]
+			var actualApiUri = _idCryptMessageHandler.Requests[path]
 				.Single()
 				.RequestUri
 				!.GetLeftPart(UriPartial.Authority);
@@ -147,11 +136,11 @@ public class GivenOpenConnection
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
 			var inviteRequestQueryParams1 = QueryHelpers.ParseQuery(
-				AllRequests[CreateInvitation.Path].First().RequestUri!.Query);
+				_idCryptMessageHandler.Requests[CreateInvitation.Path].First().RequestUri!.Query);
 			var alias1 = inviteRequestQueryParams1["alias"];
 
 			var inviteRequestQueryParams2 = QueryHelpers.ParseQuery(
-				AllRequests[CreateInvitation.Path][1].RequestUri!.Query);
+				_idCryptMessageHandler.Requests[CreateInvitation.Path][1].RequestUri!.Query);
 			var alias2 = inviteRequestQueryParams2["alias"];
 
 			alias2.Should().NotBeEquivalentTo(alias1);
@@ -223,14 +212,14 @@ public class GivenOpenConnection
 				(_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 
 			var invitation = CreateInvitation.Response.Invitation;
-			var agentPublicDid = GetPublicDid.Response.Result.DID;
+			var agentPublicDid = GetPublicDid.ExpectedDid;
 
 			var expectedMessageData = new IdCryptInvitationV1
 			{
 				Alias = inviteRequestQueryParams["alias"],
 				Label = invitation.Label,
 				RecipientKeys = invitation.RecipientKeys,
-				Id = invitation.ID,
+				Id = invitation.Id,
 				Type = invitation.Type,
 				ServiceEndPoint = invitation.ServiceEndPoint,
 				AgentPublicDid = agentPublicDid
@@ -496,8 +485,7 @@ public class GivenOpenConnection
 			{
 				new ($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new ($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new ("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new ("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
+				new ("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
 			};
 
 			var expectedErrorLogMessage = "Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent";
@@ -702,7 +690,7 @@ public class GivenOpenConnection
 
 			using var _ = new AssertionScope();
 
-			result.ConnectionId.Should().Be(CreateInvitation.Response.ConnectionID);
+			result.ConnectionId.Should().Be(CreateInvitation.Response.ConnectionId);
 			result.SendResult.Should().Be(SendResult.Success);
 		}
 
@@ -773,7 +761,7 @@ public class GivenOpenConnection
 
 			using var _ = new AssertionScope();
 
-			result1.ConnectionId.Should().Be(CreateInvitation.Response.ConnectionID);
+			result1.ConnectionId.Should().Be(CreateInvitation.Response.ConnectionId);
 			result1.SendResult.Should().Be(SendResult.Success);
 
 			result2.ConnectionId.Should().BeNull();

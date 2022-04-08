@@ -5,7 +5,6 @@ namespace RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 internal class StatusCodeHttpHandlerBuilderFactory
 {
 	public static StatusCodeHttpHandlerBuilder Create() => new();
-	public static SecondaryStatusCodeHttpHandlerBuilder CreateSecondary() => new();
 	public static QueueableStatusCodeHttpHandlerBuilder CreateQueueable() => new();
 
 	internal class StatusCodeHttpHandlerBuilder
@@ -24,35 +23,6 @@ internal class StatusCodeHttpHandlerBuilderFactory
 		public StatusCodeHttpHandler Build() => new(Responses);
 
 		private StatusCodeHttpHandlerBuilder WithResponse(string path, string content, HttpStatusCode statusCode)
-		{
-			var mockResponse = new MockHttpResponse
-			{
-				Path = path,
-				HttpStatusCode = statusCode,
-				Content = content
-			};
-
-			Responses[path] = mockResponse;
-
-			return this;
-		}
-	}
-	internal class SecondaryStatusCodeHttpHandlerBuilder
-	{
-		private Dictionary<string, MockHttpResponse> Responses { get; } = new();
-
-		public SecondaryStatusCodeHttpHandlerBuilder WithServiceUnavailableResponse(string path) =>
-			WithResponse(path, null, HttpStatusCode.ServiceUnavailable);
-
-		public SecondaryStatusCodeHttpHandlerBuilder WithOkResponse(HttpRequestResponseContext httpRequestResponseContext) =>
-			WithResponse(
-				httpRequestResponseContext.RequestPath,
-				httpRequestResponseContext.ResponseContent,
-				HttpStatusCode.OK);
-
-		public SecondaryStatusCodeHttpHandler Build() => new(Responses);
-
-		private SecondaryStatusCodeHttpHandlerBuilder WithResponse(string path, string content, HttpStatusCode statusCode)
 		{
 			var mockResponse = new MockHttpResponse
 			{

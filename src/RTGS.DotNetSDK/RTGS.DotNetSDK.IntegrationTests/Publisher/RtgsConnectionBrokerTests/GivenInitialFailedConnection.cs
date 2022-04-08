@@ -36,10 +36,6 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 			var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
 				.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-				.Build();
-
-			var idCryptMessageHandler2 = StatusCodeHttpHandlerBuilderFactory
-				.Create()
 				.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
 				.Build();
 
@@ -47,8 +43,7 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 				.ConfigureServices(services => services
 					.AddRtgsPublisher(rtgsSdkOptions)
-					.AddAgentHttpClientMessageHandler(idCryptMessageHandler2))
-				//.AddTestIdCryptHttpClient(idCryptMessageHandler))
+					.AddTestIdCryptHttpClient(idCryptMessageHandler))
 				.Build();
 
 			_rtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();

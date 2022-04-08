@@ -117,7 +117,7 @@ public class AndIdCryptGetConnectionApiIsNotAvailable : IDisposable, IClassFixtu
 		_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
-		var connectionId = ReceiveInvitation.Response.ConnectionID;
+		var connectionId = ReceiveInvitation.Response.ConnectionId;
 
 		var expectedErrorLogs = new List<LogEntry>
 		{

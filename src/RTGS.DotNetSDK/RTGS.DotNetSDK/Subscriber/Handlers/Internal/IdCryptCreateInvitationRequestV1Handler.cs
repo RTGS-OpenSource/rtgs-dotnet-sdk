@@ -1,26 +1,30 @@
-﻿using IDCryptGlobal.Cloud.Agent.Identity;
-using IDCryptGlobal.Cloud.Agent.Identity.Connection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.IdCrypt;
 using RTGS.DotNetSDK.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Exceptions;
+using RTGS.IDCryptSDK.Connections;
+using RTGS.IDCryptSDK.Connections.Models;
+using RTGS.IDCryptSDK.Wallet;
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers.Internal;
 
 internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitationRequestV1Handler
 {
 	private readonly ILogger<IdCryptCreateInvitationRequestV1Handler> _logger;
-	private readonly IIdentityClient _identityClient;
+	private readonly IConnectionsClient _connectionsClient;
+	private readonly IWalletClient _walletClient;
 	private readonly IIdCryptPublisher _idCryptPublisher;
 	private IHandler<IdCryptCreateInvitationNotificationV1> _userHandler;
 
 	public IdCryptCreateInvitationRequestV1Handler(
 		ILogger<IdCryptCreateInvitationRequestV1Handler> logger,
-		IIdentityClient identityClient,
+		IConnectionsClient connectionsClient,
+		IWalletClient walletClient,
 		IIdCryptPublisher idCryptPublisher)
 	{
 		_logger = logger;
-		_identityClient = identityClient;
+		_connectionsClient = connectionsClient;
+		_walletClient = walletClient;
 		_idCryptPublisher = idCryptPublisher;
 	}
 
@@ -47,14 +51,14 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		var invitationNotification = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
-			ConnectionId = invitation.ConnectionID,
+			ConnectionId = invitation.ConnectionId,
 			BankPartnerDid = bankPartnerDid
 		};
 
 		await _userHandler.HandleMessageAsync(invitationNotification);
 	}
 
-	private async Task<ConnectionInviteResponseModel> CreateIdCryptInvitationAsync(string alias)
+	private async Task<CreateInvitationResponse> CreateIdCryptInvitationAsync(string alias)
 	{
 		const bool autoAccept = true;
 		const bool multiUse = false;
@@ -64,11 +68,12 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		{
 			_logger.LogDebug("Sending CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", alias);
 
-			var response = await _identityClient.Connection.CreateInvitation(
+			var response = await _connectionsClient.CreateInvitationAsync(
 				alias,
 				autoAccept,
 				multiUse,
-				usePublicDid);
+				usePublicDid,
+				default);
 
 			_logger.LogDebug("Sent CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", alias);
 
@@ -88,11 +93,11 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		{
 			_logger.LogDebug("Sending GetPublicDid request to ID Crypt Cloud Agent");
 
-			var response = await _identityClient.Vault.GetPublicDID();
+			var publicDid = await _walletClient.GetPublicDidAsync(default);
 
 			_logger.LogDebug("Sent GetPublicDid request to ID Crypt Cloud Agent");
 
-			return response.Result.DID;
+			return publicDid;
 		}
 		catch (Exception ex)
 		{
@@ -114,7 +119,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		var invitationMessage = new IdCryptInvitationV1
 		{
 			Alias = alias,
-			Id = invitation.ID,
+			Id = invitation.Id,
 			Label = invitation.Label,
 			RecipientKeys = invitation.RecipientKeys,
 			ServiceEndPoint = invitation.ServiceEndPoint,

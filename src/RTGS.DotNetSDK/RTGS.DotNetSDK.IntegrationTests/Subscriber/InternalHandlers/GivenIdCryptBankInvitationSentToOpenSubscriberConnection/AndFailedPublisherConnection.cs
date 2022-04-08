@@ -88,7 +88,6 @@ public class AndFailedPublisherConnection : IDisposable, IClassFixture<GrpcServe
 		_clientHost?.Dispose();
 
 		_grpcServer.Reset();
-
 	}
 
 	[Fact]
