@@ -221,7 +221,7 @@ public class AndIdCryptApiAvailable
 				.Single().Content!
 				.ReadAsStringAsync();
 
-			var actualRequestBody = Newtonsoft.Json.JsonConvert.DeserializeObject<ReceiveAndAcceptInvitationRequest>(content);
+			var actualRequestBody = JsonSerializer.Deserialize<ReceiveAndAcceptInvitationRequest>(content);
 
 			var invitation = ValidMessages.IdCryptBankInvitationV1.Invitation;
 			var expectedRequestBody = new ReceiveAndAcceptInvitationRequest
@@ -231,7 +231,7 @@ public class AndIdCryptApiAvailable
 				RecipientKeys = invitation.RecipientKeys.ToArray(),
 				Id = invitation.Id,
 				Type = invitation.Type,
-				ServiceEndPoint = invitation.ServiceEndPoint
+				ServiceEndpoint = invitation.ServiceEndPoint
 			};
 
 			actualRequestBody.Should().BeEquivalentTo(expectedRequestBody);
@@ -255,16 +255,16 @@ public class AndIdCryptApiAvailable
 
 			var expectedLogs = new List<LogEntry>
 			{
-				new($"Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank '{bankDid}'", LogEventLevel.Debug),
-				new($"Sent ReceiveAcceptInvitation request to ID Crypt for invitation from bank '{bankDid}'", LogEventLevel.Debug),
-				new($"Polling for connection '{connectionId}' state for invitation from bank '{bankDid}'", LogEventLevel.Debug),
-				new($"Sending GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
-				new($"Finished polling for connection '{connectionId}' state for invitation from bank '{bankDid}'", LogEventLevel.Debug),
+				new($"Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {bankDid}", LogEventLevel.Debug),
+				new($"Sent ReceiveAcceptInvitation request to ID Crypt for invitation from bank {bankDid}", LogEventLevel.Debug),
+				new($"Polling for connection state for invitation from bank {bankDid}", LogEventLevel.Debug),
+				new($"Sending GetConnection request to ID Crypt", LogEventLevel.Debug),
+				new($"Sent GetConnection request to ID Crypt", LogEventLevel.Debug),
+				new($"Finished polling for connection state for invitation from bank {bankDid}", LogEventLevel.Debug),
 				new("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new($"Sending ID Crypt invitation confirmation to bank '{bankDid}'", LogEventLevel.Debug),
-				new($"Sent ID Crypt invitation confirmation to bank '{bankDid}'", LogEventLevel.Debug)
+				new($"Sending ID Crypt invitation confirmation to bank {bankDid}", LogEventLevel.Debug),
+				new($"Sent ID Crypt invitation confirmation to bank {bankDid}", LogEventLevel.Debug)
 			};
 
 			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
@@ -622,18 +622,18 @@ public class AndIdCryptApiAvailable
 
 			var expectedLogs = new List<LogEntry>
 			{
-				new($"Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank '{bankDid}'", LogEventLevel.Debug),
-				new($"Sent ReceiveAcceptInvitation request to ID Crypt for invitation from bank '{bankDid}'", LogEventLevel.Debug),
-				new($"Polling for connection '{connectionId}' state for invitation from bank '{bankDid}'", LogEventLevel.Debug),
-				new($"Sending GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
-				new($"Sending GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
-				new($"Finished polling for connection '{connectionId}' state for invitation from bank '{bankDid}'", LogEventLevel.Debug),
+				new($"Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {bankDid}", LogEventLevel.Debug),
+				new($"Sent ReceiveAcceptInvitation request to ID Crypt for invitation from bank {bankDid}", LogEventLevel.Debug),
+				new($"Polling for connection state for invitation from bank {bankDid}", LogEventLevel.Debug),
+				new($"Sending GetConnection request to ID Crypt", LogEventLevel.Debug),
+				new($"Sent GetConnection request to ID Crypt", LogEventLevel.Debug),
+				new($"Sending GetConnection request to ID Crypt", LogEventLevel.Debug),
+				new($"Sent GetConnection request to ID Crypt", LogEventLevel.Debug),
+				new($"Finished polling for connection state for invitation from bank {bankDid}", LogEventLevel.Debug),
 				new("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new($"Sending ID Crypt invitation confirmation to bank '{bankDid}'", LogEventLevel.Debug),
-				new($"Sent ID Crypt invitation confirmation to bank '{bankDid}'", LogEventLevel.Debug)
+				new($"Sending ID Crypt invitation confirmation to bank {bankDid}", LogEventLevel.Debug),
+				new($"Sent ID Crypt invitation confirmation to bank {bankDid}", LogEventLevel.Debug)
 			};
 
 			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
@@ -786,17 +786,17 @@ public class AndIdCryptApiAvailable
 
 			var expectedLogs = new List<LogEntry>
 			{
-				new($"Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank '{bankDid}'", LogEventLevel.Debug),
-				new($"Sent ReceiveAcceptInvitation request to ID Crypt for invitation from bank '{bankDid}'", LogEventLevel.Debug),
-				new($"Polling for connection '{connectionId}' state for invitation from bank '{bankDid}'", LogEventLevel.Debug),
-				new($"Sending GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
-				new($"Sending GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
-				new($"Sending GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
-				new($"Sending GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Debug)
+				new($"Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {bankDid}", LogEventLevel.Debug),
+				new($"Sent ReceiveAcceptInvitation request to ID Crypt for invitation from bank {bankDid}", LogEventLevel.Debug),
+				new($"Polling for connection state for invitation from bank {bankDid}", LogEventLevel.Debug),
+				new($"Sending GetConnection request to ID Crypt", LogEventLevel.Debug),
+				new($"Sent GetConnection request to ID Crypt", LogEventLevel.Debug),
+				new($"Sending GetConnection request to ID Crypt", LogEventLevel.Debug),
+				new($"Sent GetConnection request to ID Crypt", LogEventLevel.Debug),
+				new($"Sending GetConnection request to ID Crypt", LogEventLevel.Debug),
+				new($"Sent GetConnection request to ID Crypt", LogEventLevel.Debug),
+				new($"Sending GetConnection request to ID Crypt", LogEventLevel.Debug),
+				new($"Sent GetConnection request to ID Crypt", LogEventLevel.Debug)
 			};
 
 			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
@@ -804,7 +804,7 @@ public class AndIdCryptApiAvailable
 
 			var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Error);
 			errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-				$"Error occured when polling for connection '{connectionId}' state for invitation from bank '{bankDid}'",
+				$"Error occured when polling for connection state for invitation from bank {bankDid}",
 				LogEventLevel.Error,
 				typeof(RtgsSubscriberException)));
 

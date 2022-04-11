@@ -246,8 +246,8 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 			new($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 			new("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 			new("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-			new ($"Sending Invitation with alias {alias} to Bank '{ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}'", LogEventLevel.Debug),
-			new ($"Sent Invitation with alias {alias} to Bank '{ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}'", LogEventLevel.Debug),
+			new ($"Sending Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}", LogEventLevel.Debug),
+			new ($"Sent Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}", LogEventLevel.Debug),
 		};
 
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Debug);

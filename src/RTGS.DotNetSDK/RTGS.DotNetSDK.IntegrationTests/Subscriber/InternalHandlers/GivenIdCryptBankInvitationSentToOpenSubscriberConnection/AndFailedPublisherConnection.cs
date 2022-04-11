@@ -111,11 +111,11 @@ public class AndFailedPublisherConnection : IDisposable, IClassFixture<GrpcServe
 
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
 		debugLogs.Select(log => log.Message)
-			.Should().ContainSingle(msg => msg == $"Sending ID Crypt invitation confirmation to bank '{bankDid}'");
+			.Should().ContainSingle(msg => msg == $"Sending ID Crypt invitation confirmation to bank {bankDid}");
 
 		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Error);
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			$"Exception occurred when sending ID Crypt invitation confirmation to bank '{bankDid}'",
+			$"Exception occurred when sending ID Crypt invitation confirmation to bank {bankDid}",
 			LogEventLevel.Error, typeof(RpcException)));
 	}
 }

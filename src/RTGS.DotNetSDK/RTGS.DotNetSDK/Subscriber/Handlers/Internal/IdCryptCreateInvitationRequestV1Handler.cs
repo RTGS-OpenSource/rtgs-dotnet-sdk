@@ -93,7 +93,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		{
 			_logger.LogDebug("Sending GetPublicDid request to ID Crypt Cloud Agent");
 
-			var publicDid = await _walletClient.GetPublicDidAsync(default);
+			var publicDid = await _walletClient.GetPublicDidAsync();
 
 			_logger.LogDebug("Sent GetPublicDid request to ID Crypt Cloud Agent");
 
@@ -114,7 +114,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		string bankPartnerDid,
 		CancellationToken cancellationToken)
 	{
-		_logger.LogDebug("Sending Invitation with alias {Alias} to Bank '{BankPartnerDid}'", alias, bankPartnerDid);
+		_logger.LogDebug("Sending Invitation with alias {Alias} to Bank {BankPartnerDid}", alias, bankPartnerDid);
 
 		var invitationMessage = new IdCryptInvitationV1
 		{
@@ -135,18 +135,18 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Exception occurred when sending IdCrypt Invitation with alias {Alias} to Bank '{BankPartnerDid}'", alias, bankPartnerDid);
+			_logger.LogError(ex, "Exception occurred when sending IdCrypt Invitation with alias {Alias} to Bank {BankPartnerDid}", alias, bankPartnerDid);
 			throw;
 		}
 
 		if (sendResult is not SendResult.Success)
 		{
-			_logger.LogError("Error occurred when sending IdCrypt Invitation with alias {Alias} to Bank '{BankPartnerDid}'", alias, bankPartnerDid);
+			_logger.LogError("Error occurred when sending IdCrypt Invitation with alias {Alias} to Bank {BankPartnerDid}", alias, bankPartnerDid);
 
 			throw new RtgsSubscriberException(
-				$"Error occurred when sending IdCrypt Invitation with alias {alias} to Bank '{bankPartnerDid}'");
+				$"Error occurred when sending IdCrypt Invitation with alias {alias} to Bank {bankPartnerDid}");
 		}
 
-		_logger.LogDebug("Sent Invitation with alias {Alias} to Bank '{BankPartnerDid}'", alias, bankPartnerDid);
+		_logger.LogDebug("Sent Invitation with alias {Alias} to Bank {BankPartnerDid}", alias, bankPartnerDid);
 	}
 }

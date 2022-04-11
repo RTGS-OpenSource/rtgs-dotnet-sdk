@@ -28,7 +28,7 @@ internal class QueueableStatusCodeHttpHandler : DelegatingHandler
 
 		var response = new HttpResponseMessage(responseMock.HttpStatusCode)
 		{
-			Content = new StringContent(responseMock.Content)
+			Content = responseMock.Content != null ? new StringContent(responseMock.Content) : null
 		};
 
 		response.RequestMessage = request;

@@ -119,8 +119,7 @@ public class AndIdCryptGetPublicDidApiIsNotAvailable : IDisposable, IClassFixtur
 		{
 			new ($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 			new ($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-			new ("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-			new ("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
+			new ("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
 		};
 
 		using var _ = new AssertionScope();
