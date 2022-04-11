@@ -85,7 +85,7 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 
 			_fromRtgsCall?.Dispose();
 
-			var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid), new("rtgs-global-id", _options.BankDid) };
+			var grpcCallHeaders = new Metadata { new("bankdid", _options.RtgsGlobalId), new("rtgs-global-id", _options.RtgsGlobalId) };
 			_fromRtgsCall = _grpcClient.FromRtgsMessage(grpcCallHeaders);
 
 			await foreach (var rtgsMessage in _fromRtgsCall.ResponseStream.ReadAllAsync())

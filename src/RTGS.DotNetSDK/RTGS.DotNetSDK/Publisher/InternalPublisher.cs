@@ -158,7 +158,7 @@ internal class InternalPublisher : IInternalPublisher
 
 		if (_toRtgsCall is null)
 		{
-			var grpcCallHeaders = new Metadata { new("bankdid", _options.BankDid), new("rtgs-global-id", _options.BankDid) };
+			var grpcCallHeaders = new Metadata { new("bankdid", _options.RtgsGlobalId), new("rtgs-global-id", _options.RtgsGlobalId) };
 			_toRtgsCall = _paymentClient.ToRtgsMessage(grpcCallHeaders, cancellationToken: CancellationToken.None);
 
 			if (_waitForAcknowledgementsTask is not null)

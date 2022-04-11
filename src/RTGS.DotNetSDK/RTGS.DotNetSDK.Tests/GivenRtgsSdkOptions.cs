@@ -105,7 +105,7 @@ public class GivenRtgsSdkOptions
 				new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
 			.Should()
 			.Throw<ArgumentNullException>()
-			.WithMessage("Value cannot be null. (Parameter 'bankDid')");
+			.WithMessage("Value cannot be null. (Parameter 'rtgsGlobalId')");
 
 	[Theory]
 	[InlineData("")]
@@ -119,7 +119,7 @@ public class GivenRtgsSdkOptions
 				new Uri("http://id-crypt-cloud-agent-service-endpoint.com")))
 			.Should()
 			.Throw<ArgumentException>()
-			.WithMessage("Value cannot be white space. (Parameter 'bankDid')");
+			.WithMessage("Value cannot be white space. (Parameter 'rtgsGlobalId')");
 
 	[Theory]
 	[MemberData(nameof(TimeSpansLessThanOneSecond))]
