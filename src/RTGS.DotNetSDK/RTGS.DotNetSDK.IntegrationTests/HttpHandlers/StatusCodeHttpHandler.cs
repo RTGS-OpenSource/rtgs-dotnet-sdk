@@ -26,10 +26,12 @@ internal class StatusCodeHttpHandler : DelegatingHandler
 
 		var responseMock = _mockHttpResponses[requestPath];
 
-		var response = new HttpResponseMessage(responseMock.HttpStatusCode)
+		var response = new HttpResponseMessage(responseMock.HttpStatusCode);
+
+		if (responseMock.Content is not null)
 		{
-			Content = responseMock.Content != null ? new StringContent(responseMock.Content) : null
-		};
+			response.Content = new StringContent(responseMock.Content);
+		}
 
 		response.RequestMessage = request;
 

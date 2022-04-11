@@ -251,7 +251,6 @@ public class AndIdCryptApiAvailable
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 			var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
-			var connectionId = ReceiveInvitation.Response.ConnectionId;
 
 			var expectedLogs = new List<LogEntry>
 			{
@@ -618,7 +617,6 @@ public class AndIdCryptApiAvailable
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 			var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
-			var connectionId = ReceiveInvitation.Response.ConnectionId;
 
 			var expectedLogs = new List<LogEntry>
 			{
@@ -782,7 +780,6 @@ public class AndIdCryptApiAvailable
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 			var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
-			var connectionId = ReceiveInvitation.Response.ConnectionId;
 
 			var expectedLogs = new List<LogEntry>
 			{

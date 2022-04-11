@@ -72,8 +72,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 				alias,
 				autoAccept,
 				multiUse,
-				usePublicDid,
-				default);
+				usePublicDid);
 
 			_logger.LogDebug("Sent CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", alias);
 

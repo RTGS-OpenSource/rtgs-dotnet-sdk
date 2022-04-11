@@ -140,13 +140,11 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 	{
 		try
 		{
-			_logger.LogDebug("Sending GetConnection request to ID Crypt",
-				connectionId);
+			_logger.LogDebug("Sending GetConnection request to ID Crypt");
 
 			var connection = await _connectionsClient.GetConnectionAsync(connectionId);
 
-			_logger.LogDebug("Sent GetConnection request to ID Crypt",
-				connectionId);
+			_logger.LogDebug("Sent GetConnection request to ID Crypt");
 
 			return connection;
 		}
