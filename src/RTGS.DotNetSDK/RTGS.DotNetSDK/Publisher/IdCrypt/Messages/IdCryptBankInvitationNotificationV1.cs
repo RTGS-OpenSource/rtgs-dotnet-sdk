@@ -1,4 +1,4 @@
-﻿namespace RTGS.DotNetSDK.IdCrypt.Messages;
+﻿namespace RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 
 /// <summary>
 /// Represents a notification of an ID Crypt invitation 

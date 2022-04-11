@@ -1,5 +1,5 @@
-﻿using IDCryptGlobal.Cloud.Agent.Identity.Connection;
-using Newtonsoft.Json;
+﻿using System.Text.Json;
+using RTGS.IDCryptSDK.Connections.Models;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
@@ -7,12 +7,12 @@ internal static class CreateInvitation
 {
 	public const string Path = "/connections/create-invitation";
 
-	public static ConnectionInviteResponseModel Response => new()
+	public static CreateInvitationResponse Response => new()
 	{
-		ConnectionID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+		ConnectionId = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
 		Invitation = new ConnectionInvitation
 		{
-			ID = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+			Id = "3fa85f64-5717-4562-b3fc-2c963f66afa6",
 			Type = "https://didcomm.org/my-family/1.0/my-message-type",
 			Label = "Bob",
 			RecipientKeys = new[]
@@ -24,6 +24,5 @@ internal static class CreateInvitation
 	};
 
 	public static HttpRequestResponseContext HttpRequestResponseContext =>
-		new(Path,
-			JsonConvert.SerializeObject(Response));
+		new(Path, JsonSerializer.Serialize(Response));
 }

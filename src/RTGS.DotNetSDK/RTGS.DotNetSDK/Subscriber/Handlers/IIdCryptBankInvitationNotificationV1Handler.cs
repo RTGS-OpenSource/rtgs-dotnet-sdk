@@ -1,4 +1,4 @@
-﻿using RTGS.DotNetSDK.IdCrypt.Messages;
+﻿using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers;
 

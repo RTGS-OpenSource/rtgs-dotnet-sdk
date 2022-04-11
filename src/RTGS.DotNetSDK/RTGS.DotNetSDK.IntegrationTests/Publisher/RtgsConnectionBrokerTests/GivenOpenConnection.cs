@@ -100,8 +100,7 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			_idCryptMessageHandler
-				.Requests[path]
+			_idCryptMessageHandler.Requests[path]
 				.Single()
 				.Headers
 				.GetValues("X-API-Key")
@@ -119,8 +118,7 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var actualApiUri = _idCryptMessageHandler
-				.Requests[path]
+			var actualApiUri = _idCryptMessageHandler.Requests[path]
 				.Single()
 				.RequestUri
 				!.GetLeftPart(UriPartial.Authority);
@@ -214,14 +212,14 @@ public class GivenOpenConnection
 				(_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 
 			var invitation = CreateInvitation.Response.Invitation;
-			var agentPublicDid = GetPublicDid.Response.Result.DID;
+			var agentPublicDid = GetPublicDid.ExpectedDid;
 
 			var expectedMessageData = new IdCryptInvitationV1
 			{
 				Alias = inviteRequestQueryParams["alias"],
 				Label = invitation.Label,
 				RecipientKeys = invitation.RecipientKeys,
-				Id = invitation.ID,
+				Id = invitation.Id,
 				Type = invitation.Type,
 				ServiceEndPoint = invitation.ServiceEndPoint,
 				AgentPublicDid = agentPublicDid
@@ -487,8 +485,7 @@ public class GivenOpenConnection
 			{
 				new ($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 				new ($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new ("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new ("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
+				new ("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
 			};
 
 			var expectedErrorLogMessage = "Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent";
@@ -693,7 +690,7 @@ public class GivenOpenConnection
 
 			using var _ = new AssertionScope();
 
-			result.ConnectionId.Should().Be(CreateInvitation.Response.ConnectionID);
+			result.ConnectionId.Should().Be(CreateInvitation.Response.ConnectionId);
 			result.SendResult.Should().Be(SendResult.Success);
 		}
 
@@ -764,7 +761,7 @@ public class GivenOpenConnection
 
 			using var _ = new AssertionScope();
 
-			result1.ConnectionId.Should().Be(CreateInvitation.Response.ConnectionID);
+			result1.ConnectionId.Should().Be(CreateInvitation.Response.ConnectionId);
 			result1.SendResult.Should().Be(SendResult.Success);
 
 			result2.ConnectionId.Should().BeNull();

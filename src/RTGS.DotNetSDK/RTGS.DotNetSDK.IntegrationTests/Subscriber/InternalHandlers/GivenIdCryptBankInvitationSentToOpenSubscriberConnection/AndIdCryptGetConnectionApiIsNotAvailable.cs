@@ -117,19 +117,19 @@ public class AndIdCryptGetConnectionApiIsNotAvailable : IDisposable, IClassFixtu
 		_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
-		var connectionId = ReceiveInvitation.Response.ConnectionID;
+		var connectionId = ReceiveInvitation.Response.ConnectionId;
 
 		var expectedErrorLogs = new List<LogEntry>
 		{
-			new($"Error occurred when sending GetConnection request to ID Crypt with connection Id '{connectionId}'", LogEventLevel.Error, typeof(RtgsSubscriberException)),
-			new($"Error occured when polling for connection '{connectionId}' state for invitation from bank '{bankDid}'", LogEventLevel.Error, typeof(RtgsSubscriberException)),
+			new("Error occurred when sending GetConnection request to ID Crypt", LogEventLevel.Error, typeof(RtgsSubscriberException)),
+			new($"Error occured when polling for connection state for invitation from bank {bankDid}", LogEventLevel.Error, typeof(RtgsSubscriberException)),
 		};
 
 		using var _ = new AssertionScope();
 
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
 		debugLogs.Select(log => log.Message)
-			.Should().ContainSingle(msg => msg == $"Sending GetConnection request to ID Crypt with connection Id '{connectionId}'");
+			.Should().ContainSingle(msg => msg == $"Sending GetConnection request to ID Crypt");
 
 		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Error);
 		errorLogs.Should().BeEquivalentTo(expectedErrorLogs, options => options.WithStrictOrdering());

@@ -1,6 +1,4 @@
 ﻿using System.Net.Http;
-using IDCryptGlobal.Cloud.Agent.Identity;
-using Microsoft.Extensions.Options;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Extensions;
 
@@ -14,13 +12,7 @@ internal static class IServiceCollectionExtensions
 	{
 		serviceCollection
 			.AddSingleton(statusCodeHttpHandler)
-			.AddHttpClient<IIdentityClient, IdentityClient>((httpClient, serviceProvider) =>
-			{
-				var identityOptions = serviceProvider.GetRequiredService<IOptions<IdentityConfig>>();
-				var identityClient = new IdentityClient(httpClient, identityOptions);
-
-				return identityClient;
-			})
+			.AddHttpClient("AgentHttpClient")
 			.AddHttpMessageHandler<THandler>();
 
 		return serviceCollection;

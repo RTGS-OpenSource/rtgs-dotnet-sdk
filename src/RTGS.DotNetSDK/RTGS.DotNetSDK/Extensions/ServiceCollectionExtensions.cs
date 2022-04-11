@@ -1,13 +1,14 @@
 ﻿using System.Net.Http;
-using IDCryptGlobal.Cloud.Agent.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using RTGS.DotNetSDK.IdCrypt;
 using RTGS.DotNetSDK.Publisher;
+using RTGS.DotNetSDK.Publisher.IdCrypt;
 using RTGS.DotNetSDK.Subscriber;
 using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 using RTGS.DotNetSDK.Subscriber.Handlers.Internal;
 using RTGS.DotNetSDK.Subscriber.Validators;
+using RTGS.IDCryptSDK;
+using RTGS.IDCryptSDK.Extensions;
 using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Extensions;
@@ -18,7 +19,7 @@ namespace RTGS.DotNetSDK.Extensions;
 public static class ServiceCollectionExtensions
 {
 	/// <summary>
-	/// Adds <seealso cref="IRtgsPublisher"/> with supplied client configuration of <seealso cref="RtgsPublisherOptions"/>.
+	/// Adds <seealso cref="IRtgsPublisher"/> with supplied client configuration of <seealso cref="RtgsSdkOptions"/>.
 	/// </summary>
 	/// <param name="serviceCollection">The service collection</param>
 	/// <param name="options">The options used to build the publisher</param>
@@ -49,22 +50,18 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddSingleton<IRtgsPublisher, RtgsPublisher>();
 		serviceCollection.AddSingleton<IIdCryptPublisher, IdCryptPublisher>();
 
-		serviceCollection.Configure<IdentityConfig>(identityConfig =>
-		{
-			identityConfig.IdCryptApiAddress = options.IdCryptApiAddress.ToString();
-			identityConfig.IdCryptApiKey = options.IdCryptApiKey;
-			identityConfig.IdCryptServiceEndpointAddress = options.IdCryptServiceEndPointAddress.ToString().TrimEnd('/');
-		});
-
-		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
-		serviceCollection.AddTransient<IIdentityClient, IdentityClient>();
 		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
+
+		serviceCollection.AddIdCryptSdk(new IdCryptSdkConfiguration(
+			options.IdCryptApiAddress,
+			options.IdCryptApiKey,
+			options.IdCryptServiceEndPointAddress));
 
 		return serviceCollection;
 	}
 
 	/// <summary>
-	/// Adds <seealso cref="IRtgsSubscriber"/> with supplied client configuration of <seealso cref="RtgsSubscriberOptions"/>.
+	/// Adds <seealso cref="IRtgsSubscriber"/> with supplied client configuration of <seealso cref="RtgsSdkOptions"/>.
 	/// </summary>
 	/// <param name="serviceCollection">The service collection</param>
 	/// <param name="options">The options used to build the gRPC client</param>
@@ -90,16 +87,6 @@ public static class ServiceCollectionExtensions
 
 		configureGrpcClient?.Invoke(grpcClientBuilder);
 
-		serviceCollection.Configure<IdentityConfig>(identityConfig =>
-		{
-			identityConfig.IdCryptApiAddress = options.IdCryptApiAddress.ToString();
-			identityConfig.IdCryptApiKey = options.IdCryptApiKey;
-			identityConfig.IdCryptServiceEndpointAddress = options.IdCryptServiceEndPointAddress.ToString().TrimEnd('/');
-		});
-
-		serviceCollection.AddHttpClient<IIdentityClient, IdentityClient>();
-		serviceCollection.AddTransient<IIdentityClient, IdentityClient>();
-
 		serviceCollection.AddSingleton<IRtgsSubscriber, RtgsSubscriber>();
 		serviceCollection.AddTransient<IHandleMessageCommandsFactory, HandleMessageCommandsFactory>();
 		serviceCollection.AddTransient<IMessageAdapter, AtomicLockResponseV1MessageAdapter>();
@@ -122,6 +109,11 @@ public static class ServiceCollectionExtensions
 
 		serviceCollection.AddSingleton<IIdCryptPublisher, IdCryptPublisher>();
 		serviceCollection.AddSingleton<IInternalPublisher, InternalPublisher>();
+
+		serviceCollection.AddIdCryptSdk(new IdCryptSdkConfiguration(
+			options.IdCryptApiAddress,
+			options.IdCryptApiKey,
+			options.IdCryptServiceEndPointAddress));
 
 		return serviceCollection;
 	}

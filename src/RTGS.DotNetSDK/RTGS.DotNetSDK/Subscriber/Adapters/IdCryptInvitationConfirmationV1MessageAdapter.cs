@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using RTGS.DotNetSDK.IdCrypt.Messages;
+using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.Public.Payment.V3;
 

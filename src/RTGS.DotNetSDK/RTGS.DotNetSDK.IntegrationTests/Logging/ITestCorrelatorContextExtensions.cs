@@ -12,7 +12,7 @@ public static class ITestCorrelatorContextExtensions
 		Logs(testCorrelatorContext, "RTGS.DotNetSDK.Subscriber.RtgsSubscriber", logEventLevel);
 
 	public static IEnumerable<LogEntry> ConnectionBrokerLogs(this ITestCorrelatorContext testCorrelatorContext, LogEventLevel logEventLevel) =>
-		Logs(testCorrelatorContext, "RTGS.DotNetSDK.IdCrypt.RtgsConnectionBroker", logEventLevel);
+		Logs(testCorrelatorContext, "RTGS.DotNetSDK.Publisher.IdCrypt.RtgsConnectionBroker", logEventLevel);
 
 	public static IEnumerable<LogEntry> LogsFor(this ITestCorrelatorContext testCorrelatorContext, string sourceContext, LogEventLevel logEventLevel) =>
 		Logs(testCorrelatorContext, sourceContext, logEventLevel);

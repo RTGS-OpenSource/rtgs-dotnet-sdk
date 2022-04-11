@@ -1,4 +1,4 @@
-﻿using RTGS.DotNetSDK.IdCrypt.Messages;
+﻿using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.DotNetSDK.Subscriber.Handlers.Internal;

@@ -1,4 +1,4 @@
-﻿using RTGS.DotNetSDK.IdCrypt.Messages;
+﻿using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Messages;
 using RTGS.ISO20022.Messages.Admi_002_001.V01;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;

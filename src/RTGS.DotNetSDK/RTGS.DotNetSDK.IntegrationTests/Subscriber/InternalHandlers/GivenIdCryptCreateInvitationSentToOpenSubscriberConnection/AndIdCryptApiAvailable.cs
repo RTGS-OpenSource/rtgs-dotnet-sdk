@@ -1,10 +1,10 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
-using RTGS.DotNetSDK.IdCrypt.Messages;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
+using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
@@ -138,7 +138,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		var message = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
-			ConnectionId = CreateInvitation.Response.ConnectionID,
+			ConnectionId = CreateInvitation.Response.ConnectionId,
 			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
 
@@ -246,8 +246,8 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 			new($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 			new("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 			new("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-			new ($"Sending Invitation with alias {alias} to Bank '{ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}'", LogEventLevel.Debug),
-			new ($"Sent Invitation with alias {alias} to Bank '{ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}'", LogEventLevel.Debug),
+			new ($"Sending Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}", LogEventLevel.Debug),
+			new ($"Sent Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}", LogEventLevel.Debug),
 		};
 
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Debug);
@@ -355,7 +355,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		var message = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
-			ConnectionId = CreateInvitation.Response.ConnectionID,
+			ConnectionId = CreateInvitation.Response.ConnectionId,
 			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
 
@@ -394,7 +394,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		var message = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
-			ConnectionId = CreateInvitation.Response.ConnectionID,
+			ConnectionId = CreateInvitation.Response.ConnectionId,
 			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
 
@@ -427,7 +427,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		var message = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
-			ConnectionId = CreateInvitation.Response.ConnectionID,
+			ConnectionId = CreateInvitation.Response.ConnectionId,
 			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
 		};
 
@@ -487,14 +487,14 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 
 		var invitation = CreateInvitation.Response.Invitation;
-		var agentPublicDid = GetPublicDid.Response.Result.DID;
+		var agentPublicDid = GetPublicDid.ExpectedDid;
 
 		var expectedMessageData = new IdCryptInvitationV1
 		{
 			Alias = inviteRequestQueryParams["alias"],
 			Label = invitation.Label,
 			RecipientKeys = invitation.RecipientKeys,
-			Id = invitation.ID,
+			Id = invitation.Id,
 			Type = invitation.Type,
 			ServiceEndPoint = invitation.ServiceEndPoint,
 			AgentPublicDid = agentPublicDid

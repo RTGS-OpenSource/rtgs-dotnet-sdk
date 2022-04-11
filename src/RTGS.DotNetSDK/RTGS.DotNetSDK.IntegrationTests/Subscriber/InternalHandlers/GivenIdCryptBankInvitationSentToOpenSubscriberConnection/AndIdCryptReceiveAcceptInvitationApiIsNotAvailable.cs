@@ -121,11 +121,11 @@ public class AndIdCryptReceiveAcceptInvitationApiIsNotAvailable : IDisposable, I
 		using var _ = new AssertionScope();
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
 		debugLogs.Select(log => log.Message)
-			.Should().ContainSingle(msg => msg == $"Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank '{expectedFromBankDid}'");
+			.Should().ContainSingle(msg => msg == $"Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {expectedFromBankDid}");
 
 		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Error);
 		errorLogs.Select(log => log.Message)
-			.Should().ContainSingle(msg => msg == $"Error occurred when sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank '{expectedFromBankDid}'");
+			.Should().ContainSingle(msg => msg == $"Error occurred when sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {expectedFromBankDid}");
 	}
 
 	[Fact]
