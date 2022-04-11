@@ -26,7 +26,6 @@ internal class StatusCodeHttpHandlerBuilderFactory
 		{
 			var mockResponse = new MockHttpResponse
 			{
-				Path = path,
 				HttpStatusCode = statusCode,
 				Content = content
 			};
@@ -56,7 +55,6 @@ internal class StatusCodeHttpHandlerBuilderFactory
 		{
 			var mockResponse = new MockHttpResponse
 			{
-				Path = path,
 				HttpStatusCode = statusCode,
 				Content = content
 			};
