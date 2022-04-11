@@ -74,12 +74,12 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 		catch (Exception innerException)
 		{
 			var exception = new RtgsSubscriberException(
-				$"Error occurred when sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {bankInvitation.FromBankDid}", 
+				$"Error occurred when sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {bankInvitation.FromBankDid}",
 				innerException);
 
 			_logger.LogError(
 				exception,
-				"Error occurred when sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {FromBankDid}", 
+				"Error occurred when sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {FromBankDid}",
 				bankInvitation.FromBankDid);
 
 			throw exception;
@@ -155,7 +155,7 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 			const string errorMessage = "Error occurred when sending GetConnection request to ID Crypt";
 
 			var exception = new RtgsSubscriberException(errorMessage, innerException);
-			
+
 			_logger.LogError(exception, errorMessage);
 
 			throw exception;

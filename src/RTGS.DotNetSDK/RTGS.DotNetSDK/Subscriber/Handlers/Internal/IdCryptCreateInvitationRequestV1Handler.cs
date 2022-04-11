@@ -82,12 +82,12 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		catch (Exception innerException)
 		{
 			var exception = new RtgsSubscriberException(
-				$"Error occurred when sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", 
+				$"Error occurred when sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent",
 				innerException);
 
 			_logger.LogError(
-				exception, 
-				"Error occurred when sending CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", 
+				exception,
+				"Error occurred when sending CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent",
 				alias);
 
 			throw exception;

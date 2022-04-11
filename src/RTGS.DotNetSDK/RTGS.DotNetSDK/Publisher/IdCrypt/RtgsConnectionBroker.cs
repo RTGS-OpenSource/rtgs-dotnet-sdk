@@ -92,12 +92,12 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		catch (Exception innerException)
 		{
 			var exception = new RtgsPublisherException(
-				$"Error occurred when sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", 
+				$"Error occurred when sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent",
 				innerException);
 
 			_logger.LogError(
-				exception, 
-				"Error occurred when sending CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", 
+				exception,
+				"Error occurred when sending CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent",
 				alias);
 
 			throw exception;

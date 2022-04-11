@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
-using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
+using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.IDCryptSDK.Connections.Models;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
