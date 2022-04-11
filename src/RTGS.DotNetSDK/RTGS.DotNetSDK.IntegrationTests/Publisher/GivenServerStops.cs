@@ -36,7 +36,7 @@ public class GivenServerStops : IAsyncLifetime
 			var serverUri = await _grpcServer.StartAsync();
 
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-					TestData.ValidMessages.BankDid,
+					TestData.ValidMessages.RtgsGlobalId,
 					serverUri,
 					new Uri("http://id-crypt-cloud-agent-api.com"),
 					"id-crypt-api-key",

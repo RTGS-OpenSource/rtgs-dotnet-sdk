@@ -68,7 +68,7 @@ public class AndIdCryptApiAvailable
 			try
 			{
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-						ValidMessages.BankDid,
+						ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
 						new Uri("http://id-crypt-cloud-agent-api.com"),
 						"id-crypt-api-key",
@@ -114,7 +114,7 @@ public class AndIdCryptApiAvailable
 
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-			_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == ValidMessages.BankDid);
+			_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == ValidMessages.RtgsGlobalId);
 		}
 
 		[Fact]
@@ -568,7 +568,7 @@ public class AndIdCryptApiAvailable
 			try
 			{
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-						ValidMessages.BankDid,
+						ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
 						new Uri("http://id-crypt-cloud-agent-api.com"),
 						"id-crypt-api-key",
@@ -731,7 +731,7 @@ public class AndIdCryptApiAvailable
 			try
 			{
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-						ValidMessages.BankDid,
+						ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
 						new Uri("http://id-crypt-cloud-agent-api.com"),
 						"id-crypt-api-key",

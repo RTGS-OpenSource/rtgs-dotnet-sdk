@@ -45,7 +45,7 @@ public class GivenOpenConnection
 			try
 			{
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-						TestData.ValidMessages.BankDid,
+						TestData.ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
 						new Uri("http://id-crypt-cloud-agent-api.com"),
 						"id-crypt-api-key",
@@ -233,7 +233,24 @@ public class GivenOpenConnection
 			var connection = receiver.Connections.SingleOrDefault();
 
 			connection.Should().NotBeNull();
-			connection!.Headers.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == TestData.ValidMessages.BankDid);
+			connection!.Headers.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == TestData.ValidMessages.RtgsGlobalId);
+		}
+
+		[Theory]
+		[ClassData(typeof(PublisherActionData))]
+		public async Task WhenUsingMetadata_ThenSeeRtgsGlobalIdInRequestHeader<TRequest>(PublisherAction<TRequest> publisherAction)
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+
+			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
+
+			var connection = receiver.Connections.SingleOrDefault();
+
+			connection.Should().NotBeNull();
+			connection!.Headers.Should().ContainSingle(header => header.Key == "rtgs-global-id"
+																 && header.Value == TestData.ValidMessages.RtgsGlobalId);
 		}
 
 		[Theory]
@@ -468,7 +485,7 @@ public class GivenOpenConnection
 			try
 			{
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-						TestData.ValidMessages.BankDid,
+						TestData.ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
 						new Uri("http://id-crypt-cloud-agent-api.com"),
 						Guid.NewGuid().ToString(),

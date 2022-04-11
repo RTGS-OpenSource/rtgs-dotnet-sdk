@@ -6,7 +6,7 @@ namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 
 public static class ValidMessages
 {
-	public const string BankDid = "test-bank-did";
+	public const string RtgsGlobalId = "test-bank-rtgs-global-id";
 
 	public static readonly ISO20022.Messages.Pacs_008_001.V10.FIToFICustomerCreditTransferV10 PayawayFunds = new()
 	{

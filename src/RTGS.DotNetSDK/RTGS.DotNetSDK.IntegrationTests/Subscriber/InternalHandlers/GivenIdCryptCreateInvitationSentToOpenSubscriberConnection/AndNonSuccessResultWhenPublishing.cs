@@ -46,7 +46,7 @@ public class AndNonSuccessResultWhenPublishing : IDisposable, IClassFixture<Grpc
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-					ValidMessages.BankDid,
+					ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("http://id-crypt-cloud-agent-api.com"),
 					"id-crypt-api-key",

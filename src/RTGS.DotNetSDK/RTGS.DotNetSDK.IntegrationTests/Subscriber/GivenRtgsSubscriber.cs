@@ -17,7 +17,7 @@ public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-				TestData.ValidMessages.BankDid,
+				TestData.ValidMessages.RtgsGlobalId,
 				_grpcServer.ServerUri,
 				new Uri("http://id-crypt-cloud-agent-api.com"),
 				"id-crypt-api-key",

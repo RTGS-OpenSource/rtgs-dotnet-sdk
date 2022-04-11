@@ -63,7 +63,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-					ValidMessages.BankDid,
+					ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("http://id-crypt-cloud-agent-api.com"),
 					"id-crypt-api-key",
@@ -109,7 +109,22 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == ValidMessages.BankDid);
+		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == ValidMessages.RtgsGlobalId);
+	}
+
+	[Fact]
+	public async Task WhenMessageReceived_ThenSeeRtgsGlobalIdInRequestHeader()
+	{
+		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
+
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "rtgs-global-id"
+																		&& header.Value == ValidMessages.RtgsGlobalId);
 	}
 
 	[Fact]
