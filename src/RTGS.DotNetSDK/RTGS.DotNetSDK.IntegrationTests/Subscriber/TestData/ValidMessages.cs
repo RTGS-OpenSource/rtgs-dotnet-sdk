@@ -120,38 +120,38 @@ public static class ValidMessages
 
 	public static readonly BankPartnersResponseV1 BankPartnersResponseV1 = new()
 	{
-		DbtrAcct =
-			new ISO20022.Messages.Pacs_008_001.V10.CashAccount40()
-			{
-				Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "iban1" }
-			},
+		DbtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "iban1" }
+		},
 		BkPrtnrs = new List<BankPartnersResponseV1.BankPartner>
 		{
 			new BankPartnersResponseV1.BankPartner
 			{
-				RtgsId =
-					new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
-					{
-						Id = "id1"
-					},
+				RtgsId = new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
+				{
+					Id = "id1"
+				},
+				RtgsGlobalId = new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
+				{
+					Id = "id1"
+				},
 				Ccy = "PLN",
 				Nm = "Bank",
-				CdtrAcct =
-					new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+				CdtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+				{
+					Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
 					{
-						Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
-						{
-							IBAN = "CdtrAcctIban"
-						}
-					},
-				CdtrAgtAcct =
-					new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+						IBAN = "CdtrAcctIban"
+					}
+				},
+				CdtrAgtAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+				{
+					Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
 					{
-						Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
-						{
-							IBAN = "CdtrAgtAcctIban"
-						}
-					},
+						IBAN = "CdtrAgtAcctIban"
+					}
+				},
 				DbtrAgtAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 				{
 					Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
