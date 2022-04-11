@@ -498,6 +498,12 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.tobank.v1");
 		receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
 
+		receivedMessage.Headers.Should().ContainSingle(header => header.Key == "bankpartnerdid"
+																 && header.Value == "RTGS:GB177550GB");
+
+		receivedMessage.Headers.Should().ContainSingle(header => header.Key == "bank-partner-rtgs-global-id"
+																 && header.Value == "RTGS:GB177550GB");
+
 		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
 			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
 

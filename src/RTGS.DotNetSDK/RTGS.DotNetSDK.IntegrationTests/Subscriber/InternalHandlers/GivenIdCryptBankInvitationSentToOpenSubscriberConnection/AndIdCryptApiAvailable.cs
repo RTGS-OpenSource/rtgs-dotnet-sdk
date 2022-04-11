@@ -499,6 +499,12 @@ public class AndIdCryptApiAvailable
 			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitationconfirmation.v1");
 			receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
 
+			receivedMessage.Headers.Should().ContainSingle(header => header.Key == "bankpartnerdid"
+																	 && header.Value == "RTGS:GB239104GB");
+
+			receivedMessage.Headers.Should().ContainSingle(header => header.Key == "bank-partner-rtgs-global-id"
+																	 && header.Value == "RTGS:GB239104GB");
+
 			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
 				.Requests[ReceiveInvitation.Path].Single().RequestUri!.Query);
 
@@ -658,6 +664,12 @@ public class AndIdCryptApiAvailable
 
 			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitationconfirmation.v1");
 			receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
+
+			receivedMessage.Headers.Should().ContainSingle(header => header.Key == "bankpartnerdid"
+																	 && header.Value == "RTGS:GB239104GB");
+
+			receivedMessage.Headers.Should().ContainSingle(header => header.Key == "bank-partner-rtgs-global-id"
+																	 && header.Value == "RTGS:GB239104GB");
 
 			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
 				.Requests[ReceiveInvitation.Path].Single().RequestUri!.Query);
