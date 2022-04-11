@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using RTGS.DotNetSDK.IdCrypt;
-using RTGS.DotNetSDK.IdCrypt.Messages;
+using RTGS.DotNetSDK.Publisher.IdCrypt;
+using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Exceptions;
 using RTGS.IDCryptSDK.Connections;
 using RTGS.IDCryptSDK.Connections.Models;
@@ -79,12 +79,20 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 
 			return response;
 		}
-		catch (Exception ex)
+		catch (Exception innerException)
 		{
-			_logger.LogError(ex, "Error occurred when sending CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", alias);
+			var exception = new RtgsSubscriberException(
+				$"Error occurred when sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", 
+				innerException);
 
-			throw;
+			_logger.LogError(
+				exception, 
+				"Error occurred when sending CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", 
+				alias);
+
+			throw exception;
 		}
+
 	}
 
 	private async Task<string> GetIdCryptAgentPublicDidAsync()
@@ -99,11 +107,15 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 
 			return publicDid;
 		}
-		catch (Exception ex)
+		catch (Exception innerException)
 		{
-			_logger.LogError(ex, "Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent");
+			const string errorMessage = "Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent";
 
-			throw;
+			var exception = new RtgsSubscriberException(errorMessage, innerException);
+
+			_logger.LogError(exception, errorMessage);
+
+			throw exception;
 		}
 	}
 

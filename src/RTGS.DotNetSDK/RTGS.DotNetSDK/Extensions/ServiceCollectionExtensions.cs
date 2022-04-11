@@ -1,7 +1,7 @@
 ﻿using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
-using RTGS.DotNetSDK.IdCrypt;
 using RTGS.DotNetSDK.Publisher;
+using RTGS.DotNetSDK.Publisher.IdCrypt;
 using RTGS.DotNetSDK.Subscriber;
 using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;

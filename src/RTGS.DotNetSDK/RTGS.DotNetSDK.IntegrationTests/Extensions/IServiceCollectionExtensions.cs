@@ -1,8 +1,4 @@
 ﻿using System.Net.Http;
-using Microsoft.Extensions.Options;
-using RTGS.IDCryptSDK;
-using RTGS.IDCryptSDK.Connections;
-using RTGS.IDCryptSDK.Wallet;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Extensions;
 

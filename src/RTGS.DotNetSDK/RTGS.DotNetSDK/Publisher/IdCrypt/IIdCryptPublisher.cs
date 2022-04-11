@@ -1,6 +1,6 @@
-﻿using RTGS.DotNetSDK.IdCrypt.Messages;
+﻿using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 
-namespace RTGS.DotNetSDK.IdCrypt;
+namespace RTGS.DotNetSDK.Publisher.IdCrypt;
 
 internal interface IIdCryptPublisher
 {
