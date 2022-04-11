@@ -19,7 +19,7 @@ namespace RTGS.DotNetSDK.Extensions;
 public static class ServiceCollectionExtensions
 {
 	/// <summary>
-	/// Adds <seealso cref="IRtgsPublisher"/> with supplied client configuration of <seealso cref="RtgsPublisherOptions"/>.
+	/// Adds <seealso cref="IRtgsPublisher"/> with supplied client configuration of <seealso cref="RtgsSdkOptions"/>.
 	/// </summary>
 	/// <param name="serviceCollection">The service collection</param>
 	/// <param name="options">The options used to build the publisher</param>
@@ -61,7 +61,7 @@ public static class ServiceCollectionExtensions
 	}
 
 	/// <summary>
-	/// Adds <seealso cref="IRtgsSubscriber"/> with supplied client configuration of <seealso cref="RtgsSubscriberOptions"/>.
+	/// Adds <seealso cref="IRtgsSubscriber"/> with supplied client configuration of <seealso cref="RtgsSdkOptions"/>.
 	/// </summary>
 	/// <param name="serviceCollection">The service collection</param>
 	/// <param name="options">The options used to build the gRPC client</param>
