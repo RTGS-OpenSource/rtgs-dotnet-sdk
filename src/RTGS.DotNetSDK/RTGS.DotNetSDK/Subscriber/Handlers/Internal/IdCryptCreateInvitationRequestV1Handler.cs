@@ -133,7 +133,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 			Id = invitation.Id,
 			Label = invitation.Label,
 			RecipientKeys = invitation.RecipientKeys,
-			ServiceEndPoint = invitation.ServiceEndPoint,
+			ServiceEndPoint = invitation.ServiceEndpoint,
 			Type = invitation.Type,
 			AgentPublicDid = agentPublicDid
 		};
