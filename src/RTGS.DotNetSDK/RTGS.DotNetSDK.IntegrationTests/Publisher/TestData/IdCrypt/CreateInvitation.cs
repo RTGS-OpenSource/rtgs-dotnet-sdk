@@ -19,7 +19,7 @@ internal static class CreateInvitation
 			{
 				"H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"
 			},
-			ServiceEndPoint = "http://192.168.56.101:8020"
+			ServiceEndpoint = "http://192.168.56.101:8020"
 		}
 	};
 
