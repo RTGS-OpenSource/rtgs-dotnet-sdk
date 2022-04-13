@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Google.Protobuf.Collections;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
@@ -46,8 +47,6 @@ internal class InternalPublisher : IInternalPublisher
 
 		ArgumentNullException.ThrowIfNull(message, nameof(message));
 
-		await SignMessageAsync(message, idCryptAlias, headers);
-
 		using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_sharedTokenSource.Token, cancellationToken);
 		await _sendingSignal.WaitAsync(linkedTokenSource.Token);
 
@@ -59,7 +58,7 @@ internal class InternalPublisher : IInternalPublisher
 
 			_acknowledgementContext = new AcknowledgementContext();
 
-			await SendMessageAsync(message, messageIdentifier, headers, callingMethod, linkedTokenSource.Token);
+			await SendMessageAsync(message, messageIdentifier, headers, callingMethod, idCryptAlias, linkedTokenSource.Token);
 
 			await _acknowledgementContext.WaitAsync(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
 
@@ -83,15 +82,14 @@ internal class InternalPublisher : IInternalPublisher
 		}
 	}
 
-	private async Task SignMessageAsync<T>(T message, string idCryptAlias, Dictionary<string, string> headers)
+	private async Task SignMessageAsync<T>(T message, string idCryptAlias, MapField<string, string> headers)
 	{
 		var signer = _messageSigners.SingleOrDefault(signer => typeof(T) == signer.MessageType);
-		if (signer == null)
+
+		if (signer is null)
 		{
 			return;
 		}
-
-		headers ??= new Dictionary<string, string>();
 
 		var signatures = await signer.SignAsync(message, idCryptAlias);
 
@@ -165,7 +163,13 @@ internal class InternalPublisher : IInternalPublisher
 		}
 	}
 
-	private async Task SendMessageAsync<T>(T message, string messageIdentifier, IDictionary<string, string> headers, string callingMethod, CancellationToken cancellationToken)
+	private async Task SendMessageAsync<T>(
+		T message, 
+		string messageIdentifier, 
+		IDictionary<string, string> headers, 
+		string callingMethod, 
+		string idCryptAlias,
+		CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 
@@ -180,6 +184,8 @@ internal class InternalPublisher : IInternalPublisher
 		{
 			rtgsMessage.Headers.Add(headers);
 		}
+
+		await SignMessageAsync(message, idCryptAlias, rtgsMessage.Headers);
 
 		await _writingSignal.WaitAsync(cancellationToken);
 

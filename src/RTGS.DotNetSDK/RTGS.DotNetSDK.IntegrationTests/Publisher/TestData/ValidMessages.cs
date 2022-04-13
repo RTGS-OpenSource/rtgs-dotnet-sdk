@@ -98,7 +98,22 @@ public static class ValidMessages
 		},
 		CdtTrfTxInf = new[]
 		{
-			new CreditTransferTransaction50 { PoolgAdjstmntDt = new DateTime(2021, 1, 1) }
+			new CreditTransferTransaction50 
+			{ 
+				IntrBkSttlmAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
+				{
+					Ccy = "jpy",
+					Value = 1
+				},
+				PoolgAdjstmntDt = new DateTime(2021, 1, 1),
+				CdtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+				{
+					Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+					{
+						IBAN = "iban"
+					}
+				}
+			}
 		}
 	};
 

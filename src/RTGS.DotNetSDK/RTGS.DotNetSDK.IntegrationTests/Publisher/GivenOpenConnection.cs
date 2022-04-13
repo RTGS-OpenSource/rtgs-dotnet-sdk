@@ -1,4 +1,7 @@
 ﻿using System.Text.Json;
+using RTGS.DotNetSDK.IntegrationTests.Extensions;
+using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher;
 
@@ -14,6 +17,7 @@ public class GivenOpenConnection
 
 		private IRtgsPublisher _rtgsPublisher;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
+		private StatusCodeHttpHandler _idCryptMessageHandler;
 		private IHost _clientHost;
 
 		public AndShortTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
@@ -51,9 +55,16 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
+				_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+					.Create()
+					.WithOkResponse(SignDocument.HttpRequestResponseContext)
+					.Build();
+
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
-					.ConfigureServices(services => services.AddRtgsPublisher(rtgsSdkOptions))
+					.ConfigureServices(services => services
+						.AddRtgsPublisher(rtgsSdkOptions)
+						.AddTestIdCryptHttpClient(_idCryptMessageHandler))
 					.UseSerilog()
 					.Build();
 

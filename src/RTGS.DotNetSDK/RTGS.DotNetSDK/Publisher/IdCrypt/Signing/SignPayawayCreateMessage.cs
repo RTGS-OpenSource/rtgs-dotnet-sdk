@@ -12,16 +12,20 @@ internal class SignPayawayCreateMessage : ISignMessage
 	{
 		_client = client;
 	}
+
 	public Type MessageType => typeof(FIToFICustomerCreditTransferV10);
 
 	public async Task<SignDocumentResponse> SignAsync<TMessageType>(TMessageType message, string alias)
 	{
 		ArgumentNullException.ThrowIfNull(message);
+
 		var typedMessage = message as FIToFICustomerCreditTransferV10;
 
 		var document = new Dictionary<string, object>
 		{
-			{ "iban", typedMessage!.CdtTrfTxInf[0].CdtrAcct.Id }
+			{ "iban", typedMessage!.CdtTrfTxInf[0].CdtrAcct.Id.IBAN },
+			{ "currency", typedMessage!.CdtTrfTxInf[0].CdtrAcct.Id. },
+			{ "value", typedMessage!.CdtTrfTxInf[0].CdtrAcct.Id.IBAN }
 		};
 
 		var documentRequest = new SignDocumentRequest<Dictionary<string, object>>()
@@ -30,6 +34,8 @@ internal class SignPayawayCreateMessage : ISignMessage
 			Document = document
 		};
 
-		return await _client.SignDocumentAsync(documentRequest);
+		var response = await _client.SignDocumentAsync(documentRequest);
+
+		return response;
 	}
 }
