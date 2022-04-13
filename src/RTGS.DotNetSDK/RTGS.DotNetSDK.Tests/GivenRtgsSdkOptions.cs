@@ -210,7 +210,7 @@ public class GivenRtgsSdkOptions
 			null))
 		.Should()
 		.Throw<ArgumentNullException>()
-		.WithMessage("Value cannot be null. (Parameter 'idCryptServiceEndPointAddress')");
+		.WithMessage("Value cannot be null. (Parameter 'idCryptServiceEndpointAddress')");
 
 	public static IEnumerable<object[]> TimeSpansLessThanOneSecond =>
 		new List<object[]>

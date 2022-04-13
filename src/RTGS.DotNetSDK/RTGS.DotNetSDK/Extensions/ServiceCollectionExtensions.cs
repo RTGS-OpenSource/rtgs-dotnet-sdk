@@ -55,7 +55,7 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddIdCryptSdk(new IdCryptSdkConfiguration(
 			options.IdCryptApiAddress,
 			options.IdCryptApiKey,
-			options.IdCryptServiceEndPointAddress));
+			options.IdCryptServiceEndpointAddress));
 
 		return serviceCollection;
 	}
@@ -113,7 +113,7 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddIdCryptSdk(new IdCryptSdkConfiguration(
 			options.IdCryptApiAddress,
 			options.IdCryptApiKey,
-			options.IdCryptServiceEndPointAddress));
+			options.IdCryptServiceEndpointAddress));
 
 		return serviceCollection;
 	}

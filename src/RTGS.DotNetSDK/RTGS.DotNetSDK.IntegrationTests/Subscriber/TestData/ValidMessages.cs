@@ -183,7 +183,7 @@ public static class ValidMessages
 			RecipientKeys = new[] { "df3d191f-3b15-4e16-a021-09579bbbc642" },
 			Id = "b705d4b8-0ef3-4ba6-8857-b3456f4ed63f",
 			Type = "the-type",
-			ServiceEndPoint = "https://the-service-endpoint",
+			ServiceEndpoint = "https://the-service-endpoint",
 			AgentPublicDid = "df3d191f-3b15-4e16-a021-09579bbbc642"
 		}
 	};

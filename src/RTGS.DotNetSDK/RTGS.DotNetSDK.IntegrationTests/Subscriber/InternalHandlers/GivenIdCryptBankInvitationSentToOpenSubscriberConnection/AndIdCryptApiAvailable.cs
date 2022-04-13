@@ -231,7 +231,7 @@ public class AndIdCryptApiAvailable
 				RecipientKeys = invitation.RecipientKeys.ToArray(),
 				Id = invitation.Id,
 				Type = invitation.Type,
-				ServiceEndpoint = invitation.ServiceEndPoint
+				ServiceEndpoint = invitation.ServiceEndpoint
 			};
 
 			actualRequestBody.Should().BeEquivalentTo(expectedRequestBody);

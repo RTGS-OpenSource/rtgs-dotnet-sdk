@@ -221,7 +221,7 @@ public class GivenOpenConnection
 				RecipientKeys = invitation.RecipientKeys,
 				Id = invitation.Id,
 				Type = invitation.Type,
-				ServiceEndPoint = invitation.ServiceEndpoint,
+				ServiceEndpoint = invitation.ServiceEndpoint,
 				AgentPublicDid = agentPublicDid
 			};
 

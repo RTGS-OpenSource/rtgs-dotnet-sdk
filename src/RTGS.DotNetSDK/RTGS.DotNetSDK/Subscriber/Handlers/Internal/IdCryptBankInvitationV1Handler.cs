@@ -56,7 +56,7 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 			RecipientKeys = invitation.RecipientKeys.ToArray(),
 			Id = invitation.Id,
 			Type = invitation.Type,
-			ServiceEndpoint = invitation.ServiceEndPoint
+			ServiceEndpoint = invitation.ServiceEndpoint
 		};
 
 		try
