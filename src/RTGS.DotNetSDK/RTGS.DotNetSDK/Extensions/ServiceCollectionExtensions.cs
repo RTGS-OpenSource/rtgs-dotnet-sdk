@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using RTGS.DotNetSDK.Publisher;
 using RTGS.DotNetSDK.Publisher.IdCrypt;
+using RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 using RTGS.DotNetSDK.Subscriber;
 using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
@@ -48,6 +49,7 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddSingleton<IInternalPublisher, InternalPublisher>();
 
 		serviceCollection.AddSingleton<IRtgsPublisher, RtgsPublisher>();
+
 		serviceCollection.AddSingleton<IIdCryptPublisher, IdCryptPublisher>();
 
 		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
@@ -56,6 +58,8 @@ public static class ServiceCollectionExtensions
 			options.IdCryptApiAddress,
 			options.IdCryptApiKey,
 			options.IdCryptServiceEndpointAddress));
+
+		serviceCollection.AddSingleton<ISignMessage, SignPayawayCreateMessage>();
 
 		return serviceCollection;
 	}
