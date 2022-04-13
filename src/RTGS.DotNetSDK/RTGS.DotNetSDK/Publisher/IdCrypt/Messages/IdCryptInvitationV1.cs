@@ -7,6 +7,6 @@ internal record IdCryptInvitationV1
 	public IEnumerable<string> RecipientKeys { get; init; }
 	public string Id { get; init; }
 	public string Type { get; init; }
-	public string ServiceEndPoint { get; init; }
+	public string ServiceEndpoint { get; init; }
 	public string AgentPublicDid { get; init; }
 }
