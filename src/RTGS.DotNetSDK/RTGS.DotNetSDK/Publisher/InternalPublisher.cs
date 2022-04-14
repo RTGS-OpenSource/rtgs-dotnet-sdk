@@ -13,7 +13,7 @@ internal class InternalPublisher : IInternalPublisher
 	private readonly ILogger<InternalPublisher> _logger;
 	private readonly Payment.PaymentClient _paymentClient;
 	private readonly RtgsSdkOptions _options;
-	private readonly IEnumerable<ISignMessage> _messageSigners;
+	private readonly IServiceProvider _serviceProvider;
 	private readonly CancellationTokenSource _sharedTokenSource = new();
 	private readonly SemaphoreSlim _sendingSignal = new(1);
 	private readonly SemaphoreSlim _disposingSignal = new(1);
@@ -24,12 +24,12 @@ internal class InternalPublisher : IInternalPublisher
 	private bool _disposed;
 	private bool _resetConnection;
 
-	public InternalPublisher(ILogger<InternalPublisher> logger, Payment.PaymentClient paymentClient, RtgsSdkOptions options, IEnumerable<ISignMessage> messageSigners)
+	public InternalPublisher(ILogger<InternalPublisher> logger, Payment.PaymentClient paymentClient, RtgsSdkOptions options, IServiceProvider serviceProvider)
 	{
 		_logger = logger;
 		_paymentClient = paymentClient;
 		_options = options;
-		_messageSigners = messageSigners;
+		_serviceProvider = serviceProvider;
 	}
 
 	public async Task<SendResult> SendMessageAsync<T>(
@@ -82,16 +82,22 @@ internal class InternalPublisher : IInternalPublisher
 		}
 	}
 
-	private async Task SignMessageAsync<T>(T message, string idCryptAlias, MapField<string, string> headers)
+	private async Task SignMessageAsync<TMessageType>(TMessageType message, string idCryptAlias, MapField<string, string> headers)
 	{
-		var signer = _messageSigners.SingleOrDefault(signer => typeof(T) == signer.MessageType);
+		var messageType = message.GetType();
 
-		if (signer is null)
+		var messageHandlerType = typeof(ISignMessage<>)
+			.MakeGenericType(messageType);
+
+		var messageSigner = _serviceProvider
+			.GetService(messageHandlerType) as ISignMessage<TMessageType>;
+
+		if (messageSigner is null)
 		{
 			return;
-		}
+		} 
 
-		var signatures = await signer.SignAsync(message, idCryptAlias);
+		var signatures = await messageSigner.SignAsync(message, idCryptAlias);
 
 		headers.Add("pairwise-did-signature", signatures.PairwiseDidSignature);
 		headers.Add("public-did-signature", signatures.PublicDidSignature);

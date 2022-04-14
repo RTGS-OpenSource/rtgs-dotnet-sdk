@@ -2,9 +2,7 @@
 
 namespace RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 
-internal interface ISignMessage
+internal interface ISignMessage<TMessageType>
 {
-	Type MessageType { get; }
-
-	Task<SignDocumentResponse> SignAsync<TMessageType>(TMessageType message, string alias);
+	Task<SignDocumentResponse> SignAsync(TMessageType message, string alias);
 }

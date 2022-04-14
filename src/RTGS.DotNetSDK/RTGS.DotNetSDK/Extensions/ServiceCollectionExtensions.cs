@@ -10,6 +10,7 @@ using RTGS.DotNetSDK.Subscriber.Handlers.Internal;
 using RTGS.DotNetSDK.Subscriber.Validators;
 using RTGS.IDCryptSDK;
 using RTGS.IDCryptSDK.Extensions;
+using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Extensions;
@@ -59,7 +60,7 @@ public static class ServiceCollectionExtensions
 			options.IdCryptApiKey,
 			options.IdCryptServiceEndpointAddress));
 
-		serviceCollection.AddSingleton<ISignMessage, SignPayawayCreateMessage>();
+		serviceCollection.AddSingleton<ISignMessage<FIToFICustomerCreditTransferV10>, SignPayawayCreateMessage>();
 
 		return serviceCollection;
 	}
