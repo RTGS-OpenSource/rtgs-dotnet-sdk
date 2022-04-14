@@ -86,11 +86,11 @@ internal class InternalPublisher : IInternalPublisher
 	{
 		var messageType = message.GetType();
 
-		var messageHandlerType = typeof(ISignMessage<>)
+		var messageSignerType = typeof(ISignMessage<>)
 			.MakeGenericType(messageType);
 
 		var messageSigner = _serviceProvider
-			.GetService(messageHandlerType) as ISignMessage<TMessageType>;
+			.GetService(messageSignerType) as ISignMessage<TMessageType>;
 
 		if (messageSigner is null)
 		{

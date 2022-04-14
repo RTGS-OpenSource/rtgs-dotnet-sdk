@@ -17,19 +17,10 @@ internal class SignPayawayCreateMessage : ISignMessage<FIToFICustomerCreditTrans
 	{
 		ArgumentNullException.ThrowIfNull(message);
 
-		var typedMessage = message;
-
-		var document = new Dictionary<string, object>
-		{
-			{ "iban", typedMessage!.CdtTrfTxInf[0].CdtrAcct.Id.IBAN },
-			{ "currency", typedMessage!.CdtTrfTxInf[0].CdtrAcct.Id.IBAN },
-			{ "value", typedMessage!.CdtTrfTxInf[0].CdtrAcct.Id.IBAN }
-		};
-
-		var documentRequest = new SignDocumentRequest<Dictionary<string, object>>()
+		var documentRequest = new SignDocumentRequest<FIToFICustomerCreditTransferV10>()
 		{
 			ConnectionId = alias,
-			Document = document
+			Document = message
 		};
 
 		var response = await _client.SignDocumentAsync(documentRequest);
