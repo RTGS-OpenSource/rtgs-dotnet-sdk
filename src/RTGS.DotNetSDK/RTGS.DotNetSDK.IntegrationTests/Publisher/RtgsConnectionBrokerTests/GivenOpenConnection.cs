@@ -547,6 +547,8 @@ public class GivenOpenConnection
 
 				var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
+					.WithOkResponse(GetActiveConnectionWithAlias.HttpRequestResponseContext)
+					.WithOkResponse(SignDocument.HttpRequestResponseContext)
 					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
 					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
 					.Build();

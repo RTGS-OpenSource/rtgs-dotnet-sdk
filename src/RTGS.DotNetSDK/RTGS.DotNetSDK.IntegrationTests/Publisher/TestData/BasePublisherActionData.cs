@@ -4,8 +4,8 @@ using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
 
-public abstract class BasePublisherActionData : BaseActionData 
-{ 
+public abstract class BasePublisherActionData : BaseActionData
+{
 	public abstract IPublisherAction<AtomicLockRequestV1> AtomicLock { get; }
 	public abstract IPublisherAction<AtomicTransferRequestV1> AtomicTransfer { get; }
 	public abstract IPublisherAction<EarmarkConfirmationV1> EarmarkConfirmation { get; }

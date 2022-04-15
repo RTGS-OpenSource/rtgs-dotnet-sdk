@@ -19,7 +19,7 @@ internal class SignPayawayCreateMessage : ISignMessage<FIToFICustomerCreditTrans
 
 		var documentRequest = new SignDocumentRequest<FIToFICustomerCreditTransferV10>()
 		{
-			ConnectionId = alias,
+			Alias = alias,
 			Document = message
 		};
 

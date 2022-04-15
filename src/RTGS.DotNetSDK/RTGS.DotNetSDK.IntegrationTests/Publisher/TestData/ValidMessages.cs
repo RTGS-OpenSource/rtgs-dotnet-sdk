@@ -8,6 +8,7 @@ public static class ValidMessages
 {
 	public const string BankDid = "test-bank-did";
 	public const string BankPartnerDid = "test-bank-partner-did";
+	public const string IdCryptAlias = "id-crypt-alias";
 
 	public static readonly AtomicLockRequestV1 AtomicLockRequest = new()
 	{
@@ -98,8 +99,8 @@ public static class ValidMessages
 		},
 		CdtTrfTxInf = new[]
 		{
-			new CreditTransferTransaction50 
-			{ 
+			new CreditTransferTransaction50
+			{
 				IntrBkSttlmAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
 				{
 					Ccy = "jpy",

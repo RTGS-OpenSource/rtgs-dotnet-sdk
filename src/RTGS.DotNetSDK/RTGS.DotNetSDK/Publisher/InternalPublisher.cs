@@ -1,8 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text.Json;
-using Google.Protobuf.Collections;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using RTGS.DotNetSDK.Publisher.Exceptions;
 using RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 using RTGS.Public.Payment.V3;
 
@@ -47,6 +47,8 @@ internal class InternalPublisher : IInternalPublisher
 
 		ArgumentNullException.ThrowIfNull(message, nameof(message));
 
+		var signingHeaders = await SignMessageAsync(message, idCryptAlias);
+
 		using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_sharedTokenSource.Token, cancellationToken);
 		await _sendingSignal.WaitAsync(linkedTokenSource.Token);
 
@@ -58,7 +60,7 @@ internal class InternalPublisher : IInternalPublisher
 
 			_acknowledgementContext = new AcknowledgementContext();
 
-			await SendMessageAsync(message, messageIdentifier, headers, callingMethod, idCryptAlias, linkedTokenSource.Token);
+			await SendMessageAsync(message, messageIdentifier, headers, signingHeaders, callingMethod, linkedTokenSource.Token);
 
 			await _acknowledgementContext.WaitAsync(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
 
@@ -82,25 +84,45 @@ internal class InternalPublisher : IInternalPublisher
 		}
 	}
 
-	private async Task SignMessageAsync<TMessageType>(TMessageType message, string idCryptAlias, MapField<string, string> headers)
+	private async Task<Dictionary<string, string>> SignMessageAsync<TMessageType>(TMessageType message, string idCryptAlias)
 	{
-		var messageType = message.GetType();
-
-		var messageSignerType = typeof(ISignMessage<>)
-			.MakeGenericType(messageType);
+		var messageSignerType = typeof(ISignMessage<TMessageType>);
 
 		var messageSigner = _serviceProvider
 			.GetService(messageSignerType) as ISignMessage<TMessageType>;
 
+		var signingHeaders = new Dictionary<string, string>();
+		var messageType = message.GetType().Name;
+
 		if (messageSigner is null)
 		{
-			return;
-		} 
+			_logger.LogDebug("No message signer found for {MessageType} message, skipping signing", messageType);
 
-		var signatures = await messageSigner.SignAsync(message, idCryptAlias);
+			return signingHeaders;
+		}
 
-		headers.Add("pairwise-did-signature", signatures.PairwiseDidSignature);
-		headers.Add("public-did-signature", signatures.PublicDidSignature);
+		_logger.LogInformation("Signing {MessageType} message", messageType);
+
+		try
+		{
+			var signatures = await messageSigner.SignAsync(message, idCryptAlias);
+
+			signingHeaders.Add("pairwise-did-signature", signatures.PairwiseDidSignature);
+			signingHeaders.Add("public-did-signature", signatures.PublicDidSignature);
+			signingHeaders.Add("alias", idCryptAlias);
+		}
+		catch (Exception innerException)
+		{
+			var exception = new RtgsPublisherException($"Error when signing {messageType} message.", innerException);
+
+			_logger.LogError(exception, "Error signing {MessageType} message", messageType);
+
+			throw exception;
+		}
+
+		_logger.LogInformation("Signed {MessageType} message", messageType);
+
+		return signingHeaders;
 	}
 
 	private async Task EnsureRtgsCallSetup(CancellationToken cancellationToken)
@@ -170,11 +192,11 @@ internal class InternalPublisher : IInternalPublisher
 	}
 
 	private async Task SendMessageAsync<T>(
-		T message, 
-		string messageIdentifier, 
-		IDictionary<string, string> headers, 
-		string callingMethod, 
-		string idCryptAlias,
+		T message,
+		string messageIdentifier,
+		IDictionary<string, string> headers,
+		IDictionary<string, string> signingHeaders,
+		string callingMethod,
 		CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
@@ -191,7 +213,7 @@ internal class InternalPublisher : IInternalPublisher
 			rtgsMessage.Headers.Add(headers);
 		}
 
-		await SignMessageAsync(message, idCryptAlias, rtgsMessage.Headers);
+		rtgsMessage.Headers.Add(signingHeaders);
 
 		await _writingSignal.WaitAsync(cancellationToken);
 

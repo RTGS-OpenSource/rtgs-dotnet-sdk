@@ -2,7 +2,7 @@
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
 
-public class PublisherActionSignedMessagesData : BaseActionData
+public class PublisherActionSignedMessagesData : BaseSignedPublisherActionData
 {
-	public IPublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate => PublisherActions.PayawayCreate;
+	public override IPublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate => PublisherActions.PayawayCreate;
 }
