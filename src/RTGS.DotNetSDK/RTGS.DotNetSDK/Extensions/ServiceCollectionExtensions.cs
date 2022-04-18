@@ -7,6 +7,7 @@ using RTGS.DotNetSDK.Subscriber;
 using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 using RTGS.DotNetSDK.Subscriber.Handlers.Internal;
+using RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
 using RTGS.DotNetSDK.Subscriber.Validators;
 using RTGS.IDCryptSDK;
 using RTGS.IDCryptSDK.Extensions;
@@ -111,6 +112,8 @@ public static class ServiceCollectionExtensions
 
 		serviceCollection.AddTransient<IInternalHandler, IdCryptCreateInvitationRequestV1Handler>();
 		serviceCollection.AddTransient<IInternalHandler, IdCryptBankInvitationV1Handler>();
+
+		serviceCollection.AddSingleton<IVerifyMessage, PayawayFundsMessageVerifier>();
 
 		serviceCollection.AddSingleton<IIdCryptPublisher, IdCryptPublisher>();
 		serviceCollection.AddSingleton<IInternalPublisher, InternalPublisher>();

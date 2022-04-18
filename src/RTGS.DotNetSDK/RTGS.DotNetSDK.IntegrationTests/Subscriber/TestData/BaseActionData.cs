@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
+namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 
 public abstract class BaseActionData : IEnumerable<object[]>
 {

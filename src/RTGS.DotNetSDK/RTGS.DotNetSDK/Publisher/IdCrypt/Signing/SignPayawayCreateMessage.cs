@@ -20,13 +20,7 @@ internal class SignPayawayCreateMessage : ISignMessage<FIToFICustomerCreditTrans
 	{
 		ArgumentNullException.ThrowIfNull(message);
 
-		var documentRequest = new SignDocumentRequest<FIToFICustomerCreditTransferV10>()
-		{
-			Alias = alias,
-			Document = message
-		};
-
-		var response = await _client.SignDocumentAsync(documentRequest, cancellationToken);
+		var response = await _client.SignDocumentAsync(message, alias, cancellationToken);
 
 		return response;
 	}
