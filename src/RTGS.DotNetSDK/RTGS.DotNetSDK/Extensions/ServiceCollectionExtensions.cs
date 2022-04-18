@@ -55,12 +55,12 @@ public static class ServiceCollectionExtensions
 
 		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
 
+		serviceCollection.AddSingleton<ISignMessage<FIToFICustomerCreditTransferV10>, SignPayawayCreateMessage>();
+
 		serviceCollection.AddIdCryptSdk(new IdCryptSdkConfiguration(
 			options.IdCryptApiAddress,
 			options.IdCryptApiKey,
 			options.IdCryptServiceEndpointAddress));
-
-		serviceCollection.AddSingleton<ISignMessage<FIToFICustomerCreditTransferV10>, SignPayawayCreateMessage>();
 
 		return serviceCollection;
 	}
