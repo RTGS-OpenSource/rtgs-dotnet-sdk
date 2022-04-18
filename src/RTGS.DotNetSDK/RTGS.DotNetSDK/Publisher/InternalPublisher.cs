@@ -47,9 +47,11 @@ internal class InternalPublisher : IInternalPublisher
 
 		ArgumentNullException.ThrowIfNull(message, nameof(message));
 
-		var signingHeaders = await SignMessageAsync(message, idCryptAlias);
 
 		using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_sharedTokenSource.Token, cancellationToken);
+
+		var signingHeaders = await SignMessageAsync(message, idCryptAlias, linkedTokenSource.Token);
+
 		await _sendingSignal.WaitAsync(linkedTokenSource.Token);
 
 		try
@@ -84,7 +86,10 @@ internal class InternalPublisher : IInternalPublisher
 		}
 	}
 
-	private async Task<Dictionary<string, string>> SignMessageAsync<TMessageType>(TMessageType message, string idCryptAlias)
+	private async Task<Dictionary<string, string>> SignMessageAsync<TMessageType>(
+		TMessageType message, 
+		string idCryptAlias, 
+		CancellationToken cancellationToken)
 	{
 		var messageSignerType = typeof(ISignMessage<TMessageType>);
 
@@ -105,7 +110,7 @@ internal class InternalPublisher : IInternalPublisher
 
 		try
 		{
-			var signatures = await messageSigner.SignAsync(message, idCryptAlias);
+			var signatures = await messageSigner.SignAsync(message, idCryptAlias, cancellationToken);
 
 			signingHeaders.Add("pairwise-did-signature", signatures.PairwiseDidSignature);
 			signingHeaders.Add("public-did-signature", signatures.PublicDidSignature);
