@@ -14,8 +14,8 @@ internal class SignPayawayCreateMessage : ISignMessage<FIToFICustomerCreditTrans
 	}
 
 	public async Task<SignDocumentResponse> SignAsync(
-		FIToFICustomerCreditTransferV10 message, 
-		string alias, 
+		FIToFICustomerCreditTransferV10 message,
+		string alias,
 		CancellationToken cancellationToken)
 	{
 		ArgumentNullException.ThrowIfNull(message);

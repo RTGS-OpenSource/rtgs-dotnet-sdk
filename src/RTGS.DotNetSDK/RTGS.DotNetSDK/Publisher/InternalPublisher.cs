@@ -87,8 +87,8 @@ internal class InternalPublisher : IInternalPublisher
 	}
 
 	private async Task<Dictionary<string, string>> SignMessageAsync<TMessageType>(
-		TMessageType message, 
-		string idCryptAlias, 
+		TMessageType message,
+		string idCryptAlias,
 		CancellationToken cancellationToken)
 	{
 		var messageSignerType = typeof(ISignMessage<TMessageType>);
