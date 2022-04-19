@@ -19,6 +19,8 @@ public class SubscriberActionWithLogs<TMessage> : ISubscriberAction<TMessage>
 
 	public TMessage Message => _subscriberAction.Message;
 
+	public Dictionary<string, string> AdditionalHeaders => _subscriberAction.AdditionalHeaders;
+
 	public IReadOnlyCollection<IHandler> AllTestHandlers => _subscriberAction.AllTestHandlers;
 
 	public IEnumerable<LogEntry> SubscriberLogs(LogEventLevel logLevel) =>

@@ -23,7 +23,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="RTGS.IDCryptSDK" Version="0.0.10" />
+		<PackageReference Include="RTGS.IDCryptSDK" Version="0.0.11" />
 		<PackageReference Include="RTGS.ISO20022.Messages" Version="1.0.68" />
 		<PackageReference Include="RTGS.Public.Payment.Client" Version="2.0.65" />
 	</ItemGroup>

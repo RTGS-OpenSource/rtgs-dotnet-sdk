@@ -1,10 +1,13 @@
 using System.Collections.Concurrent;
+using RTGS.DotNetSDK.IntegrationTests.Extensions;
+using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber;
 
 public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 {
-	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(100);
+	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1000);
 	private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
 	private static readonly TimeSpan WaitForExceptionEventDuration = TimeSpan.FromMilliseconds(100);
 
@@ -44,9 +47,18 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.Build();
 
+			var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+				.Create()
+				.WithOkResponse(GetActiveConnectionWithAlias.HttpRequestResponseContext)
+				.WithOkResponse(VerifyPublicSignatureSuccessfully.HttpRequestResponseContext)
+				.WithOkResponse(VerifyPrivateSignatureSuccessfully.HttpRequestResponseContext)
+				.Build();
+
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
-				.ConfigureServices((_, services) => services.AddRtgsSubscriber(rtgsSdkOptions))
+				.ConfigureServices((_, services) => services
+					.AddRtgsSubscriber(rtgsSdkOptions)
+					.AddTestIdCryptHttpClient(idCryptMessageHandler))
 				.UseSerilog()
 				.Build();
 
@@ -92,7 +104,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
-		var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -181,7 +193,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -389,7 +401,14 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 
 		await _fromRtgsSender.SendAsync("MessageRejected", TestData.ValidMessages.MessageRejected);
 
-		await _fromRtgsSender.SendAsync("PayawayFunds", TestData.ValidMessages.PayawayFunds);
+		var signingHeaders = new Dictionary<string, string>()
+		{
+			{ "public-did-signature", "public-did-signature" },
+			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "alias", "alias" }
+		};
+
+		await _fromRtgsSender.SendAsync("PayawayFunds", TestData.ValidMessages.PayawayFunds, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
