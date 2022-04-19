@@ -14,10 +14,10 @@ public interface IRtgsPublisher
 	/// Sends an <see cref="AtomicLockRequestV1"/> to initiate a transaction.
 	/// </summary>
 	/// <param name="message">The <see cref="AtomicLockRequestV1"/> message</param>
-	/// <param name="bankPartnerDid">The Bank Did of the Bank Partner</param>
+	/// <param name="bankPartnerRtgsGlobalId">The RTGS.global Id of the Bank Partner</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
-	Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, string bankPartnerDid, CancellationToken cancellationToken = default);
+	Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, string bankPartnerRtgsGlobalId, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Sends an <see cref="AtomicTransferRequestV1"/> to invoke transfer of funds.
@@ -78,13 +78,13 @@ public interface IRtgsPublisher
 	/// Sends a <see cref="Admi00200101"/> (payaway) rejection request.
 	/// </summary>
 	/// <param name="message">The <see cref="Admi00200101"/> rejection message</param>
-	/// <param name="toBankDid">The BankDid for the bank to which this rejection should be sent</param>
+	/// <param name="toRtgsGlobalId">The RTGS.global Id for the bank to which this rejection should be sent</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
 	/// <remarks>
 	/// The <see cref="Admi00200101"/> type is from nuget package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
 	/// </remarks>
-	Task<SendResult> SendPayawayRejectionAsync(Admi00200101 message, string toBankDid, CancellationToken cancellationToken);
+	Task<SendResult> SendPayawayRejectionAsync(Admi00200101 message, string toRtgsGlobalId, CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Sends a <see cref="BankPartnersRequestV1"/> bank partners request.

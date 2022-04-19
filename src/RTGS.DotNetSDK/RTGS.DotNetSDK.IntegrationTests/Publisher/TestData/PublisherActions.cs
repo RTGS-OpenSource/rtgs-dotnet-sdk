@@ -8,8 +8,8 @@ public static class PublisherActions
 {
 	public static readonly PublisherAction<AtomicLockRequestV1> AtomicLock = new(
 		ValidMessages.AtomicLockRequest,
-		new Dictionary<string, string> { { "bankpartnerdid", "bank-partner-did" } },
-		(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, "bank-partner-did", cancellationToken));
+		new Dictionary<string, string> { { "bankpartnerdid", "RTGS:GB12345GBP" }, { "bank-partner-rtgs-global-id", "RTGS:GB12345GBP" } },
+		(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, "RTGS:GB12345GBP", cancellationToken));
 
 	public static readonly PublisherAction<AtomicTransferRequestV1> AtomicTransfer = new(
 		ValidMessages.AtomicTransferRequest,
@@ -37,8 +37,8 @@ public static class PublisherActions
 
 	public static readonly PublisherAction<Admi00200101> PayawayRejection = new(
 		ValidMessages.PayawayRejection,
-		new Dictionary<string, string> { { "tobankdid", "to-bank-did" } },
-		(publisher, request, cancellationToken) => publisher.SendPayawayRejectionAsync(request, "to-bank-did", cancellationToken));
+		new Dictionary<string, string> { { "tobankdid", "RTGS:US67890USD" }, { "to-rtgs-global-id", "RTGS:US67890USD" } },
+		(publisher, request, cancellationToken) => publisher.SendPayawayRejectionAsync(request, "RTGS:US67890USD", cancellationToken));
 
 	public static readonly PublisherAction<BankPartnersRequestV1> BankPartnersRequest = new(
 		ValidMessages.BankPartnersRequest,
