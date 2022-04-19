@@ -7,7 +7,6 @@ namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
 public static class ValidMessages
 {
 	public const string RtgsGlobalId = "test-bank-rtgs-global-id";
-	public const string BankPartnerDid = "test-bank-partner-did";
 	public const string IdCryptAlias = "id-crypt-alias";
 
 	public static readonly AtomicLockRequestV1 AtomicLockRequest = new()
