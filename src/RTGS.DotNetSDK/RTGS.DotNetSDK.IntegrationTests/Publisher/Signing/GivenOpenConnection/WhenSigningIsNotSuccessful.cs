@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using RTGS.DotNetSDK.IntegrationTests.Extensions;
+﻿using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Publisher.Exceptions;
@@ -12,11 +11,11 @@ public class WhenSigningIsNotSuccessful : IDisposable, IClassFixture<GrpcServerF
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 	private readonly GrpcServerFixture _grpcServer;
+	private readonly ITestCorrelatorContext _serilogContext;
 
 	private IRtgsPublisher _rtgsPublisher;
 	private ToRtgsMessageHandler _toRtgsMessageHandler;
 	private IHost _clientHost;
-	private ITestCorrelatorContext _serilogContext;
 
 	public WhenSigningIsNotSuccessful(GrpcServerFixture grpcServer)
 	{
@@ -133,14 +132,5 @@ public class WhenSigningIsNotSuccessful : IDisposable, IClassFixture<GrpcServerF
 		_serilogContext.PublisherLogs(LogEventLevel.Error)
 				.Should().ContainSingle().Which.Should().BeEquivalentTo(
 					new LogEntry($"Error signing {typeof(TRequest).Name} message", LogEventLevel.Error, typeof(RtgsPublisherException)));
-	}
-
-	private record SignDocumentRequest<TDocument>
-	{
-		[JsonPropertyName("connection_id")]
-		public string ConnectionId { get; init; }
-
-		[JsonPropertyName("document")]
-		public TDocument Document { get; init; }
 	}
 }

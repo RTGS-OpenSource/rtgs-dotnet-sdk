@@ -4,11 +4,11 @@ using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 
-internal class SignPayawayCreateMessage : ISignMessage<FIToFICustomerCreditTransferV10>
+internal class PayawayCreateMessageSigner : ISignMessage<FIToFICustomerCreditTransferV10>
 {
 	private readonly IJsonSignaturesClient _client;
 
-	public SignPayawayCreateMessage(IJsonSignaturesClient client)
+	public PayawayCreateMessageSigner(IJsonSignaturesClient client)
 	{
 		_client = client;
 	}

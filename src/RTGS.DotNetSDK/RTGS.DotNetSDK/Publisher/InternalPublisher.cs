@@ -47,7 +47,6 @@ internal class InternalPublisher : IInternalPublisher
 
 		ArgumentNullException.ThrowIfNull(message, nameof(message));
 
-
 		using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_sharedTokenSource.Token, cancellationToken);
 
 		var signingHeaders = await SignMessageAsync(message, idCryptAlias, linkedTokenSource.Token);

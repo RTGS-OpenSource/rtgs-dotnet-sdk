@@ -139,7 +139,9 @@ public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixt
 		var requestContent = await _idCryptMessageHandler.Requests[SignDocument.Path]
 			.Single().Content.ReadAsStringAsync();
 
-		var signDocumentRequest = JsonSerializer.Deserialize<SignDocumentRequest<TRequest>>(requestContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+		var signDocumentRequest = JsonSerializer.Deserialize<SignDocumentRequest<TRequest>>(
+			requestContent, 
+			new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
 		signDocumentRequest.ConnectionId.Should().Be(GetActiveConnectionWithAlias.ExpectedResponse.ConnectionId);
 	}
