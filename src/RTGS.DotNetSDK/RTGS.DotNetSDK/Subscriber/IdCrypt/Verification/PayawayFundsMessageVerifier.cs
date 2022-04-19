@@ -26,11 +26,6 @@ internal class PayawayFundsMessageVerifier : IVerifyMessage
 	{
 		ArgumentNullException.ThrowIfNull(rtgsMessage);
 
-		if (!rtgsMessage.Headers.TryGetValue("public-did-signature", out var publicSignature))
-		{
-			_logger.LogError("Public signature not found on {MessageIdentifier} message, yet was expected", MessageIdentifier);
-		}
-
 		if (!rtgsMessage.Headers.TryGetValue("pairwise-did-signature", out var privateSignature))
 		{
 			_logger.LogError("Private signature not found on {MessageIdentifier} message, yet was expected", MessageIdentifier);
@@ -41,30 +36,22 @@ internal class PayawayFundsMessageVerifier : IVerifyMessage
 			_logger.LogError("Alias not found on {MessageIdentifier} message, yet was expected", MessageIdentifier);
 		}
 
-		if (publicSignature is null || privateSignature is null || alias is null)
+		if (privateSignature is null || alias is null)
 		{
 			throw new RtgsSubscriberException($"Unable to verify {MessageIdentifier} message due to missing headers.");
 		}
 
 		var message = JsonSerializer.Deserialize<FIToFICustomerCreditTransferV10>(rtgsMessage.Data);
 
-		var publicSignatureIsValid = await _jsonSignaturesClient.VerifyPublicSignatureAsync(message, publicSignature, alias, cancellationToken);
-		
-		var privateSignatureIsValid = await _jsonSignaturesClient.VerifyPrivateSignatureAsync(rtgsMessage.Data, privateSignature, alias, cancellationToken);
-
-		if (!publicSignatureIsValid)
-		{
-			_logger.LogError("Verification of {MessageIdentifier} message public signature failed", MessageIdentifier);
-		}
+		var privateSignatureIsValid = await _jsonSignaturesClient.VerifyPrivateSignatureAsync(message, privateSignature, alias, cancellationToken);
 
 		if (!privateSignatureIsValid)
 		{
-			_logger.LogError("Verification of {MessageIdentifier} message private signature failed", MessageIdentifier);
-		}
+			var exception = new RtgsSubscriberException($"Verification of {MessageIdentifier} message failed.");
 
-		if (!publicSignatureIsValid || !privateSignatureIsValid)
-		{
-			throw new RtgsSubscriberException($"Verification of {MessageIdentifier} message failed.");
+			_logger.LogError(exception, "Verification of {MessageIdentifier} message private signature failed", MessageIdentifier);
+
+			throw exception;
 		}
 	}
 }

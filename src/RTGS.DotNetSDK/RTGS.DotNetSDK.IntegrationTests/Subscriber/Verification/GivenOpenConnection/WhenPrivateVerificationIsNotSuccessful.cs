@@ -50,7 +50,6 @@ public class WhenPrivateVerificationIsNotSuccessful : IClassFixture<GrpcServerFi
 			var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
 				.WithOkResponse(GetActiveConnectionWithAlias.HttpRequestResponseContext)
-				.WithOkResponse(VerifyPublicSignatureSuccessfully.HttpRequestResponseContext)
 				.WithOkResponse(VerifyPrivateSignatureUnsuccessfully.HttpRequestResponseContext)
 				.Build();
 

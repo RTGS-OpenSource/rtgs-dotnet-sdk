@@ -50,7 +50,6 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 			var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
 				.WithOkResponse(GetActiveConnectionWithAlias.HttpRequestResponseContext)
-				.WithOkResponse(VerifyPublicSignatureSuccessfully.HttpRequestResponseContext)
 				.WithOkResponse(VerifyPrivateSignatureSuccessfully.HttpRequestResponseContext)
 				.Build();
 

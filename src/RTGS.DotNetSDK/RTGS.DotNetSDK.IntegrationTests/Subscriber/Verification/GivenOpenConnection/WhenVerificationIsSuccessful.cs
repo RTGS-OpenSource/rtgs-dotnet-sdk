@@ -52,7 +52,6 @@ public class WhenVerificationIsSuccessful : IClassFixture<GrpcServerFixture>
 			_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
 				.WithOkResponse(GetActiveConnectionWithAlias.HttpRequestResponseContext)
-				.WithOkResponse(VerifyPublicSignatureSuccessfully.HttpRequestResponseContext)
 				.WithOkResponse(VerifyPrivateSignatureSuccessfully.HttpRequestResponseContext)
 				.Build();
 
@@ -107,15 +106,6 @@ public class WhenVerificationIsSuccessful : IClassFixture<GrpcServerFixture>
 
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		using var _ = new AssertionScope();
-
-		var actualVerifyPublicSignatureApiUri = _idCryptMessageHandler.Requests[VerifyPublicSignatureSuccessfully.Path]
-			.Single()
-			.RequestUri
-			!.GetLeftPart(UriPartial.Authority);
-
-		actualVerifyPublicSignatureApiUri.Should().BeEquivalentTo(IdCryptApiUri.GetLeftPart(UriPartial.Authority));
-
 		var actualVerifyPrivateSignatureApiUri = _idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
 			.Single()
 			.RequestUri
@@ -134,75 +124,11 @@ public class WhenVerificationIsSuccessful : IClassFixture<GrpcServerFixture>
 
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		using var _ = new AssertionScope();
-
-		_idCryptMessageHandler.Requests[VerifyPublicSignatureSuccessfully.Path]
-			.Single()
-			.Headers.GetValues("X-API-Key")
-			.Should().ContainSingle()
-			.Which.Should().Be(IdCryptApiKey);
-
 		_idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
 			.Single()
 			.Headers.GetValues("X-API-Key")
 			.Should().ContainSingle()
 			.Which.Should().Be(IdCryptApiKey);
-	}
-
-	[Theory]
-	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenCallingVerifyPublicSignature_ThenPublicDidIsInBody<TRequest>(SubscriberAction<TRequest> subscriberAction)
-	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
-
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
-
-		var requestContent = await _idCryptMessageHandler.Requests[VerifyPublicSignatureSuccessfully.Path]
-			.Single().Content.ReadAsStringAsync();
-
-		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPublicSignatureRequest<TRequest>>(requestContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-		signDocumentRequest.PublicDid.Should().Be(GetActiveConnectionWithAlias.ExpectedResponse.TheirDid);
-	}
-
-	[Theory]
-	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenCallingVerifyPublicSignature_ThenPublicSignatureIsInBody<TRequest>(SubscriberAction<TRequest> subscriberAction)
-	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
-
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
-
-		var requestContent = await _idCryptMessageHandler.Requests[VerifyPublicSignatureSuccessfully.Path]
-			.Single().Content.ReadAsStringAsync();
-
-		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPublicSignatureRequest<TRequest>>(requestContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-		var expectedPublicSignature = subscriberAction.AdditionalHeaders["public-did-signature"];
-
-		signDocumentRequest.Signature.Should().Be(expectedPublicSignature);
-	}
-
-	[Theory]
-	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenCallingVerifyPublicSignature_ThenMessageContentsAreInBody<TRequest>(SubscriberAction<TRequest> subscriberAction)
-	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
-
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
-
-		var requestContent = await _idCryptMessageHandler.Requests[VerifyPublicSignatureSuccessfully.Path]
-			.Single().Content.ReadAsStringAsync();
-
-		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPublicSignatureRequest<TRequest>>(requestContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-		signDocumentRequest.Document.Should().BeEquivalentTo(subscriberAction.Message);
 	}
 
 	[Theory]
@@ -259,17 +185,6 @@ public class WhenVerificationIsSuccessful : IClassFixture<GrpcServerFixture>
 		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest<TRequest>>(requestContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
 		signDocumentRequest.Document.Should().BeEquivalentTo(subscriberAction.Message);
-	}
-
-	private record VerifyPublicSignatureRequest<TDocument>
-	{
-		[JsonPropertyName("public_did")]
-		public string PublicDid { get; init; }
-
-		public TDocument Document { get; init; }
-
-		[JsonPropertyName("signature")]
-		public string Signature { get; init; }
 	}
 
 	private record VerifyPrivateSignatureRequest<TDocument>
