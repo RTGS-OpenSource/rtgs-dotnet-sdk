@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using RTGS.DotNetSDK.Publisher;
 using RTGS.DotNetSDK.Publisher.IdCrypt;
+using RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 using RTGS.DotNetSDK.Subscriber;
 using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
@@ -9,6 +10,7 @@ using RTGS.DotNetSDK.Subscriber.Handlers.Internal;
 using RTGS.DotNetSDK.Subscriber.Validators;
 using RTGS.IDCryptSDK;
 using RTGS.IDCryptSDK.Extensions;
+using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Extensions;
@@ -48,9 +50,12 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddSingleton<IInternalPublisher, InternalPublisher>();
 
 		serviceCollection.AddSingleton<IRtgsPublisher, RtgsPublisher>();
+
 		serviceCollection.AddSingleton<IIdCryptPublisher, IdCryptPublisher>();
 
 		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
+
+		serviceCollection.AddSingleton<ISignMessage<FIToFICustomerCreditTransferV10>, PayawayCreateMessageSigner>();
 
 		serviceCollection.AddIdCryptSdk(new IdCryptSdkConfiguration(
 			options.IdCryptApiAddress,

@@ -32,8 +32,8 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 	public Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequestV1 message, CancellationToken cancellationToken) =>
 		_internalPublisher.SendMessageAsync(message, "payment.update.ledger.v2", cancellationToken);
 
-	public Task<SendResult> SendPayawayCreateAsync(FIToFICustomerCreditTransferV10 message, CancellationToken cancellationToken) =>
-		_internalPublisher.SendMessageAsync(message, "payaway.create.v1", cancellationToken);
+	public Task<SendResult> SendPayawayCreateAsync(FIToFICustomerCreditTransferV10 message, string idCryptAlias, CancellationToken cancellationToken) =>
+		_internalPublisher.SendMessageAsync(message, "payaway.create.v1", idCryptAlias: idCryptAlias, cancellationToken: cancellationToken);
 
 	public Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message, CancellationToken cancellationToken) =>
 		_internalPublisher.SendMessageAsync(message, "payaway.confirmation.v1", cancellationToken);

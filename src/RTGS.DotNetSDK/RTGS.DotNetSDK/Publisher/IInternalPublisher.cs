@@ -9,5 +9,6 @@ internal interface IInternalPublisher : IAsyncDisposable
 		string messageIdentifier,
 		CancellationToken cancellationToken,
 		Dictionary<string, string> headers = null,
+		string idCryptAlias = null,
 		[CallerMemberName] string callingMethod = null);
 }

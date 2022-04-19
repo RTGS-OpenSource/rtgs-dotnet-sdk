@@ -2,6 +2,8 @@
 using System.Text.Json;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using RTGS.DotNetSDK.Publisher.Exceptions;
+using RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Publisher;
@@ -11,6 +13,7 @@ internal class InternalPublisher : IInternalPublisher
 	private readonly ILogger<InternalPublisher> _logger;
 	private readonly Payment.PaymentClient _paymentClient;
 	private readonly RtgsSdkOptions _options;
+	private readonly IServiceProvider _serviceProvider;
 	private readonly CancellationTokenSource _sharedTokenSource = new();
 	private readonly SemaphoreSlim _sendingSignal = new(1);
 	private readonly SemaphoreSlim _disposingSignal = new(1);
@@ -21,11 +24,12 @@ internal class InternalPublisher : IInternalPublisher
 	private bool _disposed;
 	private bool _resetConnection;
 
-	public InternalPublisher(ILogger<InternalPublisher> logger, Payment.PaymentClient paymentClient, RtgsSdkOptions options)
+	public InternalPublisher(ILogger<InternalPublisher> logger, Payment.PaymentClient paymentClient, RtgsSdkOptions options, IServiceProvider serviceProvider)
 	{
 		_logger = logger;
 		_paymentClient = paymentClient;
 		_options = options;
+		_serviceProvider = serviceProvider;
 	}
 
 	public async Task<SendResult> SendMessageAsync<T>(
@@ -33,6 +37,7 @@ internal class InternalPublisher : IInternalPublisher
 		string messageIdentifier,
 		CancellationToken cancellationToken,
 		Dictionary<string, string> headers = null,
+		string idCryptAlias = null,
 		[CallerMemberName] string callingMethod = null)
 	{
 		if (_disposed)
@@ -43,6 +48,9 @@ internal class InternalPublisher : IInternalPublisher
 		ArgumentNullException.ThrowIfNull(message, nameof(message));
 
 		using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_sharedTokenSource.Token, cancellationToken);
+
+		var signingHeaders = await SignMessageAsync(message, idCryptAlias, linkedTokenSource.Token);
+
 		await _sendingSignal.WaitAsync(linkedTokenSource.Token);
 
 		try
@@ -53,7 +61,7 @@ internal class InternalPublisher : IInternalPublisher
 
 			_acknowledgementContext = new AcknowledgementContext();
 
-			await SendMessageAsync(message, messageIdentifier, headers, callingMethod, linkedTokenSource.Token);
+			await SendMessageAsync(message, messageIdentifier, headers, signingHeaders, callingMethod, linkedTokenSource.Token);
 
 			await _acknowledgementContext.WaitAsync(_options.WaitForAcknowledgementDuration, linkedTokenSource.Token);
 
@@ -75,6 +83,50 @@ internal class InternalPublisher : IInternalPublisher
 			}
 			_sendingSignal.Release();
 		}
+	}
+
+	private async Task<Dictionary<string, string>> SignMessageAsync<TMessageType>(
+		TMessageType message,
+		string idCryptAlias,
+		CancellationToken cancellationToken)
+	{
+		var messageSignerType = typeof(ISignMessage<TMessageType>);
+
+		var messageSigner = _serviceProvider
+			.GetService(messageSignerType) as ISignMessage<TMessageType>;
+
+		var signingHeaders = new Dictionary<string, string>();
+		var messageType = message.GetType().Name;
+
+		if (messageSigner is null)
+		{
+			_logger.LogDebug("No message signer found for {MessageType} message, skipping signing", messageType);
+
+			return signingHeaders;
+		}
+
+		_logger.LogInformation("Signing {MessageType} message", messageType);
+
+		try
+		{
+			var signatures = await messageSigner.SignAsync(message, idCryptAlias, cancellationToken);
+
+			signingHeaders.Add("pairwise-did-signature", signatures.PairwiseDidSignature);
+			signingHeaders.Add("public-did-signature", signatures.PublicDidSignature);
+			signingHeaders.Add("alias", idCryptAlias);
+		}
+		catch (Exception innerException)
+		{
+			var exception = new RtgsPublisherException($"Error when signing {messageType} message.", innerException);
+
+			_logger.LogError(exception, "Error signing {MessageType} message", messageType);
+
+			throw exception;
+		}
+
+		_logger.LogInformation("Signed {MessageType} message", messageType);
+
+		return signingHeaders;
 	}
 
 	private async Task EnsureRtgsCallSetup(CancellationToken cancellationToken)
@@ -143,7 +195,13 @@ internal class InternalPublisher : IInternalPublisher
 		}
 	}
 
-	private async Task SendMessageAsync<T>(T message, string messageIdentifier, IDictionary<string, string> headers, string callingMethod, CancellationToken cancellationToken)
+	private async Task SendMessageAsync<T>(
+		T message,
+		string messageIdentifier,
+		IDictionary<string, string> headers,
+		IDictionary<string, string> signingHeaders,
+		string callingMethod,
+		CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 
@@ -158,6 +216,8 @@ internal class InternalPublisher : IInternalPublisher
 		{
 			rtgsMessage.Headers.Add(headers);
 		}
+
+		rtgsMessage.Headers.Add(signingHeaders);
 
 		await _writingSignal.WaitAsync(cancellationToken);
 

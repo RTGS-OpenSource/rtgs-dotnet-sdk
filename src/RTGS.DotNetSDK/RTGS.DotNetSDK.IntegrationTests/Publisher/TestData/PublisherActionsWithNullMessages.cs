@@ -28,7 +28,7 @@ public static class PublisherActionsWithNullMessages
 
 	public static readonly PublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate = new(
 		null,
-		(publisher, request, cancellationToken) => publisher.SendPayawayCreateAsync(request, cancellationToken));
+		(publisher, request, cancellationToken) => publisher.SendPayawayCreateAsync(request, "id-crypt-alias", cancellationToken));
 
 	public static readonly PublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation = new(
 		null,

@@ -1,4 +1,7 @@
 ﻿using System.Text.Json;
+using RTGS.DotNetSDK.IntegrationTests.Extensions;
+using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher;
 
@@ -14,6 +17,7 @@ public class GivenOpenConnection
 
 		private IRtgsPublisher _rtgsPublisher;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
+		private StatusCodeHttpHandler _idCryptMessageHandler;
 		private IHost _clientHost;
 
 		public AndShortTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
@@ -51,9 +55,17 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
+				_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+					.Create()
+					.WithOkResponse(GetActiveConnectionWithAlias.HttpRequestResponseContext)
+					.WithOkResponse(SignDocument.HttpRequestResponseContext)
+					.Build();
+
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
-					.ConfigureServices(services => services.AddRtgsPublisher(rtgsSdkOptions))
+					.ConfigureServices(services => services
+						.AddRtgsPublisher(rtgsSdkOptions)
+						.AddTestIdCryptHttpClient(_idCryptMessageHandler))
 					.UseSerilog()
 					.Build();
 
@@ -124,6 +136,9 @@ public class GivenOpenConnection
 
 			using var _ = new AssertionScope();
 
+			var debugLogs = _serilogContext.PublisherLogs(LogEventLevel.Debug);
+			debugLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Debug), options => options.WithStrictOrdering());
+
 			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
 			informationLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
 
@@ -144,6 +159,9 @@ public class GivenOpenConnection
 			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			using var _ = new AssertionScope();
+
+			var debugLogs = _serilogContext.PublisherLogs(LogEventLevel.Debug);
+			debugLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Debug), options => options.WithStrictOrdering());
 
 			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
 			informationLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
@@ -166,6 +184,9 @@ public class GivenOpenConnection
 				.ThrowAsync<RpcException>();
 
 			using var _ = new AssertionScope();
+
+			var debugLogs = _serilogContext.PublisherLogs(LogEventLevel.Debug);
+			debugLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Debug), options => options.WithStrictOrdering());
 
 			var informationLogs = _serilogContext.PublisherLogs(LogEventLevel.Information);
 			informationLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
@@ -219,6 +240,11 @@ public class GivenOpenConnection
 		[ClassData(typeof(PublisherActionData))]
 		public async Task WhenUsingRtgsMessageHeaders_ThenSeeHeadersInMessageHeaders<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
+			if (!publisherAction.Headers.Any())
+			{
+				return;
+			}
+
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
 			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
@@ -226,7 +252,7 @@ public class GivenOpenConnection
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
 			var receivedMessage = receiver.Connections.Should().ContainSingle().Which.Requests.Should().ContainSingle().Subject;
-			receivedMessage.Headers.Should().BeEquivalentTo(publisherAction.Headers);
+			receivedMessage.Headers.Should().Contain(publisherAction.Headers);
 		}
 
 		[Theory]
@@ -450,9 +476,17 @@ public class GivenOpenConnection
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
+				var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+					.Create()
+					.WithOkResponse(GetActiveConnectionWithAlias.HttpRequestResponseContext)
+					.WithOkResponse(SignDocument.HttpRequestResponseContext)
+					.Build();
+
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
-					.ConfigureServices(services => services.AddRtgsPublisher(rtgsSdkOptions))
+					.ConfigureServices(services => services
+						.AddRtgsPublisher(rtgsSdkOptions)
+						.AddTestIdCryptHttpClient(idCryptMessageHandler))
 					.Build();
 
 				_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
