@@ -140,7 +140,7 @@ public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixt
 			.Single().Content.ReadAsStringAsync();
 
 		var signDocumentRequest = JsonSerializer.Deserialize<SignDocumentRequest<TRequest>>(
-			requestContent, 
+			requestContent,
 			new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
 		signDocumentRequest.ConnectionId.Should().Be(GetActiveConnectionWithAlias.ExpectedResponse.ConnectionId);
