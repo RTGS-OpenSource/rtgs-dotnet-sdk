@@ -11,7 +11,7 @@ public class WhenVerificationIsSuccessful : IClassFixture<GrpcServerFixture>
 	private static readonly Uri IdCryptApiUri = new("http://id-crypt-cloud-agent-api.com");
 	private const string IdCryptApiKey = "id-crypt-api-key";
 
-	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(500);
+	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1000);
 
 	private readonly GrpcServerFixture _grpcServer;
 	private StatusCodeHttpHandler _idCryptMessageHandler;
