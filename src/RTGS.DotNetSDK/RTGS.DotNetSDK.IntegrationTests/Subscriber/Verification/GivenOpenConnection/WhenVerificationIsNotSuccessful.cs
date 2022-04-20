@@ -4,8 +4,9 @@ using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
 
-public class WhenPrivateVerificationIsNotSuccessful : IDisposable, IClassFixture<GrpcServerFixture>
+public class WhenVerificationIsNotSuccessful : IDisposable, IClassFixture<GrpcServerFixture>
 {
+	private static readonly TimeSpan WaitForExceptionEventDuration = TimeSpan.FromMilliseconds(100);
 	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(500);
 	private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
 
@@ -15,7 +16,8 @@ public class WhenPrivateVerificationIsNotSuccessful : IDisposable, IClassFixture
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
 
-	public WhenPrivateVerificationIsNotSuccessful(GrpcServerFixture grpcServer)
+
+	public WhenVerificationIsNotSuccessful(GrpcServerFixture grpcServer)
 	{
 		_grpcServer = grpcServer;
 
@@ -81,7 +83,7 @@ public class WhenPrivateVerificationIsNotSuccessful : IDisposable, IClassFixture
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenMessageReceived_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
@@ -96,5 +98,46 @@ public class WhenPrivateVerificationIsNotSuccessful : IDisposable, IClassFixture
 		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(
 				new LogEntry($"Verification of {subscriberAction.MessageIdentifier} message private signature failed", LogEventLevel.Error, typeof(RtgsSubscriberException)));
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		Exception raisedException = null;
+
+		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should().Be($"Verification of {subscriberAction.MessageIdentifier} message failed.");
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task AndVerifierThrows_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		using var exceptionSignal = new ManualResetEventSlim();
+
+		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) => exceptionSignal.Set();
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+
+		exceptionSignal.Wait(WaitForExceptionEventDuration);
+
+		var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
+		errorLogs.Should().BeEquivalentTo(new[]
+		{
+			new LogEntry(
+				$"An error occurred while verifying a message (MessageIdentifier: {subscriberAction.MessageIdentifier})",
+				LogEventLevel.Error,
+				typeof(RtgsSubscriberException))
+		});
 	}
 }

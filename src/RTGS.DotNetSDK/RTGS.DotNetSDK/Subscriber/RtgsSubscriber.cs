@@ -156,6 +156,16 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 			try
 			{
 				await VerifyMessageSignature(rtgsMessage);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "An error occurred while verifying a message (MessageIdentifier: {MessageIdentifier})", command.MessageIdentifier);
+
+				RaiseNonFatalExceptionOccurredEvent(ex);
+			}
+
+			try
+			{
 				await command.HandleAsync(rtgsMessage);
 			}
 			catch (Exception ex)
