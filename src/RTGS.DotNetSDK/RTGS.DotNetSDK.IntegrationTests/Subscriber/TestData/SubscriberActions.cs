@@ -12,11 +12,11 @@ public static class SubscriberActions
 	private static Dictionary<string, string> _defaultSigningHeaders = new Dictionary<string, string>
 	{
 		{ "public-did-signature", "public-did-signature" },
-		{ "pairwise-did-signature", "pairwise-did-signature" }, 
-		{ "alias", "alias" } 
+		{ "pairwise-did-signature", "pairwise-did-signature" },
+		{ "alias", "alias" }
 	};
 
-	public static readonly SubscriberAction<FIToFICustomerCreditTransferV10> PayawayFundsV1 = 
+	public static readonly SubscriberAction<FIToFICustomerCreditTransferV10> PayawayFundsV1 =
 		new(new AllTestHandlers(), handlers => handlers.OfType<TestPayawayFundsV1Handler>().Single(), "PayawayFunds", ValidMessages.PayawayFunds, _defaultSigningHeaders);
 
 	public static readonly SubscriberAction<BankToCustomerDebitCreditNotificationV09> PayawayCompleteV1 =
