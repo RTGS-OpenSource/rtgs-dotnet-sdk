@@ -6,11 +6,12 @@ using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
 
-public class WhenVerificationIsSuccessful : IClassFixture<GrpcServerFixture>
+public class WhenVerificationIsSuccessful : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly Uri IdCryptApiUri = new("http://id-crypt-cloud-agent-api.com");
 	private const string IdCryptApiKey = "id-crypt-api-key";
 
+	private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
 	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1000);
 
 	private readonly GrpcServerFixture _grpcServer;
@@ -74,7 +75,7 @@ public class WhenVerificationIsSuccessful : IClassFixture<GrpcServerFixture>
 		}
 	}
 
-	private void Dispose()
+	public void Dispose()
 	{
 		_clientHost?.Dispose();
 
@@ -89,12 +90,14 @@ public class WhenVerificationIsSuccessful : IClassFixture<GrpcServerFixture>
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		_idCryptMessageHandler.Requests.Should().ContainKey("/json-signatures/verify/public-did");
+		await _rtgsSubscriber.StopAsync();
+
 		_idCryptMessageHandler.Requests.Should().ContainKey("/json-signatures/verify/connection-did");
 	}
-
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
@@ -104,7 +107,11 @@ public class WhenVerificationIsSuccessful : IClassFixture<GrpcServerFixture>
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		await _rtgsSubscriber.StopAsync();
 
 		var actualVerifyPrivateSignatureApiUri = _idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
 			.Single()
@@ -122,7 +129,11 @@ public class WhenVerificationIsSuccessful : IClassFixture<GrpcServerFixture>
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		await _rtgsSubscriber.StopAsync();
 
 		_idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
 			.Single()
@@ -139,7 +150,11 @@ public class WhenVerificationIsSuccessful : IClassFixture<GrpcServerFixture>
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		await _rtgsSubscriber.StopAsync();
 
 		var requestContent = await _idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
 			.Single().Content.ReadAsStringAsync();
@@ -157,7 +172,11 @@ public class WhenVerificationIsSuccessful : IClassFixture<GrpcServerFixture>
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		await _rtgsSubscriber.StopAsync();
 
 		var requestContent = await _idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
 			.Single().Content.ReadAsStringAsync();
@@ -177,7 +196,11 @@ public class WhenVerificationIsSuccessful : IClassFixture<GrpcServerFixture>
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		await _rtgsSubscriber.StopAsync();
 
 		var requestContent = await _idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
 			.Single().Content.ReadAsStringAsync();

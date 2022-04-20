@@ -1,6 +1,6 @@
 ﻿namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
 
-public class WhenSigningHeadersAreMissing : IClassFixture<GrpcServerFixture>
+public class WhenSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(500);
 	private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
@@ -61,7 +61,7 @@ public class WhenSigningHeadersAreMissing : IClassFixture<GrpcServerFixture>
 		}
 	}
 
-	private void Dispose()
+	public void Dispose()
 	{
 		_clientHost?.Dispose();
 

@@ -5,7 +5,7 @@ using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber;
 
-public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixture>
+public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1000);
 	private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
@@ -23,6 +23,8 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 
 		SetupSerilogLogger();
 
+		SetupDependencies();
+
 		_serilogContext = TestCorrelator.CreateContext();
 	}
 
@@ -35,7 +37,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 			.WriteTo.TestCorrelator()
 			.CreateLogger();
 
-	public async Task InitializeAsync()
+	private void SetupDependencies()
 	{
 		try
 		{
@@ -66,21 +68,17 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		}
 		catch (Exception)
 		{
-			// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
-			// See https://github.com/xunit/xunit/discussions/2313 for further details.
-			await DisposeAsync();
+			Dispose();
 
 			throw;
 		}
 	}
 
-	public Task DisposeAsync()
+	public void Dispose()
 	{
 		_clientHost?.Dispose();
 
 		_grpcServer.Reset();
-
-		return Task.CompletedTask;
 	}
 
 	[Theory]
