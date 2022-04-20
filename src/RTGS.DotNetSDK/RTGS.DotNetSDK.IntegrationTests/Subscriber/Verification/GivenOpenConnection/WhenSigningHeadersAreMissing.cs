@@ -70,38 +70,12 @@ public class WhenSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenPublicDidHeaderMissing_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
-	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
-
-		var signingHeaders = new Dictionary<string, string>()
-		{
-			{ "pairwise-did-signature", "pairwise-did-signature" },
-			{ "alias", "alias" }
-		};
-
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
-
-		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
-
-		await _rtgsSubscriber.StopAsync();
-
-		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
-			.Should().ContainSingle().Which.Should().BeEquivalentTo(
-				new LogEntry($"Public signature not found on {subscriberAction.MessageIdentifier} message, yet was expected", LogEventLevel.Error));
-	}
-
-	[Theory]
-	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task WhenPrivateDidHeaderMissing_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
 		var signingHeaders = new Dictionary<string, string>()
 		{
-			{ "public-did-signature", "public-did-signature" },
 			{ "alias", "alias" }
 		};
 
@@ -117,7 +91,6 @@ public class WhenSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServe
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(
 				new LogEntry($"Private signature not found on {subscriberAction.MessageIdentifier} message, yet was expected", LogEventLevel.Error));
 	}
-
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]

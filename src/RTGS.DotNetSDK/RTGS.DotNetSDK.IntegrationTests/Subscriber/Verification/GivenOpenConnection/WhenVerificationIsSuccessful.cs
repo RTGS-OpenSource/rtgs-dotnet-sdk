@@ -12,7 +12,7 @@ public class WhenVerificationIsSuccessful : IDisposable, IClassFixture<GrpcServe
 	private const string IdCryptApiKey = "id-crypt-api-key";
 
 	private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
-	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1000);
+	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(100);
 
 	private readonly GrpcServerFixture _grpcServer;
 	private StatusCodeHttpHandler _idCryptMessageHandler;

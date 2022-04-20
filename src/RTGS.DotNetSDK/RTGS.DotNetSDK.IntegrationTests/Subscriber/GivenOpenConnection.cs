@@ -89,6 +89,8 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "rtgs-global-id"
@@ -113,7 +115,11 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
+		await _rtgsSubscriber.StopAsync();
+
 		subscriberAction.Handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
+
+		subscriberAction.Handler.Reset();
 	}
 
 	[Theory]
@@ -197,6 +203,10 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
+
+		var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
+
+		errorLogs.Should().BeEmpty();
 
 		var informationLogs = _serilogContext.SubscriberLogs(LogEventLevel.Information);
 		informationLogs.Should().BeEquivalentTo(subscriberAction.SubscriberLogs(LogEventLevel.Information), options => options.WithStrictOrdering());

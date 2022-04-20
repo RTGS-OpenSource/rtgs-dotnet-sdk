@@ -95,6 +95,6 @@ public class WhenPrivateVerificationIsNotSuccessful : IDisposable, IClassFixture
 
 		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(
-				new LogEntry($"Verification of {subscriberAction.MessageIdentifier} message private signature failed", LogEventLevel.Error));
+				new LogEntry($"Verification of {subscriberAction.MessageIdentifier} message private signature failed", LogEventLevel.Error, typeof(RtgsSubscriberException)));
 	}
 }
