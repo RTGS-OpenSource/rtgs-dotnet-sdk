@@ -221,5 +221,4 @@ public class WhenVerificationIsSuccessful : IDisposable, IClassFixture<GrpcServe
 		[JsonPropertyName("signature")]
 		public string Signature { get; init; }
 	}
-
 }

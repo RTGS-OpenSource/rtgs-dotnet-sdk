@@ -26,17 +26,19 @@ internal class PayawayFundsMessageVerifier : IVerifyMessage
 	{
 		ArgumentNullException.ThrowIfNull(rtgsMessage);
 
-		if (!rtgsMessage.Headers.TryGetValue("pairwise-did-signature", out var privateSignature))
+		if (!rtgsMessage.Headers.TryGetValue("pairwise-did-signature", out var privateSignature)
+			|| string.IsNullOrEmpty(privateSignature))
 		{
 			_logger.LogError("Private signature not found on {MessageIdentifier} message, yet was expected", MessageIdentifier);
 		}
 
-		if (!rtgsMessage.Headers.TryGetValue("alias", out var alias))
+		if (!rtgsMessage.Headers.TryGetValue("alias", out var alias)
+			|| string.IsNullOrEmpty(alias))
 		{
 			_logger.LogError("Alias not found on {MessageIdentifier} message, yet was expected", MessageIdentifier);
 		}
 
-		if (privateSignature is null || alias is null)
+		if (string.IsNullOrEmpty(privateSignature) || string.IsNullOrEmpty(alias))
 		{
 			throw new RtgsSubscriberException($"Unable to verify {MessageIdentifier} message due to missing headers.");
 		}

@@ -161,4 +161,102 @@ public class WhenSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServe
 
 		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should().Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
 	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task WhenPrivateDidHeaderEmpty_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+
+		var signingHeaders = new Dictionary<string, string>()
+		{
+			{ "pairwise-did-signature", string.Empty },
+			{ "alias", "alias" }
+		};
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
+			.Should().ContainSingle().Which.Should().BeEquivalentTo(
+				new LogEntry($"Private signature not found on {subscriberAction.MessageIdentifier} message, yet was expected", LogEventLevel.Error));
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task WhenAliasHeaderEmpty_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+
+		var signingHeaders = new Dictionary<string, string>()
+		{
+			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "alias", string.Empty }
+		};
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
+			.Should().ContainSingle().Which.Should().BeEquivalentTo(
+				new LogEntry($"Alias not found on {subscriberAction.MessageIdentifier} message, yet was expected", LogEventLevel.Error));
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task WhenPrivateSignatureHeaderEmpty_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		Exception raisedException = null;
+
+		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
+
+		var signingHeaders = new Dictionary<string, string>()
+		{
+			{ "pairwise-did-signature", string.Empty },
+			{ "alias", "alias" }
+		};
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should().Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task WhenAliasHeaderEmpty_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		Exception raisedException = null;
+
+		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
+
+		var signingHeaders = new Dictionary<string, string>()
+		{
+			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "alias", string.Empty }
+		};
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should().Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
+	}
 }

@@ -7,7 +7,7 @@ namespace RTGS.DotNetSDK.IntegrationTests.Subscriber;
 
 public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 {
-	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1000);
+	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(100);
 	private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
 	private static readonly TimeSpan WaitForExceptionEventDuration = TimeSpan.FromMilliseconds(100);
 
@@ -203,10 +203,6 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
-
-		var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
-
-		errorLogs.Should().BeEmpty();
 
 		var informationLogs = _serilogContext.SubscriberLogs(LogEventLevel.Information);
 		informationLogs.Should().BeEquivalentTo(subscriberAction.SubscriberLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
