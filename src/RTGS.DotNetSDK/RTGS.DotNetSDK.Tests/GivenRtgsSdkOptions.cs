@@ -9,7 +9,7 @@ public class GivenRtgsSdkOptions
 	[MemberData(nameof(TimeSpansLessThanOneSecond))]
 	public void WhenKeepAlivePingDelayIsLessThanOneSecond_ThenThrowArgumentOutOfRangeException(TimeSpan duration) =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
-					"bank-did",
+					"rtgs-global-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
 					"idcrypt-api-key",
@@ -22,7 +22,7 @@ public class GivenRtgsSdkOptions
 	[Fact]
 	public void WhenKeepAlivePingDelayIsInfinite_ThenDoNotThrowArgumentOutOfRangeException() =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
-					"bank-did",
+					"rtgs-global-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
 					"idcrypt-api-key",
@@ -35,7 +35,7 @@ public class GivenRtgsSdkOptions
 	[MemberData(nameof(TimeSpansAtLeastOneSecond))]
 	public void WhenKeepAlivePingDelayIsAtLeastOneSecond_ThenDoNotThrowArgumentOutOfRangeException(TimeSpan duration) =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
-					"bank-did",
+					"rtgs-global-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
 					"idcrypt-api-key",
@@ -48,7 +48,7 @@ public class GivenRtgsSdkOptions
 	[MemberData(nameof(TimeSpansLessThanOneSecond))]
 	public void WhenKeepAlivePingTimeoutLessThanOneSecond_ThenThrowArgumentOutOfRangeException(TimeSpan duration) =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
-					"bank-did",
+					"rtgs-global-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
 					"idcrypt-api-key",
@@ -61,7 +61,7 @@ public class GivenRtgsSdkOptions
 	[Fact]
 	public void WhenKeepAlivePingTimeoutIsInfinite_ThenDoNotThrowArgumentOutOfRangeException() =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
-					"bank-did",
+					"rtgs-global-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
 					"idcrypt-api-key",
@@ -74,7 +74,7 @@ public class GivenRtgsSdkOptions
 	[MemberData(nameof(TimeSpansAtLeastOneSecond))]
 	public void WhenKeepAlivePingTimeoutIsAtLeastOneSecond_ThenDoNotThrowArgumentOutOfRangeException(TimeSpan duration) =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
-					"bank-did",
+					"rtgs-global-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
 					"idcrypt-api-key",
@@ -86,7 +86,7 @@ public class GivenRtgsSdkOptions
 	[Fact]
 	public void WhenRemoteHostAddressIsNull_ThenThrowArgumentNullException() =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
-				"bank-did",
+				"rtgs-global-did",
 				null,
 				new Uri("http://id-crypt-cloud-agent.com"),
 				"idcrypt-api-key",
@@ -96,7 +96,7 @@ public class GivenRtgsSdkOptions
 			.WithMessage("Value cannot be null. (Parameter 'remoteHostAddress')");
 
 	[Fact]
-	public void WhenBankDidIsNull_ThenThrowArgumentNullException() =>
+	public void WhenRtgsGlobalIdIsNull_ThenThrowArgumentNullException() =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
 				null,
 				new Uri("http://example.org"),
@@ -110,7 +110,7 @@ public class GivenRtgsSdkOptions
 	[Theory]
 	[InlineData("")]
 	[InlineData(" ")]
-	public void WhenBankDidIsWhiteSpace_ThenThrowArgumentException(string whiteSpace) =>
+	public void WhenRtgsGlobalIdIsWhiteSpace_ThenThrowArgumentException(string whiteSpace) =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
 				whiteSpace,
 				new Uri("http://example.org"),
@@ -125,7 +125,7 @@ public class GivenRtgsSdkOptions
 	[MemberData(nameof(TimeSpansLessThanOneSecond))]
 	public void WhenWaitForAcknowledgementDurationIsLessThanOneSecond_ThenThrowArgumentOutOfRangeException(TimeSpan duration) =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
-					"bank-did",
+					"rtgs-global-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
 					"idcrypt-api-key",
@@ -138,7 +138,7 @@ public class GivenRtgsSdkOptions
 	[Fact]
 	public void WhenWaitForAcknowledgementDurationIsInfinite_ThenThrowArgumentOutOfRangeException() =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
-					"bank-did",
+					"rtgs-global-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
 					"idcrypt-api-key",
@@ -152,7 +152,7 @@ public class GivenRtgsSdkOptions
 	[MemberData(nameof(TimeSpansGreaterThanThirtySeconds))]
 	public void WhenWaitForAcknowledgementDurationIsGreaterThan30_ThenThrowArgumentOutOfRangeException(TimeSpan duration) =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
-					"bank-did",
+					"rtgs-global-did",
 					new Uri("http://example.org"),
 					new Uri("http://id-crypt-cloud-agent.com"),
 					"idcrypt-api-key",
@@ -165,7 +165,7 @@ public class GivenRtgsSdkOptions
 	[Fact]
 	public void WhenIdCryptApiAddressIsNull_ThenThrowArgumentNullException() =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
-				"bank-did",
+				"rtgs-global-did",
 				new Uri("http://example.org"),
 				null,
 				"idcrypt-api-key",
@@ -177,7 +177,7 @@ public class GivenRtgsSdkOptions
 	[Fact]
 	public void WhenIdCryptApiKeyIsNull_ThenThrowArgumentNullException() =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
-				"bank-did",
+				"rtgs-global-did",
 				new Uri("http://example.org"),
 				new Uri("http://id-crypt-cloud-agent.com"),
 				null,
@@ -191,7 +191,7 @@ public class GivenRtgsSdkOptions
 	[InlineData(" ")]
 	public void WhenIdCryptApiKeyIsWhiteSpace_ThenThrowArgumentException(string whiteSpace) =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
-				"bank-did",
+				"rtgs-global-did",
 				new Uri("http://example.org"),
 				new Uri("http://id-crypt-cloud-agent.com"),
 				whiteSpace,
@@ -203,14 +203,14 @@ public class GivenRtgsSdkOptions
 	[Fact]
 	public void WhenIdServiceEndpointAddressIsNull_ThenThrowArgumentNullException() =>
 		FluentActions.Invoking(() => RtgsSdkOptions.Builder.CreateNew(
-			"bank-did",
-			new Uri("http://example.org"),
-			new Uri("http://id-crypt-cloud-agent.com"),
-			"idcrypt-api-key",
-			null))
-		.Should()
-		.Throw<ArgumentNullException>()
-		.WithMessage("Value cannot be null. (Parameter 'idCryptServiceEndpointAddress')");
+				"rtgs-global-did",
+				new Uri("http://example.org"),
+				new Uri("http://id-crypt-cloud-agent.com"),
+				"idcrypt-api-key",
+				null))
+			.Should()
+			.Throw<ArgumentNullException>()
+			.WithMessage("Value cannot be null. (Parameter 'idCryptServiceEndpointAddress')");
 
 	public static IEnumerable<object[]> TimeSpansLessThanOneSecond =>
 		new List<object[]>

@@ -2,7 +2,7 @@
 
 public class GivenServerStops : IAsyncLifetime
 {
-	private const string BankPartnerDid = "bank-partner-did";
+	private const string BankPartnerRtgsGlobalId = "bank-partner-rtgs-global-id";
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 	private readonly GrpcTestServer _grpcServer;
@@ -76,12 +76,12 @@ public class GivenServerStops : IAsyncLifetime
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-		var result = await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);
+		var result = await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerRtgsGlobalId);
 		result.Should().Be(SendResult.Success);
 
 		await _grpcServer.StopAsync();
 
-		var exceptionAssertions = await FluentActions.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid))
+		var exceptionAssertions = await FluentActions.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerRtgsGlobalId))
 			.Should().ThrowAsync<Exception>();
 
 		// One of two exceptions can be thrown depending on how far along the call is.
@@ -95,7 +95,7 @@ public class GivenServerStops : IAsyncLifetime
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-		await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);
+		await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerRtgsGlobalId);
 
 		await _grpcServer.StopAsync();
 

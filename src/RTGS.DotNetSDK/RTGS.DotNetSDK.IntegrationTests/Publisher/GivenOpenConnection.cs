@@ -9,7 +9,7 @@ public class GivenOpenConnection
 {
 	public class AndShortTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
 	{
-		private const string BankPartnerDid = "bank-partner-did";
+		private const string BankPartnerRtgsGlobalId = "bank-partner-rtgs-global-id";
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 		private readonly GrpcServerFixture _grpcServer;
@@ -101,7 +101,7 @@ public class GivenOpenConnection
 
 					sendRequestsSignal.Wait();
 
-					await _rtgsPublisher.SendAtomicLockRequestAsync(request, BankPartnerDid);
+					await _rtgsPublisher.SendAtomicLockRequestAsync(request, BankPartnerRtgsGlobalId);
 				})).ToArray();
 
 			sendRequestsSignal.Set();

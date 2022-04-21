@@ -2,7 +2,7 @@
 
 public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcServerFixture>
 {
-	private const string BankPartnerDid = "bank-partner-did";
+	private const string BankPartnerRtgsGlobalId = "bank-partner-rtgs-global-id";
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 	private readonly GrpcServerFixture _grpcServer;
@@ -74,19 +74,19 @@ public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcSe
 		var rtgsPublisher5 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsPublisher1.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);
+		await rtgsPublisher1.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerRtgsGlobalId);
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsPublisher2.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);
+		await rtgsPublisher2.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerRtgsGlobalId);
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsPublisher3.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);
+		await rtgsPublisher3.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerRtgsGlobalId);
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsPublisher4.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);
+		await rtgsPublisher4.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerRtgsGlobalId);
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsPublisher5.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);
+		await rtgsPublisher5.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerRtgsGlobalId);
 
 		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
