@@ -7,6 +7,7 @@ namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
 public abstract class BasePublisherActionData : BaseActionData
 {
 	public abstract IPublisherAction<AtomicLockRequestV1> AtomicLock { get; }
+	public abstract IPublisherAction<AtomicLockRequestV1> AtomicLockWithBankPartnerRtgsGlobalId { get; }
 	public abstract IPublisherAction<AtomicTransferRequestV1> AtomicTransfer { get; }
 	public abstract IPublisherAction<EarmarkConfirmationV1> EarmarkConfirmation { get; }
 	public abstract IPublisherAction<AtomicTransferConfirmationV1> AtomicTransferConfirmation { get; }

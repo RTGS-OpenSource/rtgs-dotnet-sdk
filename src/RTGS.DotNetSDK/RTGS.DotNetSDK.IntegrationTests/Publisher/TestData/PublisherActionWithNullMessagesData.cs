@@ -7,6 +7,7 @@ namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
 public class PublisherActionWithNullMessagesData : BasePublisherActionData
 {
 	public override IPublisherAction<AtomicLockRequestV1> AtomicLock => PublisherActionsWithNullMessages.AtomicLock;
+	public override IPublisherAction<AtomicLockRequestV1> AtomicLockWithBankPartnerRtgsGlobalId => PublisherActionsWithNullMessages.AtomicLock;
 	public override IPublisherAction<AtomicTransferRequestV1> AtomicTransfer => PublisherActionsWithNullMessages.AtomicTransfer;
 	public override IPublisherAction<EarmarkConfirmationV1> EarmarkConfirmation => PublisherActionsWithNullMessages.EarmarkConfirmation;
 	public override IPublisherAction<AtomicTransferConfirmationV1> AtomicTransferConfirmation => PublisherActionsWithNullMessages.AtomicTransferConfirmation;

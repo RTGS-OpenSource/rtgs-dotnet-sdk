@@ -8,12 +8,9 @@ namespace RTGS.DotNetSDK.Publisher.Messages;
 public record AtomicLockRequestV1
 {
 	/// <summary>
-	/// DebtorRtgsId: Bank RTGS id, the identifier of the bank initiating the transaction.
+	/// BkPrtnrRtgsGlobalId: Bank Partner RTGS.global Id, the identifier of the bank partner to use in the transaction.
 	/// </summary>
-	/// <remarks>
-	/// The <c>GenericFinancialIdentification1</c> type is from NuGet package RTGS.Public.Payment.Client <see href="https://www.nuget.org/packages/RTGS.Public.Payment.Client/"/>
-	/// </remarks>
-	public GenericFinancialIdentification1 DbtrRtgsId { get; init; }
+	public string BkPrtnrRtgsGlobalId { get; init; }
 
 	/// <summary>
 	/// CreditorAmount: describes the value and currency of the transfer.

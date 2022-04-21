@@ -8,7 +8,11 @@ public static class PublisherActions
 {
 	public static readonly PublisherAction<AtomicLockRequestV1> AtomicLock = new(
 		ValidMessages.AtomicLockRequest,
-		new Dictionary<string, string> { { "bankpartnerdid", "RTGS:GB12345GBP" }, { "bank-partner-rtgs-global-id", "RTGS:GB12345GBP" } },
+		new Dictionary<string, string> { { "bankpartnerdid", "RTGS:GB12345GBP" } },
+		(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, "RTGS:GB12345GBP", cancellationToken));
+
+	public static readonly PublisherAction<AtomicLockRequestV1> AtomicLockRequestWithBankPartnerRtgsGlobalId = new(
+		ValidMessages.AtomicLockRequestWithBankPartnerRtgsGlobalId,
 		(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, "RTGS:GB12345GBP", cancellationToken));
 
 	public static readonly PublisherAction<AtomicTransferRequestV1> AtomicTransfer = new(

@@ -16,7 +16,7 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 
 	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, string bankPartnerRtgsGlobalId, CancellationToken cancellationToken)
 	{
-		var headers = new Dictionary<string, string> { { "bankpartnerdid", bankPartnerRtgsGlobalId }, { "bank-partner-rtgs-global-id", bankPartnerRtgsGlobalId } };
+		var headers = new Dictionary<string, string> { { "bankpartnerdid", bankPartnerRtgsGlobalId } };
 		return _internalPublisher.SendMessageAsync(message, "payment.lock.v2", cancellationToken, headers);
 	}
 
