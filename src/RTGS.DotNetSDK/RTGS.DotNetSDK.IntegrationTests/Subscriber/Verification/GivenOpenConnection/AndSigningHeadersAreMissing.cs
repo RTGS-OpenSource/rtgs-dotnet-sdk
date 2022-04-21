@@ -1,6 +1,6 @@
 ﻿namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
 
-public class WhenSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServerFixture>
+public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(500);
 	private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
@@ -11,7 +11,7 @@ public class WhenSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServe
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
 
-	public WhenSigningHeadersAreMissing(GrpcServerFixture grpcServer)
+	public AndSigningHeadersAreMissing(GrpcServerFixture grpcServer)
 	{
 		_grpcServer = grpcServer;
 
@@ -70,7 +70,7 @@ public class WhenSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenPrivateDidHeaderMissing_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndPrivateDidHeaderMissing_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
@@ -94,7 +94,7 @@ public class WhenSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenAliasHeaderMissing_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task WhenAliasHeaderMissing_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
@@ -118,7 +118,7 @@ public class WhenSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenAliasHeaderMissing_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task WhenAliasHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		Exception raisedException = null;
 
@@ -141,7 +141,7 @@ public class WhenSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenPrivateSignatureHeaderMissing_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task WhenPrivateSignatureHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		Exception raisedException = null;
 
@@ -164,7 +164,7 @@ public class WhenSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenPrivateDidHeaderEmpty_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task WhenPrivateDidHeaderEmpty_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
@@ -189,7 +189,7 @@ public class WhenSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenAliasHeaderEmpty_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task WhenAliasHeaderEmpty_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
@@ -214,7 +214,7 @@ public class WhenSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenPrivateSignatureHeaderEmpty_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task WhenPrivateSignatureHeaderEmpty_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		Exception raisedException = null;
 
@@ -238,7 +238,7 @@ public class WhenSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenAliasHeaderEmpty_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task WhenAliasHeaderEmpty_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		Exception raisedException = null;
 

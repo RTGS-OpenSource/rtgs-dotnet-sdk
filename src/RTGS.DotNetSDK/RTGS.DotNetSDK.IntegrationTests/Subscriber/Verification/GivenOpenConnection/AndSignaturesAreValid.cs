@@ -6,7 +6,7 @@ using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
 
-public class WhenVerificationIsSuccessful : IDisposable, IClassFixture<GrpcServerFixture>
+public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly Uri IdCryptApiUri = new("http://id-crypt-cloud-agent-api.com");
 	private const string IdCryptApiKey = "id-crypt-api-key";
@@ -20,7 +20,7 @@ public class WhenVerificationIsSuccessful : IDisposable, IClassFixture<GrpcServe
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
 
-	public WhenVerificationIsSuccessful(GrpcServerFixture grpcServer)
+	public AndSignaturesAreValid(GrpcServerFixture grpcServer)
 	{
 		_grpcServer = grpcServer;
 
@@ -84,7 +84,7 @@ public class WhenVerificationIsSuccessful : IDisposable, IClassFixture<GrpcServe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task ThenVerifyDocumentIsCalled<TRequest>(SubscriberAction<TRequest> subscriberAction)
+	public async Task WhenVerifyingMessage_ThenVerifyDocumentIsCalled<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
@@ -101,7 +101,7 @@ public class WhenVerificationIsSuccessful : IDisposable, IClassFixture<GrpcServe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task ThenBaseAddressIsExpected<TRequest>(SubscriberAction<TRequest> subscriberAction)
+	public async Task WhenCallingVerifyPrivateSignature_ThenBaseAddressIsExpected<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
@@ -123,7 +123,7 @@ public class WhenVerificationIsSuccessful : IDisposable, IClassFixture<GrpcServe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task ThenApiKeyHeaderIsExpected<TRequest>(SubscriberAction<TRequest> subscriberAction)
+	public async Task WhenCallingVerifyPrivateSignature_ThenApiKeyHeaderIsExpected<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 

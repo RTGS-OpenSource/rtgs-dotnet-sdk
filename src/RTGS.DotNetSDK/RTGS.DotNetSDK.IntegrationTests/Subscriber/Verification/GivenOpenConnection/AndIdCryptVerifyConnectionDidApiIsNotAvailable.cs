@@ -77,7 +77,7 @@ public class AndIdCryptVerifyConnectionDidApiIsNotAvailable : IDisposable, IClas
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		Exception raisedException = null;
 

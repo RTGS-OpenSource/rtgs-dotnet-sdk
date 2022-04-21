@@ -4,7 +4,7 @@ using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
 
-public class WhenVerificationIsNotSuccessful : IDisposable, IClassFixture<GrpcServerFixture>
+public class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan WaitForExceptionEventDuration = TimeSpan.FromMilliseconds(100);
 	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(500);
@@ -17,7 +17,7 @@ public class WhenVerificationIsNotSuccessful : IDisposable, IClassFixture<GrpcSe
 	private IRtgsSubscriber _rtgsSubscriber;
 
 
-	public WhenVerificationIsNotSuccessful(GrpcServerFixture grpcServer)
+	public AndSignaturesAreNotValid(GrpcServerFixture grpcServer)
 	{
 		_grpcServer = grpcServer;
 
@@ -83,7 +83,7 @@ public class WhenVerificationIsNotSuccessful : IDisposable, IClassFixture<GrpcSe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
@@ -102,7 +102,7 @@ public class WhenVerificationIsNotSuccessful : IDisposable, IClassFixture<GrpcSe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		Exception raisedException = null;
 
@@ -120,7 +120,7 @@ public class WhenVerificationIsNotSuccessful : IDisposable, IClassFixture<GrpcSe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task AndVerifierThrows_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task WhenVerifyingMessageAndVerifierThrows_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		using var exceptionSignal = new ManualResetEventSlim();
 
