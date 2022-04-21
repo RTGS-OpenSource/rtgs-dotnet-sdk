@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
-using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
+//using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Handlers;
@@ -154,7 +154,42 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		{
 			Alias = alias,
 			ConnectionId = CreateInvitation.Response.ConnectionId,
-			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
+			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid,
+			BankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
+		};
+
+		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
+	}
+
+	[Fact]
+	public async Task WhenMessageReceivedWithRtgsGlobalId_ThenPassToHandlerAndAcknowledge()
+	{
+		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+		var sentRtgsMessage = await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
+
+		using var _ = new AssertionScope();
+
+		_fromRtgsSender.Acknowledgements
+			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
+													   && acknowledgement.Success);
+
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
+		var alias = inviteRequestQueryParams["alias"];
+
+		var message = new IdCryptCreateInvitationNotificationV1
+		{
+			Alias = alias,
+			ConnectionId = CreateInvitation.Response.ConnectionId,
+			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId.BankPartnerRtgsGlobalId,
+			BankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId.BankPartnerRtgsGlobalId
 		};
 
 		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -270,6 +305,37 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 	}
 
 	[Fact]
+	public async Task WhenCallingIdCryptAgent_ThenLogWithRtgsGlobalId()
+	{
+		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
+
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
+		var alias = inviteRequestQueryParams["alias"];
+
+		var expectedLogs = new List<LogEntry>
+		{
+			new($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
+			new($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
+			new("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+			new("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
+			new ($"Sending Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId.BankPartnerRtgsGlobalId}", LogEventLevel.Debug),
+			new ($"Sent Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId.BankPartnerRtgsGlobalId}", LogEventLevel.Debug),
+		};
+
+		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Debug);
+		debugLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
+	}
+
+	[Fact]
 	public async Task WhenSubscriberIsStopped_ThenCloseConnection()
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
@@ -371,7 +437,44 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		{
 			Alias = alias,
 			ConnectionId = CreateInvitation.Response.ConnectionId,
-			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
+			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid,
+			BankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
+		};
+
+		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
+
+		await _rtgsSubscriber.StopAsync();
+	}
+
+	[Fact]
+	public async Task WhenMessageWithIdentifierThatCannotBeHandledReceived_ThenSubsequentMessagesCanBeHandledWithRtgsGlobalId()
+	{
+		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+		_fromRtgsSender.SetExpectedAcknowledgementCount(2);
+
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+		await _fromRtgsSender.SendAsync(
+			"cannot be handled",
+			ValidMessages.AtomicLockResponseV1);
+
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
+
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
+		var alias = inviteRequestQueryParams["alias"];
+
+		var message = new IdCryptCreateInvitationNotificationV1
+		{
+			Alias = alias,
+			ConnectionId = CreateInvitation.Response.ConnectionId,
+			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId.BankPartnerRtgsGlobalId,
+			BankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId.BankPartnerRtgsGlobalId
 		};
 
 		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -410,7 +513,46 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		{
 			Alias = alias,
 			ConnectionId = CreateInvitation.Response.ConnectionId,
-			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
+			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid,
+			BankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
+		};
+
+		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
+	}
+
+	[Fact]
+	public async Task AndSubscriberIsStopped_WhenStarting_ThenReceiveMessagesWithRtgsGlobalId()
+	{
+		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+		await _rtgsSubscriber.StopAsync();
+
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+		var sentRtgsMessage = await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
+
+		using var _ = new AssertionScope();
+
+		_fromRtgsSender.Acknowledgements
+			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
+													   && acknowledgement.Success);
+
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
+		var alias = inviteRequestQueryParams["alias"];
+
+		var message = new IdCryptCreateInvitationNotificationV1
+		{
+			Alias = alias,
+			ConnectionId = CreateInvitation.Response.ConnectionId,
+			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId.BankPartnerRtgsGlobalId,
+			BankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId.BankPartnerRtgsGlobalId
 		};
 
 		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -443,7 +585,42 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		{
 			Alias = alias,
 			ConnectionId = CreateInvitation.Response.ConnectionId,
-			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
+			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid,
+			BankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
+		};
+
+		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
+	}
+
+	[Fact]
+	public async Task WhenExceptionEventHandlerThrows_ThenSubsequentMessagesCanBeHandledWithRtgsGlobalId()
+	{
+		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+		_fromRtgsSender.SetExpectedAcknowledgementCount(2);
+
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+		_rtgsSubscriber.OnExceptionOccurred += (_, _) => throw new InvalidOperationException("test");
+
+		await _fromRtgsSender.SendAsync("will-throw", ValidMessages.AtomicLockResponseV1);
+
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
+
+		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
+			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
+		var alias = inviteRequestQueryParams["alias"];
+
+		var message = new IdCryptCreateInvitationNotificationV1
+		{
+			Alias = alias,
+			ConnectionId = CreateInvitation.Response.ConnectionId,
+			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId.BankPartnerRtgsGlobalId,
+			BankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId.BankPartnerRtgsGlobalId
 		};
 
 		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);

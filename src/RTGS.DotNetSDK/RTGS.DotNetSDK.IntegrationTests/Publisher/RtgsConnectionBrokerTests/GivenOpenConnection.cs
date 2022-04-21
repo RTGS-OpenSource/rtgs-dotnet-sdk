@@ -2,8 +2,9 @@
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
-using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
+//using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
+using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.RtgsConnectionBrokerTests;
 

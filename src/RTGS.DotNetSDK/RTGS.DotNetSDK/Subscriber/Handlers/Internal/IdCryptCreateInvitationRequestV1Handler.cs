@@ -44,15 +44,16 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 
 		var invitation = await CreateIdCryptInvitationAsync(alias);
 		var agentPublicDid = await GetIdCryptAgentPublicDidAsync();
-		var bankPartnerDid = createInvitationRequest.BankPartnerDid;
+		var bankPartnerRtgsGlobalId = createInvitationRequest.BankPartnerRtgsGlobalId ?? createInvitationRequest.BankPartnerDid;
 
-		await SendInvitationToBankAsync(alias, invitation.Invitation, agentPublicDid, bankPartnerDid, default);
+		await SendInvitationToBankAsync(alias, invitation.Invitation, agentPublicDid, bankPartnerRtgsGlobalId, default);
 
 		var invitationNotification = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
 			ConnectionId = invitation.ConnectionId,
-			BankPartnerDid = bankPartnerDid
+			BankPartnerDid = bankPartnerRtgsGlobalId,
+			BankPartnerRtgsGlobalId = bankPartnerRtgsGlobalId
 		};
 
 		await _userHandler.HandleMessageAsync(invitationNotification);
@@ -122,10 +123,10 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		string alias,
 		ConnectionInvitation invitation,
 		string agentPublicDid,
-		string bankPartnerDid,
+		string bankPartnerRtgsGlobalId,
 		CancellationToken cancellationToken)
 	{
-		_logger.LogDebug("Sending Invitation with alias {Alias} to Bank {BankPartnerDid}", alias, bankPartnerDid);
+		_logger.LogDebug("Sending Invitation with alias {Alias} to Bank {BankPartnerRtgsGlobalId}", alias, bankPartnerRtgsGlobalId);
 
 		var invitationMessage = new IdCryptInvitationV1
 		{
@@ -142,22 +143,22 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 		try
 		{
 			sendResult = await _idCryptPublisher
-				.SendIdCryptInvitationToBankAsync(invitationMessage, bankPartnerDid, cancellationToken);
+				.SendIdCryptInvitationToBankAsync(invitationMessage, bankPartnerRtgsGlobalId, cancellationToken);
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Exception occurred when sending IdCrypt Invitation with alias {Alias} to Bank {BankPartnerDid}", alias, bankPartnerDid);
+			_logger.LogError(ex, "Exception occurred when sending IdCrypt Invitation with alias {Alias} to Bank {BankPartnerRtgsGlobalId}", alias, bankPartnerRtgsGlobalId);
 			throw;
 		}
 
 		if (sendResult is not SendResult.Success)
 		{
-			_logger.LogError("Error occurred when sending IdCrypt Invitation with alias {Alias} to Bank {BankPartnerDid}", alias, bankPartnerDid);
+			_logger.LogError("Error occurred when sending IdCrypt Invitation with alias {Alias} to Bank {BankPartnerRtgsGlobalId}", alias, bankPartnerRtgsGlobalId);
 
 			throw new RtgsSubscriberException(
-				$"Error occurred when sending IdCrypt Invitation with alias {alias} to Bank {bankPartnerDid}");
+				$"Error occurred when sending IdCrypt Invitation with alias {alias} to Bank {bankPartnerRtgsGlobalId}");
 		}
 
-		_logger.LogDebug("Sent Invitation with alias {Alias} to Bank {BankPartnerDid}", alias, bankPartnerDid);
+		_logger.LogDebug("Sent Invitation with alias {Alias} to Bank {BankPartnerRtgsGlobalId}", alias, bankPartnerRtgsGlobalId);
 	}
 }

@@ -41,14 +41,13 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 				$"Ensure {nameof(SetUserHandler)}() has been called first.");
 		}
 
-		var connection = await AcceptInviteAsync(bankInvitation);
+		var connection = await AcceptInviteAsync(bankInvitation.Invitation, bankInvitation.FromRtgsGlobalId ?? bankInvitation.FromBankDid);
 
-		_ = WaitForActiveConnectionAndSendConfirmation(connection.ConnectionId, bankInvitation.FromBankDid);
+		_ = WaitForActiveConnectionAndSendConfirmation(connection.ConnectionId, bankInvitation.FromRtgsGlobalId ?? bankInvitation.FromBankDid);
 	}
 
-	private async Task<ConnectionResponse> AcceptInviteAsync(IdCryptBankInvitationV1 bankInvitation)
+	private async Task<ConnectionResponse> AcceptInviteAsync(IdCryptInvitationV1 invitation, string fromRtgsGlobalId)
 	{
-		var invitation = bankInvitation.Invitation;
 		var connectionInvite = new ReceiveAndAcceptInvitationRequest
 		{
 			Alias = invitation.Alias,
@@ -61,34 +60,34 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 
 		try
 		{
-			_logger.LogDebug("Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {FromBankDid}",
-				bankInvitation.FromBankDid);
+			_logger.LogDebug("Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {FromRtgsGlobalId}",
+				fromRtgsGlobalId);
 
 			var response = await _connectionsClient.ReceiveAndAcceptInvitationAsync(connectionInvite);
 
-			_logger.LogDebug("Sent ReceiveAcceptInvitation request to ID Crypt for invitation from bank {FromBankDid}",
-				bankInvitation.FromBankDid);
+			_logger.LogDebug("Sent ReceiveAcceptInvitation request to ID Crypt for invitation from bank {FromRtgsGlobalId}",
+				fromRtgsGlobalId);
 
 			return response;
 		}
 		catch (Exception innerException)
 		{
 			var exception = new RtgsSubscriberException(
-				$"Error occurred when sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {bankInvitation.FromBankDid}",
+				$"Error occurred when sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {fromRtgsGlobalId}",
 				innerException);
 
 			_logger.LogError(
 				exception,
-				"Error occurred when sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {FromBankDid}",
-				bankInvitation.FromBankDid);
+				"Error occurred when sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {FromRtgsGlobalId}",
+				fromRtgsGlobalId);
 
 			throw exception;
 		}
 	}
 
-	private async Task WaitForActiveConnectionAndSendConfirmation(string connectionId, string fromBankDid)
+	private async Task WaitForActiveConnectionAndSendConfirmation(string connectionId, string fromRtgsGlobalId)
 	{
-		_logger.LogDebug("Polling for connection state for invitation from bank {FromBankDid}", fromBankDid);
+		_logger.LogDebug("Polling for connection state for invitation from bank {FromRtgsGlobalId}", fromRtgsGlobalId);
 
 		ConnectionResponse connection;
 		try
@@ -98,14 +97,14 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 		catch (Exception ex)
 		{
 			_logger.LogError(ex,
-				"Error occured when polling for connection state for invitation from bank {FromBankDid}",
-				fromBankDid);
+				"Error occurred when polling for connection state for invitation from bank {FromRtgsGlobalId}",
+				fromRtgsGlobalId);
 			throw;
 		}
 
-		_logger.LogDebug("Finished polling for connection state for invitation from bank {FromBankDid}", fromBankDid);
+		_logger.LogDebug("Finished polling for connection state for invitation from bank {FromRtgsGlobalId}", fromRtgsGlobalId);
 
-		await HandleInvitationConfirmation(fromBankDid, connection);
+		await HandleInvitationConfirmation(fromRtgsGlobalId, connection);
 	}
 
 	private async Task<ConnectionResponse> PollConnectionState(string connectionId)
@@ -160,13 +159,13 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 		}
 	}
 
-	private async Task HandleInvitationConfirmation(string fromBankDid, ConnectionResponse connection)
+	private async Task HandleInvitationConfirmation(string fromRtgsGlobalId, ConnectionResponse connection)
 	{
 		var agentPublicDid = await GetIdCryptAgentPublicDidAsync();
 
-		await SendInvitationConfirmationAsync(connection.Alias, agentPublicDid, fromBankDid);
+		await SendInvitationConfirmationAsync(connection.Alias, agentPublicDid, fromRtgsGlobalId);
 
-		await InvokeUserHandler(fromBankDid, connection);
+		await InvokeUserHandler(fromRtgsGlobalId, connection);
 	}
 
 	private async Task<string> GetIdCryptAgentPublicDidAsync()
@@ -193,9 +192,9 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 		}
 	}
 
-	private async Task SendInvitationConfirmationAsync(string alias, string agentPublicDid, string fromBankDid)
+	private async Task SendInvitationConfirmationAsync(string alias, string agentPublicDid, string fromRtgsGlobalId)
 	{
-		_logger.LogDebug("Sending ID Crypt invitation confirmation to bank {FromBankDid}", fromBankDid);
+		_logger.LogDebug("Sending ID Crypt invitation confirmation to bank {FromRtgsGlobalId}", fromRtgsGlobalId);
 
 		var invitationConfirmation = new IdCryptInvitationConfirmationV1
 		{
@@ -208,30 +207,31 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 		{
 			sendResult = await _idCryptPublisher.SendIdCryptInvitationConfirmationAsync(
 				invitationConfirmation,
-				fromBankDid,
+				fromRtgsGlobalId,
 				default);
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Exception occurred when sending ID Crypt invitation confirmation to bank {FromBankDid}", fromBankDid);
+			_logger.LogError(ex, "Exception occurred when sending ID Crypt invitation confirmation to bank {FromRtgsGlobalId}", fromRtgsGlobalId);
 			throw;
 		}
 
 		if (sendResult is not SendResult.Success)
 		{
-			_logger.LogError("Error occurred when sending ID Crypt invitation confirmation to bank {FromBankDid}", fromBankDid);
+			_logger.LogError("Error occurred when sending ID Crypt invitation confirmation to bank {FromRtgsGlobalId}", fromRtgsGlobalId);
 
-			throw new RtgsSubscriberException($"Error occurred when sending ID Crypt invitation confirmation to bank {fromBankDid}");
+			throw new RtgsSubscriberException($"Error occurred when sending ID Crypt invitation confirmation to bank {fromRtgsGlobalId}");
 		}
 
-		_logger.LogDebug("Sent ID Crypt invitation confirmation to bank {FromBankDid}", fromBankDid);
+		_logger.LogDebug("Sent ID Crypt invitation confirmation to bank {FromRtgsGlobalId}", fromRtgsGlobalId);
 	}
 
-	private async Task InvokeUserHandler(string fromBankDid, ConnectionResponse connection)
+	private async Task InvokeUserHandler(string fromRtgsGlobalId, ConnectionResponse connection)
 	{
 		var invitationNotification = new IdCryptBankInvitationNotificationV1
 		{
-			BankPartnerDid = fromBankDid,
+			BankPartnerDid = fromRtgsGlobalId,
+			BankPartnerRtgsGlobalId = fromRtgsGlobalId,
 			Alias = connection.Alias,
 			ConnectionId = connection.ConnectionId
 		};

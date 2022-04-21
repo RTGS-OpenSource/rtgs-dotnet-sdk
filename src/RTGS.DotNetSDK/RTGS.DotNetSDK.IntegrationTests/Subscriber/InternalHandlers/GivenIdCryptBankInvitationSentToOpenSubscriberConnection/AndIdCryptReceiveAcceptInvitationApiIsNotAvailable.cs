@@ -129,6 +129,29 @@ public class AndIdCryptReceiveAcceptInvitationApiIsNotAvailable : IDisposable, I
 	}
 
 	[Fact]
+	public async Task ThenLogWithRtgsGlobalId()
+	{
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+		await _fromRtgsSender.SendAsync(
+			"idcrypt.invitation.tobank.v1",
+			ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId);
+
+		_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		var expectedFromRtgsGlobalId = ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId.FromRtgsGlobalId;
+
+		using var _ = new AssertionScope();
+		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
+		debugLogs.Select(log => log.Message)
+			.Should().ContainSingle(msg => msg == $"Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {expectedFromRtgsGlobalId}");
+
+		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Error);
+		errorLogs.Select(log => log.Message)
+			.Should().ContainSingle(msg => msg == $"Error occurred when sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {expectedFromRtgsGlobalId}");
+	}
+
+	[Fact]
 	public async Task ThenUserHandlerIsNotInvoked()
 	{
 		await _rtgsSubscriber.StartAsync(_allTestHandlers);
