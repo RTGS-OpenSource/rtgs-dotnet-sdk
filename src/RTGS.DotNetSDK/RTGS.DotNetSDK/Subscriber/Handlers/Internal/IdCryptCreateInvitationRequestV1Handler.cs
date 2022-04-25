@@ -44,16 +44,14 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 
 		var invitation = await CreateIdCryptInvitationAsync(alias);
 		var agentPublicDid = await GetIdCryptAgentPublicDidAsync();
-		var bankPartnerRtgsGlobalId = createInvitationRequest.BankPartnerRtgsGlobalId ?? createInvitationRequest.BankPartnerDid;
 
-		await SendInvitationToBankAsync(alias, invitation.Invitation, agentPublicDid, bankPartnerRtgsGlobalId, default);
+		await SendInvitationToBankAsync(alias, invitation.Invitation, agentPublicDid, createInvitationRequest.BankPartnerRtgsGlobalId, default);
 
 		var invitationNotification = new IdCryptCreateInvitationNotificationV1
 		{
 			Alias = alias,
 			ConnectionId = invitation.ConnectionId,
-			BankPartnerDid = bankPartnerRtgsGlobalId,
-			BankPartnerRtgsGlobalId = bankPartnerRtgsGlobalId
+			BankPartnerRtgsGlobalId = createInvitationRequest.BankPartnerRtgsGlobalId
 		};
 
 		await _userHandler.HandleMessageAsync(invitationNotification);

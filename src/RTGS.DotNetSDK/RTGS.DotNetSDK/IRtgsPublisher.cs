@@ -14,10 +14,9 @@ public interface IRtgsPublisher
 	/// Sends an <see cref="AtomicLockRequestV1"/> to initiate a transaction.
 	/// </summary>
 	/// <param name="message">The <see cref="AtomicLockRequestV1"/> message</param>
-	/// <param name="bankPartnerRtgsGlobalId">The RTGS.global Id of the Bank Partner</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
-	Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, string bankPartnerRtgsGlobalId, CancellationToken cancellationToken = default);
+	Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Sends an <see cref="AtomicTransferRequestV1"/> to invoke transfer of funds.

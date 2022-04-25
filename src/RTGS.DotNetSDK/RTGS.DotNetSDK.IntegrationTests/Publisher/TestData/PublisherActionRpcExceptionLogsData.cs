@@ -17,17 +17,6 @@ public class PublisherActionRpcExceptionLogsData : BasePublisherActionData
 				new("Error received when sending AtomicLockRequestV1 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Error, typeof(RpcException))
 			});
 
-	public override IPublisherAction<AtomicLockRequestV1> AtomicLockWithBankPartnerRtgsGlobalId =>
-		new PublisherActionWithLogs<AtomicLockRequestV1>(
-			PublisherActions.AtomicLock,
-			new List<LogEntry>
-			{
-				new("No message signer found for AtomicLockRequestV1 message, skipping signing", LogEventLevel.Debug),
-				new("Sending AtomicLockRequestV1 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
-				new("Sent AtomicLockRequestV1 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
-				new("Error received when sending AtomicLockRequestV1 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Error, typeof(RpcException))
-			});
-
 	public override IPublisherAction<AtomicTransferRequestV1> AtomicTransfer =>
 		new PublisherActionWithLogs<AtomicTransferRequestV1>(
 			PublisherActions.AtomicTransfer,

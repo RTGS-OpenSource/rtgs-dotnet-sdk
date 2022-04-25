@@ -74,19 +74,6 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionData))]
-	public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader<TRequest>(SubscriberAction<TRequest> subscriberAction)
-	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
-
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
-
-		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == TestData.ValidMessages.RtgsGlobalId);
-	}
-
-	[Theory]
-	[ClassData(typeof(SubscriberActionData))]
 	public async Task WhenUsingMetadata_ThenSeeRtgsGlobalIdInRequestHeader<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);

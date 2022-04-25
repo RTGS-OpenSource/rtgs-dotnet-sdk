@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
-//using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 
@@ -665,23 +664,6 @@ public class GivenOpenConnection
 				"Error received when sending IdCryptInvitationV1 to RTGS (SendIdCryptInvitationToRtgsAsync)",
 				LogEventLevel.Error,
 				typeof(RpcException)));
-		}
-
-		[Fact]
-		public async Task ThenSeeBankDidInRequestHeader()
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			await _rtgsConnectionBroker.SendInvitationAsync();
-
-			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-
-			var connection = receiver.Connections.SingleOrDefault();
-
-			connection.Should().NotBeNull();
-			connection!.Headers.Should()
-				.ContainSingle(header => header.Key == "bankdid"
-										 && header.Value == TestData.ValidMessages.RtgsGlobalId);
 		}
 
 		[Fact]

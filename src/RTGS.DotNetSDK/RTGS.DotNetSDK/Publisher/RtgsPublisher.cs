@@ -14,11 +14,8 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 		_internalPublisher = internalPublisher;
 	}
 
-	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, string bankPartnerRtgsGlobalId, CancellationToken cancellationToken)
-	{
-		var headers = new Dictionary<string, string> { { "bankpartnerdid", bankPartnerRtgsGlobalId } };
-		return _internalPublisher.SendMessageAsync(message, "payment.lock.v2", cancellationToken, headers);
-	}
+	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, CancellationToken cancellationToken) => 
+		_internalPublisher.SendMessageAsync(message, "payment.lock.v2", cancellationToken);
 
 	public Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequestV1 message, CancellationToken cancellationToken) =>
 		_internalPublisher.SendMessageAsync(message, "payment.block.v2", cancellationToken);
@@ -40,7 +37,7 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 
 	public Task<SendResult> SendPayawayRejectionAsync(Admi00200101 message, string toRtgsGlobalId, CancellationToken cancellationToken)
 	{
-		var headers = new Dictionary<string, string> { { "tobankdid", toRtgsGlobalId }, { "to-rtgs-global-id", toRtgsGlobalId } };
+		var headers = new Dictionary<string, string> { { "to-rtgs-global-id", toRtgsGlobalId } };
 		return _internalPublisher.SendMessageAsync(message, "payaway.rejection.v1", cancellationToken, headers);
 	}
 

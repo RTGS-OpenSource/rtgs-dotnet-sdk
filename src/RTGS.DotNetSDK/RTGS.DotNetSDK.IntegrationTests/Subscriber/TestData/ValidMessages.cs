@@ -1,5 +1,4 @@
-﻿//using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
-using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
+﻿using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Messages;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
@@ -126,12 +125,8 @@ public static class ValidMessages
 		},
 		BkPrtnrs = new List<BankPartnersResponseV1.BankPartner>
 		{
-			new BankPartnersResponseV1.BankPartner
+			new()
 			{
-				RtgsId = new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
-				{
-					Id = "id1"
-				},
 				RtgsGlobalId = new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
 				{
 					Id = "id1"
@@ -170,36 +165,12 @@ public static class ValidMessages
 
 	internal static readonly IdCryptCreateInvitationRequestV1 IdCryptCreateInvitationRequestV1 = new()
 	{
-		BankPartnerDid = "RTGS:GB177550GB",
-		BankPartnerRtgsGlobalId = null
-	};
-
-	internal static readonly IdCryptCreateInvitationRequestV1 IdCryptCreateInvitationRequestV1WithRtgsGlobalId = new()
-	{
-		BankPartnerDid = null,
-		BankPartnerRtgsGlobalId = "RTGS:GB666666GBP"
+		BankPartnerRtgsGlobalId = "RTGS:GB177550GB"
 	};
 
 	internal static readonly IdCryptBankInvitationV1 IdCryptBankInvitationV1 = new()
 	{
-		FromBankDid = "RTGS:GB239104GB",
-		FromRtgsGlobalId = null,
-		Invitation = new IdCryptInvitationV1
-		{
-			Alias = "385ba215-7d4e-4cdc-a7a7-f14955741e70",
-			Label = "the-label",
-			RecipientKeys = new[] { "df3d191f-3b15-4e16-a021-09579bbbc642" },
-			Id = "b705d4b8-0ef3-4ba6-8857-b3456f4ed63f",
-			Type = "the-type",
-			ServiceEndpoint = "https://the-service-endpoint",
-			AgentPublicDid = "df3d191f-3b15-4e16-a021-09579bbbc642"
-		}
-	};
-
-	internal static readonly IdCryptBankInvitationV1 IdCryptBankInvitationV1WithRtgsGlobalId = new()
-	{
-		FromBankDid = null,
-		FromRtgsGlobalId = "RTGS:GB777777GBP",
+		FromRtgsGlobalId = "RTGS:GB239104GB",
 		Invitation = new IdCryptInvitationV1
 		{
 			Alias = "385ba215-7d4e-4cdc-a7a7-f14955741e70",

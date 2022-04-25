@@ -11,47 +11,6 @@ public static class ValidMessages
 
 	public static readonly AtomicLockRequestV1 AtomicLockRequest = new()
 	{
-		BkPrtnrRtgsGlobalId = null,
-		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
-		{
-			Ccy = "GBP",
-			Value = 1.23m
-		},
-		UltmtDbtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
-		{
-			Ccy = "USD",
-			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00ULTIMATEDEBTORACCOUNT" }
-		},
-		UltmtCdtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
-		{
-			Ccy = "GBP",
-			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00ULTIMATECREDITORACCOUNT" }
-		},
-		DbtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
-		{
-			Ccy = "USD",
-			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00DEBTORACCOUNT" }
-		},
-		DbtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
-		{
-			Ccy = "GBP",
-			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00DEBTORAGENTACCOUNT" }
-		},
-		CdtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
-		{
-			Ccy = "GBP",
-			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00CREDITORACCOUNT" }
-		},
-		CdtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
-		{
-			Ccy = "USD",
-			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00CREDITORAGENTACCOUNT" }
-		},
-		EndToEndId = "end-to-end-id"
-	};
-
-	public static readonly AtomicLockRequestV1 AtomicLockRequestWithBankPartnerRtgsGlobalId = new()
-	{
 		BkPrtnrRtgsGlobalId = "RTGS:GB12345GBP",
 		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
 		{

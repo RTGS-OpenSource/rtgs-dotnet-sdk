@@ -19,7 +19,7 @@ internal class IdCryptPublisher : IIdCryptPublisher
 		string bankPartnerRtgsGlobalId,
 		CancellationToken cancellationToken)
 	{
-		var headers = new Dictionary<string, string> { { "bankpartnerdid", bankPartnerRtgsGlobalId }, { "bank-partner-rtgs-global-id", bankPartnerRtgsGlobalId } };
+		var headers = new Dictionary<string, string> { { "bank-partner-rtgs-global-id", bankPartnerRtgsGlobalId } };
 		return _internalPublisher.SendMessageAsync(message, "idcrypt.invitation.tobank.v1", cancellationToken, headers);
 	}
 
@@ -28,7 +28,7 @@ internal class IdCryptPublisher : IIdCryptPublisher
 		string bankPartnerRtgsGlobalId,
 		CancellationToken cancellationToken)
 	{
-		var headers = new Dictionary<string, string> { { "bankpartnerdid", bankPartnerRtgsGlobalId }, { "bank-partner-rtgs-global-id", bankPartnerRtgsGlobalId } };
+		var headers = new Dictionary<string, string> { { "bank-partner-rtgs-global-id", bankPartnerRtgsGlobalId } };
 		return _internalPublisher.SendMessageAsync(message, "idcrypt.invitationconfirmation.v1", cancellationToken, headers);
 	}
 }

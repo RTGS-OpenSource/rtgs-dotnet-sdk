@@ -104,7 +104,7 @@ public class AndIdCryptApiAvailable
 		}
 
 		[Fact]
-		public async Task WhenMessageReceived_ThenSeeBankDidInRequestHeader()
+		public async Task WhenMessageReceived_ThenSeeRtgsGlobalIdInRequestHeader()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
@@ -114,7 +114,8 @@ public class AndIdCryptApiAvailable
 
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-			_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == ValidMessages.RtgsGlobalId);
+			_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "rtgs-global-id"
+																			&& header.Value == ValidMessages.RtgsGlobalId);
 		}
 
 		[Fact]
@@ -142,42 +143,7 @@ public class AndIdCryptApiAvailable
 
 			var message = new IdCryptBankInvitationNotificationV1
 			{
-				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
-				BankPartnerRtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
-				Alias = alias,
-				ConnectionId = ReceiveInvitation.Response.ConnectionId
-			};
-
-			_bankInvitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
-		}
-
-		[Fact]
-		public async Task WhenMessageReceivedWithRtgsGlobalId_ThenPassToHandlerAndAcknowledge()
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			await _rtgsSubscriber.StartAsync(_allTestHandlers);
-
-			var sentRtgsMessage = await _fromRtgsSender.SendAsync("idcrypt.invitation.tobank.v1", ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId);
-
-			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
-
-			using var _ = new AssertionScope();
-
-			_fromRtgsSender.Acknowledgements
-				.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
-														   && acknowledgement.Success);
-
-			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
-
-			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
-				.Requests[ReceiveInvitation.Path].Single().RequestUri!.Query);
-			var alias = receiveInvitationRequestQueryParams["alias"];
-
-			var message = new IdCryptBankInvitationNotificationV1
-			{
-				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId.FromRtgsGlobalId,
-				BankPartnerRtgsGlobalId = ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId.FromRtgsGlobalId,
+				BankPartnerRtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromRtgsGlobalId,
 				Alias = alias,
 				ConnectionId = ReceiveInvitation.Response.ConnectionId
 			};
@@ -285,40 +251,7 @@ public class AndIdCryptApiAvailable
 
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-			var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
-
-			var expectedLogs = new List<LogEntry>
-			{
-				new($"Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {bankDid}", LogEventLevel.Debug),
-				new($"Sent ReceiveAcceptInvitation request to ID Crypt for invitation from bank {bankDid}", LogEventLevel.Debug),
-				new($"Polling for connection state for invitation from bank {bankDid}", LogEventLevel.Debug),
-				new($"Sending GetConnection request to ID Crypt", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt", LogEventLevel.Debug),
-				new($"Finished polling for connection state for invitation from bank {bankDid}", LogEventLevel.Debug),
-				new("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new($"Sending ID Crypt invitation confirmation to bank {bankDid}", LogEventLevel.Debug),
-				new($"Sent ID Crypt invitation confirmation to bank {bankDid}", LogEventLevel.Debug)
-			};
-
-			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
-			debugLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
-		}
-
-		[Fact]
-		public async Task WhenCallingIdCryptAgent_ThenLogWithRtgsGlobalId()
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			await _rtgsSubscriber.StartAsync(_allTestHandlers);
-
-			await _fromRtgsSender.SendAsync("idcrypt.invitation.tobank.v1", ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId);
-
-			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
-
-			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
-
-			var rtgsGlobalId = ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId.FromRtgsGlobalId;
+			var rtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromRtgsGlobalId;
 
 			var expectedLogs = new List<LogEntry>
 			{
@@ -438,44 +371,7 @@ public class AndIdCryptApiAvailable
 
 			var message = new IdCryptBankInvitationNotificationV1
 			{
-				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
-				BankPartnerRtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
-				Alias = alias,
-				ConnectionId = ReceiveInvitation.Response.ConnectionId
-			};
-
-			_bankInvitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
-
-			await _rtgsSubscriber.StopAsync();
-		}
-
-		[Fact]
-		public async Task WhenMessageWithIdentifierThatCannotBeHandledReceivedWithRtgsGlobalId_ThenSubsequentMessagesCanBeHandled()
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			_fromRtgsSender.SetExpectedAcknowledgementCount(2);
-
-			await _rtgsSubscriber.StartAsync(_allTestHandlers);
-
-			await _fromRtgsSender.SendAsync(
-				"cannot be handled",
-				ValidMessages.AtomicLockResponseV1);
-
-			await _fromRtgsSender.SendAsync("idcrypt.invitation.tobank.v1", ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId);
-
-			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
-
-			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
-
-			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
-				.Requests[ReceiveInvitation.Path].Single().RequestUri!.Query);
-			var alias = receiveInvitationRequestQueryParams["alias"];
-
-			var message = new IdCryptBankInvitationNotificationV1
-			{
-				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId.FromRtgsGlobalId,
-				BankPartnerRtgsGlobalId = ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId.FromRtgsGlobalId,
+				BankPartnerRtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromRtgsGlobalId,
 				Alias = alias,
 				ConnectionId = ReceiveInvitation.Response.ConnectionId
 			};
@@ -514,46 +410,7 @@ public class AndIdCryptApiAvailable
 
 			var message = new IdCryptBankInvitationNotificationV1
 			{
-				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
-				BankPartnerRtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
-				Alias = alias,
-				ConnectionId = ReceiveInvitation.Response.ConnectionId
-			};
-
-			_bankInvitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
-		}
-
-		[Fact]
-		public async Task AndSubscriberIsStopped_WhenStarting_ThenReceiveMessagesWithRtgsGlobalId()
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			await _rtgsSubscriber.StartAsync(_allTestHandlers);
-
-			await _rtgsSubscriber.StopAsync();
-
-			await _rtgsSubscriber.StartAsync(_allTestHandlers);
-
-			var sentRtgsMessage = await _fromRtgsSender.SendAsync("idcrypt.invitation.tobank.v1", ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId);
-
-			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
-
-			using var _ = new AssertionScope();
-
-			_fromRtgsSender.Acknowledgements
-				.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
-														   && acknowledgement.Success);
-
-			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
-
-			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
-				.Requests[ReceiveInvitation.Path].Single().RequestUri!.Query);
-			var alias = receiveInvitationRequestQueryParams["alias"];
-
-			var message = new IdCryptBankInvitationNotificationV1
-			{
-				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId.FromRtgsGlobalId,
-				BankPartnerRtgsGlobalId = ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId.FromRtgsGlobalId,
+				BankPartnerRtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromRtgsGlobalId,
 				Alias = alias,
 				ConnectionId = ReceiveInvitation.Response.ConnectionId
 			};
@@ -586,42 +443,7 @@ public class AndIdCryptApiAvailable
 
 			var message = new IdCryptBankInvitationNotificationV1
 			{
-				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
-				BankPartnerRtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromBankDid,
-				Alias = alias,
-				ConnectionId = ReceiveInvitation.Response.ConnectionId
-			};
-
-			_bankInvitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
-		}
-
-		[Fact]
-		public async Task WhenExceptionEventHandlerThrows_ThenSubsequentMessagesCanBeHandledWithRtgsGlobalId()
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			_fromRtgsSender.SetExpectedAcknowledgementCount(2);
-
-			await _rtgsSubscriber.StartAsync(_allTestHandlers);
-
-			_rtgsSubscriber.OnExceptionOccurred += (_, _) => throw new InvalidOperationException("test");
-
-			await _fromRtgsSender.SendAsync("will-throw", ValidMessages.AtomicLockResponseV1);
-
-			await _fromRtgsSender.SendAsync("idcrypt.invitation.tobank.v1", ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId);
-
-			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
-
-			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
-
-			var receiveInvitationRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
-				.Requests[ReceiveInvitation.Path].Single().RequestUri!.Query);
-			var alias = receiveInvitationRequestQueryParams["alias"];
-
-			var message = new IdCryptBankInvitationNotificationV1
-			{
-				BankPartnerDid = ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId.FromRtgsGlobalId,
-				BankPartnerRtgsGlobalId = ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId.FromRtgsGlobalId,
+				BankPartnerRtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromRtgsGlobalId,
 				Alias = alias,
 				ConnectionId = ReceiveInvitation.Response.ConnectionId
 			};
@@ -677,9 +499,6 @@ public class AndIdCryptApiAvailable
 
 			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitationconfirmation.v1");
 			receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
-
-			receivedMessage.Headers.Should().ContainSingle(header => header.Key == "bankpartnerdid"
-																	 && header.Value == "RTGS:GB239104GB");
 
 			receivedMessage.Headers.Should().ContainSingle(header => header.Key == "bank-partner-rtgs-global-id"
 																	 && header.Value == "RTGS:GB239104GB");
@@ -801,42 +620,7 @@ public class AndIdCryptApiAvailable
 
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-			var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
-
-			var expectedLogs = new List<LogEntry>
-			{
-				new($"Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {bankDid}", LogEventLevel.Debug),
-				new($"Sent ReceiveAcceptInvitation request to ID Crypt for invitation from bank {bankDid}", LogEventLevel.Debug),
-				new($"Polling for connection state for invitation from bank {bankDid}", LogEventLevel.Debug),
-				new($"Sending GetConnection request to ID Crypt", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt", LogEventLevel.Debug),
-				new($"Sending GetConnection request to ID Crypt", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt", LogEventLevel.Debug),
-				new($"Finished polling for connection state for invitation from bank {bankDid}", LogEventLevel.Debug),
-				new("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new($"Sending ID Crypt invitation confirmation to bank {bankDid}", LogEventLevel.Debug),
-				new($"Sent ID Crypt invitation confirmation to bank {bankDid}", LogEventLevel.Debug)
-			};
-
-			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
-			debugLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
-		}
-
-		[Fact]
-		public async Task WhenCallingIdCryptAgent_ThenLogWithRtgsGlobalId()
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			await _rtgsSubscriber.StartAsync(_allTestHandlers);
-
-			await _fromRtgsSender.SendAsync("idcrypt.invitation.tobank.v1", ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId);
-
-			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
-
-			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
-
-			var rtgsGlobalId = ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId.FromRtgsGlobalId;
+			var rtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromRtgsGlobalId;
 
 			var expectedLogs = new List<LogEntry>
 			{
@@ -878,9 +662,6 @@ public class AndIdCryptApiAvailable
 
 			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitationconfirmation.v1");
 			receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
-
-			receivedMessage.Headers.Should().ContainSingle(header => header.Key == "bankpartnerdid"
-																	 && header.Value == "RTGS:GB239104GB");
 
 			receivedMessage.Headers.Should().ContainSingle(header => header.Key == "bank-partner-rtgs-global-id"
 																	 && header.Value == "RTGS:GB239104GB");
@@ -993,7 +774,7 @@ public class AndIdCryptApiAvailable
 		}
 
 		[Fact]
-		public async Task ThenExceptionIsThrownAndNoMessageSent()
+		public async Task ThenExceptionIsThrownAndNoMessageSentWithRtgsGlobalId()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
@@ -1005,54 +786,7 @@ public class AndIdCryptApiAvailable
 
 			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-			var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
-
-			var expectedLogs = new List<LogEntry>
-			{
-				new($"Sending ReceiveAcceptInvitation request to ID Crypt for invitation from bank {bankDid}", LogEventLevel.Debug),
-				new($"Sent ReceiveAcceptInvitation request to ID Crypt for invitation from bank {bankDid}", LogEventLevel.Debug),
-				new($"Polling for connection state for invitation from bank {bankDid}", LogEventLevel.Debug),
-				new($"Sending GetConnection request to ID Crypt", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt", LogEventLevel.Debug),
-				new($"Sending GetConnection request to ID Crypt", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt", LogEventLevel.Debug),
-				new($"Sending GetConnection request to ID Crypt", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt", LogEventLevel.Debug),
-				new($"Sending GetConnection request to ID Crypt", LogEventLevel.Debug),
-				new($"Sent GetConnection request to ID Crypt", LogEventLevel.Debug)
-			};
-
-			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
-			debugLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
-
-			var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Error);
-			errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-				$"Error occurred when polling for connection state for invitation from bank {bankDid}",
-				LogEventLevel.Error,
-				typeof(RtgsSubscriberException)));
-
-			_idCryptMessageHandler.Requests.Should().NotContainKey(GetPublicDid.Path);
-
-			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-			receiver.Connections.Should().BeEmpty();
-
-			_bankInvitationNotificationHandler.ReceivedMessage.Should().BeNull();
-		}
-
-		[Fact]
-		public async Task ThenExceptionIsThrownAndNoMessageSentWithRtgsGlobalId()
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			await _rtgsSubscriber.StartAsync(_allTestHandlers);
-
-			await _fromRtgsSender.SendAsync("idcrypt.invitation.tobank.v1", ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId);
-
-			_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
-
-			_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
-
-			var rtgsGlobalId = ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId.FromRtgsGlobalId;
+			var rtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromRtgsGlobalId;
 
 			var expectedLogs = new List<LogEntry>
 			{

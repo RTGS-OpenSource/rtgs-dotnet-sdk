@@ -102,33 +102,7 @@ public class AndNonSuccessResultWhenPublishing : IDisposable, IClassFixture<Grpc
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
-
-		using var _ = new AssertionScope();
-
-		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
-		debugLogs.Select(log => log.Message)
-			.Should().ContainSingle(msg => msg == $"Sending ID Crypt invitation confirmation to bank {bankDid}");
-
-		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Error);
-
-		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			$"Error occurred when sending ID Crypt invitation confirmation to bank {bankDid}",
-			LogEventLevel.Error));
-	}
-
-	[Fact]
-	public async Task ThenLogWithRtgsGlobalId()
-	{
-		await _rtgsSubscriber.StartAsync(_allTestHandlers);
-
-		await _fromRtgsSender.SendAsync(
-			"idcrypt.invitation.tobank.v1",
-			ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId);
-
-		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
-
-		var rtgsGlobalId = ValidMessages.IdCryptBankInvitationV1WithRtgsGlobalId.FromRtgsGlobalId;
+		var rtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromRtgsGlobalId;
 
 		using var _ = new AssertionScope();
 

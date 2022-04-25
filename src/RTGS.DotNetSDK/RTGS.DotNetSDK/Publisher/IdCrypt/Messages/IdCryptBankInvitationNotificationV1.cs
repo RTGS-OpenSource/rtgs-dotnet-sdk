@@ -6,11 +6,6 @@
 public record IdCryptBankInvitationNotificationV1
 {
 	/// <summary>
-	/// The RTGS ID of the invited bank partner.
-	/// </summary>
-	public string BankPartnerDid { get; init; }
-
-	/// <summary>
 	/// The RTGS.global Id of the invited bank partner.
 	/// </summary>
 	public string BankPartnerRtgsGlobalId { get; init; }

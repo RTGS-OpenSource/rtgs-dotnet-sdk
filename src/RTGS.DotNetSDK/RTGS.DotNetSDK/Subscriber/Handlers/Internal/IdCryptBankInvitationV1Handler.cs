@@ -41,9 +41,9 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 				$"Ensure {nameof(SetUserHandler)}() has been called first.");
 		}
 
-		var connection = await AcceptInviteAsync(bankInvitation.Invitation, bankInvitation.FromRtgsGlobalId ?? bankInvitation.FromBankDid);
+		var connection = await AcceptInviteAsync(bankInvitation.Invitation, bankInvitation.FromRtgsGlobalId);
 
-		_ = WaitForActiveConnectionAndSendConfirmation(connection.ConnectionId, bankInvitation.FromRtgsGlobalId ?? bankInvitation.FromBankDid);
+		_ = WaitForActiveConnectionAndSendConfirmation(connection.ConnectionId, bankInvitation.FromRtgsGlobalId);
 	}
 
 	private async Task<ConnectionResponse> AcceptInviteAsync(IdCryptInvitationV1 invitation, string fromRtgsGlobalId)
@@ -230,7 +230,6 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 	{
 		var invitationNotification = new IdCryptBankInvitationNotificationV1
 		{
-			BankPartnerDid = fromRtgsGlobalId,
 			BankPartnerRtgsGlobalId = fromRtgsGlobalId,
 			Alias = connection.Alias,
 			ConnectionId = connection.ConnectionId

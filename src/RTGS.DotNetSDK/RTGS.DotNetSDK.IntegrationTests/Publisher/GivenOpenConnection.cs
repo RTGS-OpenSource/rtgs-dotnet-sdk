@@ -9,7 +9,6 @@ public class GivenOpenConnection
 {
 	public class AndShortTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
 	{
-		private const string BankPartnerRtgsGlobalId = "bank-partner-rtgs-global-id";
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 		private readonly GrpcServerFixture _grpcServer;
@@ -101,7 +100,7 @@ public class GivenOpenConnection
 
 					sendRequestsSignal.Wait();
 
-					await _rtgsPublisher.SendAtomicLockRequestAsync(request, BankPartnerRtgsGlobalId);
+					await _rtgsPublisher.SendAtomicLockRequestAsync(request);
 				})).ToArray();
 
 			sendRequestsSignal.Set();
@@ -219,22 +218,6 @@ public class GivenOpenConnection
 				.Should()
 				.ThrowAsync<ArgumentNullException>()
 				.WithMessage("Value cannot be null. (Parameter 'message')");
-
-		[Theory]
-		[ClassData(typeof(PublisherActionData))]
-		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader<TRequest>(PublisherAction<TRequest> publisherAction)
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
-
-			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-
-			var connection = receiver.Connections.SingleOrDefault();
-
-			connection.Should().NotBeNull();
-			connection!.Headers.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == TestData.ValidMessages.RtgsGlobalId);
-		}
 
 		[Theory]
 		[ClassData(typeof(PublisherActionData))]

@@ -113,7 +113,7 @@ public class AndFailedPublisherConnection : IDisposable, IClassFixture<GrpcServe
 			new ($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 			new ("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 			new ("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-			new ($"Sending Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}", LogEventLevel.Debug),
+			new ($"Sending Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId}", LogEventLevel.Debug),
 		};
 
 		using var _ = new AssertionScope();
@@ -125,44 +125,6 @@ public class AndFailedPublisherConnection : IDisposable, IClassFixture<GrpcServe
 		_serilogContext
 			.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Error)
 			.Should().ContainSingle()
-			.Which.Message.Should().Be($"Exception occurred when sending IdCrypt Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}");
-	}
-
-	[Fact]
-	public async Task ThenLogWithRtgsGlobalId()
-	{
-		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-
-		receiver.ThrowOnConnection = true;
-
-		await _rtgsSubscriber.StartAsync(_allTestHandlers);
-
-		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId);
-
-		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
-
-		var inviteRequestQueryParams = QueryHelpers.ParseQuery(
-			_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
-		var alias = inviteRequestQueryParams["alias"];
-
-		var expectedDebugLogs = new List<LogEntry>
-		{
-			new ($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-			new ($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-			new ("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-			new ("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-			new ($"Sending Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId.BankPartnerRtgsGlobalId}", LogEventLevel.Debug),
-		};
-
-		using var _ = new AssertionScope();
-
-		_serilogContext
-			.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Debug)
-			.Should().BeEquivalentTo(expectedDebugLogs, options => options.WithStrictOrdering());
-
-		_serilogContext
-			.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Error)
-			.Should().ContainSingle()
-			.Which.Message.Should().Be($"Exception occurred when sending IdCrypt Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1WithRtgsGlobalId.BankPartnerRtgsGlobalId}");
+			.Which.Message.Should().Be($"Exception occurred when sending IdCrypt Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId}");
 	}
 }
