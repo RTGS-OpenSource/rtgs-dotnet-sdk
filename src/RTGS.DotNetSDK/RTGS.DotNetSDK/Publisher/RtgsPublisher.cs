@@ -14,7 +14,7 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 		_internalPublisher = internalPublisher;
 	}
 
-	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, CancellationToken cancellationToken) => 
+	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, CancellationToken cancellationToken) =>
 		_internalPublisher.SendMessageAsync(message, "payment.lock.v2", cancellationToken);
 
 	public Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequestV1 message, CancellationToken cancellationToken) =>
