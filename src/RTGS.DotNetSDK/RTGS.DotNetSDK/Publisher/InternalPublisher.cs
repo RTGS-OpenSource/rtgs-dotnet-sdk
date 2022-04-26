@@ -90,18 +90,22 @@ internal class InternalPublisher : IInternalPublisher
 		string idCryptAlias,
 		CancellationToken cancellationToken)
 	{
+		var signingHeaders = new Dictionary<string, string>();
+
+		if (!_options.UseMessageSigning)
+		{
+			return signingHeaders;
+		}
+
 		var messageSignerType = typeof(ISignMessage<TMessageType>);
 
 		var messageSigner = _serviceProvider
 			.GetService(messageSignerType) as ISignMessage<TMessageType>;
 
-		var signingHeaders = new Dictionary<string, string>();
 		var messageType = message.GetType().Name;
 
 		if (messageSigner is null)
 		{
-			_logger.LogDebug("No message signer found for {MessageType} message, skipping signing", messageType);
-
 			return signingHeaders;
 		}
 
