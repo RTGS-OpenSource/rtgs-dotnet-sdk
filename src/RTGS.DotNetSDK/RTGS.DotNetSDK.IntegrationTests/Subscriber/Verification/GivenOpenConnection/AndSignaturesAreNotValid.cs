@@ -42,7 +42,7 @@ public class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFix
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-					TestData.ValidMessages.BankDid,
+					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("http://id-crypt-cloud-agent-api.com"),
 					"id-crypt-api-key",
@@ -125,7 +125,7 @@ public class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFix
 		using var exceptionSignal = new ManualResetEventSlim();
 
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
-		_rtgsSubscriber.OnExceptionOccurred += (_, args) => exceptionSignal.Set();
+		_rtgsSubscriber.OnExceptionOccurred += (_, _) => exceptionSignal.Set();
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 

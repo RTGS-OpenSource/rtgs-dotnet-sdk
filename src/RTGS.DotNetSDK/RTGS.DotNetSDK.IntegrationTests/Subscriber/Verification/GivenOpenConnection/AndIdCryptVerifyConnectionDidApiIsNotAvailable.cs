@@ -36,7 +36,7 @@ public class AndIdCryptVerifyConnectionDidApiIsNotAvailable : IDisposable, IClas
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-					TestData.ValidMessages.BankDid,
+					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("http://id-crypt-cloud-agent-api.com"),
 					"id-crypt-api-key",
@@ -90,6 +90,6 @@ public class AndIdCryptVerifyConnectionDidApiIsNotAvailable : IDisposable, IClas
 
 		await _rtgsSubscriber.StopAsync();
 
-		raisedException.Should().BeOfType<IdCryptException>().Which.Message.Should().Be($"Error verifying private signature");
+		raisedException.Should().BeOfType<IdCryptException>().Which.Message.Should().Be("Error verifying private signature");
 	}
 }

@@ -36,7 +36,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-					TestData.ValidMessages.BankDid,
+					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("http://id-crypt-cloud-agent-api.com"),
 					"id-crypt-api-key",
@@ -74,7 +74,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
-		var signingHeaders = new Dictionary<string, string>()
+		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "alias", "alias" }
 		};
@@ -94,11 +94,11 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenAliasHeaderMissing_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndAliasHeaderMissing_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
-		var signingHeaders = new Dictionary<string, string>()
+		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" }
 		};
@@ -118,14 +118,14 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenAliasHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndAliasHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		Exception raisedException = null;
 
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
 
-		var signingHeaders = new Dictionary<string, string>()
+		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" }
 		};
@@ -141,14 +141,14 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenPrivateSignatureHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndPrivateSignatureHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		Exception raisedException = null;
 
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
 
-		var signingHeaders = new Dictionary<string, string>()
+		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "alias", "alias" }
 		};
@@ -164,11 +164,11 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenPrivateDidHeaderEmpty_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndPrivateDidHeaderEmpty_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
-		var signingHeaders = new Dictionary<string, string>()
+		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", string.Empty },
 			{ "alias", "alias" }
@@ -189,11 +189,11 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenAliasHeaderEmpty_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndAliasHeaderEmpty_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
-		var signingHeaders = new Dictionary<string, string>()
+		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
 			{ "alias", string.Empty }
@@ -214,14 +214,14 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenPrivateSignatureHeaderEmpty_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndPrivateSignatureHeaderEmpty_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		Exception raisedException = null;
 
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
 
-		var signingHeaders = new Dictionary<string, string>()
+		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", string.Empty },
 			{ "alias", "alias" }
@@ -238,14 +238,14 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenAliasHeaderEmpty_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndAliasHeaderEmpty_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		Exception raisedException = null;
 
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
 
-		var signingHeaders = new Dictionary<string, string>()
+		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
 			{ "alias", string.Empty }

@@ -404,7 +404,7 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 
 		await _fromRtgsSender.SendAsync("MessageRejected", TestData.ValidMessages.MessageRejected);
 
-		var signingHeaders = new Dictionary<string, string>()
+		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "public-did-signature", "public-did-signature" },
 			{ "pairwise-did-signature", "pairwise-did-signature" },

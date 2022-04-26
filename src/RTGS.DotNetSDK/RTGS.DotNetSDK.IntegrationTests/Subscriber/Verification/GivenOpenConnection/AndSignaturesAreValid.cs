@@ -43,7 +43,7 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-					TestData.ValidMessages.BankDid,
+					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("http://id-crypt-cloud-agent-api.com"),
 					"id-crypt-api-key",
@@ -157,11 +157,11 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 		await _rtgsSubscriber.StopAsync();
 
 		var requestContent = await _idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
-			.Single().Content.ReadAsStringAsync();
+			.Single().Content!.ReadAsStringAsync();
 
 		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest<TRequest>>(requestContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-		signDocumentRequest.ConnectionId.Should().Be(GetActiveConnectionWithAlias.ExpectedResponse.ConnectionId);
+		signDocumentRequest!.ConnectionId.Should().Be(GetActiveConnectionWithAlias.ExpectedResponse.ConnectionId);
 	}
 
 	[Theory]
@@ -179,13 +179,13 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 		await _rtgsSubscriber.StopAsync();
 
 		var requestContent = await _idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
-			.Single().Content.ReadAsStringAsync();
+			.Single().Content!.ReadAsStringAsync();
 
 		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest<TRequest>>(requestContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
 		var expectedPrivateSignature = subscriberAction.AdditionalHeaders["pairwise-did-signature"];
 
-		signDocumentRequest.Signature.Should().Be(expectedPrivateSignature);
+		signDocumentRequest!.Signature.Should().Be(expectedPrivateSignature);
 	}
 
 	[Theory]
@@ -203,11 +203,11 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 		await _rtgsSubscriber.StopAsync();
 
 		var requestContent = await _idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
-			.Single().Content.ReadAsStringAsync();
+			.Single().Content!.ReadAsStringAsync();
 
 		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest<TRequest>>(requestContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-		signDocumentRequest.Document.Should().BeEquivalentTo(subscriberAction.Message);
+		signDocumentRequest!.Document.Should().BeEquivalentTo(subscriberAction.Message);
 	}
 
 	private record VerifyPrivateSignatureRequest<TDocument>

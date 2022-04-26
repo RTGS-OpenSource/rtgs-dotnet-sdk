@@ -6,7 +6,5 @@ internal interface IVerifyMessage
 {
 	string MessageIdentifier { get; }
 
-	Task VerifyMessageAsync(
-		RtgsMessage rtgsMessage,
-		CancellationToken cancellationToken = default);
+	Task VerifyMessageAsync(RtgsMessage rtgsMessage, CancellationToken cancellationToken = default);
 }
