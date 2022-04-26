@@ -96,7 +96,7 @@ internal class InternalPublisher : IInternalPublisher
 		{
 			return signingHeaders;
 		}
-		
+
 		var messageSignerType = typeof(ISignMessage<TMessageType>);
 
 		var messageSigner = _serviceProvider
