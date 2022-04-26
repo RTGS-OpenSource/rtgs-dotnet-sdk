@@ -15,6 +15,7 @@ public record RtgsSdkOptions
 		IdCryptApiAddress = builder.IdCryptApiAddress;
 		IdCryptApiKey = builder.IdCryptApiKey;
 		IdCryptServiceEndpointAddress = builder.IdCryptServiceEndpointAddress;
+		UseMessageSigning = builder.UseMessageSigningValue;
 	}
 
 	/// <summary>
@@ -57,6 +58,11 @@ public record RtgsSdkOptions
 	/// Address of the ID Crypt Cloud Agent Service Endpoint.
 	/// </summary>
 	public Uri IdCryptServiceEndpointAddress { get; }
+
+	/// <summary>
+	/// Whether to use the message signing functionality (preview).
+	/// </summary>
+	public bool UseMessageSigning { get; }
 
 	/// <summary>
 	/// A builder for <see cref="RtgsSdkOptions"/>.
@@ -105,6 +111,7 @@ public record RtgsSdkOptions
 		internal Uri IdCryptApiAddress { get; }
 		internal string IdCryptApiKey { get; }
 		internal Uri IdCryptServiceEndpointAddress { get; }
+		internal bool UseMessageSigningValue { get; private set; }
 
 		/// <summary>
 		/// Creates a new instance of <see cref="Builder"/>.
@@ -164,6 +171,16 @@ public record RtgsSdkOptions
 			ThrowIfLessThanOneSecond(duration);
 
 			KeepAlivePingTimeoutValue = duration;
+			return this;
+		}
+
+		/// <summary>
+		/// Enables message signing (preview).
+		/// </summary>
+		/// <returns><see cref="Builder"/></returns>
+		public Builder EnableMessageSigning()
+		{
+			UseMessageSigningValue = true;
 			return this;
 		}
 
