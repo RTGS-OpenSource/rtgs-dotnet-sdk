@@ -6,16 +6,12 @@ namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
 
 public static class ValidMessages
 {
-	public const string BankDid = "test-bank-did";
-	public const string BankPartnerDid = "test-bank-partner-did";
+	public const string RtgsGlobalId = "test-bank-rtgs-global-id";
 	public const string IdCryptAlias = "id-crypt-alias";
 
 	public static readonly AtomicLockRequestV1 AtomicLockRequest = new()
 	{
-		DbtrRtgsId = new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
-		{
-			Id = BankDid
-		},
+		BkPrtnrRtgsGlobalId = "RTGS:GB12345GBP",
 		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
 		{
 			Ccy = "GBP",

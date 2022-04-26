@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
-using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Handlers;
@@ -63,7 +62,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-					ValidMessages.BankDid,
+					ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("http://id-crypt-cloud-agent-api.com"),
 					"id-crypt-api-key",
@@ -99,7 +98,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 	}
 
 	[Fact]
-	public async Task WhenMessageReceived_ThenSeeBankDidInRequestHeader()
+	public async Task WhenMessageReceived_ThenSeeRtgsGlobalIdInRequestHeader()
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
@@ -109,7 +108,8 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == ValidMessages.BankDid);
+		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "rtgs-global-id"
+																		&& header.Value == ValidMessages.RtgsGlobalId);
 	}
 
 	[Fact]
@@ -139,7 +139,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		{
 			Alias = alias,
 			ConnectionId = CreateInvitation.Response.ConnectionId,
-			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
+			BankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId
 		};
 
 		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -246,8 +246,8 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 			new($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 			new("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 			new("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-			new ($"Sending Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}", LogEventLevel.Debug),
-			new ($"Sent Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}", LogEventLevel.Debug),
+			new ($"Sending Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId}", LogEventLevel.Debug),
+			new ($"Sent Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId}", LogEventLevel.Debug),
 		};
 
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Debug);
@@ -356,7 +356,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		{
 			Alias = alias,
 			ConnectionId = CreateInvitation.Response.ConnectionId,
-			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
+			BankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId
 		};
 
 		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -395,7 +395,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		{
 			Alias = alias,
 			ConnectionId = CreateInvitation.Response.ConnectionId,
-			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
+			BankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId
 		};
 
 		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -428,7 +428,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		{
 			Alias = alias,
 			ConnectionId = CreateInvitation.Response.ConnectionId,
-			BankPartnerDid = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid
+			BankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId
 		};
 
 		_invitationNotificationHandler.ReceivedMessage.Should().BeEquivalentTo(message);
@@ -482,6 +482,9 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.tobank.v1");
 		receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
+
+		receivedMessage.Headers.Should().ContainSingle(header => header.Key == "bank-partner-rtgs-global-id"
+																 && header.Value == "RTGS:GB177550GB");
 
 		var inviteRequestQueryParams = QueryHelpers.ParseQuery(_idCryptMessageHandler
 			.Requests[CreateInvitation.Path].Single().RequestUri!.Query);

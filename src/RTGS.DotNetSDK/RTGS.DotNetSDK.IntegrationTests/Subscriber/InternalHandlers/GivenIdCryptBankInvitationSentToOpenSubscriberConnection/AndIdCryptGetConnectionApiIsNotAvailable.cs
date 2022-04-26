@@ -45,7 +45,7 @@ public class AndIdCryptGetConnectionApiIsNotAvailable : IDisposable, IClassFixtu
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-					ValidMessages.BankDid,
+					ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("http://id-crypt-cloud-agent-api.com"),
 					"id-crypt-api-key",
@@ -106,7 +106,7 @@ public class AndIdCryptGetConnectionApiIsNotAvailable : IDisposable, IClassFixtu
 	}
 
 	[Fact]
-	public async Task ThenLog()
+	public async Task ThenLogWithRtgsGlobalId()
 	{
 		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
@@ -116,20 +116,19 @@ public class AndIdCryptGetConnectionApiIsNotAvailable : IDisposable, IClassFixtu
 
 		_bankInvitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
-		var connectionId = ReceiveInvitation.Response.ConnectionId;
+		var rtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromRtgsGlobalId;
 
 		var expectedErrorLogs = new List<LogEntry>
 		{
 			new("Error occurred when sending GetConnection request to ID Crypt", LogEventLevel.Error, typeof(RtgsSubscriberException)),
-			new($"Error occured when polling for connection state for invitation from bank {bankDid}", LogEventLevel.Error, typeof(RtgsSubscriberException)),
+			new($"Error occurred when polling for connection state for invitation from bank {rtgsGlobalId}", LogEventLevel.Error, typeof(RtgsSubscriberException)),
 		};
 
 		using var _ = new AssertionScope();
 
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
 		debugLogs.Select(log => log.Message)
-			.Should().ContainSingle(msg => msg == $"Sending GetConnection request to ID Crypt");
+			.Should().ContainSingle(msg => msg == "Sending GetConnection request to ID Crypt");
 
 		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Error);
 		errorLogs.Should().BeEquivalentTo(expectedErrorLogs, options => options.WithStrictOrdering());

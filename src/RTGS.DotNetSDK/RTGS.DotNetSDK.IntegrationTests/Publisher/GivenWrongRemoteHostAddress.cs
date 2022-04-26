@@ -6,7 +6,7 @@ public class GivenWrongRemoteHostAddress
 	public async Task WhenSending_ThenRpcExceptionThrown()
 	{
 		var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-				TestData.ValidMessages.BankDid,
+				TestData.ValidMessages.RtgsGlobalId,
 				new Uri("https://localhost:4567"),
 				new Uri("http://id-crypt-cloud-agent-api.com"),
 				"id-crypt-api-key",
@@ -21,7 +21,7 @@ public class GivenWrongRemoteHostAddress
 
 		var rtgsPublisher = clientHost.Services.GetRequiredService<IRtgsPublisher>();
 
-		await FluentActions.Awaiting(() => rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), "bank-partner-did"))
+		await FluentActions.Awaiting(() => rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1()))
 			.Should().ThrowAsync<RpcException>();
 	}
 }

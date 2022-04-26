@@ -45,7 +45,7 @@ public class AndNonSuccessResultWhenPublishing : IDisposable, IClassFixture<Grpc
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-					ValidMessages.BankDid,
+					ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("http://id-crypt-cloud-agent-api.com"),
 					"id-crypt-api-key",
@@ -102,18 +102,18 @@ public class AndNonSuccessResultWhenPublishing : IDisposable, IClassFixture<Grpc
 
 		_invitationNotificationHandler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		var bankDid = ValidMessages.IdCryptBankInvitationV1.FromBankDid;
+		var rtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromRtgsGlobalId;
 
 		using var _ = new AssertionScope();
 
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
 		debugLogs.Select(log => log.Message)
-			.Should().ContainSingle(msg => msg == $"Sending ID Crypt invitation confirmation to bank {bankDid}");
+			.Should().ContainSingle(msg => msg == $"Sending ID Crypt invitation confirmation to bank {rtgsGlobalId}");
 
 		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Error);
 
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			$"Error occurred when sending ID Crypt invitation confirmation to bank {bankDid}",
+			$"Error occurred when sending ID Crypt invitation confirmation to bank {rtgsGlobalId}",
 			LogEventLevel.Error));
 	}
 }

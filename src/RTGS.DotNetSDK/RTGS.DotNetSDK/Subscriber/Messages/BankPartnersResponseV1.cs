@@ -30,12 +30,12 @@ public record BankPartnersResponseV1
 		public string Nm { get; init; }
 
 		/// <summary>
-		/// RtgsId: RTGS bank id.
+		/// RtgsGlobalId: Bank partner's unique identifier on the RTGS.global network.
 		/// </summary>
 		/// <remarks>
 		/// The <c>GenericFinancialIdentification1</c> type is from NuGet package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
 		/// </remarks>
-		public GenericFinancialIdentification1 RtgsId { get; init; }
+		public GenericFinancialIdentification1 RtgsGlobalId { get; init; }
 
 		/// <summary>
 		/// DebtorAgentAccount: Debtor agent account details.

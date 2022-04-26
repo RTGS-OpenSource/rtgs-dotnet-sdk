@@ -46,7 +46,7 @@ public class AndNonSuccessResultWhenPublishing : IDisposable, IClassFixture<Grpc
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-					ValidMessages.BankDid,
+					ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("http://id-crypt-cloud-agent-api.com"),
 					"id-crypt-api-key",
@@ -108,7 +108,7 @@ public class AndNonSuccessResultWhenPublishing : IDisposable, IClassFixture<Grpc
 			new ($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
 			new ("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
 			new ("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-			new ($"Sending Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}", LogEventLevel.Debug),
+			new ($"Sending Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId}", LogEventLevel.Debug),
 		};
 
 		using var _ = new AssertionScope();
@@ -120,6 +120,6 @@ public class AndNonSuccessResultWhenPublishing : IDisposable, IClassFixture<Grpc
 		_serilogContext
 			.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Error)
 			.Should().ContainSingle()
-			.Which.Message.Should().Be($"Error occurred when sending IdCrypt Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerDid}");
+			.Which.Message.Should().Be($"Error occurred when sending IdCrypt Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId}");
 	}
 }

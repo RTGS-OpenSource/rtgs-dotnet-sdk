@@ -1,14 +1,13 @@
-﻿using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
-using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
+﻿using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Messages;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 
 public static class ValidMessages
 {
-	public const string BankDid = "test-bank-did";
+	internal const string RtgsGlobalId = "test-bank-rtgs-global-id";
 
-	public static readonly ISO20022.Messages.Pacs_008_001.V10.FIToFICustomerCreditTransferV10 PayawayFunds = new()
+	internal static readonly ISO20022.Messages.Pacs_008_001.V10.FIToFICustomerCreditTransferV10 PayawayFunds = new()
 	{
 		GrpHdr = new ISO20022.Messages.Pacs_008_001.V10.GroupHeader96
 		{
@@ -23,7 +22,7 @@ public static class ValidMessages
 		}
 	};
 
-	public static readonly ISO20022.Messages.Camt_054_001.V09.BankToCustomerDebitCreditNotificationV09 PayawayComplete = new()
+	internal static readonly ISO20022.Messages.Camt_054_001.V09.BankToCustomerDebitCreditNotificationV09 PayawayComplete = new()
 	{
 		GrpHdr = new ISO20022.Messages.Camt_054_001.V09.GroupHeader81
 		{
@@ -59,7 +58,7 @@ public static class ValidMessages
 		}
 	};
 
-	public static readonly ISO20022.Messages.Admi_002_001.V01.Admi00200101 MessageRejected = new()
+	internal static readonly ISO20022.Messages.Admi_002_001.V01.Admi00200101 MessageRejected = new()
 	{
 		RltdRef = new ISO20022.Messages.Admi_002_001.V01.MessageReference
 		{
@@ -71,7 +70,7 @@ public static class ValidMessages
 		}
 	};
 
-	public static readonly AtomicLockResponseV1 AtomicLockResponseV1 = new()
+	internal static readonly AtomicLockResponseV1 AtomicLockResponseV1 = new()
 	{
 		LckId = Guid.Parse("9e4d8f43-eb2e-4408-9461-0aba281792af"),
 		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
@@ -81,20 +80,20 @@ public static class ValidMessages
 		}
 	};
 
-	public static readonly AtomicTransferResponseV1 AtomicTransferResponseV1 = new()
+	internal static readonly AtomicTransferResponseV1 AtomicTransferResponseV1 = new()
 	{
 		LckId = Guid.Parse("30fc2ac5-5f4d-4abc-b5b9-038df91b9832"),
 		StsCd = ResponseStatusCodes.Ok,
 		Msg = "the-message"
 	};
 
-	public static readonly AtomicTransferFundsV1 AtomicTransferFundsV1 = new()
+	internal static readonly AtomicTransferFundsV1 AtomicTransferFundsV1 = new()
 	{
 		FIToFICstmrCdtTrf = new ISO20022.Messages.Pacs_008_001.V10.FIToFICustomerCreditTransferV10(),
 		LckId = new Guid("6051b46f-a930-40fd-80ee-a08570900c87")
 	};
 
-	public static readonly EarmarkFundsV1 EarmarkFundsV1 = new()
+	internal static readonly EarmarkFundsV1 EarmarkFundsV1 = new()
 	{
 		Amt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Value = 1 },
 		Acct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
@@ -108,50 +107,46 @@ public static class ValidMessages
 		LckId = new Guid("ff1bee59-92ac-4183-939f-6c67e16f22fb")
 	};
 
-	public static readonly EarmarkCompleteV1 EarmarkCompleteV1 = new()
+	internal static readonly EarmarkCompleteV1 EarmarkCompleteV1 = new()
 	{
 		LckId = new Guid("4584e888-bce6-41de-b100-8ca553ad097c")
 	};
 
-	public static readonly EarmarkReleaseV1 EarmarkReleaseV1 = new()
+	internal static readonly EarmarkReleaseV1 EarmarkReleaseV1 = new()
 	{
 		LckId = new Guid("19968ca5-d019-4019-9849-9f8002a3b06b")
 	};
 
-	public static readonly BankPartnersResponseV1 BankPartnersResponseV1 = new()
+	internal static readonly BankPartnersResponseV1 BankPartnersResponseV1 = new()
 	{
-		DbtrAcct =
-			new ISO20022.Messages.Pacs_008_001.V10.CashAccount40()
-			{
-				Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "iban1" }
-			},
+		DbtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "iban1" }
+		},
 		BkPrtnrs = new List<BankPartnersResponseV1.BankPartner>
 		{
-			new BankPartnersResponseV1.BankPartner
+			new()
 			{
-				RtgsId =
-					new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
-					{
-						Id = "id1"
-					},
+				RtgsGlobalId = new ISO20022.Messages.Pacs_008_001.V10.GenericFinancialIdentification1
+				{
+					Id = "id1"
+				},
 				Ccy = "PLN",
 				Nm = "Bank",
-				CdtrAcct =
-					new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+				CdtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+				{
+					Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
 					{
-						Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
-						{
-							IBAN = "CdtrAcctIban"
-						}
-					},
-				CdtrAgtAcct =
-					new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+						IBAN = "CdtrAcctIban"
+					}
+				},
+				CdtrAgtAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+				{
+					Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
 					{
-						Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
-						{
-							IBAN = "CdtrAgtAcctIban"
-						}
-					},
+						IBAN = "CdtrAgtAcctIban"
+					}
+				},
 				DbtrAgtAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 				{
 					Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
@@ -163,19 +158,19 @@ public static class ValidMessages
 		}
 	};
 
-	public static readonly IdCryptInvitationConfirmationV1 IdCryptInvitationConfirmationV1 = new()
+	internal static readonly IdCryptInvitationConfirmationV1 IdCryptInvitationConfirmationV1 = new()
 	{
 		Alias = new Guid("1d6f914b-3f9d-4cc4-a396-f4ba7154b7ae").ToString()
 	};
 
-	public static readonly IdCryptCreateInvitationRequestV1 IdCryptCreateInvitationRequestV1 = new()
+	internal static readonly IdCryptCreateInvitationRequestV1 IdCryptCreateInvitationRequestV1 = new()
 	{
-		BankPartnerDid = "RTGS:GB177550GB"
+		BankPartnerRtgsGlobalId = "RTGS:GB177550GB"
 	};
 
-	public static readonly IdCryptBankInvitationV1 IdCryptBankInvitationV1 = new()
+	internal static readonly IdCryptBankInvitationV1 IdCryptBankInvitationV1 = new()
 	{
-		FromBankDid = "RTGS:GB239104GB",
+		FromRtgsGlobalId = "RTGS:GB239104GB",
 		Invitation = new IdCryptInvitationV1
 		{
 			Alias = "385ba215-7d4e-4cdc-a7a7-f14955741e70",

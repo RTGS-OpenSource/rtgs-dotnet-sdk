@@ -9,7 +9,6 @@ public class GivenOpenConnection
 {
 	public class AndShortTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
 	{
-		private const string BankPartnerDid = "bank-partner-did";
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 		private readonly GrpcServerFixture _grpcServer;
@@ -45,7 +44,7 @@ public class GivenOpenConnection
 			try
 			{
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-						TestData.ValidMessages.BankDid,
+						TestData.ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
 						new Uri("http://id-crypt-cloud-agent-api.com"),
 						"id-crypt-api-key",
@@ -101,7 +100,7 @@ public class GivenOpenConnection
 
 					sendRequestsSignal.Wait();
 
-					await _rtgsPublisher.SendAtomicLockRequestAsync(request, BankPartnerDid);
+					await _rtgsPublisher.SendAtomicLockRequestAsync(request);
 				})).ToArray();
 
 			sendRequestsSignal.Set();
@@ -222,7 +221,7 @@ public class GivenOpenConnection
 
 		[Theory]
 		[ClassData(typeof(PublisherActionData))]
-		public async Task WhenUsingMetadata_ThenSeeBankDidInRequestHeader<TRequest>(PublisherAction<TRequest> publisherAction)
+		public async Task WhenUsingMetadata_ThenSeeRtgsGlobalIdInRequestHeader<TRequest>(PublisherAction<TRequest> publisherAction)
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
@@ -233,7 +232,8 @@ public class GivenOpenConnection
 			var connection = receiver.Connections.SingleOrDefault();
 
 			connection.Should().NotBeNull();
-			connection!.Headers.Should().ContainSingle(header => header.Key == "bankdid" && header.Value == TestData.ValidMessages.BankDid);
+			connection!.Headers.Should().ContainSingle(header => header.Key == "rtgs-global-id"
+																 && header.Value == TestData.ValidMessages.RtgsGlobalId);
 		}
 
 		[Theory]
@@ -468,7 +468,7 @@ public class GivenOpenConnection
 			try
 			{
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-						TestData.ValidMessages.BankDid,
+						TestData.ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
 						new Uri("http://id-crypt-cloud-agent-api.com"),
 						Guid.NewGuid().ToString(),

@@ -6,9 +6,9 @@
 public record IdCryptCreateInvitationNotificationV1
 {
 	/// <summary>
-	/// The RTGS ID of the invited bank partner.
+	/// The RTGS.global Id of the invited bank partner.
 	/// </summary>
-	public string BankPartnerDid { get; init; }
+	public string BankPartnerRtgsGlobalId { get; init; }
 
 	/// <summary>
 	/// The ConnectionId of the invitation.

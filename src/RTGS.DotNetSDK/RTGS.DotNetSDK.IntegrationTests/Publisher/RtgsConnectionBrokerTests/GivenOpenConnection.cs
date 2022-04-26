@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.WebUtilities;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
-using RTGS.DotNetSDK.IntegrationTests.InternalMessages;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
+using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.RtgsConnectionBrokerTests;
 
@@ -48,7 +48,7 @@ public class GivenOpenConnection
 			try
 			{
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-						TestData.ValidMessages.BankDid,
+						TestData.ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
 						IdCryptApiUri,
 						IdCryptApiKey,
@@ -269,7 +269,7 @@ public class GivenOpenConnection
 			try
 			{
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-						TestData.ValidMessages.BankDid,
+						TestData.ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
 						new Uri("http://id-crypt-cloud-agent-api.com"),
 						"id-crypt-api-key",
@@ -399,7 +399,7 @@ public class GivenOpenConnection
 			try
 			{
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-						TestData.ValidMessages.BankDid,
+						TestData.ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
 						new Uri("http://id-crypt-cloud-agent-api.com"),
 						"id-crypt-api-key",
@@ -535,7 +535,7 @@ public class GivenOpenConnection
 			try
 			{
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-						TestData.ValidMessages.BankDid,
+						TestData.ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
 						new Uri("http://id-crypt-cloud-agent-api.com"),
 						"id-crypt-api-key",
@@ -667,7 +667,7 @@ public class GivenOpenConnection
 		}
 
 		[Fact]
-		public async Task ThenSeeBankDidInRequestHeader()
+		public async Task ThenSeeRtgsGlobalIdInRequestHeader()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
@@ -679,8 +679,8 @@ public class GivenOpenConnection
 
 			connection.Should().NotBeNull();
 			connection!.Headers.Should()
-				.ContainSingle(header => header.Key == "bankdid"
-										 && header.Value == TestData.ValidMessages.BankDid);
+				.ContainSingle(header => header.Key == "rtgs-global-id"
+										 && header.Value == TestData.ValidMessages.RtgsGlobalId);
 		}
 
 		[Fact]
@@ -877,7 +877,7 @@ public class GivenOpenConnection
 			try
 			{
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-						TestData.ValidMessages.BankDid,
+						TestData.ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
 						new Uri("http://id-crypt-cloud-agent-api.com"),
 						"id-crypt-api-key",

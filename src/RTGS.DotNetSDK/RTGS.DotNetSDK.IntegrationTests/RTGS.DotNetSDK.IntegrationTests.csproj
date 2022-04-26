@@ -3,6 +3,11 @@
 		<TargetFramework>net6.0</TargetFramework>
 	</PropertyGroup>
 	<ItemGroup>
+	  <Compile Include="..\RTGS.DotNetSDK\Publisher\IdCrypt\Messages\IdCryptBankInvitationV1.cs" Link="InternalMessages\IdCryptBankInvitationV1.cs" />
+	  <Compile Include="..\RTGS.DotNetSDK\Publisher\IdCrypt\Messages\IdCryptCreateInvitationRequestV1.cs" Link="InternalMessages\IdCryptCreateInvitationRequestV1.cs" />
+	  <Compile Include="..\RTGS.DotNetSDK\Publisher\IdCrypt\Messages\IdCryptInvitationV1.cs" Link="InternalMessages\IdCryptInvitationV1.cs" />
+	</ItemGroup>
+	<ItemGroup>
 		<PackageReference Include="FluentAssertions" Version="6.5.0" />
 		<PackageReference Include="Grpc.AspNetCore" Version="2.42.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.2" />

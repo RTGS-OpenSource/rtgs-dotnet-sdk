@@ -7,7 +7,7 @@ public record RtgsSdkOptions
 {
 	private RtgsSdkOptions(Builder builder)
 	{
-		BankDid = builder.BankDidValue;
+		RtgsGlobalId = builder.RtgsGlobalIdValue;
 		RemoteHostAddress = builder.RemoteHostAddressValue;
 		WaitForAcknowledgementDuration = builder.WaitForAcknowledgementDurationValue;
 		KeepAlivePingDelay = builder.KeepAlivePingDelayValue;
@@ -18,9 +18,9 @@ public record RtgsSdkOptions
 	}
 
 	/// <summary>
-	/// Decentralized identifier of the bank.
+	/// Organisation's unique identifier on the RTGS.global network.
 	/// </summary>
-	public string BankDid { get; }
+	public string RtgsGlobalId { get; }
 
 	/// <summary>
 	/// Address of the RTGS gRPC server.
@@ -64,17 +64,17 @@ public record RtgsSdkOptions
 	public sealed class Builder
 	{
 		private Builder(
-			string bankDid,
+			string rtgsGlobalId,
 			Uri remoteHostAddress,
 			Uri idCryptApiAddress,
 			string idCryptApiKey,
 			Uri idCryptServiceEndpointAddress)
 		{
-			ArgumentNullException.ThrowIfNull(bankDid, nameof(bankDid));
+			ArgumentNullException.ThrowIfNull(rtgsGlobalId, nameof(rtgsGlobalId));
 
-			if (string.IsNullOrWhiteSpace(bankDid))
+			if (string.IsNullOrWhiteSpace(rtgsGlobalId))
 			{
-				throw new ArgumentException("Value cannot be white space.", nameof(bankDid));
+				throw new ArgumentException("Value cannot be white space.", nameof(rtgsGlobalId));
 			}
 
 			ArgumentNullException.ThrowIfNull(remoteHostAddress, nameof(remoteHostAddress));
@@ -90,14 +90,14 @@ public record RtgsSdkOptions
 
 			ArgumentNullException.ThrowIfNull(idCryptServiceEndpointAddress, nameof(idCryptServiceEndpointAddress));
 
-			BankDidValue = bankDid;
+			RtgsGlobalIdValue = rtgsGlobalId;
 			RemoteHostAddressValue = remoteHostAddress;
 			IdCryptApiAddress = idCryptApiAddress;
 			IdCryptApiKey = idCryptApiKey;
 			IdCryptServiceEndpointAddress = idCryptServiceEndpointAddress;
 		}
 
-		internal string BankDidValue { get; }
+		internal string RtgsGlobalIdValue { get; }
 		internal Uri RemoteHostAddressValue { get; }
 		internal TimeSpan WaitForAcknowledgementDurationValue { get; private set; } = TimeSpan.FromSeconds(10);
 		internal TimeSpan KeepAlivePingDelayValue { get; private set; } = TimeSpan.FromSeconds(30);
@@ -109,21 +109,21 @@ public record RtgsSdkOptions
 		/// <summary>
 		/// Creates a new instance of <see cref="Builder"/>.
 		/// </summary>
-		/// <param name="bankDid">Decentralized identifier of the bank.</param>
+		/// <param name="rtgsGlobalId">Organisation's unique identifier on the RTGS.global network.</param>
 		/// <param name="remoteHostAddress">Address of the RTGS gRPC server.</param>
 		/// <param name="idCryptApiAddress">Address of the ID Crypt Cloud Agent API</param>
 		/// <param name="idCryptApiKey">API Key for the ID Crypt Cloud Agent API</param>
 		/// <param name="idCryptServiceEndpointAddress">Address of the ID Crypt Cloud Agent Service Endpoint</param>
 		/// <returns><see cref="Builder"/></returns>
-		/// <exception cref="ArgumentNullException">Thrown if bankDid, remoteHostAddress idCryptApiAddress, idCryptApiKey or idCryptEndpointAddress is null.</exception>
-		/// <exception cref="ArgumentException">Thrown if bankDid or idCryptApiKey is white space.</exception>
+		/// <exception cref="ArgumentNullException">Thrown if rtgsGlobalId, remoteHostAddress idCryptApiAddress, idCryptApiKey or idCryptEndpointAddress is null.</exception>
+		/// <exception cref="ArgumentException">Thrown if rtgsGlobalId or idCryptApiKey is white space.</exception>
 		public static Builder CreateNew(
-			string bankDid,
+			string rtgsGlobalId,
 			Uri remoteHostAddress,
 			Uri idCryptApiAddress,
 			string idCryptApiKey,
 			Uri idCryptServiceEndpointAddress) =>
-			new(bankDid, remoteHostAddress, idCryptApiAddress, idCryptApiKey, idCryptServiceEndpointAddress);
+			new(rtgsGlobalId, remoteHostAddress, idCryptApiAddress, idCryptApiKey, idCryptServiceEndpointAddress);
 
 		/// <summary>
 		/// Specifies the acknowledgement timeout duration.

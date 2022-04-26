@@ -2,7 +2,6 @@
 
 public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServerFixture>
 {
-	private const string BankPartnerDid = "bank-partner-did";
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 	private readonly GrpcServerFixture _grpcServer;
@@ -23,7 +22,7 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-					TestData.ValidMessages.BankDid,
+					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("http://id-crypt-cloud-agent-api.com"),
 					"id-crypt-api-key",
@@ -62,7 +61,7 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 		receiver.ThrowOnConnection = true;
 
 		await FluentActions
-			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid))
+			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1()))
 			.Should()
 			.ThrowAsync<Exception>();
 	}
@@ -75,7 +74,7 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 		receiver.ThrowOnConnection = true;
 
 		await FluentActions
-			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1 { EndToEndId = new string('e', 100_000) }, BankPartnerDid))
+			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1 { EndToEndId = new string('e', 100_000) }))
 			.Should()
 			.ThrowAsync<Exception>();
 	}
@@ -88,7 +87,7 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 		receiver.ThrowOnConnection = true;
 
 		await FluentActions
-			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid))
+			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1()))
 			.Should()
 			.ThrowAsync<Exception>();
 
@@ -96,7 +95,7 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 
 		receiver.ThrowOnConnection = false;
 
-		var result = await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1(), BankPartnerDid);
+		var result = await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
 
 		result.Should().Be(SendResult.Success);
 	}
