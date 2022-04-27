@@ -34,7 +34,6 @@ public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixt
 			.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
 			.Enrich.FromLogContext()
 			.WriteTo.Console()
-			.WriteTo.TestCorrelator()
 			.CreateLogger();
 
 	private void SetupDependencies()

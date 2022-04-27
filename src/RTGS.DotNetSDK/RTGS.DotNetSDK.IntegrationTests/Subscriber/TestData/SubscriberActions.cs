@@ -9,8 +9,15 @@ namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 
 public static class SubscriberActions
 {
+	private static readonly Dictionary<string, string> DefaultSigningHeaders = new()
+	{
+		{ "public-did-signature", "public-did-signature" },
+		{ "pairwise-did-signature", "pairwise-did-signature" },
+		{ "alias", "alias" }
+	};
+
 	public static readonly SubscriberAction<FIToFICustomerCreditTransferV10> PayawayFundsV1 =
-		new(new AllTestHandlers(), handlers => handlers.OfType<TestPayawayFundsV1Handler>().Single(), "PayawayFunds", ValidMessages.PayawayFunds);
+		new(new AllTestHandlers(), handlers => handlers.OfType<TestPayawayFundsV1Handler>().Single(), "PayawayFunds", ValidMessages.PayawayFunds, DefaultSigningHeaders);
 
 	public static readonly SubscriberAction<BankToCustomerDebitCreditNotificationV09> PayawayCompleteV1 =
 		new(new AllTestHandlers(), handlers => handlers.OfType<TestPayawayCompleteV1Handler>().Single(), "PayawayComplete", ValidMessages.PayawayComplete);

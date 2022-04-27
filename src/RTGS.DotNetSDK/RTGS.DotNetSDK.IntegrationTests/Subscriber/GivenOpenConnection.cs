@@ -1,8 +1,11 @@
 using System.Collections.Concurrent;
+using RTGS.DotNetSDK.IntegrationTests.Extensions;
+using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber;
 
-public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixture>
+public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(100);
 	private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
@@ -20,6 +23,8 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 
 		SetupSerilogLogger();
 
+		SetupDependencies();
+
 		_serilogContext = TestCorrelator.CreateContext();
 	}
 
@@ -32,7 +37,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 			.WriteTo.TestCorrelator()
 			.CreateLogger();
 
-	public async Task InitializeAsync()
+	private void SetupDependencies()
 	{
 		try
 		{
@@ -44,9 +49,17 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
 				.Build();
 
+			var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+				.Create()
+				.WithOkResponse(GetActiveConnectionWithAlias.HttpRequestResponseContext)
+				.WithOkResponse(VerifyPrivateSignatureSuccessfully.HttpRequestResponseContext)
+				.Build();
+
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
-				.ConfigureServices((_, services) => services.AddRtgsSubscriber(rtgsSdkOptions))
+				.ConfigureServices((_, services) => services
+					.AddRtgsSubscriber(rtgsSdkOptions)
+					.AddTestIdCryptHttpClient(idCryptMessageHandler))
 				.UseSerilog()
 				.Build();
 
@@ -55,21 +68,17 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		}
 		catch (Exception)
 		{
-			// If an exception occurs then manually clean up as IAsyncLifetime.DisposeAsync is not called.
-			// See https://github.com/xunit/xunit/discussions/2313 for further details.
-			await DisposeAsync();
+			Dispose();
 
 			throw;
 		}
 	}
 
-	public Task DisposeAsync()
+	public void Dispose()
 	{
 		_clientHost?.Dispose();
 
 		_grpcServer.Reset();
-
-		return Task.CompletedTask;
 	}
 
 	[Theory]
@@ -79,6 +88,8 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
@@ -92,7 +103,7 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
-		var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -177,11 +188,13 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionWithLogsData))]
-	public async Task WhenMessageReceived_ThenLogInformation<TMessage>(SubscriberActionWithLogs<TMessage> subscriberAction)
+	public async Task WhenMessageReceived_ThenLogInformation<TMessage>(
+		SubscriberActionWithLogs<TMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message,
+			subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -190,7 +203,8 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		await _rtgsSubscriber.StopAsync();
 
 		var informationLogs = _serilogContext.SubscriberLogs(LogEventLevel.Information);
-		informationLogs.Should().BeEquivalentTo(subscriberAction.SubscriberLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
+		informationLogs.Should().BeEquivalentTo(subscriberAction.SubscriberLogs(LogEventLevel.Information),
+			options => options.WithStrictOrdering());
 	}
 
 	[Fact]
@@ -389,7 +403,14 @@ public class GivenOpenConnection : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 
 		await _fromRtgsSender.SendAsync("MessageRejected", TestData.ValidMessages.MessageRejected);
 
-		await _fromRtgsSender.SendAsync("PayawayFunds", TestData.ValidMessages.PayawayFunds);
+		var signingHeaders = new Dictionary<string, string>
+		{
+			{ "public-did-signature", "public-did-signature" },
+			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "alias", "alias" }
+		};
+
+		await _fromRtgsSender.SendAsync("PayawayFunds", TestData.ValidMessages.PayawayFunds, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
