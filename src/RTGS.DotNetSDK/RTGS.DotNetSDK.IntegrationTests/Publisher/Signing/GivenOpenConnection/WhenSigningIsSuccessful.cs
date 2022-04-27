@@ -157,9 +157,7 @@ public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixt
 		var requestContent = await _idCryptMessageHandler.Requests[SignDocument.Path]
 			.Single().Content.ReadAsStringAsync();
 
-		var signDocumentRequest = JsonSerializer.Deserialize<SignDocumentRequest<TRequest>>(requestContent);
-
-		signDocumentRequest.Document.Should().BeEquivalentTo(publisherAction.Request, options => options.ComparingByMembers<TRequest>());
+		requestContent.Should().BeEquivalentTo(publisherAction.SerialisedSignedDocument);
 	}
 
 	[Theory]
@@ -181,7 +179,8 @@ public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixt
 			{ "alias", TestData.ValidMessages.IdCryptAlias }
 		};
 
-		receivedMessage.Headers.Should().BeEquivalentTo(expectedHeaders);
+		// using contain here because for some messages other headers are sent (e.g. rtgs-global-id)
+		receivedMessage.Headers.Should().Contain(expectedHeaders);
 	}
 
 	private record SignDocumentRequest<TDocument>

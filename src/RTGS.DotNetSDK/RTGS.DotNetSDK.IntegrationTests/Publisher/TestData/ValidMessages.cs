@@ -134,8 +134,17 @@ public static class ValidMessages
 		RltdRef = new MessageReference
 		{
 			Ref = "payaway-id"
+		},
+		Rsn = new RejectionReason2
+		{
+			RsnDesc = "Having a bad day"
 		}
 	};
 
 	public static readonly BankPartnersRequestV1 BankPartnersRequest = new();
+
+	public static class SignedDocuments
+	{
+		public static readonly Dictionary<string, object> PayawayRejectionDocument = new() { { "reason", PayawayRejection.Rsn.RsnDesc } };
+	}
 }

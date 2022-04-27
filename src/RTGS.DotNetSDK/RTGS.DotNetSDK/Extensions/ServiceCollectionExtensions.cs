@@ -11,6 +11,7 @@ using RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
 using RTGS.DotNetSDK.Subscriber.Validators;
 using RTGS.IDCryptSDK;
 using RTGS.IDCryptSDK.Extensions;
+using RTGS.ISO20022.Messages.Admi_002_001.V01;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 using RTGS.Public.Payment.V3;
 
@@ -57,6 +58,7 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
 
 		serviceCollection.AddSingleton<ISignMessage<FIToFICustomerCreditTransferV10>, PayawayCreateMessageSigner>();
+		serviceCollection.AddSingleton<ISignMessage<Admi00200101>, PayawayRejectMessageSigner>();
 
 		serviceCollection.AddIdCryptSdk(new IdCryptSdkConfiguration(
 			options.IdCryptApiAddress,

@@ -78,12 +78,13 @@ public interface IRtgsPublisher
 	/// </summary>
 	/// <param name="message">The <see cref="Admi00200101"/> rejection message</param>
 	/// <param name="toRtgsGlobalId">The RTGS.global Id for the bank to which this rejection should be sent</param>
+	/// <param name="idCryptAlias">The alias of the ID Crypt connection with which to sign this message</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
 	/// <remarks>
 	/// The <see cref="Admi00200101"/> type is from nuget package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
 	/// </remarks>
-	Task<SendResult> SendPayawayRejectionAsync(Admi00200101 message, string toRtgsGlobalId, CancellationToken cancellationToken);
+	Task<SendResult> SendPayawayRejectionAsync(Admi00200101 message, string toRtgsGlobalId, string idCryptAlias, CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Sends a <see cref="BankPartnersRequestV1"/> bank partners request.

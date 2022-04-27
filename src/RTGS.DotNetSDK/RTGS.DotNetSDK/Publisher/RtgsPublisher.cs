@@ -35,10 +35,10 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 	public Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message, CancellationToken cancellationToken) =>
 		_internalPublisher.SendMessageAsync(message, "payaway.confirmation.v1", cancellationToken);
 
-	public Task<SendResult> SendPayawayRejectionAsync(Admi00200101 message, string toRtgsGlobalId, CancellationToken cancellationToken)
+	public Task<SendResult> SendPayawayRejectionAsync(Admi00200101 message, string toRtgsGlobalId, string idCryptAlias, CancellationToken cancellationToken)
 	{
 		var headers = new Dictionary<string, string> { { "to-rtgs-global-id", toRtgsGlobalId } };
-		return _internalPublisher.SendMessageAsync(message, "payaway.rejection.v1", cancellationToken, headers);
+		return _internalPublisher.SendMessageAsync(message, "payaway.rejection.v1", cancellationToken, headers, idCryptAlias);
 	}
 
 	public Task<SendResult> SendBankPartnersRequestAsync(BankPartnersRequestV1 message, CancellationToken cancellationToken) =>

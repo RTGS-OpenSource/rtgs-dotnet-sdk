@@ -28,7 +28,8 @@ public static class PublisherActions
 
 	public static readonly PublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate = new(
 		ValidMessages.PayawayCreate,
-		(publisher, request, cancellationToken) => publisher.SendPayawayCreateAsync(request, "id-crypt-alias", cancellationToken));
+		(publisher, request, cancellationToken) => publisher.SendPayawayCreateAsync(request, "id-crypt-alias", cancellationToken),
+		ValidMessages.PayawayCreate);
 
 	public static readonly PublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation = new(
 		ValidMessages.PayawayConfirmation,
@@ -37,7 +38,9 @@ public static class PublisherActions
 	public static readonly PublisherAction<Admi00200101> PayawayRejection = new(
 		ValidMessages.PayawayRejection,
 		new Dictionary<string, string> { { "to-rtgs-global-id", "RTGS:US67890USD" } },
-		(publisher, request, cancellationToken) => publisher.SendPayawayRejectionAsync(request, "RTGS:US67890USD", cancellationToken));
+		(publisher, request, cancellationToken) =>
+			publisher.SendPayawayRejectionAsync(request, "RTGS:US67890USD", "id-crypt-alias", cancellationToken),
+		ValidMessages.SignedDocuments.PayawayRejectionDocument);
 
 	public static readonly PublisherAction<BankPartnersRequestV1> BankPartnersRequest = new(
 		ValidMessages.BankPartnersRequest,
