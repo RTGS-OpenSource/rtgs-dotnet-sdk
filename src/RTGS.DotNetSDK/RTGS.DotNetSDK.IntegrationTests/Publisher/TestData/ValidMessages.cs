@@ -146,5 +146,6 @@ public static class ValidMessages
 	public static class SignedDocuments
 	{
 		public static readonly Dictionary<string, object> PayawayRejectionDocument = new() { { "reason", PayawayRejection.Rsn.RsnDesc } };
+		public static readonly FIToFICustomerCreditTransferV10 PayawayCreateDocument = PayawayCreate;
 	}
 }
