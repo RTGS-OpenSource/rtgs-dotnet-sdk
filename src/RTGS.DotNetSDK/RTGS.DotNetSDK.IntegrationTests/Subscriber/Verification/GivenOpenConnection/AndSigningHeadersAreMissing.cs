@@ -41,6 +41,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 					new Uri("http://id-crypt-cloud-agent-api.com"),
 					"id-crypt-api-key",
 					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+				.EnableMessageSigning()
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()

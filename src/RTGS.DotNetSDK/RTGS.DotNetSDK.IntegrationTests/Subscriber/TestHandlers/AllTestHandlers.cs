@@ -52,8 +52,11 @@ public class AllTestHandlers : IEnumerable<IHandler>
 			return Task.CompletedTask;
 		}
 
-		public void WaitForMessage(TimeSpan timeout) =>
+		public void WaitForMessage(TimeSpan timeout)
+		{
 			_handleSignal.Wait(timeout);
+			_handleSignal.Reset();
+		}
 
 		public void Reset()
 		{

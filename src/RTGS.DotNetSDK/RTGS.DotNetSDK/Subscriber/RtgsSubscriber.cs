@@ -153,15 +153,20 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 			// The handler should be quick but we cannot guarantee that is the case so do this first.
 			await SendSuccessAcknowledgement(rtgsMessage.CorrelationId);
 
-			try
+			if (_options.UseMessageSigning)
 			{
-				await VerifyMessageSignature(rtgsMessage);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "An error occurred while verifying a message (MessageIdentifier: {MessageIdentifier})", command.MessageIdentifier);
+				try
+				{
+					await VerifyMessageSignature(rtgsMessage);
+				}
+				catch (Exception ex)
+				{
+					_logger.LogError(ex,
+						"An error occurred while verifying a message (MessageIdentifier: {MessageIdentifier})",
+						command.MessageIdentifier);
 
-				RaiseNonFatalExceptionOccurredEvent(ex);
+					RaiseNonFatalExceptionOccurredEvent(ex);
+				}
 			}
 
 			try

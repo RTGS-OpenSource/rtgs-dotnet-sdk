@@ -115,11 +115,7 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 
 		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		await _rtgsSubscriber.StopAsync();
-
 		subscriberAction.Handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
-
-		subscriberAction.Handler.Reset();
 	}
 
 	[Theory]
