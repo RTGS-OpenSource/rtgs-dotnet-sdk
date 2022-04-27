@@ -15,8 +15,6 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
 				new("PayawayFunds message received from RTGS", LogEventLevel.Information),
-				new("Verifying PayawayFunds message", LogEventLevel.Information),
-				new("Verified PayawayFunds message", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -28,7 +26,6 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
 				new("PayawayComplete message received from RTGS", LogEventLevel.Information),
-				new("No message verifier found for PayawayComplete message, skipping verification", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -40,7 +37,6 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
 				new("MessageRejected message received from RTGS", LogEventLevel.Information),
-				new("No message verifier found for MessageRejected message, skipping verification", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -52,7 +48,6 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
 				new("payment.lock.v2 message received from RTGS", LogEventLevel.Information),
-				new("No message verifier found for payment.lock.v2 message, skipping verification", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -64,7 +59,6 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
 				new("payment.block.v2 message received from RTGS", LogEventLevel.Information),
-				new("No message verifier found for payment.block.v2 message, skipping verification", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -76,7 +70,6 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
 				new("payment.blockfunds.v1 message received from RTGS", LogEventLevel.Information),
-				new("No message verifier found for payment.blockfunds.v1 message, skipping verification", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -88,7 +81,6 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
 				new("EarmarkFunds message received from RTGS", LogEventLevel.Information),
-				new("No message verifier found for EarmarkFunds message, skipping verification", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -100,7 +92,6 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
 				new("EarmarkComplete message received from RTGS", LogEventLevel.Information),
-				new("No message verifier found for EarmarkComplete message, skipping verification", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -112,7 +103,6 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
 				new("EarmarkRelease message received from RTGS", LogEventLevel.Information),
-				new("No message verifier found for EarmarkRelease message, skipping verification", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -124,7 +114,6 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
 				new("bank.partners.v1 message received from RTGS", LogEventLevel.Information),
-				new("No message verifier found for bank.partners.v1 message, skipping verification", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -136,7 +125,6 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
 				new("idcrypt.invitationconfirmation.v1 message received from RTGS", LogEventLevel.Information),
-				new("No message verifier found for idcrypt.invitationconfirmation.v1 message, skipping verification", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});

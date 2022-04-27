@@ -15,6 +15,7 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(100);
 
 	private readonly GrpcServerFixture _grpcServer;
+	private readonly ITestCorrelatorContext _serilogContext;
 	private StatusCodeHttpHandler _idCryptMessageHandler;
 	private IHost _clientHost;
 	private FromRtgsSender _fromRtgsSender;
@@ -27,6 +28,8 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 		SetupSerilogLogger();
 
 		SetupDependencies();
+
+		_serilogContext = TestCorrelator.CreateContext();
 	}
 
 	private static void SetupSerilogLogger() =>
@@ -209,6 +212,24 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest<TRequest>>(requestContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
 		signDocumentRequest!.Document.Should().BeEquivalentTo(subscriberAction.Message);
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesWithLogsData))]
+	public async Task WhenMessageReceived_ThenLogInformation<TMessage>(SubscriberActionWithLogs<TMessage> subscriberAction)
+	{
+		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		var informationLogs = _serilogContext.SubscriberLogs(LogEventLevel.Information);
+		informationLogs.Should().BeEquivalentTo(subscriberAction.SubscriberLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
 	}
 
 	private record VerifyPrivateSignatureRequest<TDocument>

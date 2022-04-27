@@ -322,7 +322,6 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		{
 			new("RTGS Subscriber started", LogEventLevel.Information),
 			new("idcrypt.createinvitation.v1 message received from RTGS", LogEventLevel.Information),
-			new("No message verifier found for idcrypt.createinvitation.v1 message, skipping verification", LogEventLevel.Information),
 			new("RTGS Subscriber stopping", LogEventLevel.Information),
 			new("RTGS Subscriber stopped", LogEventLevel.Information)
 		};

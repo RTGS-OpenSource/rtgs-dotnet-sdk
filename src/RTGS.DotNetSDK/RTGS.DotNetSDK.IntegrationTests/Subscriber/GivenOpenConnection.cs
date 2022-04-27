@@ -188,11 +188,13 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionWithLogsData))]
-	public async Task WhenMessageReceived_ThenLogInformation<TMessage>(SubscriberActionWithLogs<TMessage> subscriberAction)
+	public async Task WhenMessageReceived_ThenLogInformation<TMessage>(
+		SubscriberActionWithLogs<TMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message,
+			subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -201,7 +203,8 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 		await _rtgsSubscriber.StopAsync();
 
 		var informationLogs = _serilogContext.SubscriberLogs(LogEventLevel.Information);
-		informationLogs.Should().BeEquivalentTo(subscriberAction.SubscriberLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
+		informationLogs.Should().BeEquivalentTo(subscriberAction.SubscriberLogs(LogEventLevel.Information),
+			options => options.WithStrictOrdering());
 	}
 
 	[Fact]

@@ -192,8 +192,6 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 	{
 		if (!_messageVerifiers.TryGetValue(rtgsMessage.MessageIdentifier, out var messageVerifier))
 		{
-			_logger.LogInformation("No message verifier found for {MessageIdentifier} message, skipping verification", rtgsMessage.MessageIdentifier);
-
 			return;
 		}
 
