@@ -16,7 +16,7 @@ internal class PayawayRejectMessageSigner : ISignMessage<Admi00200101>
 	public async Task<SignDocumentResponse> SignAsync(
 		Admi00200101 message,
 		string alias,
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(message);
 
