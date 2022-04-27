@@ -90,7 +90,6 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 
 			throw exception;
 		}
-
 	}
 
 	private async Task<string> GetIdCryptAgentPublicDidAsync()

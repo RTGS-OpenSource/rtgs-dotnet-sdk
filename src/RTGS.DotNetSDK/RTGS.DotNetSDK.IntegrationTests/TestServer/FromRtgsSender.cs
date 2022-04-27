@@ -34,7 +34,7 @@ public class FromRtgsSender
 	public bool WaitForConnection() =>
 		_readyToSend.Wait(WaitForReadyToSendDuration);
 
-	public async Task<RtgsMessage> SendAsync<T>(string messageIdentifier, T data, Action<RtgsMessage> customiseRtgsMessage = null)
+	public async Task<RtgsMessage> SendAsync<T>(string messageIdentifier, T data, Dictionary<string, string> additionalHeaders = null, Action<RtgsMessage> customiseRtgsMessage = null)
 	{
 		var messageStreamSet = WaitForConnection();
 		if (!messageStreamSet)
@@ -55,6 +55,11 @@ public class FromRtgsSender
 			MessageIdentifier = messageIdentifier,
 			Data = JsonSerializer.Serialize(data)
 		};
+
+		if (additionalHeaders is not null && additionalHeaders.Any())
+		{
+			rtgsMessage.Headers.Add(additionalHeaders);
+		}
 
 		if (customiseRtgsMessage is not null)
 		{
