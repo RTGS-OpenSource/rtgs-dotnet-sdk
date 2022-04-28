@@ -36,7 +36,8 @@ public static class PublisherActionsWithNullMessages
 
 	public static readonly PublisherAction<Admi00200101> PayawayRejection = new(
 		null,
-		(publisher, request, cancellationToken) => publisher.SendPayawayRejectionAsync(request, null, cancellationToken));
+		(publisher, request, cancellationToken) =>
+			publisher.SendPayawayRejectionAsync(request, null, "id-crypt-alias", cancellationToken));
 
 	public static readonly PublisherAction<BankPartnersRequestV1> BankPartnersRequest = new(
 		null,
