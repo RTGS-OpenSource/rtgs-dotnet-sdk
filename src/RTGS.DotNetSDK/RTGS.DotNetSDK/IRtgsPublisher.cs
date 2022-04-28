@@ -66,12 +66,13 @@ public interface IRtgsPublisher
 	/// Sends a <see cref="BankToCustomerDebitCreditNotificationV09"/> (payaway) confirmation request.
 	/// </summary>
 	/// <param name="message">The <see cref="BankToCustomerDebitCreditNotificationV09"/>  message</param>
+	/// <param name="idCryptAlias">The alias of the ID Crypt connection with which to sign this message</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
 	/// <remarks>
 	/// The <see cref="BankToCustomerDebitCreditNotificationV09"/> type is from nuget package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
 	/// </remarks>
-	Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message, CancellationToken cancellationToken = default);
+	Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message, string idCryptAlias, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Sends a <see cref="Admi00200101"/> (payaway) rejection request.

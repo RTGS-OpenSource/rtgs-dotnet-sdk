@@ -116,15 +116,14 @@ public static class ValidMessages
 
 	public static readonly BankToCustomerDebitCreditNotificationV09 PayawayConfirmation = new()
 	{
-		GrpHdr = new GroupHeader81
-		{
-			MsgId = "message-id"
-		},
+		GrpHdr = new GroupHeader81 { MsgId = "message-id" },
 		Ntfctn = new[]
 		{
 			new AccountNotification19
 			{
-				AddtlNtfctnInf = "additional-notification-info"
+				AddtlNtfctnInf = "additional-notification-info",
+				Acct = new() { Id = new() { IBAN = "iban" } },
+				Ntry = new[] { new ReportEntry11 { Amt = new() { Value = 9.99m } } }
 			}
 		}
 	};
@@ -146,6 +145,11 @@ public static class ValidMessages
 	public static class SignedDocuments
 	{
 		public static readonly Dictionary<string, object> PayawayRejectionDocument = new() { { "reason", PayawayRejection.Rsn.RsnDesc } };
+		public static readonly Dictionary<string, object> PayawayConfirmationDocument = new()
+		{
+			{ "iban", PayawayConfirmation.Ntfctn[0].Acct.Id.IBAN },
+			{ "amount", PayawayConfirmation.Ntfctn[0].Ntry[0].Amt.Value }
+		};
 		public static readonly FIToFICustomerCreditTransferV10 PayawayCreateDocument = PayawayCreate;
 	}
 }
