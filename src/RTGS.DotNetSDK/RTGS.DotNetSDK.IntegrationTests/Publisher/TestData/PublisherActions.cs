@@ -33,7 +33,8 @@ public static class PublisherActions
 
 	public static readonly PublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation = new(
 		ValidMessages.PayawayConfirmation,
-		(publisher, request, cancellationToken) => publisher.SendPayawayConfirmationAsync(request, cancellationToken));
+		(publisher, request, cancellationToken) => publisher.SendPayawayConfirmationAsync(request, "id-crypt-alias", cancellationToken),
+		ValidMessages.SignedDocuments.PayawayConfirmationDocument);
 
 	public static readonly PublisherAction<Admi00200101> PayawayRejection = new(
 		ValidMessages.PayawayRejection,

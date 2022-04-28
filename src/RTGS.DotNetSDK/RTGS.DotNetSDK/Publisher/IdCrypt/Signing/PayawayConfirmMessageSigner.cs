@@ -1,26 +1,30 @@
 ﻿using RTGS.IDCryptSDK.JsonSignatures;
 using RTGS.IDCryptSDK.JsonSignatures.Models;
-using RTGS.ISO20022.Messages.Admi_002_001.V01;
+using RTGS.ISO20022.Messages.Camt_054_001.V09;
 
 namespace RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 
-internal class PayawayRejectMessageSigner : ISignMessage<Admi00200101>
+internal class PayawayConfirmMessageSigner : ISignMessage<BankToCustomerDebitCreditNotificationV09>
 {
 	private readonly IJsonSignaturesClient _client;
 
-	public PayawayRejectMessageSigner(IJsonSignaturesClient client)
+	public PayawayConfirmMessageSigner(IJsonSignaturesClient client)
 	{
 		_client = client;
 	}
 
 	public async Task<SignDocumentResponse> SignAsync(
-		Admi00200101 message,
+		BankToCustomerDebitCreditNotificationV09 message,
 		string alias,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(message);
 
-		var documentToSign = new Dictionary<string, object> { { "reason", message.Rsn?.RsnDesc } };
+		var documentToSign = new Dictionary<string, object>
+		{
+			{ "iban", message.Ntfctn[0]?.Acct?.Id?.IBAN },
+			{ "amount", message.Ntfctn[0]?.Ntry[0]?.Amt?.Value }
+		};
 
 		var response = await _client.SignDocumentAsync(documentToSign, alias, cancellationToken);
 
