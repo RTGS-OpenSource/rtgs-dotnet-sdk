@@ -82,7 +82,7 @@ public class AndIdCryptVerifyConnectionDidApiIsNotAvailable : IDisposable, IClas
 	{
 		Exception raisedException = null;
 
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);

@@ -2,7 +2,6 @@
 
 public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServerFixture>
 {
-	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(500);
 	private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
 
 	private readonly GrpcServerFixture _grpcServer;
@@ -73,7 +72,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task AndPrivateDidHeaderMissing_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 		var signingHeaders = new Dictionary<string, string>
 		{
@@ -83,8 +82,6 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
@@ -97,7 +94,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task AndAliasHeaderMissing_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 		var signingHeaders = new Dictionary<string, string>
 		{
@@ -108,7 +105,8 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		//var handler = _allTestHandlers.GetHandler<TMessage>();
+		//handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
@@ -123,7 +121,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 	{
 		Exception raisedException = null;
 
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
 
 		var signingHeaders = new Dictionary<string, string>
@@ -146,7 +144,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 	{
 		Exception raisedException = null;
 
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
 
 		var signingHeaders = new Dictionary<string, string>
@@ -167,7 +165,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task AndPrivateDidHeaderEmpty_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 		var signingHeaders = new Dictionary<string, string>
 		{
@@ -178,8 +176,6 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
@@ -192,7 +188,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task AndAliasHeaderEmpty_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 		var signingHeaders = new Dictionary<string, string>
 		{
@@ -203,8 +199,6 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
@@ -219,7 +213,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 	{
 		Exception raisedException = null;
 
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
 
 		var signingHeaders = new Dictionary<string, string>
@@ -243,7 +237,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 	{
 		Exception raisedException = null;
 
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
 
 		var signingHeaders = new Dictionary<string, string>
