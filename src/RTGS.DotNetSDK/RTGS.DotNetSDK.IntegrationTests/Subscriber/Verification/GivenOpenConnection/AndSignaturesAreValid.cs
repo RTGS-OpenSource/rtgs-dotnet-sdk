@@ -218,13 +218,17 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 	[ClassData(typeof(SubscriberActionSignedMessagesWithLogsData))]
 	public async Task WhenMessageReceived_ThenLogInformation<TMessage>(SubscriberActionWithLogs<TMessage> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		var allHandlers = new AllTestHandlers();
+
+		await _rtgsSubscriber.StartAsync(allHandlers);
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		var handler = allHandlers.OfType<AllTestHandlers.TestHandler<TMessage>>().Single();
+
+		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
