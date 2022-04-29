@@ -267,7 +267,6 @@ internal class InternalPublisher : IInternalPublisher
 				_logger.LogError("Received {MessageType} acknowledgement (rejected) from RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
 				break;
 
-			case SendResult.Unknown:
 			default:
 				_logger.LogWarning("Received unexpected {MessageType} acknowledgement ({Status}) from RTGS ({CallingMethod})", typeof(T).Name, _acknowledgementContext.Status, callingMethod);
 				break;

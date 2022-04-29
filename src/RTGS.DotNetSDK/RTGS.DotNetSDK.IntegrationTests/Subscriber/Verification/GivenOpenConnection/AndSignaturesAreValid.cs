@@ -215,7 +215,6 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 		var handler = allHandlers.OfType<AllTestHandlers.TestHandler<TMessage>>().Single();
-
 		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();

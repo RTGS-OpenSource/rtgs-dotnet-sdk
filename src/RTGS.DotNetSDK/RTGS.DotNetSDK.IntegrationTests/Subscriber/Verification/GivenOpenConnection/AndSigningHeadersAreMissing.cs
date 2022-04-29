@@ -105,9 +105,6 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
-		//var handler = _allTestHandlers.GetHandler<TMessage>();
-		//handler.WaitForMessage(WaitForReceivedMessageDuration);
-
 		await _rtgsSubscriber.StopAsync();
 
 		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)

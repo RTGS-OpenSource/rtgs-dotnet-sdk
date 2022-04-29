@@ -3,7 +3,6 @@ using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Handlers;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber;
 
@@ -118,7 +117,6 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 													   && acknowledgement.Success);
 
 		var handler = _allTestHandlers.GetHandler<TMessage>();
-
 		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
@@ -159,7 +157,6 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 		var handler = _allTestHandlers.GetHandler<TMessage>();
-
 		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.DisposeAsync();
@@ -208,10 +205,6 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 			subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		var handler = allHandlers.OfType<AllTestHandlers.TestHandler<FIToFICustomerCreditTransferV10>>().Single();
-
-		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
