@@ -124,8 +124,6 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 				break;
 			}
 
-			_logger.LogInformation("Elapsed Time: {Elapsed}", watch.Elapsed);
-
 			if (Math.Round(watch.Elapsed.TotalSeconds, 0) >= maxPollTime.TotalSeconds)
 			{
 				throw new RtgsSubscriberException("Timeout whilst waiting for ID Crypt invitation to be accepted");
