@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
+using RTGS.DotNetSDK.Subscriber.Handlers;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber;
 
@@ -16,11 +17,12 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 	private IHost _clientHost;
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
+	private List<IHandler> _allTestHandlers;
 
 	public GivenOpenConnection(GrpcServerFixture grpcServer)
 	{
 		_grpcServer = grpcServer;
-
+		_allTestHandlers = new AllTestHandlers().ToList();
 		SetupSerilogLogger();
 
 		SetupDependencies();
@@ -85,13 +87,14 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 	[ClassData(typeof(SubscriberActionData))]
 	public async Task WhenUsingMetadata_ThenSeeRtgsGlobalIdInRequestHeader<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		var handler = _allTestHandlers.GetHandler<TRequest>();
+		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "rtgs-global-id"
 																		&& header.Value == TestData.ValidMessages.RtgsGlobalId);
@@ -101,7 +104,7 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 	[ClassData(typeof(SubscriberActionData))]
 	public async Task WhenReceivedExpectedMessageType_ThenPassToHandlerAndAcknowledge<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 		var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
@@ -113,55 +116,58 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
 													   && acknowledgement.Success);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		var handler = _allTestHandlers.GetHandler<TMessage>();
+		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		subscriberAction.Handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
+		handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
 	}
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionData))]
 	public async Task WhenSubscriberIsStopped_ThenCloseConnection<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		var handler = _allTestHandlers.GetHandler<TMessage>();
+		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
-		subscriberAction.Handler.Reset();
+		handler.Reset();
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		subscriberAction.Handler.ReceivedMessage.Should().BeNull();
+		handler.ReceivedMessage.Should().BeNull();
 	}
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionData))]
 	public async Task WhenSubscriberIsDisposed_ThenCloseConnection<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		var handler = _allTestHandlers.GetHandler<TMessage>();
+		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.DisposeAsync();
 
-		subscriberAction.Handler.Reset();
+		handler.Reset();
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		subscriberAction.Handler.ReceivedMessage.Should().BeNull();
+		handler.ReceivedMessage.Should().BeNull();
 	}
 
 	[Fact]
@@ -191,14 +197,14 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 	public async Task WhenMessageReceived_ThenLogInformation<TMessage>(
 		SubscriberActionWithLogs<TMessage> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		var allHandlers = new AllTestHandlers();
+
+		await _rtgsSubscriber.StartAsync(allHandlers);
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message,
 			subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
@@ -321,7 +327,7 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		_fromRtgsSender.SetExpectedAcknowledgementCount(2);
 
-		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 		await _fromRtgsSender.SendAsync(
 			"cannot be handled",
@@ -331,9 +337,10 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		var handler = _allTestHandlers.GetHandler<TRequest>();
+		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		subscriberAction.Handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
+		handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
 
 		await _rtgsSubscriber.StopAsync();
 	}
@@ -424,11 +431,11 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 	[ClassData(typeof(SubscriberActionData))]
 	public async Task AndSubscriberIsStopped_WhenStarting_ThenReceiveMessages<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 		await _rtgsSubscriber.StopAsync();
 
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 		var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
@@ -439,10 +446,10 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 		_fromRtgsSender.Acknowledgements
 			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
 													   && acknowledgement.Success);
+		var handler = _allTestHandlers.GetHandler<TRequest>();
+		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
-
-		subscriberAction.Handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
+		handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
 	}
 
 	[Fact]
@@ -478,7 +485,7 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		_fromRtgsSender.SetExpectedAcknowledgementCount(2);
 
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 		_rtgsSubscriber.OnExceptionOccurred += (_, _) => throw new InvalidOperationException("test");
 
@@ -488,16 +495,17 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		var handler = _allTestHandlers.GetHandler<TRequest>();
+		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		subscriberAction.Handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
+		handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
 	}
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionData))]
 	public async Task AndMessageIsBeingProcessed_WhenStopping_ThenHandleGracefully<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 
@@ -510,7 +518,7 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 	[ClassData(typeof(SubscriberActionData))]
 	public async Task AndMessageIsBeingProcessed_WhenDisposing_ThenHandleGracefully<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
 

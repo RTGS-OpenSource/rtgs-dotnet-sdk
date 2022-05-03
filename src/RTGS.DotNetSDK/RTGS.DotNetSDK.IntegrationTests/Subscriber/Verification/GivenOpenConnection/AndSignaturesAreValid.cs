@@ -90,13 +90,11 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task WhenVerifyingMessage_ThenVerifyDocumentIsCalled<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
@@ -107,13 +105,11 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task WhenCallingVerifyPrivateSignature_ThenBaseAddressIsExpected<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
@@ -129,13 +125,11 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task WhenCallingVerifyPrivateSignature_ThenApiKeyHeaderIsExpected<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
@@ -150,13 +144,11 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task WhenCallingVerifyPrivateSignature_ThenConnectionIdIsInBody<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
@@ -172,13 +164,11 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task WhenCallingVerifyPrivateSignature_ThenPublicSignatureIsInBody<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
@@ -196,13 +186,11 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task WhenCallingVerifyPrivateSignature_ThenMessageContentsAreInBody<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
@@ -218,13 +206,16 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 	[ClassData(typeof(SubscriberActionSignedMessagesWithLogsData))]
 	public async Task WhenMessageReceived_ThenLogInformation<TMessage>(SubscriberActionWithLogs<TMessage> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		var allHandlers = new AllTestHandlers();
+
+		await _rtgsSubscriber.StartAsync(allHandlers);
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
+		var handler = allHandlers.OfType<AllTestHandlers.TestHandler<TMessage>>().Single();
+		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 

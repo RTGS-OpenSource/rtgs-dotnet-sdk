@@ -124,7 +124,7 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 				break;
 			}
 
-			if (watch.Elapsed > maxPollTime)
+			if (Math.Round(watch.Elapsed.TotalSeconds, 0) >= maxPollTime.TotalSeconds)
 			{
 				throw new RtgsSubscriberException("Timeout whilst waiting for ID Crypt invitation to be accepted");
 			}

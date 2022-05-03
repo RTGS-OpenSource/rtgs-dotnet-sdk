@@ -22,7 +22,7 @@ internal class PayawayFundsMessageVerifier : IVerifyMessage
 
 	public async Task VerifyMessageAsync(
 		RtgsMessage rtgsMessage,
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(rtgsMessage);
 

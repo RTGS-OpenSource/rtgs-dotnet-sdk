@@ -7,7 +7,6 @@ namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConne
 public class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan WaitForExceptionEventDuration = TimeSpan.FromMilliseconds(100);
-	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(500);
 	private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
 
 	private readonly GrpcServerFixture _grpcServer;
@@ -15,7 +14,6 @@ public class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFix
 	private IHost _clientHost;
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
-
 
 	public AndSignaturesAreNotValid(GrpcServerFixture grpcServer)
 	{
@@ -86,13 +84,11 @@ public class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFix
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		subscriberAction.Handler.WaitForMessage(WaitForReceivedMessageDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
@@ -107,7 +103,7 @@ public class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFix
 	{
 		Exception raisedException = null;
 
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
@@ -125,7 +121,7 @@ public class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFix
 	{
 		using var exceptionSignal = new ManualResetEventSlim();
 
-		await _rtgsSubscriber.StartAsync(subscriberAction.AllTestHandlers);
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 		_rtgsSubscriber.OnExceptionOccurred += (_, _) => exceptionSignal.Set();
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
