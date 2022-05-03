@@ -683,7 +683,7 @@ public class AndIdCryptApiAvailable
 
 	public class WhenGetConnectionPollingTimesOut : IDisposable, IClassFixture<GrpcServerFixture>
 	{
-		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(31_000);
+		private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(35_000);
 		private static readonly TimeSpan WaitForSubscriberAcknowledgementDuration = TimeSpan.FromMilliseconds(100);
 		private static readonly TimeSpan WaitForPublisherAcknowledgementDuration = TimeSpan.FromMilliseconds(1_000);
 
