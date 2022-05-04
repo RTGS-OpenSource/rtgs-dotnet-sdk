@@ -2,10 +2,10 @@
 using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.DotNetSDK.Subscriber.Handlers.Internal;
-using RTGS.DotNetSDK.Subscriber.Messages;
 using RTGS.ISO20022.Messages.Admi_002_001.V01;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 using RTGS.ISO20022.Messages.Pacs_008_001.V10;
+using RTGS.Public.Messages.Subscriber;
 
 namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 

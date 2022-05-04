@@ -1,4 +1,4 @@
-using RTGS.DotNetSDK.Subscriber.Messages;
+using RTGS.Public.Messages.Subscriber;
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers;
 
