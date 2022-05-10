@@ -1,8 +1,4 @@
-﻿using RTGS.ISO20022.Messages.Admi_002_001.V01;
-using RTGS.ISO20022.Messages.Camt_054_001.V09;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
-
-namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
+﻿namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
 
 public class PublisherActionWithNullMessagesData : BasePublisherActionData
 {
@@ -11,8 +7,8 @@ public class PublisherActionWithNullMessagesData : BasePublisherActionData
 	public override IPublisherAction<EarmarkConfirmationV1> EarmarkConfirmation => PublisherActionsWithNullMessages.EarmarkConfirmation;
 	public override IPublisherAction<AtomicTransferConfirmationV1> AtomicTransferConfirmation => PublisherActionsWithNullMessages.AtomicTransferConfirmation;
 	public override IPublisherAction<UpdateLedgerRequestV1> UpdateLedger => PublisherActionsWithNullMessages.UpdateLedger;
-	public override IPublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate => PublisherActionsWithNullMessages.PayawayCreate;
-	public override IPublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation => PublisherActionsWithNullMessages.PayawayConfirmation;
-	public override IPublisherAction<Admi00200101> PayawayRejection => PublisherActionsWithNullMessages.PayawayRejection;
+	public override IPublisherAction<PayawayCreationV1> PayawayCreate => PublisherActionsWithNullMessages.PayawayCreate;
+	public override IPublisherAction<PayawayConfirmationV1> PayawayConfirmation => PublisherActionsWithNullMessages.PayawayConfirmation;
+	public override IPublisherAction<PayawayRejectionV1> PayawayRejection => PublisherActionsWithNullMessages.PayawayRejection;
 	public override IPublisherAction<BankPartnersRequestV1> BankPartnersRequest => PublisherActionsWithNullMessages.BankPartnersRequest;
 }

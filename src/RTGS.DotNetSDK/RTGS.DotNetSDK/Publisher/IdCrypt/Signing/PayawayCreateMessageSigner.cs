@@ -1,10 +1,10 @@
 ﻿using RTGS.IDCryptSDK.JsonSignatures;
 using RTGS.IDCryptSDK.JsonSignatures.Models;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
+using RTGS.Public.Messages.Publisher;
 
 namespace RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 
-internal class PayawayCreateMessageSigner : ISignMessage<FIToFICustomerCreditTransferV10>
+internal class PayawayCreateMessageSigner : ISignMessage<PayawayCreationV1>
 {
 	private readonly IJsonSignaturesClient _client;
 
@@ -14,13 +14,13 @@ internal class PayawayCreateMessageSigner : ISignMessage<FIToFICustomerCreditTra
 	}
 
 	public async Task<SignDocumentResponse> SignAsync(
-		FIToFICustomerCreditTransferV10 message,
+		PayawayCreationV1 message,
 		string alias,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(message);
 
-		var response = await _client.SignDocumentAsync(message, alias, cancellationToken);
+		var response = await _client.SignDocumentAsync(message.FIToFICstmrCdtTrf, alias, cancellationToken);
 
 		return response;
 	}

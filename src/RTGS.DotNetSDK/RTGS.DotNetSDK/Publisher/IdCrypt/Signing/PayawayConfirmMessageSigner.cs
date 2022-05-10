@@ -1,10 +1,10 @@
 ﻿using RTGS.IDCryptSDK.JsonSignatures;
 using RTGS.IDCryptSDK.JsonSignatures.Models;
-using RTGS.ISO20022.Messages.Camt_054_001.V09;
+using RTGS.Public.Messages.Publisher;
 
 namespace RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 
-internal class PayawayConfirmMessageSigner : ISignMessage<BankToCustomerDebitCreditNotificationV09>
+internal class PayawayConfirmMessageSigner : ISignMessage<PayawayConfirmationV1>
 {
 	private readonly IJsonSignaturesClient _client;
 
@@ -14,7 +14,7 @@ internal class PayawayConfirmMessageSigner : ISignMessage<BankToCustomerDebitCre
 	}
 
 	public async Task<SignDocumentResponse> SignAsync(
-		BankToCustomerDebitCreditNotificationV09 message,
+		PayawayConfirmationV1 message,
 		string alias,
 		CancellationToken cancellationToken = default)
 	{
@@ -22,8 +22,8 @@ internal class PayawayConfirmMessageSigner : ISignMessage<BankToCustomerDebitCre
 
 		var documentToSign = new Dictionary<string, object>
 		{
-			{ "iban", message.Ntfctn[0]?.Acct?.Id?.IBAN },
-			{ "amount", message.Ntfctn[0]?.Ntry[0]?.Amt?.Value }
+			{ "iban", message.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Acct?.Id?.IBAN },
+			{ "amount", message.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Ntry[0]?.Amt?.Value }
 		};
 
 		var response = await _client.SignDocumentAsync(documentToSign, alias, cancellationToken);

@@ -1,8 +1,4 @@
-﻿using RTGS.ISO20022.Messages.Admi_002_001.V01;
-using RTGS.ISO20022.Messages.Camt_054_001.V09;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
-
-namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
+﻿namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
 
 public class PublisherActionTimeoutAcknowledgementLogsData : BasePublisherActionData
 {
@@ -46,28 +42,28 @@ public class PublisherActionTimeoutAcknowledgementLogsData : BasePublisherAction
 				new("Timed out waiting for UpdateLedgerRequestV1 acknowledgement from RTGS (SendUpdateLedgerRequestAsync)", LogEventLevel.Error)
 			});
 
-	public override IPublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate =>
-		new PublisherActionWithLogs<FIToFICustomerCreditTransferV10>(
+	public override IPublisherAction<PayawayCreationV1> PayawayCreate =>
+		new PublisherActionWithLogs<PayawayCreationV1>(
 			PublisherActions.PayawayCreate,
 			new List<LogEntry>
 			{
-				new("Timed out waiting for FIToFICustomerCreditTransferV10 acknowledgement from RTGS (SendPayawayCreateAsync)", LogEventLevel.Error)
+				new("Timed out waiting for PayawayCreationV1 acknowledgement from RTGS (SendPayawayCreateAsync)", LogEventLevel.Error)
 			});
 
-	public override IPublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation =>
-		new PublisherActionWithLogs<BankToCustomerDebitCreditNotificationV09>(
+	public override IPublisherAction<PayawayConfirmationV1> PayawayConfirmation =>
+		new PublisherActionWithLogs<PayawayConfirmationV1>(
 			PublisherActions.PayawayConfirmation,
 			new List<LogEntry>
 			{
-				new("Timed out waiting for BankToCustomerDebitCreditNotificationV09 acknowledgement from RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Error)
+				new("Timed out waiting for PayawayConfirmationV1 acknowledgement from RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Error)
 			});
 
-	public override IPublisherAction<Admi00200101> PayawayRejection =>
-		new PublisherActionWithLogs<Admi00200101>(
+	public override IPublisherAction<PayawayRejectionV1> PayawayRejection =>
+		new PublisherActionWithLogs<PayawayRejectionV1>(
 			PublisherActions.PayawayRejection,
 			new List<LogEntry>
 			{
-				new("Timed out waiting for Admi00200101 acknowledgement from RTGS (SendPayawayRejectionAsync)", LogEventLevel.Error)
+				new("Timed out waiting for PayawayRejectionV1 acknowledgement from RTGS (SendPayawayRejectionAsync)", LogEventLevel.Error)
 			});
 
 	public override IPublisherAction<BankPartnersRequestV1> BankPartnersRequest =>

@@ -1,8 +1,4 @@
-﻿using RTGS.ISO20022.Messages.Admi_002_001.V01;
-using RTGS.ISO20022.Messages.Camt_054_001.V09;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
-
-namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
+﻿namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
 
 public class PublisherActionSuccessAcknowledgementLogsData : BasePublisherActionData
 {
@@ -56,34 +52,34 @@ public class PublisherActionSuccessAcknowledgementLogsData : BasePublisherAction
 				new("Received UpdateLedgerRequestV1 acknowledgement (acknowledged) from RTGS (SendUpdateLedgerRequestAsync)", LogEventLevel.Information)
 			});
 
-	public override IPublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate =>
-		new PublisherActionWithLogs<FIToFICustomerCreditTransferV10>(
+	public override IPublisherAction<PayawayCreationV1> PayawayCreate =>
+		new PublisherActionWithLogs<PayawayCreationV1>(
 			PublisherActions.PayawayCreate,
 			new List<LogEntry>
 			{
-				new("Sending FIToFICustomerCreditTransferV10 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Information),
-				new("Sent FIToFICustomerCreditTransferV10 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Information),
-				new("Received FIToFICustomerCreditTransferV10 acknowledgement (acknowledged) from RTGS (SendPayawayCreateAsync)", LogEventLevel.Information)
+				new("Sending PayawayCreationV1 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Information),
+				new("Sent PayawayCreationV1 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Information),
+				new("Received PayawayCreationV1 acknowledgement (acknowledged) from RTGS (SendPayawayCreateAsync)", LogEventLevel.Information)
 			});
 
-	public override IPublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation =>
-		new PublisherActionWithLogs<BankToCustomerDebitCreditNotificationV09>(
+	public override IPublisherAction<PayawayConfirmationV1> PayawayConfirmation =>
+		new PublisherActionWithLogs<PayawayConfirmationV1>(
 			PublisherActions.PayawayConfirmation,
 			new List<LogEntry>
 			{
-				new("Sending BankToCustomerDebitCreditNotificationV09 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
-				new("Sent BankToCustomerDebitCreditNotificationV09 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
-				new("Received BankToCustomerDebitCreditNotificationV09 acknowledgement (acknowledged) from RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information)
+				new("Sending PayawayConfirmationV1 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
+				new("Sent PayawayConfirmationV1 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
+				new("Received PayawayConfirmationV1 acknowledgement (acknowledged) from RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information)
 			});
 
-	public override IPublisherAction<Admi00200101> PayawayRejection =>
-		new PublisherActionWithLogs<Admi00200101>(
+	public override IPublisherAction<PayawayRejectionV1> PayawayRejection =>
+		new PublisherActionWithLogs<PayawayRejectionV1>(
 			PublisherActions.PayawayRejection,
 			new List<LogEntry>
 			{
-				new("Sending Admi00200101 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information),
-				new("Sent Admi00200101 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information),
-				new("Received Admi00200101 acknowledgement (acknowledged) from RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information)
+				new("Sending PayawayRejectionV1 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information),
+				new("Sent PayawayRejectionV1 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information),
+				new("Received PayawayRejectionV1 acknowledgement (acknowledged) from RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information)
 			});
 
 	public override IPublisherAction<BankPartnersRequestV1> BankPartnersRequest =>

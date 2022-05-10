@@ -1,7 +1,4 @@
-﻿using RTGS.ISO20022.Messages.Admi_002_001.V01;
-using RTGS.ISO20022.Messages.Camt_054_001.V09;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
-using RTGS.Public.Messages.Publisher;
+﻿using RTGS.Public.Messages.Publisher;
 
 namespace RTGS.DotNetSDK.Publisher;
 
@@ -29,17 +26,14 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 	public Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequestV1 message, CancellationToken cancellationToken = default) =>
 		_internalPublisher.SendMessageAsync(message, "payment.update.ledger.v2", cancellationToken);
 
-	public Task<SendResult> SendPayawayCreateAsync(FIToFICustomerCreditTransferV10 message, string idCryptAlias, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, "payaway.create.v1", idCryptAlias: idCryptAlias, cancellationToken: cancellationToken);
+	public Task<SendResult> SendPayawayCreateAsync(PayawayCreationV1 message, string idCryptAlias, CancellationToken cancellationToken = default) =>
+		_internalPublisher.SendMessageAsync(message, nameof(PayawayCreationV1), cancellationToken, idCryptAlias: idCryptAlias);
 
-	public Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message, string idCryptAlias, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, "payaway.confirmation.v1", cancellationToken, idCryptAlias: idCryptAlias);
+	public Task<SendResult> SendPayawayConfirmationAsync(PayawayConfirmationV1 message, string idCryptAlias, CancellationToken cancellationToken = default) =>
+		_internalPublisher.SendMessageAsync(message, nameof(PayawayConfirmationV1), cancellationToken, idCryptAlias: idCryptAlias);
 
-	public Task<SendResult> SendPayawayRejectionAsync(Admi00200101 message, string toRtgsGlobalId, string idCryptAlias, CancellationToken cancellationToken = default)
-	{
-		var headers = new Dictionary<string, string> { { "to-rtgs-global-id", toRtgsGlobalId } };
-		return _internalPublisher.SendMessageAsync(message, "payaway.rejection.v1", cancellationToken, headers, idCryptAlias);
-	}
+	public Task<SendResult> SendPayawayRejectionAsync(PayawayRejectionV1 message, string idCryptAlias, CancellationToken cancellationToken = default) =>
+		_internalPublisher.SendMessageAsync(message, nameof(PayawayRejectionV1), cancellationToken, idCryptAlias: idCryptAlias);
 
 	public Task<SendResult> SendBankPartnersRequestAsync(BankPartnersRequestV1 message, CancellationToken cancellationToken = default) =>
 		_internalPublisher.SendMessageAsync(message, "bank.partners.v1", cancellationToken);

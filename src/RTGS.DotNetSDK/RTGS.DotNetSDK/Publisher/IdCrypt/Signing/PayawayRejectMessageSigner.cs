@@ -1,10 +1,10 @@
 ﻿using RTGS.IDCryptSDK.JsonSignatures;
 using RTGS.IDCryptSDK.JsonSignatures.Models;
-using RTGS.ISO20022.Messages.Admi_002_001.V01;
+using RTGS.Public.Messages.Publisher;
 
 namespace RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 
-internal class PayawayRejectMessageSigner : ISignMessage<Admi00200101>
+internal class PayawayRejectMessageSigner : ISignMessage<PayawayRejectionV1>
 {
 	private readonly IJsonSignaturesClient _client;
 
@@ -14,13 +14,13 @@ internal class PayawayRejectMessageSigner : ISignMessage<Admi00200101>
 	}
 
 	public async Task<SignDocumentResponse> SignAsync(
-		Admi00200101 message,
+		PayawayRejectionV1 message,
 		string alias,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(message);
 
-		var documentToSign = new Dictionary<string, object> { { "reason", message.Rsn?.RsnDesc } };
+		var documentToSign = new Dictionary<string, object> { { "reason", message.MsgRjctn?.Rsn?.RsnDesc } };
 
 		var response = await _client.SignDocumentAsync(documentToSign, alias, cancellationToken);
 
