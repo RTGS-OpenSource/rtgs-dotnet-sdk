@@ -2,23 +2,23 @@
 using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Subscriber.Exceptions;
 using RTGS.IDCryptSDK.JsonSignatures;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
+using RTGS.Public.Messages.Subscriber;
 using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
 
-internal class PayawayFundsMessageVerifier : IVerifyMessage
+internal class PayawayFundsV1MessageVerifier : IVerifyMessage
 {
 	private readonly IJsonSignaturesClient _jsonSignaturesClient;
-	private readonly ILogger<PayawayFundsMessageVerifier> _logger;
+	private readonly ILogger<PayawayFundsV1MessageVerifier> _logger;
 
-	public PayawayFundsMessageVerifier(IJsonSignaturesClient jsonSignaturesClient, ILogger<PayawayFundsMessageVerifier> logger)
+	public PayawayFundsV1MessageVerifier(IJsonSignaturesClient jsonSignaturesClient, ILogger<PayawayFundsV1MessageVerifier> logger)
 	{
 		_jsonSignaturesClient = jsonSignaturesClient;
 		_logger = logger;
 	}
 
-	public string MessageIdentifier => "PayawayFunds";
+	public string MessageIdentifier => nameof(PayawayFundsV1);
 
 	public async Task VerifyMessageAsync(
 		RtgsMessage rtgsMessage,
@@ -43,9 +43,9 @@ internal class PayawayFundsMessageVerifier : IVerifyMessage
 			throw new RtgsSubscriberException($"Unable to verify {MessageIdentifier} message due to missing headers.");
 		}
 
-		var message = JsonSerializer.Deserialize<FIToFICustomerCreditTransferV10>(rtgsMessage.Data);
+		var message = JsonSerializer.Deserialize<PayawayFundsV1>(rtgsMessage.Data);
 
-		var privateSignatureIsValid = await _jsonSignaturesClient.VerifyPrivateSignatureAsync(message, privateSignature, alias, cancellationToken);
+		var privateSignatureIsValid = await _jsonSignaturesClient.VerifyPrivateSignatureAsync(message?.FIToFICstmrCdtTrf, privateSignature, alias, cancellationToken);
 
 		if (!privateSignatureIsValid)
 		{

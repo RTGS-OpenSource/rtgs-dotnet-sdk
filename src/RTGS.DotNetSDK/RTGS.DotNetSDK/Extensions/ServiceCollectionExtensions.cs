@@ -115,7 +115,7 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddTransient<IInternalHandler, IdCryptCreateInvitationRequestV1Handler>();
 		serviceCollection.AddTransient<IInternalHandler, IdCryptBankInvitationV1Handler>();
 
-		serviceCollection.AddSingleton<IVerifyMessage, PayawayFundsMessageVerifier>();
+		serviceCollection.AddSingleton<IVerifyMessage, PayawayFundsV1MessageVerifier>();
 
 		serviceCollection.AddSingleton<IIdCryptPublisher, IdCryptPublisher>();
 		serviceCollection.AddSingleton<IInternalPublisher, InternalPublisher>();

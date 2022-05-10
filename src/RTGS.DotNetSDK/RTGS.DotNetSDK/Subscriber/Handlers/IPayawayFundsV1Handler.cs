@@ -1,8 +1,8 @@
-﻿using RTGS.ISO20022.Messages.Pacs_008_001.V10;
+﻿using RTGS.Public.Messages.Subscriber;
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers;
 
 /// <summary>
-/// Interface to define an <see cref="FIToFICustomerCreditTransferV10"/> handler.
+/// Interface to define an <see cref="PayawayFundsV1"/> handler.
 /// </summary>
-public interface IPayawayFundsV1Handler : IHandler<FIToFICustomerCreditTransferV10> { }
+public interface IPayawayFundsV1Handler : IHandler<PayawayFundsV1> { }

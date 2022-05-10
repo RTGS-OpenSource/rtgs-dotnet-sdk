@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
+using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
 
@@ -182,13 +183,13 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 		signDocumentRequest!.Signature.Should().Be(expectedPrivateSignature);
 	}
 
-	[Theory]
-	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenCallingVerifyPrivateSignature_ThenMessageContentsAreInBody<TRequest>(SubscriberAction<TRequest> subscriberAction)
+	[Fact]
+	public async Task WhenCallingVerifyPrivateSignatureForPayawayFundsV1_ThenMessageContentsAreInBody()
 	{
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
+		SubscriberAction<PayawayFundsV1> action = SubscriberActions.PayawayFundsV1;
+		await _fromRtgsSender.SendAsync(action.MessageIdentifier, action.Message, action.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -197,9 +198,10 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 		var requestContent = await _idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
 			.Single().Content!.ReadAsStringAsync();
 
-		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest<TRequest>>(requestContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest<FIToFICustomerCreditTransferV10>>(
+			requestContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-		signDocumentRequest!.Document.Should().BeEquivalentTo(subscriberAction.Message);
+		signDocumentRequest!.Document.Should().BeEquivalentTo(action.Message.FIToFICstmrCdtTrf);
 	}
 
 	[Theory]

@@ -1,41 +1,38 @@
 ﻿using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
-using RTGS.ISO20022.Messages.Admi_002_001.V01;
-using RTGS.ISO20022.Messages.Camt_054_001.V09;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 
 public class SubscriberActionWithLogsData : BaseSubscriberActionData
 {
-	public override ISubscriberAction<FIToFICustomerCreditTransferV10> PayawayFundsV1 =>
-		new SubscriberActionWithLogs<FIToFICustomerCreditTransferV10>(
+	public override ISubscriberAction<PayawayFundsV1> PayawayFundsV1 =>
+		new SubscriberActionWithLogs<PayawayFundsV1>(
 			SubscriberActions.PayawayFundsV1,
 			new List<LogEntry>
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("PayawayFunds message received from RTGS", LogEventLevel.Information),
+				new("PayawayFundsV1 message received from RTGS", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
 
-	public override ISubscriberAction<BankToCustomerDebitCreditNotificationV09> PayawayCompleteV1 =>
-		new SubscriberActionWithLogs<BankToCustomerDebitCreditNotificationV09>(
+	public override ISubscriberAction<PayawayCompleteV1> PayawayCompleteV1 =>
+		new SubscriberActionWithLogs<PayawayCompleteV1>(
 			SubscriberActions.PayawayCompleteV1,
 			new List<LogEntry>
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("PayawayComplete message received from RTGS", LogEventLevel.Information),
+				new("PayawayCompleteV1 message received from RTGS", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
 
-	public override ISubscriberAction<Admi00200101> MessageRejectedV1 =>
-		new SubscriberActionWithLogs<Admi00200101>(
+	public override ISubscriberAction<MessageRejectV1> MessageRejectedV1 =>
+		new SubscriberActionWithLogs<MessageRejectV1>(
 			SubscriberActions.MessageRejectedV1,
 			new List<LogEntry>
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("MessageRejected message received from RTGS", LogEventLevel.Information),
+				new("MessageRejectV1 message received from RTGS", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});

@@ -1,17 +1,17 @@
 ﻿using System.Text.Json;
 using RTGS.DotNetSDK.Subscriber.Handlers;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
+using RTGS.Public.Messages.Subscriber;
 using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Subscriber.Adapters;
 
-internal class PayawayFundsV1MessageAdapter : IMessageAdapter<FIToFICustomerCreditTransferV10>
+internal class PayawayFundsV1MessageAdapter : IMessageAdapter<PayawayFundsV1>
 {
-	public string MessageIdentifier => "PayawayFunds";
+	public string MessageIdentifier => nameof(PayawayFundsV1);
 
-	public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<FIToFICustomerCreditTransferV10> handler)
+	public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<PayawayFundsV1> handler)
 	{
-		var payawayFundsMessage = JsonSerializer.Deserialize<FIToFICustomerCreditTransferV10>(rtgsMessage.Data);
+		var payawayFundsMessage = JsonSerializer.Deserialize<PayawayFundsV1>(rtgsMessage.Data);
 		await handler.HandleMessageAsync(payawayFundsMessage);
 	}
 }

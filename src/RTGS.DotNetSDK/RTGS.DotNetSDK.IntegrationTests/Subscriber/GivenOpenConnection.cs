@@ -356,7 +356,7 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 		await _rtgsSubscriber.StartAsync(testHandlers);
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) => exceptionSignal.Set();
 
-		await _fromRtgsSender.SendAsync("MessageRejected", TestData.ValidMessages.MessageRejected);
+		await _fromRtgsSender.SendAsync(nameof(MessageRejectV1), TestData.ValidMessages.MessageRejected);
 
 		exceptionSignal.Wait(WaitForExceptionEventDuration);
 
@@ -364,7 +364,7 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 		errorLogs.Should().BeEquivalentTo(new[]
 		{
 			new LogEntry(
-				"An error occurred while handling a message (MessageIdentifier: MessageRejected)",
+				"An error occurred while handling a message (MessageIdentifier: MessageRejectV1)",
 				LogEventLevel.Error,
 				typeof(OutOfMemoryException))
 		});
@@ -388,7 +388,7 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 			exceptionSignal.Set();
 		};
 
-		await _fromRtgsSender.SendAsync("MessageRejected", TestData.ValidMessages.MessageRejected);
+		await _fromRtgsSender.SendAsync(nameof(MessageRejectV1), TestData.ValidMessages.MessageRejected);
 
 		exceptionSignal.Wait(WaitForExceptionEventDuration);
 
@@ -408,7 +408,7 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 
 		_fromRtgsSender.SetExpectedAcknowledgementCount(2);
 
-		await _fromRtgsSender.SendAsync("MessageRejected", TestData.ValidMessages.MessageRejected);
+		await _fromRtgsSender.SendAsync(nameof(MessageRejectV1), TestData.ValidMessages.MessageRejected);
 
 		var signingHeaders = new Dictionary<string, string>
 		{
@@ -417,7 +417,7 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 			{ "alias", "alias" }
 		};
 
-		await _fromRtgsSender.SendAsync("PayawayFunds", TestData.ValidMessages.PayawayFunds, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(PayawayFundsV1), TestData.ValidMessages.PayawayFunds, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
