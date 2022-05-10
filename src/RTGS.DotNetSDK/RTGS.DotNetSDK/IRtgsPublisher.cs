@@ -1,7 +1,4 @@
-﻿using RTGS.ISO20022.Messages.Admi_002_001.V01;
-using RTGS.ISO20022.Messages.Camt_054_001.V09;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
-using RTGS.Public.Messages.Publisher;
+﻿using RTGS.Public.Messages.Publisher;
 
 namespace RTGS.DotNetSDK;
 
@@ -51,44 +48,34 @@ public interface IRtgsPublisher
 	Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequestV1 message, CancellationToken cancellationToken = default);
 
 	/// <summary>
-	/// Sends a <see cref="FIToFICustomerCreditTransferV10"/> (payaway) transaction request.
+	/// Sends a <see cref="PayawayCreationV1"/> request.
 	/// </summary>
-	/// <param name="message">The <see cref="FIToFICustomerCreditTransferV10"/> message</param>
+	/// <param name="message">The <see cref="PayawayCreationV1"/> message</param>
 	/// <param name="idCryptAlias">The alias of the ID Crypt connection with which to sign this message</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
-	/// <remarks>
-	/// The <see cref="FIToFICustomerCreditTransferV10"/> type is from nuget package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
-	/// </remarks>
-	Task<SendResult> SendPayawayCreateAsync(FIToFICustomerCreditTransferV10 message, string idCryptAlias, CancellationToken cancellationToken = default);
+	Task<SendResult> SendPayawayCreateAsync(PayawayCreationV1 message, string idCryptAlias, CancellationToken cancellationToken = default);
 
 	/// <summary>
-	/// Sends a <see cref="BankToCustomerDebitCreditNotificationV09"/> (payaway) confirmation request.
+	/// Sends a <see cref="PayawayConfirmationV1"/> request.
 	/// </summary>
-	/// <param name="message">The <see cref="BankToCustomerDebitCreditNotificationV09"/>  message</param>
+	/// <param name="message">The <see cref="PayawayConfirmationV1"/>  message</param>
 	/// <param name="idCryptAlias">The alias of the ID Crypt connection with which to sign this message</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
-	/// <remarks>
-	/// The <see cref="BankToCustomerDebitCreditNotificationV09"/> type is from nuget package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
-	/// </remarks>
-	Task<SendResult> SendPayawayConfirmationAsync(BankToCustomerDebitCreditNotificationV09 message, string idCryptAlias, CancellationToken cancellationToken = default);
+	Task<SendResult> SendPayawayConfirmationAsync(PayawayConfirmationV1 message, string idCryptAlias, CancellationToken cancellationToken = default);
 
 	/// <summary>
-	/// Sends a <see cref="Admi00200101"/> (payaway) rejection request.
+	/// Sends a <see cref="PayawayRejectionV1"/> request.
 	/// </summary>
-	/// <param name="message">The <see cref="Admi00200101"/> rejection message</param>
-	/// <param name="toRtgsGlobalId">The RTGS.global Id for the bank to which this rejection should be sent</param>
+	/// <param name="message">The <see cref="PayawayRejectionV1"/> rejection message</param>
 	/// <param name="idCryptAlias">The alias of the ID Crypt connection with which to sign this message</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
-	/// <remarks>
-	/// The <see cref="Admi00200101"/> type is from nuget package RTGS.ISO20022.Messages <see href="https://www.nuget.org/packages/RTGS.ISO20022.Messages/"/>
-	/// </remarks>
-	Task<SendResult> SendPayawayRejectionAsync(Admi00200101 message, string toRtgsGlobalId, string idCryptAlias, CancellationToken cancellationToken);
+	Task<SendResult> SendPayawayRejectionAsync(PayawayRejectionV1 message, string idCryptAlias, CancellationToken cancellationToken);
 
 	/// <summary>
-	/// Sends a <see cref="BankPartnersRequestV1"/> bank partners request.
+	/// Sends a <see cref="BankPartnersRequestV1"/> request.
 	/// </summary>
 	/// <param name="message">The <see cref="BankPartnersRequestV1"/> message</param>
 	/// <param name="cancellationToken">A cancellation token</param>

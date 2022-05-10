@@ -1,8 +1,4 @@
-﻿using RTGS.ISO20022.Messages.Admi_002_001.V01;
-using RTGS.ISO20022.Messages.Camt_054_001.V09;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
-
-namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
+﻿namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
 
 public static class PublisherActionsWithNullMessages
 {
@@ -26,18 +22,17 @@ public static class PublisherActionsWithNullMessages
 		null,
 		(publisher, request, cancellationToken) => publisher.SendUpdateLedgerRequestAsync(request, cancellationToken));
 
-	public static readonly PublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate = new(
+	public static readonly PublisherAction<PayawayCreationV1> PayawayCreate = new(
 		null,
 		(publisher, request, cancellationToken) => publisher.SendPayawayCreateAsync(request, "id-crypt-alias", cancellationToken));
 
-	public static readonly PublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation = new(
+	public static readonly PublisherAction<PayawayConfirmationV1> PayawayConfirmation = new(
 		null,
 		(publisher, request, cancellationToken) => publisher.SendPayawayConfirmationAsync(request, "id-crypt-alias", cancellationToken));
 
-	public static readonly PublisherAction<Admi00200101> PayawayRejection = new(
+	public static readonly PublisherAction<PayawayRejectionV1> PayawayRejection = new(
 		null,
-		(publisher, request, cancellationToken) =>
-			publisher.SendPayawayRejectionAsync(request, null, "id-crypt-alias", cancellationToken));
+		(publisher, request, cancellationToken) => publisher.SendPayawayRejectionAsync(request, "id-crypt-alias", cancellationToken));
 
 	public static readonly PublisherAction<BankPartnersRequestV1> BankPartnersRequest = new(
 		null,

@@ -87,69 +87,75 @@ public static class ValidMessages
 		}
 	};
 
-	public static readonly FIToFICustomerCreditTransferV10 PayawayCreate = new()
+	public static readonly PayawayCreationV1 PayawayCreation = new()
 	{
-		GrpHdr = new GroupHeader96
+		FIToFICstmrCdtTrf = new FIToFICustomerCreditTransferV10()
 		{
-			MsgId = "message-id"
-		},
-		CdtTrfTxInf = new[]
-		{
-			new CreditTransferTransaction50
+			GrpHdr = new GroupHeader96 { MsgId = "message-id" },
+			CdtTrfTxInf = new[]
 			{
-				IntrBkSttlmAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
+				new CreditTransferTransaction50
 				{
-					Ccy = "jpy",
-					Value = 1
-				},
-				PoolgAdjstmntDt = new DateTime(2021, 1, 1),
-				CdtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
-				{
-					Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+					IntrBkSttlmAmt =
+						new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
+						{
+							Ccy = "jpy", Value = 1
+						},
+					PoolgAdjstmntDt = new DateTime(2021, 1, 1),
+					CdtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 					{
-						IBAN = "iban"
+						Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+						{
+							IBAN = "iban"
+						}
 					}
 				}
 			}
 		}
 	};
 
-	public static readonly BankToCustomerDebitCreditNotificationV09 PayawayConfirmation = new()
+	public static readonly PayawayConfirmationV1 PayawayConfirmation = new()
 	{
-		GrpHdr = new GroupHeader81 { MsgId = "message-id" },
-		Ntfctn = new[]
+		BkToCstmrDbtCdtNtfctn = new BankToCustomerDebitCreditNotificationV09()
 		{
-			new AccountNotification19
+			GrpHdr = new GroupHeader81 { MsgId = "message-id" },
+			Ntfctn = new[]
 			{
-				AddtlNtfctnInf = "additional-notification-info",
-				Acct = new() { Id = new() { IBAN = "iban" } },
-				Ntry = new[] { new ReportEntry11 { Amt = new() { Value = 9.99m } } }
+				new AccountNotification19
+				{
+					AddtlNtfctnInf = "additional-notification-info",
+					Acct = new() { Id = new() { IBAN = "iban" } },
+					Ntry = new[] { new ReportEntry11 { Amt = new() { Value = 9.99m } } }
+				}
 			}
 		}
 	};
 
-	public static readonly Admi00200101 PayawayRejection = new()
+	public static readonly PayawayRejectionV1 PayawayRejection = new()
 	{
-		RltdRef = new MessageReference
+		MsgRjctn = new Admi00200101
 		{
-			Ref = "payaway-id"
+			RltdRef = new MessageReference { Ref = "payaway-id" },
+			Rsn = new RejectionReason2 { RsnDesc = "Having a bad day" }
 		},
-		Rsn = new RejectionReason2
-		{
-			RsnDesc = "Having a bad day"
-		}
+		ToRtgsGlobalId = "RTGS:US67890USD"
 	};
 
 	public static readonly BankPartnersRequestV1 BankPartnersRequest = new();
 
 	public static class SignedDocuments
 	{
-		public static readonly Dictionary<string, object> PayawayRejectionDocument = new() { { "reason", PayawayRejection.Rsn.RsnDesc } };
+		public static readonly Dictionary<string, object> PayawayRejectionDocument = new()
+		{
+			{ "reason", PayawayRejection.MsgRjctn.Rsn.RsnDesc }
+		};
+
 		public static readonly Dictionary<string, object> PayawayConfirmationDocument = new()
 		{
-			{ "iban", PayawayConfirmation.Ntfctn[0].Acct.Id.IBAN },
-			{ "amount", PayawayConfirmation.Ntfctn[0].Ntry[0].Amt.Value }
+			{ "iban", PayawayConfirmation.BkToCstmrDbtCdtNtfctn.Ntfctn[0].Acct.Id.IBAN },
+			{ "amount", PayawayConfirmation.BkToCstmrDbtCdtNtfctn.Ntfctn[0].Ntry[0].Amt.Value }
 		};
-		public static readonly FIToFICustomerCreditTransferV10 PayawayCreateDocument = PayawayCreate;
+
+		public static readonly FIToFICustomerCreditTransferV10 PayawayCreateDocument = PayawayCreation.FIToFICstmrCdtTrf;
 	}
 }

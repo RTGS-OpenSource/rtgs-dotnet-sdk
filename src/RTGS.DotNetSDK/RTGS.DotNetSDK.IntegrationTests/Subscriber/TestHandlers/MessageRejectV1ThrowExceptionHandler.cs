@@ -1,5 +1,4 @@
 ﻿using RTGS.DotNetSDK.Subscriber.Handlers;
-using RTGS.ISO20022.Messages.Admi_002_001.V01;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestHandlers;
 
@@ -13,6 +12,6 @@ public class MessageRejectV1ThrowExceptionHandler : IMessageRejectV1Handler
 
 	}
 
-	public Task HandleMessageAsync(Admi00200101 message) =>
+	public Task HandleMessageAsync(MessageRejectV1 message) =>
 		throw _exception;
 }

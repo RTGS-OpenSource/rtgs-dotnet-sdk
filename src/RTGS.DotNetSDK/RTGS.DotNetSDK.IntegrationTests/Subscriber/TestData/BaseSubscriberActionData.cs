@@ -4,9 +4,9 @@ namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 
 public abstract class BaseSubscriberActionData : BaseActionData
 {
-	public abstract ISubscriberAction<ISO20022.Messages.Pacs_008_001.V10.FIToFICustomerCreditTransferV10> PayawayFundsV1 { get; }
-	public abstract ISubscriberAction<ISO20022.Messages.Camt_054_001.V09.BankToCustomerDebitCreditNotificationV09> PayawayCompleteV1 { get; }
-	public abstract ISubscriberAction<ISO20022.Messages.Admi_002_001.V01.Admi00200101> MessageRejectedV1 { get; }
+	public abstract ISubscriberAction<PayawayFundsV1> PayawayFundsV1 { get; }
+	public abstract ISubscriberAction<PayawayCompleteV1> PayawayCompleteV1 { get; }
+	public abstract ISubscriberAction<MessageRejectV1> MessageRejectedV1 { get; }
 	public abstract ISubscriberAction<AtomicLockResponseV1> AtomicLockResponseV1 { get; }
 	public abstract ISubscriberAction<AtomicTransferResponseV1> AtomicTransferResponseV1 { get; }
 	public abstract ISubscriberAction<AtomicTransferFundsV1> AtomicTransferFundsV1 { get; }

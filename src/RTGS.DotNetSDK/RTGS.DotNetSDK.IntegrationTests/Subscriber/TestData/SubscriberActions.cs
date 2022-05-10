@@ -1,7 +1,4 @@
 ﻿using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
-using RTGS.ISO20022.Messages.Admi_002_001.V01;
-using RTGS.ISO20022.Messages.Camt_054_001.V09;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 
@@ -14,14 +11,14 @@ public static class SubscriberActions
 		{ "alias", "alias" }
 	};
 
-	public static readonly SubscriberAction<FIToFICustomerCreditTransferV10> PayawayFundsV1 =
-		new("PayawayFunds", ValidMessages.PayawayFunds, DefaultSigningHeaders);
+	public static readonly SubscriberAction<PayawayFundsV1> PayawayFundsV1 =
+		new("PayawayFundsV1", ValidMessages.PayawayFunds, DefaultSigningHeaders);
 
-	public static readonly SubscriberAction<BankToCustomerDebitCreditNotificationV09> PayawayCompleteV1 =
-		new("PayawayComplete", ValidMessages.PayawayComplete);
+	public static readonly SubscriberAction<PayawayCompleteV1> PayawayCompleteV1 =
+		new("PayawayCompleteV1", ValidMessages.PayawayComplete);
 
-	public static readonly SubscriberAction<Admi00200101> MessageRejectedV1 =
-		new("MessageRejected", ValidMessages.MessageRejected);
+	public static readonly SubscriberAction<MessageRejectV1> MessageRejectedV1 =
+		new("MessageRejectV1", ValidMessages.MessageRejected);
 
 	public static readonly SubscriberAction<AtomicLockResponseV1> AtomicLockResponseV1 =
 		new("payment.lock.v2", ValidMessages.AtomicLockResponseV1);

@@ -11,9 +11,7 @@ using RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
 using RTGS.DotNetSDK.Subscriber.Validators;
 using RTGS.IDCryptSDK;
 using RTGS.IDCryptSDK.Extensions;
-using RTGS.ISO20022.Messages.Admi_002_001.V01;
-using RTGS.ISO20022.Messages.Camt_054_001.V09;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
+using RTGS.Public.Messages.Publisher;
 using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Extensions;
@@ -58,9 +56,9 @@ public static class ServiceCollectionExtensions
 
 		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
 
-		serviceCollection.AddSingleton<ISignMessage<FIToFICustomerCreditTransferV10>, PayawayCreateMessageSigner>();
-		serviceCollection.AddSingleton<ISignMessage<Admi00200101>, PayawayRejectMessageSigner>();
-		serviceCollection.AddSingleton<ISignMessage<BankToCustomerDebitCreditNotificationV09>, PayawayConfirmMessageSigner>();
+		serviceCollection.AddSingleton<ISignMessage<PayawayCreationV1>, PayawayCreateMessageSigner>();
+		serviceCollection.AddSingleton<ISignMessage<PayawayRejectionV1>, PayawayRejectMessageSigner>();
+		serviceCollection.AddSingleton<ISignMessage<PayawayConfirmationV1>, PayawayConfirmMessageSigner>();
 
 		serviceCollection.AddIdCryptSdk(new IdCryptSdkConfiguration(
 			options.IdCryptApiAddress,
@@ -117,7 +115,7 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddTransient<IInternalHandler, IdCryptCreateInvitationRequestV1Handler>();
 		serviceCollection.AddTransient<IInternalHandler, IdCryptBankInvitationV1Handler>();
 
-		serviceCollection.AddSingleton<IVerifyMessage, PayawayFundsMessageVerifier>();
+		serviceCollection.AddSingleton<IVerifyMessage, PayawayFundsV1MessageVerifier>();
 
 		serviceCollection.AddSingleton<IIdCryptPublisher, IdCryptPublisher>();
 		serviceCollection.AddSingleton<IInternalPublisher, InternalPublisher>();

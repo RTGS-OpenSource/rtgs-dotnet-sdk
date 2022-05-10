@@ -1,8 +1,4 @@
-﻿using RTGS.ISO20022.Messages.Admi_002_001.V01;
-using RTGS.ISO20022.Messages.Camt_054_001.V09;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
-
-namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
+﻿namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData;
 
 public class PublisherActionRpcExceptionLogsData : BasePublisherActionData
 {
@@ -56,34 +52,34 @@ public class PublisherActionRpcExceptionLogsData : BasePublisherActionData
 				new("Error received when sending UpdateLedgerRequestV1 to RTGS (SendUpdateLedgerRequestAsync)", LogEventLevel.Error, typeof(RpcException))
 			});
 
-	public override IPublisherAction<FIToFICustomerCreditTransferV10> PayawayCreate =>
-		new PublisherActionWithLogs<FIToFICustomerCreditTransferV10>(
+	public override IPublisherAction<PayawayCreationV1> PayawayCreate =>
+		new PublisherActionWithLogs<PayawayCreationV1>(
 			PublisherActions.PayawayCreate,
 			new List<LogEntry>
 			{
-				new("Sending FIToFICustomerCreditTransferV10 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Information),
-				new("Sent FIToFICustomerCreditTransferV10 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Information),
-				new("Error received when sending FIToFICustomerCreditTransferV10 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Error, typeof(RpcException))
+				new("Sending PayawayCreationV1 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Information),
+				new("Sent PayawayCreationV1 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Information),
+				new("Error received when sending PayawayCreationV1 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Error, typeof(RpcException))
 			});
 
-	public override IPublisherAction<BankToCustomerDebitCreditNotificationV09> PayawayConfirmation =>
-		new PublisherActionWithLogs<BankToCustomerDebitCreditNotificationV09>(
+	public override IPublisherAction<PayawayConfirmationV1> PayawayConfirmation =>
+		new PublisherActionWithLogs<PayawayConfirmationV1>(
 			PublisherActions.PayawayConfirmation,
 			new List<LogEntry>
 			{
-				new("Sending BankToCustomerDebitCreditNotificationV09 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
-				new("Sent BankToCustomerDebitCreditNotificationV09 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
-				new("Error received when sending BankToCustomerDebitCreditNotificationV09 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Error, typeof(RpcException))
+				new("Sending PayawayConfirmationV1 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
+				new("Sent PayawayConfirmationV1 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
+				new("Error received when sending PayawayConfirmationV1 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Error, typeof(RpcException))
 			});
 
-	public override IPublisherAction<Admi00200101> PayawayRejection =>
-		new PublisherActionWithLogs<Admi00200101>(
+	public override IPublisherAction<PayawayRejectionV1> PayawayRejection =>
+		new PublisherActionWithLogs<PayawayRejectionV1>(
 			PublisherActions.PayawayRejection,
 			new List<LogEntry>
 			{
-				new("Sending Admi00200101 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information),
-				new("Sent Admi00200101 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information),
-				new("Error received when sending Admi00200101 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Error, typeof(RpcException))
+				new("Sending PayawayRejectionV1 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information),
+				new("Sent PayawayRejectionV1 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information),
+				new("Error received when sending PayawayRejectionV1 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Error, typeof(RpcException))
 			});
 
 	public override IPublisherAction<BankPartnersRequestV1> BankPartnersRequest =>

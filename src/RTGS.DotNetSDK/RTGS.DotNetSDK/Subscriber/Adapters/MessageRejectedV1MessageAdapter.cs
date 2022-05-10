@@ -1,17 +1,17 @@
 ﻿using System.Text.Json;
 using RTGS.DotNetSDK.Subscriber.Handlers;
-using RTGS.ISO20022.Messages.Admi_002_001.V01;
+using RTGS.Public.Messages.Subscriber;
 using RTGS.Public.Payment.V3;
 
 namespace RTGS.DotNetSDK.Subscriber.Adapters;
 
-internal class MessageRejectedV1MessageAdapter : IMessageAdapter<Admi00200101>
+internal class MessageRejectedV1MessageAdapter : IMessageAdapter<MessageRejectV1>
 {
-	public string MessageIdentifier => "MessageRejected";
+	public string MessageIdentifier => nameof(MessageRejectV1);
 
-	public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<Admi00200101> handler)
+	public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<MessageRejectV1> handler)
 	{
-		var messageRejectedMessage = JsonSerializer.Deserialize<Admi00200101>(rtgsMessage.Data);
+		var messageRejectedMessage = JsonSerializer.Deserialize<MessageRejectV1>(rtgsMessage.Data);
 		await handler.HandleMessageAsync(messageRejectedMessage);
 	}
 }

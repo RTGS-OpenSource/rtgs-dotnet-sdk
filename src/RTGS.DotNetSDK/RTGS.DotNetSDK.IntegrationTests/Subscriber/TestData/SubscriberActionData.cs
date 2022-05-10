@@ -1,19 +1,16 @@
 ﻿using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
-using RTGS.ISO20022.Messages.Admi_002_001.V01;
-using RTGS.ISO20022.Messages.Camt_054_001.V09;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 
 public class SubscriberActionData : BaseSubscriberActionData
 {
-	public override ISubscriberAction<FIToFICustomerCreditTransferV10> PayawayFundsV1 =>
+	public override ISubscriberAction<PayawayFundsV1> PayawayFundsV1 =>
 		SubscriberActions.PayawayFundsV1;
 
-	public override ISubscriberAction<BankToCustomerDebitCreditNotificationV09> PayawayCompleteV1 =>
+	public override ISubscriberAction<PayawayCompleteV1> PayawayCompleteV1 =>
 		SubscriberActions.PayawayCompleteV1;
 
-	public override ISubscriberAction<Admi00200101> MessageRejectedV1 =>
+	public override ISubscriberAction<MessageRejectV1> MessageRejectedV1 =>
 		SubscriberActions.MessageRejectedV1;
 
 	public override ISubscriberAction<AtomicLockResponseV1> AtomicLockResponseV1 =>
