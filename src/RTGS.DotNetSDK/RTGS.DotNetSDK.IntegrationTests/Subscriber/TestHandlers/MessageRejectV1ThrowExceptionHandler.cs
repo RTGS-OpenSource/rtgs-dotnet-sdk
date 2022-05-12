@@ -9,7 +9,6 @@ public class MessageRejectV1ThrowExceptionHandler : IMessageRejectV1Handler
 	public MessageRejectV1ThrowExceptionHandler(Exception exception)
 	{
 		_exception = exception;
-
 	}
 
 	public Task HandleMessageAsync(MessageRejectV1 message) =>

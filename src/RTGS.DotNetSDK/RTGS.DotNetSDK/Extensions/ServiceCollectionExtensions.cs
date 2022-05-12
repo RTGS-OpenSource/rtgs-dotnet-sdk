@@ -12,6 +12,7 @@ using RTGS.DotNetSDK.Subscriber.Validators;
 using RTGS.IDCryptSDK;
 using RTGS.IDCryptSDK.Extensions;
 using RTGS.Public.Messages.Publisher;
+using RTGS.Public.Messages.Subscriber;
 using RTGS.Public.Payment.V4;
 
 namespace RTGS.DotNetSDK.Extensions;
@@ -97,16 +98,16 @@ public static class ServiceCollectionExtensions
 
 		serviceCollection.AddSingleton<IRtgsSubscriber, RtgsSubscriber>();
 		serviceCollection.AddTransient<IHandleMessageCommandsFactory, HandleMessageCommandsFactory>();
-		serviceCollection.AddTransient<IMessageAdapter, AtomicLockResponseV1MessageAdapter>();
-		serviceCollection.AddTransient<IMessageAdapter, AtomicTransferResponseV1MessageAdapter>();
-		serviceCollection.AddTransient<IMessageAdapter, AtomicTransferFundsV1MessageAdapter>();
-		serviceCollection.AddTransient<IMessageAdapter, MessageRejectedV1MessageAdapter>();
-		serviceCollection.AddTransient<IMessageAdapter, PayawayCompleteV1MessageAdapter>();
-		serviceCollection.AddTransient<IMessageAdapter, PayawayFundsV1MessageAdapter>();
-		serviceCollection.AddTransient<IMessageAdapter, EarmarkFundsV1MessageAdapter>();
-		serviceCollection.AddTransient<IMessageAdapter, EarmarkCompleteV1MessageAdapter>();
-		serviceCollection.AddTransient<IMessageAdapter, EarmarkReleaseV1MessageAdapter>();
-		serviceCollection.AddTransient<IMessageAdapter, BankPartnersResponseV1MessageAdapter>();
+		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<AtomicLockResponseV1>>();
+		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<AtomicTransferResponseV1>>();
+		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<AtomicTransferFundsV1>>();
+		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<MessageRejectV1>>();
+		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<PayawayCompleteV1>>();
+		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<PayawayFundsV1>>();
+		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<EarmarkFundsV1>>();
+		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<EarmarkCompleteV1>>();
+		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<EarmarkReleaseV1>>();
+		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<BankPartnersResponseV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, IdCryptInvitationConfirmationV1MessageAdapter>();
 		serviceCollection.AddTransient<IMessageAdapter, IdCryptCreateInvitationRequestV1MessageAdapter>();
 		serviceCollection.AddTransient<IMessageAdapter, IdCryptBankInvitationV1MessageAdapter>();
