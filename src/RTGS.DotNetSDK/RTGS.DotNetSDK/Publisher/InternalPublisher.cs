@@ -33,6 +33,15 @@ internal class InternalPublisher : IInternalPublisher
 		_serviceProvider = serviceProvider;
 	}
 
+	public Task<SendResult> SendMessageAsync<T>(
+		T message,
+		CancellationToken cancellationToken,
+		Dictionary<string, string> headers = null,
+		string idCryptAlias = null,
+		[CallerMemberName] string callingMethod = null) =>
+		SendMessageAsync(message, typeof(T).Name, cancellationToken, headers, idCryptAlias, callingMethod);
+
+
 	public async Task<SendResult> SendMessageAsync<T>(
 		T message,
 		string messageIdentifier,
