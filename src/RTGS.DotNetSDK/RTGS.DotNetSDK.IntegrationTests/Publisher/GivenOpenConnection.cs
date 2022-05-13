@@ -109,7 +109,7 @@ public class GivenOpenConnection
 			allCompleted.Should().BeTrue();
 
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-			receiver.Connections.Single().Requests.Select(request => JsonSerializer.Deserialize<AtomicLockRequestV1>(request.Data))
+			receiver.Connections.Single().Requests.Select(request => JsonSerializer.Deserialize<AtomicLockRequestV1>(request.Data.Span))
 				.Should().BeEquivalentTo(atomicLockRequests, options => options.ComparingByMembers<AtomicLockRequestV1>());
 
 			IEnumerable<AtomicLockRequestV1> GenerateFiveUniqueAtomicLockRequests()
@@ -273,7 +273,7 @@ public class GivenOpenConnection
 
 			if (publisherAction.ComparePayload)
 			{
-				var receivedRequest = JsonSerializer.Deserialize<TRequest>(receivedMessage.Data);
+				var receivedRequest = JsonSerializer.Deserialize<TRequest>(receivedMessage.Data.Span);
 				receivedRequest.Should().BeEquivalentTo(publisherAction.Request, options => options.ComparingByMembers<TRequest>());
 			}
 		}

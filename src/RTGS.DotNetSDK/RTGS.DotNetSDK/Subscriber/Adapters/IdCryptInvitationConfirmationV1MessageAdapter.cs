@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Handlers;
-using RTGS.Public.Payment.V3;
+using RTGS.Public.Payment.V4;
 
 namespace RTGS.DotNetSDK.Subscriber.Adapters;
 
@@ -11,7 +11,7 @@ internal class IdCryptInvitationConfirmationV1MessageAdapter : IMessageAdapter<I
 
 	public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<IdCryptInvitationConfirmationV1> handler)
 	{
-		var idCryptInvitationConfirmationMessage = JsonSerializer.Deserialize<IdCryptInvitationConfirmationV1>(rtgsMessage.Data);
+		var idCryptInvitationConfirmationMessage = JsonSerializer.Deserialize<IdCryptInvitationConfirmationV1>(rtgsMessage.Data.Span);
 		await handler.HandleMessageAsync(idCryptInvitationConfirmationMessage);
 	}
 }
