@@ -43,7 +43,7 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			new List<LogEntry>
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("payment.lock.v2 message received from RTGS", LogEventLevel.Information),
+				new("AtomicLockResponseV1 message received from RTGS", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -54,7 +54,7 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			new List<LogEntry>
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("payment.block.v2 message received from RTGS", LogEventLevel.Information),
+				new("AtomicTransferResponseV1 message received from RTGS", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -65,7 +65,7 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			new List<LogEntry>
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("payment.blockfunds.v1 message received from RTGS", LogEventLevel.Information),
+				new("AtomicTransferFundsV1 message received from RTGS", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -76,7 +76,7 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			new List<LogEntry>
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("EarmarkFunds message received from RTGS", LogEventLevel.Information),
+				new("EarmarkFundsV1 message received from RTGS", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -87,7 +87,7 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			new List<LogEntry>
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("EarmarkComplete message received from RTGS", LogEventLevel.Information),
+				new("EarmarkCompleteV1 message received from RTGS", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -98,7 +98,7 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			new List<LogEntry>
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("EarmarkRelease message received from RTGS", LogEventLevel.Information),
+				new("EarmarkReleaseV1 message received from RTGS", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
@@ -109,7 +109,7 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			new List<LogEntry>
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("bank.partners.v1 message received from RTGS", LogEventLevel.Information),
+				new("BankPartnersResponseV1 message received from RTGS", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});

@@ -12,29 +12,29 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 	}
 
 	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, "payment.lock.v2", cancellationToken);
+		_internalPublisher.SendMessageAsync(message, cancellationToken);
 
 	public Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequestV1 message, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, "payment.block.v2", cancellationToken);
+		_internalPublisher.SendMessageAsync(message, cancellationToken);
 
 	public Task<SendResult> SendEarmarkConfirmationAsync(EarmarkConfirmationV1 message, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, "payment.earmarkconfirmation.v1", cancellationToken);
+		_internalPublisher.SendMessageAsync(message, cancellationToken);
 
 	public Task<SendResult> SendAtomicTransferConfirmationAsync(AtomicTransferConfirmationV1 message, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, "payment.blockconfirmation.v1", cancellationToken);
+		_internalPublisher.SendMessageAsync(message, cancellationToken);
 
 	public Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequestV1 message, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, "payment.update.ledger.v2", cancellationToken);
+		_internalPublisher.SendMessageAsync(message, cancellationToken);
 
 	public Task<SendResult> SendPayawayCreateAsync(PayawayCreationV1 message, string idCryptAlias, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, nameof(PayawayCreationV1), cancellationToken, idCryptAlias: idCryptAlias);
+		_internalPublisher.SendMessageAsync(message, cancellationToken, idCryptAlias: idCryptAlias);
 
 	public Task<SendResult> SendPayawayConfirmationAsync(PayawayConfirmationV1 message, string idCryptAlias, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, nameof(PayawayConfirmationV1), cancellationToken, idCryptAlias: idCryptAlias);
+		_internalPublisher.SendMessageAsync(message, cancellationToken, idCryptAlias: idCryptAlias);
 
 	public Task<SendResult> SendPayawayRejectionAsync(PayawayRejectionV1 message, string idCryptAlias, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, nameof(PayawayRejectionV1), cancellationToken, idCryptAlias: idCryptAlias);
+		_internalPublisher.SendMessageAsync(message, cancellationToken, idCryptAlias: idCryptAlias);
 
 	public Task<SendResult> SendBankPartnersRequestAsync(BankPartnersRequestV1 message, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, "bank.partners.v1", cancellationToken);
+		_internalPublisher.SendMessageAsync(message, cancellationToken);
 }
