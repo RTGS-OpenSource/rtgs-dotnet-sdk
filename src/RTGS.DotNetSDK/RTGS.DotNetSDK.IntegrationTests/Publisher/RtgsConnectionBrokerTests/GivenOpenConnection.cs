@@ -226,7 +226,7 @@ public class GivenOpenConnection
 			};
 
 			var actualMessageData = JsonSerializer
-				.Deserialize<IdCryptInvitationV1>(receivedMessage.Data);
+				.Deserialize<IdCryptInvitationV1>(receivedMessage.Data.Span);
 
 			actualMessageData.Should().BeEquivalentTo(expectedMessageData);
 		}

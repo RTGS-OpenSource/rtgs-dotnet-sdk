@@ -1,10 +1,11 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Google.Protobuf;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Publisher.Exceptions;
 using RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
-using RTGS.Public.Payment.V3;
+using RTGS.Public.Payment.V4;
 
 namespace RTGS.DotNetSDK.Publisher;
 
@@ -211,7 +212,7 @@ internal class InternalPublisher : IInternalPublisher
 
 		var rtgsMessage = new RtgsMessage
 		{
-			Data = JsonSerializer.Serialize(message),
+			Data = UnsafeByteOperations.UnsafeWrap(JsonSerializer.SerializeToUtf8Bytes(message)),
 			MessageIdentifier = messageIdentifier,
 			CorrelationId = _acknowledgementContext.CorrelationId
 		};

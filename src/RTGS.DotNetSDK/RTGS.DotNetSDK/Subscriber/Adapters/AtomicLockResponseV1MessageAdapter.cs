@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.Public.Messages.Subscriber;
-using RTGS.Public.Payment.V3;
+using RTGS.Public.Payment.V4;
 
 namespace RTGS.DotNetSDK.Subscriber.Adapters;
 
@@ -11,7 +11,7 @@ internal class AtomicLockResponseV1MessageAdapter : IMessageAdapter<AtomicLockRe
 
 	public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<AtomicLockResponseV1> handler)
 	{
-		var atomicLockResponseMessage = JsonSerializer.Deserialize<AtomicLockResponseV1>(rtgsMessage.Data);
+		var atomicLockResponseMessage = JsonSerializer.Deserialize<AtomicLockResponseV1>(rtgsMessage.Data.Span);
 		await handler.HandleMessageAsync(atomicLockResponseMessage);
 	}
 }

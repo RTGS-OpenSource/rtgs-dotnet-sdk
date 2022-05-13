@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Subscriber.Exceptions;
 using RTGS.IDCryptSDK.JsonSignatures;
 using RTGS.Public.Messages.Subscriber;
-using RTGS.Public.Payment.V3;
+using RTGS.Public.Payment.V4;
 
 namespace RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
 
@@ -43,7 +43,7 @@ internal class PayawayFundsV1MessageVerifier : IVerifyMessage
 			throw new RtgsSubscriberException($"Unable to verify {MessageIdentifier} message due to missing headers.");
 		}
 
-		var message = JsonSerializer.Deserialize<PayawayFundsV1>(rtgsMessage.Data);
+		var message = JsonSerializer.Deserialize<PayawayFundsV1>(rtgsMessage.Data.Span);
 
 		var privateSignatureIsValid = await _jsonSignaturesClient.VerifyPrivateSignatureAsync(message?.FIToFICstmrCdtTrf, privateSignature, alias, cancellationToken);
 

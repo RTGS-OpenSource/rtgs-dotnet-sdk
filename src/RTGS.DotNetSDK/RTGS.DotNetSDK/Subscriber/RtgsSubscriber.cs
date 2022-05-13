@@ -5,7 +5,7 @@ using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
 using RTGS.DotNetSDK.Subscriber.Validators;
-using RTGS.Public.Payment.V3;
+using RTGS.Public.Payment.V4;
 
 namespace RTGS.DotNetSDK.Subscriber;
 

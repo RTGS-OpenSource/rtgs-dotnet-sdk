@@ -512,7 +512,7 @@ public class AndIdCryptApiAvailable
 				AgentPublicDid = GetPublicDid.ExpectedDid
 			};
 
-			var actualMessageData = JsonSerializer.Deserialize<IdCryptInvitationConfirmationV1>(receivedMessage.Data);
+			var actualMessageData = JsonSerializer.Deserialize<IdCryptInvitationConfirmationV1>(receivedMessage.Data.Span);
 
 			actualMessageData.Should().BeEquivalentTo(expectedMessageData);
 		}
@@ -675,7 +675,7 @@ public class AndIdCryptApiAvailable
 				AgentPublicDid = GetPublicDid.ExpectedDid
 			};
 
-			var actualMessageData = JsonSerializer.Deserialize<IdCryptInvitationConfirmationV1>(receivedMessage.Data);
+			var actualMessageData = JsonSerializer.Deserialize<IdCryptInvitationConfirmationV1>(receivedMessage.Data.Span);
 
 			actualMessageData.Should().BeEquivalentTo(expectedMessageData);
 		}

@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.Public.Messages.Subscriber;
-using RTGS.Public.Payment.V3;
+using RTGS.Public.Payment.V4;
 
 namespace RTGS.DotNetSDK.Subscriber.Adapters;
 
@@ -11,7 +11,7 @@ internal class EarmarkReleaseV1MessageAdapter : IMessageAdapter<EarmarkReleaseV1
 
 	public async Task HandleMessageAsync(RtgsMessage rtgsMessage, IHandler<EarmarkReleaseV1> handler)
 	{
-		var earmarkReleaseMessage = JsonSerializer.Deserialize<EarmarkReleaseV1>(rtgsMessage.Data);
+		var earmarkReleaseMessage = JsonSerializer.Deserialize<EarmarkReleaseV1>(rtgsMessage.Data.Span);
 		await handler.HandleMessageAsync(earmarkReleaseMessage);
 	}
 }

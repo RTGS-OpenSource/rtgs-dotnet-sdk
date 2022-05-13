@@ -1,6 +1,7 @@
 ﻿extern alias RTGSServer;
 using System.Text.Json;
-using RTGSServer::RTGS.Public.Payment.V3;
+using Google.Protobuf;
+using RTGSServer::RTGS.Public.Payment.V4;
 
 namespace RTGS.DotNetSDK.IntegrationTests.TestServer;
 
@@ -53,7 +54,7 @@ public class FromRtgsSender
 		{
 			CorrelationId = correlationId,
 			MessageIdentifier = messageIdentifier,
-			Data = JsonSerializer.Serialize(data)
+			Data = UnsafeByteOperations.UnsafeWrap(JsonSerializer.SerializeToUtf8Bytes(data))
 		};
 
 		if (additionalHeaders is not null && additionalHeaders.Any())
