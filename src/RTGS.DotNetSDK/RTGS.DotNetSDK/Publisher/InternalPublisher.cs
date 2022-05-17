@@ -239,7 +239,7 @@ internal class InternalPublisher : IInternalPublisher
 		{
 			_logger.LogInformation("Sending {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
 
-			await _toRtgsCall.RequestStream.WriteAsync(rtgsMessage);
+			await _toRtgsCall.RequestStream.WriteAsync(rtgsMessage, cancellationToken);
 
 			_logger.LogInformation("Sent {MessageType} to RTGS ({CallingMethod})", typeof(T).Name, callingMethod);
 		}

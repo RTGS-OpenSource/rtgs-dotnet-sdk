@@ -25,7 +25,7 @@ public class TestPaymentService : Payment.PaymentBase
 
 		await foreach (var message in requestStream.ReadAllAsync(context.CancellationToken))
 		{
-			await _messageHandler.Handle(message, responseStream);
+			await _messageHandler.Handle(message, responseStream, context.CancellationToken);
 
 			connectionInfo.Add(message);
 		}
