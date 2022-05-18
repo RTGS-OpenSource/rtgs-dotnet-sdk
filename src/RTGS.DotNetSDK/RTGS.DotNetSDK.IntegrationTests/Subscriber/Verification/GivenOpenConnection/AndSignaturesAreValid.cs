@@ -1,23 +1,22 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Serialization;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
-using RTGS.ISO20022.Messages.Pacs_008_001.V10;
+using RTGS.IDCrypt.Service.Contracts.VerifyMessage;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
 
 public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixture>
 {
-	private static readonly Uri IdCryptApiUri = new("http://id-crypt-cloud-agent-api.com");
-	private const string IdCryptApiKey = "id-crypt-api-key";
+	private static readonly Uri IdCryptServiceUri = new("https://id-crypt-service");
 
 	private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
-	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(100);
+	private static readonly TimeSpan WaitForReceivedRequestDuration = TimeSpan.FromMilliseconds(100);
 
 	private readonly GrpcServerFixture _grpcServer;
 	private readonly ITestCorrelatorContext _serilogContext;
-	private StatusCodeHttpHandler _idCryptMessageHandler;
+
+	private StatusCodeHttpHandler _idCryptServiceHttpHandler;
 	private IHost _clientHost;
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
@@ -49,23 +48,20 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
-					new Uri("http://id-crypt-cloud-agent-api.com"),
-					"id-crypt-api-key",
-					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+					IdCryptServiceUri)
 				.EnableMessageSigning()
 				.Build();
 
-			_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
-				.WithOkResponse(GetActiveConnectionWithAlias.HttpRequestResponseContext)
-				.WithOkResponse(VerifyPrivateSignatureSuccessfully.HttpRequestResponseContext)
+				.WithOkResponse(VerifyMessageSuccessfully.HttpRequestResponseContext)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 				.ConfigureServices((_, services) => services
 					.AddRtgsSubscriber(rtgsSdkOptions)
-					.AddTestIdCryptHttpClient(_idCryptMessageHandler))
+					.AddTestIdCryptServiceHttpClient(_idCryptServiceHttpHandler))
 				.UseSerilog()
 				.Build();
 
@@ -89,7 +85,7 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenVerifyingMessage_ThenVerifyDocumentIsCalled<TRequest>(SubscriberAction<TRequest> subscriberAction)
+	public async Task WhenVerifyingMessage_ThenPathIsExpected<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
@@ -97,14 +93,16 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
+		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
+
 		await _rtgsSubscriber.StopAsync();
 
-		_idCryptMessageHandler.Requests.Should().ContainKey("/json-signatures/verify/connection-did");
+		_idCryptServiceHttpHandler.Requests.Should().ContainKey(VerifyMessageSuccessfully.Path);
 	}
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenCallingVerifyPrivateSignature_ThenBaseAddressIsExpected<TRequest>(SubscriberAction<TRequest> subscriberAction)
+	public async Task WhenCallingVerifyMessage_ThenBaseAddressIsExpected<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
@@ -112,19 +110,21 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
+		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
+
 		await _rtgsSubscriber.StopAsync();
 
-		var actualVerifyPrivateSignatureApiUri = _idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
+		var actualVerifyPrivateSignatureApiUri = _idCryptServiceHttpHandler.Requests[VerifyMessageSuccessfully.Path]
 			.Single()
 			.RequestUri
 			!.GetLeftPart(UriPartial.Authority);
 
-		actualVerifyPrivateSignatureApiUri.Should().BeEquivalentTo(IdCryptApiUri.GetLeftPart(UriPartial.Authority));
+		actualVerifyPrivateSignatureApiUri.Should().BeEquivalentTo(IdCryptServiceUri.GetLeftPart(UriPartial.Authority));
 	}
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenCallingVerifyPrivateSignature_ThenApiKeyHeaderIsExpected<TRequest>(SubscriberAction<TRequest> subscriberAction)
+	public async Task WhenCallingVerifyMessage_ThenBodyIsExpected<TRequest>(SubscriberAction<TRequest> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
@@ -132,59 +132,28 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
-		await _rtgsSubscriber.StopAsync();
-
-		_idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
-			.Single()
-			.Headers.GetValues("X-API-Key")
-			.Should().ContainSingle()
-			.Which.Should().Be(IdCryptApiKey);
-	}
-
-	[Theory]
-	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenCallingVerifyPrivateSignature_ThenConnectionIdIsInBody<TRequest>(SubscriberAction<TRequest> subscriberAction)
-	{
-		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
-
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
-
-		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
-		var requestContent = await _idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
+		var requestContent = await _idCryptServiceHttpHandler.Requests[VerifyMessageSuccessfully.Path]
 			.Single().Content!.ReadAsStringAsync();
 
-		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest<TRequest>>(requestContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest>(
+			requestContent,
+			// TODO JLIQ - Remove when requests have JsonPropertyName attributes
+			new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-		signDocumentRequest!.ConnectionId.Should().Be(GetActiveConnectionWithAlias.ExpectedResponse.ConnectionId);
-	}
-
-	[Theory]
-	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenCallingVerifyPrivateSignature_ThenPublicSignatureIsInBody<TRequest>(SubscriberAction<TRequest> subscriberAction)
-	{
-		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
-
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
-
-		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		await _rtgsSubscriber.StopAsync();
-
-		var requestContent = await _idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
-			.Single().Content!.ReadAsStringAsync();
-
-		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest<TRequest>>(requestContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-		var expectedPrivateSignature = subscriberAction.AdditionalHeaders["pairwise-did-signature"];
-
-		signDocumentRequest!.Signature.Should().Be(expectedPrivateSignature);
+		signDocumentRequest.Should().BeEquivalentTo(new VerifyPrivateSignatureRequest
+		{
+			RtgsGlobalId = subscriberAction.AdditionalHeaders["partner-rtgs-global-id"],
+			PrivateSignature = subscriberAction.AdditionalHeaders["pairwise-did-signature"],
+			Alias = subscriberAction.AdditionalHeaders["alias"]
+		}, options => options.Excluding(x => x.Message));
 	}
 
 	[Fact]
-	public async Task WhenCallingVerifyPrivateSignatureForPayawayFundsV1_ThenMessageContentsAreInBody()
+	public async Task WhenCallingVerifyMessageForPayawayFundsV1_ThenMessageContentsAreInBody()
 	{
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
@@ -193,15 +162,21 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
+		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
+
 		await _rtgsSubscriber.StopAsync();
 
-		var requestContent = await _idCryptMessageHandler.Requests[VerifyPrivateSignatureSuccessfully.Path]
+		var requestContent = await _idCryptServiceHttpHandler.Requests[VerifyMessageSuccessfully.Path]
 			.Single().Content!.ReadAsStringAsync();
 
-		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest<FIToFICustomerCreditTransferV10>>(
-			requestContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest>(
+			requestContent,
+			// TODO JLIQ - Remove when requests have JsonPropertyName attributes
+			new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-		signDocumentRequest!.Document.Should().BeEquivalentTo(action.Message.FIToFICstmrCdtTrf);
+		var expectedMessage = JsonSerializer.Serialize(action.Message.FIToFICstmrCdtTrf);
+
+		signDocumentRequest!.Message.Should().BeEquivalentTo(expectedMessage);
 	}
 
 	[Theory]
@@ -217,23 +192,11 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 		var handler = allHandlers.OfType<AllTestHandlers.TestHandler<TMessage>>().Single();
-		handler.WaitForMessage(WaitForReceivedMessageDuration);
+		handler.WaitForMessage(WaitForReceivedRequestDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
 		var informationLogs = _serilogContext.SubscriberLogs(LogEventLevel.Information);
 		informationLogs.Should().BeEquivalentTo(subscriberAction.SubscriberLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
-	}
-
-	private record VerifyPrivateSignatureRequest<TDocument>
-	{
-		[JsonPropertyName("connection_id")]
-		public string ConnectionId { get; init; }
-
-		[JsonPropertyName("document")]
-		public TDocument Document { get; init; }
-
-		[JsonPropertyName("signature")]
-		public string Signature { get; init; }
 	}
 }

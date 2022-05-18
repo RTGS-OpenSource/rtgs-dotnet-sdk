@@ -46,22 +46,19 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
-					new Uri("http://id-crypt-cloud-agent-api.com"),
-					"id-crypt-api-key",
-					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+					new Uri("https://id-crypt-service"))
 				.Build();
 
 			var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
-				.WithOkResponse(GetActiveConnectionWithAlias.HttpRequestResponseContext)
-				.WithOkResponse(VerifyPrivateSignatureSuccessfully.HttpRequestResponseContext)
+				.WithOkResponse(VerifyMessageSuccessfully.HttpRequestResponseContext)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 				.ConfigureServices((_, services) => services
 					.AddRtgsSubscriber(rtgsSdkOptions)
-					.AddTestIdCryptHttpClient(idCryptMessageHandler))
+					.AddTestIdCryptServiceHttpClient(idCryptMessageHandler))
 				.UseSerilog()
 				.Build();
 
@@ -178,7 +175,7 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 		using var disposeSignal = new ManualResetEventSlim();
 		const int concurrentDisposableThreads = 20;
 		var disposeTasks = Enumerable.Range(1, concurrentDisposableThreads)
-			.Select(request => Task.Run(async () =>
+			.Select(_ => Task.Run(async () =>
 			{
 				disposeSignal.Wait();
 
@@ -354,7 +351,7 @@ public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 			.ThrowWhenMessageRejectV1Received(new OutOfMemoryException("test"));
 
 		await _rtgsSubscriber.StartAsync(testHandlers);
-		_rtgsSubscriber.OnExceptionOccurred += (_, args) => exceptionSignal.Set();
+		_rtgsSubscriber.OnExceptionOccurred += (_, _) => exceptionSignal.Set();
 
 		await _fromRtgsSender.SendAsync(nameof(MessageRejectV1), TestData.ValidMessages.MessageRejected);
 

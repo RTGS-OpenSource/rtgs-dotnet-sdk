@@ -1,16 +1,17 @@
 ﻿using System.Text.Json;
-using RTGS.IDCryptSDK.JsonSignatures.Models;
+using RTGS.IDCrypt.Service.Contracts.SignMessage;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
-internal class SignDocument
+internal class SignMessage
 {
-	public const string Path = "/json-signatures/sign";
+	public const string Path = "/api/SignMessage";
 
-	public static SignDocumentResponse Response => new()
+	public static SignMessageResponse Response => new()
 	{
+		PublicDidSignature = "public-did-signature",
 		PairwiseDidSignature = "pairwise-did-signature",
-		PublicDidSignature = "public-did-signature"
+		Alias = "id-crypt-alias"
 	};
 
 	public static HttpRequestResponseContext HttpRequestResponseContext =>

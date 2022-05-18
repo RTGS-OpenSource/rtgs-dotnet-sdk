@@ -9,9 +9,10 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 	private readonly GrpcServerFixture _grpcServer;
-	private ToRtgsMessageHandler _toRtgsMessageHandler;
+	private StatusCodeHttpHandler _idCryptServiceHttpHandler;
 	private IHost _clientHost;
 	private IRtgsConnectionBroker _rtgsConnectionBroker;
+	private ToRtgsMessageHandler _toRtgsMessageHandler;
 
 	public GivenInitialFailedConnection(GrpcServerFixture grpcServer)
 	{
@@ -27,23 +28,20 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
-					new Uri("http://id-crypt-cloud-agent-api.com"),
-					"id-crypt-api-key",
-					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+					new Uri("https://id-crypt-service"))
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 
-			var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
-				.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-				.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 				.ConfigureServices(services => services
 					.AddRtgsPublisher(rtgsSdkOptions)
-					.AddTestIdCryptHttpClient(idCryptMessageHandler))
+					.AddTestIdCryptServiceHttpClient(_idCryptServiceHttpHandler))
 				.Build();
 
 			_rtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
@@ -83,6 +81,8 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
 		receiver.ThrowOnConnection = true;
+
+		_idCryptServiceHttpHandler.SetExpectedRequestCount(2);
 
 		await FluentActions
 			.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())

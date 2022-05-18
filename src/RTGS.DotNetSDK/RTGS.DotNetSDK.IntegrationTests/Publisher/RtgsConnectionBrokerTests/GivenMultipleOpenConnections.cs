@@ -9,8 +9,9 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 	private readonly GrpcServerFixture _grpcServer;
-	private ToRtgsMessageHandler _toRtgsMessageHandler;
+	private StatusCodeHttpHandler _idCryptServiceHttpHandler;
 	private IHost _clientHost;
+	private ToRtgsMessageHandler _toRtgsMessageHandler;
 
 	public GivenMultipleOpenConnections(GrpcServerFixture grpcServer)
 	{
@@ -26,23 +27,20 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
-					new Uri("http://id-crypt-cloud-agent-api.com"),
-					"id-crypt-api-key",
-					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+					new Uri("https://id-crypt-service"))
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 
-			var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
-				.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-				.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 				.ConfigureServices(services => services
 					.AddRtgsPublisher(rtgsSdkOptions)
-					.AddTestIdCryptHttpClient(idCryptMessageHandler))
+					.AddTestIdCryptServiceHttpClient(_idCryptServiceHttpHandler))
 				.Build();
 
 			_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
@@ -72,6 +70,8 @@ public class GivenMultipleOpenConnections : IDisposable, IClassFixture<GrpcServe
 		var rtgsConnectionBroker3 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 		var rtgsConnectionBroker4 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 		var rtgsConnectionBroker5 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
+
+		_idCryptServiceHttpHandler.SetExpectedRequestCount(5);
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 		await rtgsConnectionBroker1.SendInvitationAsync();

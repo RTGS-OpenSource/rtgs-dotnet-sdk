@@ -5,13 +5,18 @@ namespace RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 internal class StatusCodeHttpHandler : DelegatingHandler
 {
 	private readonly Dictionary<string, MockHttpResponse> _mockHttpResponses;
+	private readonly CountdownEvent _requestsSignal;
 
-	public Dictionary<string, IList<HttpRequestMessage>> Requests { get; }
+	private int _expectedRequestCount;
+
+	public Dictionary<string, IList<HttpRequestMessage>> Requests { get; } = new();
 
 	public StatusCodeHttpHandler(Dictionary<string, MockHttpResponse> mockHttpResponses)
 	{
-		Requests = new Dictionary<string, IList<HttpRequestMessage>>();
 		_mockHttpResponses = mockHttpResponses;
+
+		_expectedRequestCount = _mockHttpResponses.Count;
+		_requestsSignal = new CountdownEvent(_expectedRequestCount);
 	}
 
 	protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -35,6 +40,18 @@ internal class StatusCodeHttpHandler : DelegatingHandler
 
 		response.RequestMessage = request;
 
+		_requestsSignal.Signal();
+
 		return Task.FromResult(response);
 	}
+
+	public void WaitForRequests(TimeSpan timeout) => _requestsSignal.Wait(timeout);
+
+	public void SetExpectedRequestCount(int count)
+	{
+		_expectedRequestCount = count;
+		_requestsSignal.Reset(_expectedRequestCount);
+	}
+
+	public void Reset() => _requestsSignal.Reset();
 }

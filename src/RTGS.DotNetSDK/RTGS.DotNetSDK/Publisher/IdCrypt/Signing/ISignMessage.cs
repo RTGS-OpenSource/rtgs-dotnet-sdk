@@ -1,8 +1,8 @@
-﻿using RTGS.IDCryptSDK.JsonSignatures.Models;
+﻿using RTGS.IDCrypt.Service.Contracts.SignMessage;
 
 namespace RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 
-internal interface ISignMessage<TMessageType>
+internal interface ISignMessage<in TMessageType>
 {
-	Task<SignDocumentResponse> SignAsync(TMessageType message, string alias, CancellationToken cancellationToken = default);
+	Task<SignMessageResponse> SignAsync(TMessageType message, string partnerRtgsGlobalId, CancellationToken cancellationToken = default);
 }

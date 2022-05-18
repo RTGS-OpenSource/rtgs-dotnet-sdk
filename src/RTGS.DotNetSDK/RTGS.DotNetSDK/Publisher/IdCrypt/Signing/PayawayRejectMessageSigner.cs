@@ -1,28 +1,29 @@
-﻿using RTGS.IDCryptSDK.JsonSignatures;
-using RTGS.IDCryptSDK.JsonSignatures.Models;
+﻿using RTGS.DotNetSDK.IdCrypt;
+using RTGS.IDCrypt.Service.Contracts.SignMessage;
 using RTGS.Public.Messages.Publisher;
 
 namespace RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 
 internal class PayawayRejectMessageSigner : ISignMessage<PayawayRejectionV1>
 {
-	private readonly IJsonSignaturesClient _client;
+	private readonly IIdCryptServiceClient _idCryptServiceClient;
 
-	public PayawayRejectMessageSigner(IJsonSignaturesClient client)
+	public PayawayRejectMessageSigner(IIdCryptServiceClient idCryptServiceClient)
 	{
-		_client = client;
+		_idCryptServiceClient = idCryptServiceClient;
 	}
 
-	public async Task<SignDocumentResponse> SignAsync(
+	public async Task<SignMessageResponse> SignAsync(
 		PayawayRejectionV1 message,
-		string alias,
+		string partnerRtgsGlobalId,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(message);
 
 		var documentToSign = new Dictionary<string, object> { { "reason", message.MsgRjctn?.Rsn?.RsnDesc } };
 
-		var response = await _client.SignDocumentAsync(documentToSign, alias, cancellationToken);
+		// TODO - Wrap in try?
+		var response = await _idCryptServiceClient.SignMessageAsync(partnerRtgsGlobalId, documentToSign, cancellationToken);
 
 		return response;
 	}

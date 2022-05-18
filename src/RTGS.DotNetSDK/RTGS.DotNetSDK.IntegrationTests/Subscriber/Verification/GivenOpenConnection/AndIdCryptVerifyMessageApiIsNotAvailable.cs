@@ -1,10 +1,11 @@
-﻿using RTGS.DotNetSDK.IntegrationTests.Extensions;
+﻿using System.Net.Http;
+using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
 
-public class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFixture>
+public class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private readonly GrpcServerFixture _grpcServer;
 	private readonly ITestCorrelatorContext _serilogContext;
@@ -14,7 +15,7 @@ public class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFix
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
 
-	public AndSignaturesAreNotValid(GrpcServerFixture grpcServer)
+	public AndIdCryptVerifyMessageApiIsNotAvailable(GrpcServerFixture grpcServer)
 	{
 		_grpcServer = grpcServer;
 
@@ -47,7 +48,7 @@ public class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFix
 
 			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
-				.WithOkResponse(VerifyMessageUnsuccessfully.HttpRequestResponseContext)
+				.WithServiceUnavailableResponse(VerifyMessageSuccessfully.Path)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
@@ -78,31 +79,6 @@ public class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFix
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
-	{
-		using var exceptionSignal = new ManualResetEventSlim();
-
-		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
-		_rtgsSubscriber.OnExceptionOccurred += (_, _) => exceptionSignal.Set();
-
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
-
-		exceptionSignal.Wait();
-
-		await _rtgsSubscriber.StopAsync();
-
-		var errorLogs = _serilogContext.LogsFor(
-			$"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier",
-			LogEventLevel.Error);
-
-		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			$"Verification of {subscriberAction.MessageIdentifier} message private signature failed",
-			LogEventLevel.Error,
-			typeof(RtgsSubscriberException)));
-	}
-
-	[Theory]
-	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		using var exceptionSignal = new ManualResetEventSlim();
@@ -122,28 +98,58 @@ public class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFix
 
 		await _rtgsSubscriber.StopAsync();
 
-		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should().Be($"Verification of {subscriberAction.MessageIdentifier} message failed.");
+		raisedException.Should().BeOfType<RtgsSubscriberException>()
+			.Which.Message.Should().Be("Error occurred when sending VerifyMessage request to ID Crypt Service");
 	}
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenVerifyingMessageAndVerifierThrows_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task WhenVerifyingMessage_ThenHandlerLogs<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		using var exceptionSignal = new ManualResetEventSlim();
 
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 		_rtgsSubscriber.OnExceptionOccurred += (_, _) => exceptionSignal.Set();
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		exceptionSignal.Wait();
 
 		await _rtgsSubscriber.StopAsync();
 
-		var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
+		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.PayawayFundsV1MessageVerifier", LogEventLevel.Error);
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			$"An error occurred while verifying a message (MessageIdentifier: {subscriberAction.MessageIdentifier})",
+			"Error occurred when sending VerifyMessage request to ID Crypt Service",
 			LogEventLevel.Error,
 			typeof(RtgsSubscriberException)));
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task WhenVerifyingMessage_ThenIdCryptServiceClientLogs<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		using var exceptionSignal = new ManualResetEventSlim();
+
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+		_rtgsSubscriber.OnExceptionOccurred += (_, _) => exceptionSignal.Set();
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
+
+		exceptionSignal.Wait();
+
+		await _rtgsSubscriber.StopAsync();
+
+		using var _ = new AssertionScope();
+
+		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug);
+		debugLogs.Should().ContainSingle()
+			.Which.Should().BeEquivalentTo(new LogEntry("Sending VerifyMessage request to ID Crypt Service", LogEventLevel.Debug));
+
+		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Error);
+		errorLogs.Should().ContainSingle()
+			.Which.Should().BeEquivalentTo(new LogEntry(
+				"Error occurred when sending VerifyMessage request to ID Crypt Service",
+				LogEventLevel.Error,
+				typeof(HttpRequestException)));
 	}
 }

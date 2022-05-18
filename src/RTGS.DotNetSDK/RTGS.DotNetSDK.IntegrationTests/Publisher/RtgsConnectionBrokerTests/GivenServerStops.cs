@@ -10,9 +10,11 @@ public class GivenServerStops : IAsyncLifetime
 
 	private readonly GrpcTestServer _grpcServer;
 	private readonly ITestCorrelatorContext _serilogContext;
-	private ToRtgsMessageHandler _toRtgsMessageHandler;
+
+	private StatusCodeHttpHandler _idCryptServiceHttpHandler;
 	private IHost _clientHost;
 	private IRtgsConnectionBroker _rtgsConnectionBroker;
+	private ToRtgsMessageHandler _toRtgsMessageHandler;
 
 	public GivenServerStops()
 	{
@@ -41,24 +43,21 @@ public class GivenServerStops : IAsyncLifetime
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 					TestData.ValidMessages.RtgsGlobalId,
 					serverUri,
-					new Uri("http://id-crypt-cloud-agent-api.com"),
-					"id-crypt-api-key",
-					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+					new Uri("https://id-crypt-service"))
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 
 
-			var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
-				.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-				.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 				.ConfigureServices(services => services
 					.AddRtgsPublisher(rtgsSdkOptions)
-					.AddTestIdCryptHttpClient(idCryptMessageHandler))
+					.AddTestIdCryptServiceHttpClient(_idCryptServiceHttpHandler))
 				.UseSerilog()
 				.Build();
 
@@ -88,6 +87,8 @@ public class GivenServerStops : IAsyncLifetime
 	public async Task WhenSendingMessage_ThenRpcExceptionOrIOExceptionThrown()
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+		_idCryptServiceHttpHandler.SetExpectedRequestCount(2);
 
 		var result = await _rtgsConnectionBroker.SendInvitationAsync();
 		result.SendResult.Should().Be(SendResult.Success);

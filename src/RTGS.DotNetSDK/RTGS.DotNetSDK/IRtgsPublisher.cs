@@ -51,28 +51,28 @@ public interface IRtgsPublisher
 	/// Sends a <see cref="PayawayCreationV1"/> request.
 	/// </summary>
 	/// <param name="message">The <see cref="PayawayCreationV1"/> message</param>
-	/// <param name="idCryptAlias">The alias of the ID Crypt connection with which to sign this message</param>
+	/// <param name="partnerRtgsGlobalId">The RTGS Global ID of the recipient partner bank</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
-	Task<SendResult> SendPayawayCreateAsync(PayawayCreationV1 message, string idCryptAlias, CancellationToken cancellationToken = default);
+	Task<SendResult> SendPayawayCreateAsync(PayawayCreationV1 message, string partnerRtgsGlobalId, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Sends a <see cref="PayawayConfirmationV1"/> request.
 	/// </summary>
 	/// <param name="message">The <see cref="PayawayConfirmationV1"/>  message</param>
-	/// <param name="idCryptAlias">The alias of the ID Crypt connection with which to sign this message</param>
+	/// <param name="partnerRtgsGlobalId">The RTGS Global ID of the recipient partner bank</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
-	Task<SendResult> SendPayawayConfirmationAsync(PayawayConfirmationV1 message, string idCryptAlias, CancellationToken cancellationToken = default);
+	Task<SendResult> SendPayawayConfirmationAsync(PayawayConfirmationV1 message, string partnerRtgsGlobalId, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Sends a <see cref="PayawayRejectionV1"/> request.
 	/// </summary>
 	/// <param name="message">The <see cref="PayawayRejectionV1"/> rejection message</param>
-	/// <param name="idCryptAlias">The alias of the ID Crypt connection with which to sign this message</param>
+	/// <param name="partnerRtgsGlobalId">The RTGS Global ID of the recipient partner bank</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
-	Task<SendResult> SendPayawayRejectionAsync(PayawayRejectionV1 message, string idCryptAlias, CancellationToken cancellationToken);
+	Task<SendResult> SendPayawayRejectionAsync(PayawayRejectionV1 message, string partnerRtgsGlobalId, CancellationToken cancellationToken);
 
 	/// <summary>
 	/// Sends a <see cref="BankPartnersRequestV1"/> request.

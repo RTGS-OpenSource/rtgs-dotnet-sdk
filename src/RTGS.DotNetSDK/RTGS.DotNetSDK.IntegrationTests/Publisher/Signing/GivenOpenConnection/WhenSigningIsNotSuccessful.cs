@@ -1,8 +1,8 @@
-﻿using RTGS.DotNetSDK.IntegrationTests.Extensions;
+﻿using System.Net.Http;
+using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Publisher.Exceptions;
-using RTGS.IDCryptSDK.Exceptions;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.Signing.GivenOpenConnection;
 
@@ -13,9 +13,9 @@ public class WhenSigningIsNotSuccessful : IDisposable, IClassFixture<GrpcServerF
 	private readonly GrpcServerFixture _grpcServer;
 	private readonly ITestCorrelatorContext _serilogContext;
 
+	private IHost _clientHost;
 	private IRtgsPublisher _rtgsPublisher;
 	private ToRtgsMessageHandler _toRtgsMessageHandler;
-	private IHost _clientHost;
 
 	public WhenSigningIsNotSuccessful(GrpcServerFixture grpcServer)
 	{
@@ -44,26 +44,23 @@ public class WhenSigningIsNotSuccessful : IDisposable, IClassFixture<GrpcServerF
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
-					new Uri("http://id-crypt-cloud-agent-api.com"),
-					"id-crypt-api-key",
-					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+					new Uri("https://id-crypt-service"))
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 				.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 				.EnableMessageSigning()
 				.Build();
 
-			var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+			var idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
-				.WithOkResponse(GetActiveConnectionWithAlias.HttpRequestResponseContext)
-				.WithServiceUnavailableResponse(SignDocument.Path)
+				.WithServiceUnavailableResponse(SignMessage.Path)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 				.ConfigureServices(services => services
 					.AddRtgsPublisher(rtgsSdkOptions)
-					.AddTestIdCryptHttpClient(idCryptMessageHandler))
+					.AddTestIdCryptServiceHttpClient(idCryptServiceHttpHandler))
 				.UseSerilog()
 				.Build();
 
@@ -94,7 +91,7 @@ public class WhenSigningIsNotSuccessful : IDisposable, IClassFixture<GrpcServerF
 		await FluentActions.Awaiting(() => publisherAction.InvokeSendDelegateAsync(_rtgsPublisher))
 		  .Should()
 		  .ThrowAsync<RtgsPublisherException>().WithMessage($"Error when signing {typeof(TRequest).Name} message.")
-		  .WithInnerException(typeof(IdCryptException));
+		  .WithInnerException(typeof(HttpRequestException));
 	}
 
 	[Theory]
@@ -115,7 +112,7 @@ public class WhenSigningIsNotSuccessful : IDisposable, IClassFixture<GrpcServerF
 
 	[Theory]
 	[ClassData(typeof(PublisherActionSignedMessagesData))]
-	public async Task ThenLog<TRequest>(PublisherAction<TRequest> publisherAction)
+	public async Task ThenPublisherLogs<TRequest>(PublisherAction<TRequest> publisherAction)
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler =>
 			handler.ReturnExpectedAcknowledgementWithSuccess());
@@ -133,5 +130,27 @@ public class WhenSigningIsNotSuccessful : IDisposable, IClassFixture<GrpcServerF
 		_serilogContext.PublisherLogs(LogEventLevel.Error)
 				.Should().ContainSingle().Which.Should().BeEquivalentTo(
 					new LogEntry($"Error signing {typeof(TRequest).Name} message", LogEventLevel.Error, typeof(RtgsPublisherException)));
+	}
+
+	[Theory]
+	[ClassData(typeof(PublisherActionSignedMessagesData))]
+	public async Task ThenIdCryptServiceClientLogs<TRequest>(PublisherAction<TRequest> publisherAction)
+	{
+		_toRtgsMessageHandler.SetupForMessage(handler =>
+			handler.ReturnExpectedAcknowledgementWithSuccess());
+
+		await FluentActions.Awaiting(() => publisherAction.InvokeSendDelegateAsync(_rtgsPublisher))
+			.Should()
+			.ThrowAsync<Exception>();
+
+		using var _ = new AssertionScope();
+
+		_serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug)
+			.Should().ContainSingle().Which.Should().BeEquivalentTo(
+				new LogEntry("Sending SignMessage request to ID Crypt Service", LogEventLevel.Debug));
+
+		_serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Error)
+			.Should().ContainSingle().Which.Should().BeEquivalentTo(
+				new LogEntry("Error occurred when sending SignMessage request to ID Crypt Service", LogEventLevel.Error, typeof(HttpRequestException)));
 	}
 }

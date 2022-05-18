@@ -22,9 +22,7 @@ public class GivenUnexpectedException : IAsyncDisposable
 		var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 				TestData.ValidMessages.RtgsGlobalId,
 				new Uri("https://localhost:4567"),
-				new Uri("http://id-crypt-cloud-agent-api.com"),
-				"id-crypt-api-key",
-				new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+				new Uri("https://id-crypt-service"))
 			.Build();
 
 		_thrownException = new OutOfMemoryException("test");
@@ -76,7 +74,7 @@ public class GivenUnexpectedException : IAsyncDisposable
 	{
 		using var raisedExceptionSignal = new ManualResetEventSlim();
 
-		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedExceptionSignal.Set();
+		_rtgsSubscriber.OnExceptionOccurred += (_, _) => raisedExceptionSignal.Set();
 
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 

@@ -28,9 +28,7 @@ public class GivenUnstableOpenConnection : IAsyncLifetime
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 					TestData.ValidMessages.RtgsGlobalId,
 					serverUri,
-					new Uri("http://id-crypt-cloud-agent-api.com"),
-					"id-crypt-api-key",
-					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+					new Uri("https://id-crypt-service"))
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()

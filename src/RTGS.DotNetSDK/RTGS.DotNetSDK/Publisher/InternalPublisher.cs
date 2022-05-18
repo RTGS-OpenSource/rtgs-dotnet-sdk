@@ -37,9 +37,9 @@ internal class InternalPublisher : IInternalPublisher
 		T message,
 		CancellationToken cancellationToken,
 		Dictionary<string, string> headers = null,
-		string idCryptAlias = null,
+		string partnerRtgsGlobalId = null,
 		[CallerMemberName] string callingMethod = null) =>
-		SendMessageAsync(message, typeof(T).Name, cancellationToken, headers, idCryptAlias, callingMethod);
+		SendMessageAsync(message, typeof(T).Name, cancellationToken, headers, partnerRtgsGlobalId, callingMethod);
 
 
 	public async Task<SendResult> SendMessageAsync<T>(
@@ -47,7 +47,7 @@ internal class InternalPublisher : IInternalPublisher
 		string messageIdentifier,
 		CancellationToken cancellationToken,
 		Dictionary<string, string> headers = null,
-		string idCryptAlias = null,
+		string partnerRtgsGlobalId = null,
 		[CallerMemberName] string callingMethod = null)
 	{
 		if (_disposed)
@@ -59,7 +59,7 @@ internal class InternalPublisher : IInternalPublisher
 
 		using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_sharedTokenSource.Token, cancellationToken);
 
-		var signingHeaders = await SignMessageAsync(message, idCryptAlias, linkedTokenSource.Token);
+		var signingHeaders = await SignMessageAsync(message, partnerRtgsGlobalId, linkedTokenSource.Token);
 
 		await _sendingSignal.WaitAsync(linkedTokenSource.Token);
 
@@ -97,7 +97,7 @@ internal class InternalPublisher : IInternalPublisher
 
 	private async Task<Dictionary<string, string>> SignMessageAsync<TMessageType>(
 		TMessageType message,
-		string idCryptAlias,
+		string partnerRtgsGlobalId,
 		CancellationToken cancellationToken)
 	{
 		var signingHeaders = new Dictionary<string, string>();
@@ -123,11 +123,12 @@ internal class InternalPublisher : IInternalPublisher
 
 		try
 		{
-			var signatures = await messageSigner.SignAsync(message, idCryptAlias, cancellationToken);
+			var signatures = await messageSigner.SignAsync(message, partnerRtgsGlobalId, cancellationToken);
 
 			signingHeaders.Add("pairwise-did-signature", signatures.PairwiseDidSignature);
 			signingHeaders.Add("public-did-signature", signatures.PublicDidSignature);
-			signingHeaders.Add("alias", idCryptAlias);
+			signingHeaders.Add("alias", signatures.Alias);
+			signingHeaders.Add("partner-rtgs-global-id", partnerRtgsGlobalId);
 		}
 		catch (Exception innerException)
 		{

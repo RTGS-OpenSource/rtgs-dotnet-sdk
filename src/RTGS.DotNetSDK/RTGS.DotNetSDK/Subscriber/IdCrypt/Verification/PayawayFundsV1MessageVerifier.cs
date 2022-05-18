@@ -1,7 +1,8 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using RTGS.DotNetSDK.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Exceptions;
-using RTGS.IDCryptSDK.JsonSignatures;
+using RTGS.IDCrypt.Service.Contracts.VerifyMessage;
 using RTGS.Public.Messages.Subscriber;
 using RTGS.Public.Payment.V4;
 
@@ -9,12 +10,12 @@ namespace RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
 
 internal class PayawayFundsV1MessageVerifier : IVerifyMessage
 {
-	private readonly IJsonSignaturesClient _jsonSignaturesClient;
+	private readonly IIdCryptServiceClient _idCryptServiceClient;
 	private readonly ILogger<PayawayFundsV1MessageVerifier> _logger;
 
-	public PayawayFundsV1MessageVerifier(IJsonSignaturesClient jsonSignaturesClient, ILogger<PayawayFundsV1MessageVerifier> logger)
+	public PayawayFundsV1MessageVerifier(IIdCryptServiceClient idCryptServiceClient, ILogger<PayawayFundsV1MessageVerifier> logger)
 	{
-		_jsonSignaturesClient = jsonSignaturesClient;
+		_idCryptServiceClient = idCryptServiceClient;
 		_logger = logger;
 	}
 
@@ -38,16 +39,47 @@ internal class PayawayFundsV1MessageVerifier : IVerifyMessage
 			_logger.LogError("Alias not found on {MessageIdentifier} message, yet was expected", MessageIdentifier);
 		}
 
-		if (string.IsNullOrEmpty(privateSignature) || string.IsNullOrEmpty(alias))
+		if (!rtgsMessage.Headers.TryGetValue("partner-rtgs-global-id", out var partnerRtgsGlobalId)
+			|| string.IsNullOrEmpty(partnerRtgsGlobalId))
+		{
+			_logger.LogError("Partner RTGS Global ID not found on {MessageIdentifier} message, yet was expected", MessageIdentifier);
+		}
+
+		if (string.IsNullOrEmpty(privateSignature) || string.IsNullOrEmpty(alias) || string.IsNullOrEmpty(partnerRtgsGlobalId))
 		{
 			throw new RtgsSubscriberException($"Unable to verify {MessageIdentifier} message due to missing headers.");
 		}
 
-		var message = JsonSerializer.Deserialize<PayawayFundsV1>(rtgsMessage.Data.Span);
+		var payawayFundsMessage = JsonSerializer.Deserialize<PayawayFundsV1>(rtgsMessage.Data.Span);
 
-		var privateSignatureIsValid = await _jsonSignaturesClient.VerifyPrivateSignatureAsync(message?.FIToFICstmrCdtTrf, privateSignature, alias, cancellationToken);
+		// TODO JLIQ - Eww
+		var message = JsonSerializer.Serialize(payawayFundsMessage?.FIToFICstmrCdtTrf);
 
-		if (!privateSignatureIsValid)
+		var request = new VerifyPrivateSignatureRequest
+		{
+			RtgsGlobalId = partnerRtgsGlobalId,
+			Message = message,
+			PrivateSignature = privateSignature,
+			Alias = alias
+		};
+
+		VerifyPrivateSignatureResponse response;
+		try
+		{
+			response = await _idCryptServiceClient.VerifyMessageAsync(request, cancellationToken);
+		}
+		catch (Exception innerException)
+		{
+			const string errorMessage = "Error occurred when sending VerifyMessage request to ID Crypt Service";
+
+			var exception = new RtgsSubscriberException(errorMessage, innerException);
+
+			_logger.LogError(exception, errorMessage);
+
+			throw exception;
+		}
+
+		if (!response.Verified)
 		{
 			var exception = new RtgsSubscriberException($"Verification of {MessageIdentifier} message failed.");
 
