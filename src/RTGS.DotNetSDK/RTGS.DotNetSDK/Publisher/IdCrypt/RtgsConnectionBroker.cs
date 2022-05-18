@@ -48,9 +48,10 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		}
 		catch (Exception innerException)
 		{
-			var exception = new RtgsPublisherException(
-				"Error occurred creating ID Crypt invitation",
-				innerException);
+			const string errorMessage = "Error occurred creating ID Crypt invitation";
+			var exception = new RtgsPublisherException(errorMessage, innerException);
+
+			_logger.LogError(exception, errorMessage);
 
 			throw exception;
 		}

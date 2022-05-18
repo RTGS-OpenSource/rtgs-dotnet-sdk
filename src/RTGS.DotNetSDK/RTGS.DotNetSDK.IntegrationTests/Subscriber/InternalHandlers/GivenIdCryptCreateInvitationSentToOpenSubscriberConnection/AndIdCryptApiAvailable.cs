@@ -155,13 +155,13 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
 
-
 		var alias = CreateConnection.Response.Alias;
+		var bankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId;
 
 		var expectedLogs = new List<LogEntry>
 		{
-			new ($"Sending Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId}", LogEventLevel.Debug),
-			new ($"Sent Invitation with alias {alias} to Bank {ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId}", LogEventLevel.Debug),
+			new ($"Sending Invitation with alias {alias} to Bank {bankPartnerRtgsGlobalId}", LogEventLevel.Debug),
+			new ($"Sent Invitation with alias {alias} to Bank {bankPartnerRtgsGlobalId}", LogEventLevel.Debug),
 		};
 
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Debug);
@@ -260,8 +260,6 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		informationLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
 	}
 
-	// TODO JLIQ - Is this test possible now?
-	// Check handler logs (spin wait)
 	[Fact]
 	public async Task WhenMessageWithIdentifierThatCannotBeHandledReceived_ThenSubsequentMessagesCanBeHandled()
 	{
@@ -282,6 +280,20 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
 
 		await _rtgsSubscriber.StopAsync();
+
+		var alias = CreateConnection.Response.Alias;
+		var bankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId;
+
+		var expectedDebugLogs = new List<LogEntry>
+		{
+			new ($"Sending Invitation with alias {alias} to Bank {bankPartnerRtgsGlobalId}", LogEventLevel.Debug),
+			new($"Sent Invitation with alias {alias} to Bank {bankPartnerRtgsGlobalId}", LogEventLevel.Debug)
+		};
+
+		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Debug);
+
+		Action assert = () => debugLogs.Should().BeEquivalentTo(expectedDebugLogs, options => options.WithStrictOrdering());
+		assert.Within(500);
 	}
 
 	[Fact]
@@ -304,7 +316,6 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 													   && acknowledgement.Success);
 	}
 
-	// TODO JLIQ - Is this test possible now?
 	[Fact]
 	public async Task WhenExceptionEventHandlerThrows_ThenSubsequentMessagesCanBeHandled()
 	{
@@ -323,6 +334,22 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
 		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		var alias = CreateConnection.Response.Alias;
+		var bankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId;
+
+		var expectedDebugLogs = new List<LogEntry>
+		{
+			new ($"Sending Invitation with alias {alias} to Bank {bankPartnerRtgsGlobalId}", LogEventLevel.Debug),
+			new($"Sent Invitation with alias {alias} to Bank {bankPartnerRtgsGlobalId}", LogEventLevel.Debug)
+		};
+
+		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Debug);
+
+		Action assert = () => debugLogs.Should().BeEquivalentTo(expectedDebugLogs, options => options.WithStrictOrdering());
+		assert.Within(500);
 	}
 
 	[Fact]

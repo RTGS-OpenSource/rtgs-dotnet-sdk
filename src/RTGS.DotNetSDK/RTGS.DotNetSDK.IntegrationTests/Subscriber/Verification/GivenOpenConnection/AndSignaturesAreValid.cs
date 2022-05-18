@@ -171,7 +171,7 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 		var expectedMessage = JsonSerializer.SerializeToElement(action.Message.FIToFICstmrCdtTrf);
 
 		signDocumentRequest!.Message.Should().BeEquivalentTo(
-			expectedMessage, 
+			expectedMessage,
 			options => options.ComparingByMembers<JsonElement>());
 	}
 

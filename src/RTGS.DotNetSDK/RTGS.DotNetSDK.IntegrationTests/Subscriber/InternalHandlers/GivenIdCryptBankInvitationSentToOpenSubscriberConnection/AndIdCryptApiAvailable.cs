@@ -286,7 +286,6 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		informationLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
 	}
 
-	// TODO JLIQ - Is this test possible now?
 	[Fact]
 	public async Task WhenMessageWithIdentifierThatCannotBeHandledReceived_ThenSubsequentMessagesCanBeHandled()
 	{
@@ -307,6 +306,19 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
 
 		await _rtgsSubscriber.StopAsync();
+
+		var rtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromRtgsGlobalId;
+
+		var expectedDebugLogs = new List<LogEntry>
+		{
+			new ($"Sending AcceptConnectionAsync request to ID Crypt Service for invitation from bank {rtgsGlobalId}", LogEventLevel.Debug),
+			new($"Sent AcceptConnectionAsync request to ID Crypt Service for invitation from bank {rtgsGlobalId}", LogEventLevel.Debug)
+		};
+
+		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
+
+		Action assert = () => debugLogs.Should().BeEquivalentTo(expectedDebugLogs, options => options.WithStrictOrdering());
+		assert.Within(500);
 	}
 
 	[Fact]
@@ -329,7 +341,6 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 													   && acknowledgement.Success);
 	}
 
-	// TODO JLIQ - Is this test possible now?
 	[Fact]
 	public async Task WhenExceptionEventHandlerThrows_ThenSubsequentMessagesCanBeHandled()
 	{
@@ -348,6 +359,21 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 		_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
 		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		var rtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromRtgsGlobalId;
+
+		var expectedDebugLogs = new List<LogEntry>
+		{
+			new ($"Sending AcceptConnectionAsync request to ID Crypt Service for invitation from bank {rtgsGlobalId}", LogEventLevel.Debug),
+			new($"Sent AcceptConnectionAsync request to ID Crypt Service for invitation from bank {rtgsGlobalId}", LogEventLevel.Debug)
+		};
+
+		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptBankInvitationV1Handler", LogEventLevel.Debug);
+
+		Action assert = () => debugLogs.Should().BeEquivalentTo(expectedDebugLogs, options => options.WithStrictOrdering());
+		assert.Within(500);
 	}
 
 	[Fact]

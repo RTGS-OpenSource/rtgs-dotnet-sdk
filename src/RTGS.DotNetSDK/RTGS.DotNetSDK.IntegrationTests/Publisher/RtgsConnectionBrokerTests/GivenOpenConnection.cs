@@ -283,6 +283,24 @@ public class GivenOpenConnection
 		}
 
 		[Fact]
+		public async Task ThenRtgsConnectionBrokerLogs()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+				.Should()
+				.ThrowAsync<Exception>();
+
+			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error);
+			errorLogs.Should().ContainSingle().Which.Should()
+				.BeEquivalentTo(new LogEntry(
+					"Error occurred creating ID Crypt invitation",
+					LogEventLevel.Error,
+					typeof(RtgsPublisherException)));
+		}
+
+		[Fact]
 		public async Task ThenIdCryptServiceClientLogs()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
@@ -295,12 +313,15 @@ public class GivenOpenConnection
 			using var _ = new AssertionScope();
 
 			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug);
-			debugLogs.Select(log => log.Message)
-				.Should().ContainSingle(msg => msg == "Sending CreateConnection request to ID Crypt Service");
+			debugLogs.Should().ContainSingle().Which
+				.Should().BeEquivalentTo(new LogEntry("Sending CreateConnection request to ID Crypt Service", LogEventLevel.Debug));
 
 			var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Error);
-			errorLogs.Select(log => log.Message)
-				.Should().ContainSingle(msg => msg == "Error occurred when sending CreateConnection request to ID Crypt Service");
+			errorLogs.Should().ContainSingle().Which
+				.Should().BeEquivalentTo(new LogEntry(
+					"Error occurred when sending CreateConnection request to ID Crypt Service",
+					LogEventLevel.Error,
+					typeof(HttpRequestException)));
 		}
 	}
 
@@ -531,8 +552,9 @@ public class GivenOpenConnection
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
-			errorLogs.Select(log => log.Message).Should()
-				.ContainSingle("Timed out waiting for IdCryptInvitationV1 acknowledgement from RTGS (SendIdCryptInvitationAsync)");
+			errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
+				"Timed out waiting for IdCryptInvitationV1 acknowledgement from RTGS (SendIdCryptInvitationToRtgsAsync)",
+				LogEventLevel.Error));
 		}
 
 		[Fact]

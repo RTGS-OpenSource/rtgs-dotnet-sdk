@@ -22,7 +22,6 @@ internal class PayawayRejectMessageSigner : ISignMessage<PayawayRejectionV1>
 
 		var documentToSign = new Dictionary<string, object> { { "reason", message.MsgRjctn?.Rsn?.RsnDesc } };
 
-		// TODO - Wrap in try? - YES
 		var response = await _idCryptServiceClient.SignMessageAsync(partnerRtgsGlobalId, documentToSign, cancellationToken);
 
 		return response;

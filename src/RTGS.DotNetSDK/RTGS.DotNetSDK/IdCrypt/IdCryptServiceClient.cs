@@ -104,7 +104,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		try
 		{
 			_logger.LogDebug("Sending VerifyMessage request to ID Crypt Service");
-			
+
 			var document = JsonSerializer.SerializeToElement(message);
 
 			var request = new VerifyPrivateSignatureRequest
