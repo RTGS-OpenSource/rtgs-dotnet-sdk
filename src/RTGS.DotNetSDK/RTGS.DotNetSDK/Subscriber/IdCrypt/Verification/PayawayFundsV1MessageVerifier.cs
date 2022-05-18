@@ -52,21 +52,12 @@ internal class PayawayFundsV1MessageVerifier : IVerifyMessage
 
 		var payawayFundsMessage = JsonSerializer.Deserialize<PayawayFundsV1>(rtgsMessage.Data.Span);
 
-		// TODO JLIQ - Eww
-		var message = JsonSerializer.Serialize(payawayFundsMessage?.FIToFICstmrCdtTrf);
-
-		var request = new VerifyPrivateSignatureRequest
-		{
-			RtgsGlobalId = partnerRtgsGlobalId,
-			Message = message,
-			PrivateSignature = privateSignature,
-			Alias = alias
-		};
+		var message = payawayFundsMessage?.FIToFICstmrCdtTrf;
 
 		VerifyPrivateSignatureResponse response;
 		try
 		{
-			response = await _idCryptServiceClient.VerifyMessageAsync(request, cancellationToken);
+			response = await _idCryptServiceClient.VerifyMessageAsync(partnerRtgsGlobalId, message, privateSignature, alias, cancellationToken);
 		}
 		catch (Exception innerException)
 		{

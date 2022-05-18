@@ -94,11 +94,26 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		}
 	}
 
-	public async Task<VerifyPrivateSignatureResponse> VerifyMessageAsync(VerifyPrivateSignatureRequest request, CancellationToken cancellationToken)
+	public async Task<VerifyPrivateSignatureResponse> VerifyMessageAsync<T>(
+		string rtgsGlobalId,
+		T message,
+		string privateSignature,
+		string alias,
+		CancellationToken cancellationToken)
 	{
 		try
 		{
 			_logger.LogDebug("Sending VerifyMessage request to ID Crypt Service");
+			
+			var document = JsonSerializer.SerializeToElement(message);
+
+			var request = new VerifyPrivateSignatureRequest
+			{
+				RtgsGlobalId = rtgsGlobalId,
+				Message = document,
+				PrivateSignature = privateSignature,
+				Alias = alias
+			};
 
 			var response = await _httpClient.PostAsJsonAsync("api/Verify", request, cancellationToken);
 
@@ -119,17 +134,4 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 			throw;
 		}
 	}
-}
-
-public record SignMessageRequest
-{
-	/// <summary>
-	/// The RTGS Global identifier.
-	/// </summary>
-	public string RtgsGlobalId { get; init; }
-
-	/// <summary>
-	/// The JSON document to be signed.
-	/// </summary>
-	public JsonElement Message { get; init; }
 }

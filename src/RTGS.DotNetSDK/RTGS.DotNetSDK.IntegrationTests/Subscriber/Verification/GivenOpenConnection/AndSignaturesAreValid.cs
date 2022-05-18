@@ -139,10 +139,7 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 		var requestContent = await _idCryptServiceHttpHandler.Requests[VerifyMessageSuccessfully.Path]
 			.Single().Content!.ReadAsStringAsync();
 
-		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest>(
-			requestContent,
-			// TODO JLIQ - Remove when requests have JsonPropertyName attributes
-			new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest>(requestContent);
 
 		signDocumentRequest.Should().BeEquivalentTo(new VerifyPrivateSignatureRequest
 		{
@@ -169,14 +166,13 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 		var requestContent = await _idCryptServiceHttpHandler.Requests[VerifyMessageSuccessfully.Path]
 			.Single().Content!.ReadAsStringAsync();
 
-		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest>(
-			requestContent,
-			// TODO JLIQ - Remove when requests have JsonPropertyName attributes
-			new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest>(requestContent);
 
-		var expectedMessage = JsonSerializer.Serialize(action.Message.FIToFICstmrCdtTrf);
+		var expectedMessage = JsonSerializer.SerializeToElement(action.Message.FIToFICstmrCdtTrf);
 
-		signDocumentRequest!.Message.Should().BeEquivalentTo(expectedMessage);
+		signDocumentRequest!.Message.Should().BeEquivalentTo(
+			expectedMessage, 
+			options => options.ComparingByMembers<JsonElement>());
 	}
 
 	[Theory]

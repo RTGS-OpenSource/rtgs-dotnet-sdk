@@ -161,10 +161,7 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 			.Single().Content!
 			.ReadAsStringAsync();
 
-		var actualRequestBody = JsonSerializer.Deserialize<AcceptConnectionInvitationRequest>(
-			content,
-			// TODO JLIQ - Add JsonPropertyName attributes to service to avoid this
-			new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+		var actualRequestBody = JsonSerializer.Deserialize<AcceptConnectionInvitationRequest>(content);
 
 		var invitation = ValidMessages.IdCryptBankInvitationV1.Invitation;
 		var expectedRequestBody = new AcceptConnectionInvitationRequest
