@@ -19,7 +19,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		_logger = logger;
 	}
 
-	public async Task<CreateConnectionInvitationResponse> CreateConnectionAsync(CancellationToken cancellationToken)
+	public async Task<CreateConnectionInvitationResponse> CreateConnectionAsync(CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -46,7 +46,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		}
 	}
 
-	public async Task AcceptConnectionAsync(AcceptConnectionInvitationRequest request, CancellationToken cancellationToken)
+	public async Task AcceptConnectionAsync(AcceptConnectionInvitationRequest request, CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -65,7 +65,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		}
 	}
 
-	public async Task<SignMessageResponse> SignMessageAsync<T>(string rtgsGlobalId, T message, CancellationToken cancellationToken)
+	public async Task<SignMessageResponse> SignMessageAsync<T>(string rtgsGlobalId, T message, CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -99,7 +99,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		T message,
 		string privateSignature,
 		string alias,
-		CancellationToken cancellationToken)
+		CancellationToken cancellationToken = default)
 	{
 		try
 		{

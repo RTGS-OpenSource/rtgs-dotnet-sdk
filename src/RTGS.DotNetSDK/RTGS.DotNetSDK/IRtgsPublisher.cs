@@ -72,7 +72,7 @@ public interface IRtgsPublisher
 	/// <param name="partnerRtgsGlobalId">The RTGS Global ID of the recipient partner bank</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
-	Task<SendResult> SendPayawayRejectionAsync(PayawayRejectionV1 message, string partnerRtgsGlobalId, CancellationToken cancellationToken);
+	Task<SendResult> SendPayawayRejectionAsync(PayawayRejectionV1 message, string partnerRtgsGlobalId, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Sends a <see cref="BankPartnersRequestV1"/> request.
