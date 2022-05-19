@@ -1,6 +1,6 @@
 ﻿namespace RTGS.DotNetSDK.IntegrationTests.Publisher;
 
-public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServerFixture>
+public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
@@ -24,9 +24,7 @@ public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServe
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
-					new Uri("http://id-crypt-cloud-agent-api.com"),
-					"id-crypt-api-key",
-					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+					new Uri("https://id-crypt-service"))
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.Build();
 

@@ -1,23 +1,22 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using RTGS.DotNetSDK.IntegrationTests.Extensions;
+﻿using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.Signing.GivenOpenConnection;
 
-public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixture>
+public sealed class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
-	private static readonly Uri IdCryptApiUri = new("http://id-crypt-cloud-agent-api.com");
-	private const string IdCryptApiKey = "id-crypt-api-key";
+	private static readonly Uri IdCryptServiceUri = new("https://id-crypt-service");
 
 	private readonly GrpcServerFixture _grpcServer;
+	private readonly ITestCorrelatorContext _serilogContext;
 
+	private RtgsSdkOptions _rtgsSdkOptions;
+	private StatusCodeHttpHandler _idCryptServiceMessageHandler;
+	private IHost _clientHost;
 	private IRtgsPublisher _rtgsPublisher;
 	private ToRtgsMessageHandler _toRtgsMessageHandler;
-	private StatusCodeHttpHandler _idCryptMessageHandler;
-	private IHost _clientHost;
 
 	public WhenSigningIsSuccessful(GrpcServerFixture grpcServer)
 	{
@@ -26,6 +25,8 @@ public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixt
 		SetupSerilogLogger();
 
 		SetupDependencies();
+
+		_serilogContext = TestCorrelator.CreateContext();
 	}
 
 	private static void SetupSerilogLogger() =>
@@ -34,35 +35,33 @@ public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixt
 			.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
 			.Enrich.FromLogContext()
 			.WriteTo.Console()
+			.WriteTo.TestCorrelator()
 			.CreateLogger();
 
 	private void SetupDependencies()
 	{
 		try
 		{
-			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
+			_rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
-					new Uri("http://id-crypt-cloud-agent-api.com"),
-					"id-crypt-api-key",
-					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+					IdCryptServiceUri)
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 				.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 				.EnableMessageSigning()
 				.Build();
 
-			_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+			_idCryptServiceMessageHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
-				.WithOkResponse(GetActiveConnectionWithAlias.HttpRequestResponseContext)
-				.WithOkResponse(SignDocument.HttpRequestResponseContext)
+				.WithOkResponse(SignMessage.HttpRequestResponseContext)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 				.ConfigureServices(services => services
-					.AddRtgsPublisher(rtgsSdkOptions)
-					.AddTestIdCryptHttpClient(_idCryptMessageHandler))
+					.AddRtgsPublisher(_rtgsSdkOptions)
+					.AddTestIdCryptServiceHttpClient(_idCryptServiceMessageHandler))
 				.UseSerilog()
 				.Build();
 
@@ -86,64 +85,29 @@ public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixt
 
 	[Theory]
 	[ClassData(typeof(PublisherActionSignedMessagesData))]
-	public async Task WhenCallingIdCryptAgent_ThenBaseAddressIsExpected<TRequest>(PublisherAction<TRequest> publisherAction)
+	public async Task WhenCallingIdCryptService_ThenBaseAddressIsExpected<TRequest>(PublisherAction<TRequest> publisherAction)
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
 		await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
-		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-
-		var actualApiUri = _idCryptMessageHandler.Requests[SignDocument.Path]
+		var actualApiUri = _idCryptServiceMessageHandler.Requests[SignMessage.Path]
 			.Single()
 			.RequestUri
 			!.GetLeftPart(UriPartial.Authority);
 
-		actualApiUri.Should().BeEquivalentTo(IdCryptApiUri.GetLeftPart(UriPartial.Authority));
+		actualApiUri.Should().BeEquivalentTo(IdCryptServiceUri.GetLeftPart(UriPartial.Authority));
 	}
 
 	[Theory]
 	[ClassData(typeof(PublisherActionSignedMessagesData))]
-	public async Task WhenCallingIdCryptAgent_ThenApiKeyHeaderIsExpected<TRequest>(PublisherAction<TRequest> publisherAction)
+	public async Task WhenCallingIdCryptService_ThenPathIsExpected<TRequest>(PublisherAction<TRequest> publisherAction)
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
 		await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
-		_idCryptMessageHandler.Requests[SignDocument.Path]
-			.Single()
-			.Headers.GetValues("X-API-Key")
-			.Should().ContainSingle()
-			.Which.Should().Be(IdCryptApiKey);
-	}
-
-	[Theory]
-	[ClassData(typeof(PublisherActionSignedMessagesData))]
-	public async Task WhenCallingIdCryptAgent_ThenSignDocumentIsCalled<TRequest>(PublisherAction<TRequest> publisherAction)
-	{
-		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-
-		await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
-
-		_idCryptMessageHandler.Requests.Should().ContainKey("/json-signatures/sign");
-	}
-
-	[Theory]
-	[ClassData(typeof(PublisherActionSignedMessagesData))]
-	public async Task WhenCallingIdCryptAgent_ThenConnectionIdIsInBody<TRequest>(PublisherAction<TRequest> publisherAction)
-	{
-		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-
-		await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
-
-		var requestContent = await _idCryptMessageHandler.Requests[SignDocument.Path]
-			.Single().Content.ReadAsStringAsync();
-
-		var signDocumentRequest = JsonSerializer.Deserialize<SignDocumentRequest<TRequest>>(
-			requestContent,
-			new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-		signDocumentRequest.ConnectionId.Should().Be(GetActiveConnectionWithAlias.ExpectedResponse.ConnectionId);
+		_idCryptServiceMessageHandler.Requests.Should().ContainKey("/api/SignMessage");
 	}
 
 	[Theory]
@@ -154,8 +118,9 @@ public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixt
 
 		await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
-		var requestContent = await _idCryptMessageHandler.Requests[SignDocument.Path]
-			.Single().Content.ReadAsStringAsync();
+		var requestContent = await _idCryptServiceMessageHandler
+			.Requests[SignMessage.Path].Single()
+			.Content!.ReadAsStringAsync();
 
 		requestContent.Should().BeEquivalentTo(publisherAction.SerialisedSignedDocument);
 	}
@@ -174,21 +139,64 @@ public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixt
 
 		var expectedHeaders = new Dictionary<string, string>
 		{
-			{ "pairwise-did-signature", SignDocument.Response.PairwiseDidSignature },
-			{ "public-did-signature", SignDocument.Response.PublicDidSignature },
-			{ "alias", TestData.ValidMessages.IdCryptAlias }
+			{ "pairwise-did-signature", SignMessage.Response.PairwiseDidSignature },
+			{ "public-did-signature", SignMessage.Response.PublicDidSignature },
+			{ "alias", TestData.ValidMessages.IdCryptAlias },
+			{ "from-rtgs-global-id", _rtgsSdkOptions.RtgsGlobalId },
 		};
 
 		// using contain here because for some messages other headers are sent (e.g. rtgs-global-id)
 		receivedMessage.Headers.Should().Contain(expectedHeaders);
 	}
 
-	private record SignDocumentRequest<TDocument>
+	[Theory]
+	[ClassData(typeof(PublisherActionSignedMessagesData))]
+	public async Task ThenPublisherLogs<TRequest>(PublisherAction<TRequest> publisherAction)
 	{
-		[JsonPropertyName("connection_id")]
-		public string ConnectionId { get; init; }
+		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-		[JsonPropertyName("document")]
-		public TDocument Document { get; init; }
+		await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+
+		using var _ = new AssertionScope();
+
+		var expectedInformationLogs = new List<LogEntry>
+		{
+			new($"Signing {typeof(TRequest).Name} message", LogEventLevel.Information),
+			new($"Signed {typeof(TRequest).Name} message", LogEventLevel.Information)
+		};
+
+		_serilogContext.PublisherLogs(LogEventLevel.Information)
+			.Should().StartWith(expectedInformationLogs);
+
+		_serilogContext.PublisherLogs(LogEventLevel.Warning).Should().BeEmpty();
+
+		_serilogContext.PublisherLogs(LogEventLevel.Error).Should().BeEmpty();
+
+	}
+
+	[Theory]
+	[ClassData(typeof(PublisherActionSignedMessagesData))]
+	public async Task ThenIdCryptServiceClientLogs<TRequest>(PublisherAction<TRequest> publisherAction)
+	{
+		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+
+		await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+
+		using var _ = new AssertionScope();
+
+		var expectedDebugLogs = new List<LogEntry>
+		{
+			new("Sending SignMessage request to ID Crypt Service", LogEventLevel.Debug),
+			new("Sent SignMessage request to ID Crypt Service", LogEventLevel.Debug)
+		};
+
+		_serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug)
+			.Should().BeEquivalentTo(expectedDebugLogs, options => options.WithStrictOrdering());
+
+		_serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Warning)
+			.Should().BeEmpty();
+
+		_serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Error)
+			.Should().BeEmpty();
 	}
 }

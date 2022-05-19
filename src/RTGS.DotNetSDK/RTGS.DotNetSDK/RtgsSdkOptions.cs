@@ -12,9 +12,7 @@ public record RtgsSdkOptions
 		WaitForAcknowledgementDuration = builder.WaitForAcknowledgementDurationValue;
 		KeepAlivePingDelay = builder.KeepAlivePingDelayValue;
 		KeepAlivePingTimeout = builder.KeepAlivePingTimeoutValue;
-		IdCryptApiAddress = builder.IdCryptApiAddress;
-		IdCryptApiKey = builder.IdCryptApiKey;
-		IdCryptServiceEndpointAddress = builder.IdCryptServiceEndpointAddress;
+		IdCryptServiceAddress = builder.IdCryptServiceAddress;
 		UseMessageSigning = builder.UseMessageSigningValue;
 	}
 
@@ -45,19 +43,9 @@ public record RtgsSdkOptions
 	public TimeSpan KeepAlivePingTimeout { get; }
 
 	/// <summary>
-	/// Address of the ID Crypt Cloud Agent API.
+	/// Address of the ID Crypt Service.
 	/// </summary>
-	public Uri IdCryptApiAddress { get; }
-
-	/// <summary>
-	/// API Key for the ID Crypt Cloud Agent API.
-	/// </summary>
-	public string IdCryptApiKey { get; }
-
-	/// <summary>
-	/// Address of the ID Crypt Cloud Agent Service Endpoint.
-	/// </summary>
-	public Uri IdCryptServiceEndpointAddress { get; }
+	public Uri IdCryptServiceAddress { get; }
 
 	/// <summary>
 	/// Whether to use the message signing functionality (preview).
@@ -72,9 +60,7 @@ public record RtgsSdkOptions
 		private Builder(
 			string rtgsGlobalId,
 			Uri remoteHostAddress,
-			Uri idCryptApiAddress,
-			string idCryptApiKey,
-			Uri idCryptServiceEndpointAddress)
+			Uri idCryptServiceAddress)
 		{
 			ArgumentNullException.ThrowIfNull(rtgsGlobalId, nameof(rtgsGlobalId));
 
@@ -85,22 +71,11 @@ public record RtgsSdkOptions
 
 			ArgumentNullException.ThrowIfNull(remoteHostAddress, nameof(remoteHostAddress));
 
-			ArgumentNullException.ThrowIfNull(idCryptApiAddress, nameof(idCryptApiAddress));
-
-			ArgumentNullException.ThrowIfNull(idCryptApiKey, nameof(idCryptApiKey));
-
-			if (string.IsNullOrWhiteSpace(idCryptApiKey))
-			{
-				throw new ArgumentException("Value cannot be white space.", nameof(idCryptApiKey));
-			}
-
-			ArgumentNullException.ThrowIfNull(idCryptServiceEndpointAddress, nameof(idCryptServiceEndpointAddress));
+			ArgumentNullException.ThrowIfNull(idCryptServiceAddress, nameof(idCryptServiceAddress));
 
 			RtgsGlobalIdValue = rtgsGlobalId;
 			RemoteHostAddressValue = remoteHostAddress;
-			IdCryptApiAddress = idCryptApiAddress;
-			IdCryptApiKey = idCryptApiKey;
-			IdCryptServiceEndpointAddress = idCryptServiceEndpointAddress;
+			IdCryptServiceAddress = idCryptServiceAddress;
 		}
 
 		internal string RtgsGlobalIdValue { get; }
@@ -108,9 +83,7 @@ public record RtgsSdkOptions
 		internal TimeSpan WaitForAcknowledgementDurationValue { get; private set; } = TimeSpan.FromSeconds(10);
 		internal TimeSpan KeepAlivePingDelayValue { get; private set; } = TimeSpan.FromSeconds(30);
 		internal TimeSpan KeepAlivePingTimeoutValue { get; private set; } = TimeSpan.FromSeconds(30);
-		internal Uri IdCryptApiAddress { get; }
-		internal string IdCryptApiKey { get; }
-		internal Uri IdCryptServiceEndpointAddress { get; }
+		internal Uri IdCryptServiceAddress { get; }
 		internal bool UseMessageSigningValue { get; private set; }
 
 		/// <summary>
@@ -118,19 +91,15 @@ public record RtgsSdkOptions
 		/// </summary>
 		/// <param name="rtgsGlobalId">Organisation's unique identifier on the RTGS.global network.</param>
 		/// <param name="remoteHostAddress">Address of the RTGS gRPC server.</param>
-		/// <param name="idCryptApiAddress">Address of the ID Crypt Cloud Agent API</param>
-		/// <param name="idCryptApiKey">API Key for the ID Crypt Cloud Agent API</param>
-		/// <param name="idCryptServiceEndpointAddress">Address of the ID Crypt Cloud Agent Service Endpoint</param>
+		/// <param name="idCryptServiceAddress">Address of the ID Crypt Service</param>
 		/// <returns><see cref="Builder"/></returns>
 		/// <exception cref="ArgumentNullException">Thrown if rtgsGlobalId, remoteHostAddress idCryptApiAddress, idCryptApiKey or idCryptEndpointAddress is null.</exception>
 		/// <exception cref="ArgumentException">Thrown if rtgsGlobalId or idCryptApiKey is white space.</exception>
 		public static Builder CreateNew(
 			string rtgsGlobalId,
 			Uri remoteHostAddress,
-			Uri idCryptApiAddress,
-			string idCryptApiKey,
-			Uri idCryptServiceEndpointAddress) =>
-			new(rtgsGlobalId, remoteHostAddress, idCryptApiAddress, idCryptApiKey, idCryptServiceEndpointAddress);
+			Uri idCryptServiceAddress) =>
+			new(rtgsGlobalId, remoteHostAddress, idCryptServiceAddress);
 
 		/// <summary>
 		/// Specifies the acknowledgement timeout duration.

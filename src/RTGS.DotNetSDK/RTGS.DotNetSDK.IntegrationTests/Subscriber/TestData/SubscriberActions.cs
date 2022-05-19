@@ -1,6 +1,4 @@
-﻿using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
-
-namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
+﻿namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 
 public static class SubscriberActions
 {
@@ -8,7 +6,8 @@ public static class SubscriberActions
 	{
 		{ "public-did-signature", "public-did-signature" },
 		{ "pairwise-did-signature", "pairwise-did-signature" },
-		{ "alias", "alias" }
+		{ "alias", "alias" },
+		{ "from-rtgs-global-id", "from-rtgs-global-id" }
 	};
 
 	public static readonly SubscriberAction<PayawayFundsV1> PayawayFundsV1 =
@@ -40,7 +39,4 @@ public static class SubscriberActions
 
 	public static readonly SubscriberAction<BankPartnersResponseV1> BankPartnersResponseV1 =
 		new("BankPartnersResponseV1", ValidMessages.BankPartnersResponseV1);
-
-	public static readonly SubscriberAction<IdCryptInvitationConfirmationV1> IdCryptInvitationConfirmationV1 =
-		new("idcrypt.invitationconfirmation.v1", ValidMessages.IdCryptInvitationConfirmationV1);
 }

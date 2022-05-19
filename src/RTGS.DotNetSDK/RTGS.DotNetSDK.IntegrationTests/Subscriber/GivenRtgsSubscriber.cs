@@ -19,9 +19,7 @@ public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 				TestData.ValidMessages.RtgsGlobalId,
 				_grpcServer.ServerUri,
-				new Uri("http://id-crypt-cloud-agent-api.com"),
-				"id-crypt-api-key",
-				new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+				new Uri("https://id-crypt-service"))
 			.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
@@ -97,7 +95,6 @@ public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 						 "Multiple handlers of type IEarmarkCompleteV1Handler were found." +
 						 "Multiple handlers of type IEarmarkFundsV1Handler were found." +
 						 "Multiple handlers of type IEarmarkReleaseV1Handler were found." +
-						 "Multiple handlers of type IIdCryptInvitationConfirmationV1Handler were found." +
 						 "Multiple handlers of type IMessageRejectV1Handler were found." +
 						 "Multiple handlers of type IPayawayFundsV1Handler were found." +
 						 "Multiple handlers of type IPayawayCompleteV1Handler were found. (Parameter 'handlers')");

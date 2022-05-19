@@ -1,27 +1,27 @@
-﻿using System.Text.Json;
-using Microsoft.AspNetCore.WebUtilities;
+﻿using System.Net.Http;
+using System.Text.Json;
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
+using RTGS.DotNetSDK.Publisher.Exceptions;
 using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.RtgsConnectionBrokerTests;
 
 public class GivenOpenConnection
 {
-	public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixture>
+	public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
-		private const string IdCryptApiKey = "id-crypt-api-key";
-		private static readonly Uri IdCryptApiUri = new("http://id-crypt-cloud-agent-api.com");
+		private static readonly Uri IdCryptServiceAddress = new("https://id-crypt-service");
 
 		private readonly GrpcServerFixture _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
 
+		private StatusCodeHttpHandler _idCryptServiceHttpHandler;
+		private IHost _clientHost;
 		private IRtgsConnectionBroker _rtgsConnectionBroker;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
-		private IHost _clientHost;
-		private StatusCodeHttpHandler _idCryptMessageHandler;
 
 		public AndIdCryptApiAvailable(GrpcServerFixture grpcServer)
 		{
@@ -50,25 +50,22 @@ public class GivenOpenConnection
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 						TestData.ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
-						IdCryptApiUri,
-						IdCryptApiKey,
-						new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+						IdCryptServiceAddress)
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
-					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+					.WithOkResponse(CreateConnection.HttpRequestResponseContext)
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 					.ConfigureServices(services => services
 						.AddRtgsPublisher(rtgsSdkOptions)
-						.AddTestIdCryptHttpClient(_idCryptMessageHandler))
+						.AddTestIdCryptServiceHttpClient(_idCryptServiceHttpHandler))
 					.UseSerilog()
 				.Build();
 
@@ -90,101 +87,36 @@ public class GivenOpenConnection
 			_grpcServer.Reset();
 		}
 
-		[Theory]
-		[InlineData(CreateInvitation.Path)]
-		[InlineData(GetPublicDid.Path)]
-		public async Task WhenCallingIdCryptAgent_ThenApiKeyHeaderIsExpected(string path)
+		[Fact]
+		public async Task WhenCallingIdCryptService_ThenUriIsExpected()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			_idCryptMessageHandler.Requests[path]
-				.Single()
-				.Headers
-				.GetValues("X-API-Key")
-				.Should().ContainSingle()
-				.Which.Should().Be(IdCryptApiKey);
-		}
-
-		[Theory]
-		[InlineData(CreateInvitation.Path)]
-		[InlineData(GetPublicDid.Path)]
-		public async Task WhenCallingIdCryptAgent_ThenUriIsExpected(string path)
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler =>
-				handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			await _rtgsConnectionBroker.SendInvitationAsync();
-
-			var actualApiUri = _idCryptMessageHandler.Requests[path]
+			var actualApiUri = _idCryptServiceHttpHandler.Requests[CreateConnection.Path]
 				.Single()
 				.RequestUri
 				!.GetLeftPart(UriPartial.Authority);
 
-			actualApiUri.Should().BeEquivalentTo(IdCryptApiUri.GetLeftPart(UriPartial.Authority));
+			actualApiUri.Should().BeEquivalentTo(IdCryptServiceAddress.GetLeftPart(UriPartial.Authority));
 		}
 
 		[Fact]
-		public async Task WhenCallingIdCryptAgent_ThenAliasIsAlwaysUnique()
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler =>
-				handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			await _rtgsConnectionBroker.SendInvitationAsync();
-			await _rtgsConnectionBroker.SendInvitationAsync();
-
-			var inviteRequestQueryParams1 = QueryHelpers.ParseQuery(
-				_idCryptMessageHandler.Requests[CreateInvitation.Path].First().RequestUri!.Query);
-			var alias1 = inviteRequestQueryParams1["alias"];
-
-			var inviteRequestQueryParams2 = QueryHelpers.ParseQuery(
-				_idCryptMessageHandler.Requests[CreateInvitation.Path][1].RequestUri!.Query);
-			var alias2 = inviteRequestQueryParams2["alias"];
-
-			alias2.Should().NotBeEquivalentTo(alias1);
-		}
-
-		[Fact]
-		public async Task WhenCallingIdCryptAgent_ThenDefaultQueryParamsAreCorrect()
+		public async Task WhenCallingIdCryptService_ThenConnectionBrokerLogs()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var inviteRequestQueryParams = QueryHelpers.ParseQuery(
-				_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
-			var autoAccept = bool.Parse(inviteRequestQueryParams["auto_accept"]);
-			var multiUse = bool.Parse(inviteRequestQueryParams["multi_use"]);
-			var usePublicDid = bool.Parse(inviteRequestQueryParams["public"]);
-
-			using var _ = new AssertionScope();
-
-			autoAccept.Should().BeTrue();
-			multiUse.Should().BeFalse();
-			usePublicDid.Should().BeFalse();
-		}
-
-		[Fact]
-		public async Task WhenCallingIdCryptAgent_ThenLog()
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler =>
-				handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			await _rtgsConnectionBroker.SendInvitationAsync();
-
-			var inviteRequestQueryParams = QueryHelpers.ParseQuery(
-				_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
-			var alias = inviteRequestQueryParams["alias"];
+			var alias = CreateConnection.Response.Alias;
 
 			var expectedDebugLogs = new List<LogEntry>
 			{
-				new($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new("Sent GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
+				new($"Sending Id Crypt Invitation with alias {alias} to RTGS", LogEventLevel.Debug),
+				new($"Sending Id Crypt Invitation with alias {alias} to RTGS", LogEventLevel.Debug)
 			};
 
 			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug);
@@ -192,7 +124,25 @@ public class GivenOpenConnection
 		}
 
 		[Fact]
-		public async Task ThenCanSendRequestToRtgsAndInvitationIsCorrectlyMapped()
+		public async Task WhenCallingIdCryptService_ThenIdCryptServiceClientLogs()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			await _rtgsConnectionBroker.SendInvitationAsync();
+
+			var expectedDebugLogs = new List<LogEntry>
+			{
+				new("Sending CreateConnectionInvitation request to ID Crypt Service", LogEventLevel.Debug),
+				new("Sent CreateConnectionInvitation request to ID Crypt Service", LogEventLevel.Debug)
+			};
+
+			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug);
+			debugLogs.Should().BeEquivalentTo(expectedDebugLogs, options => options.WithStrictOrdering());
+		}
+
+		[Fact]
+		public async Task WhenCallingIdCryptService_ThenInvitationIsCorrectlyMapped()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
@@ -208,21 +158,17 @@ public class GivenOpenConnection
 			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.tortgs.v1");
 			receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
 
-			var inviteRequestQueryParams = QueryHelpers.ParseQuery
-				(_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
-
-			var invitation = CreateInvitation.Response.Invitation;
-			var agentPublicDid = GetPublicDid.ExpectedDid;
+			var response = CreateConnection.Response;
 
 			var expectedMessageData = new IdCryptInvitationV1
 			{
-				Alias = inviteRequestQueryParams["alias"],
-				Label = invitation.Label,
-				RecipientKeys = invitation.RecipientKeys,
-				Id = invitation.Id,
-				Type = invitation.Type,
-				ServiceEndpoint = invitation.ServiceEndpoint,
-				AgentPublicDid = agentPublicDid
+				Alias = response.Alias,
+				Id = response.Invitation.Id,
+				Label = response.Invitation.Label,
+				RecipientKeys = response.Invitation.RecipientKeys,
+				ServiceEndpoint = response.Invitation.ServiceEndpoint,
+				Type = response.Invitation.Type,
+				AgentPublicDid = response.AgentPublicDid
 			};
 
 			var actualMessageData = JsonSerializer
@@ -232,19 +178,19 @@ public class GivenOpenConnection
 		}
 	}
 
-	public class AndIdCryptCreateInvitationApiUnavailable : IDisposable, IClassFixture<GrpcServerFixture>
+	public sealed class AndIdCryptServiceCreateConnectionApiUnavailable : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 		private readonly GrpcServerFixture _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
 
+		private StatusCodeHttpHandler _idCryptServiceHttpHandler;
+		private IHost _clientHost;
 		private IRtgsConnectionBroker _rtgsConnectionBroker;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
-		private IHost _clientHost;
-		private StatusCodeHttpHandler _idCryptMessageHandler;
 
-		public AndIdCryptCreateInvitationApiUnavailable(GrpcServerFixture grpcServer)
+		public AndIdCryptServiceCreateConnectionApiUnavailable(GrpcServerFixture grpcServer)
 		{
 			_grpcServer = grpcServer;
 
@@ -271,25 +217,22 @@ public class GivenOpenConnection
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 						TestData.ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
-						new Uri("http://id-crypt-cloud-agent-api.com"),
-						"id-crypt-api-key",
-						new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+						new Uri("https://id-crypt-service"))
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
-					.WithServiceUnavailableResponse(CreateInvitation.Path)
-					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+					.WithServiceUnavailableResponse(CreateConnection.Path)
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 					.ConfigureServices(services => services
 						.AddRtgsPublisher(rtgsSdkOptions)
-						.AddTestIdCryptHttpClient(_idCryptMessageHandler))
+						.AddTestIdCryptServiceHttpClient(_idCryptServiceHttpHandler))
 					.UseSerilog()
 					.Build();
 
@@ -318,8 +261,10 @@ public class GivenOpenConnection
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
 			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
-			  .Should()
-			  .ThrowAsync<Exception>();
+				.Should()
+				.ThrowAsync<RtgsPublisherException>()
+				.WithMessage("Error occurred creating ID Crypt invitation")
+				.WithInnerException(typeof(HttpRequestException));
 		}
 
 		[Fact]
@@ -338,177 +283,59 @@ public class GivenOpenConnection
 		}
 
 		[Fact]
-		public async Task ThenLog()
+		public async Task ThenRtgsConnectionBrokerLogs()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
 			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
-			  .Should()
-			  .ThrowAsync<Exception>();
-
-			var inviteRequestQueryParams = QueryHelpers.ParseQuery(
-				_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
-			var alias = inviteRequestQueryParams["alias"];
-
-			using var _ = new AssertionScope();
-			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug);
-			debugLogs.Select(log => log.Message)
-				.Should().ContainSingle(msg => msg == $"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent");
+				.Should()
+				.ThrowAsync<Exception>();
 
 			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error);
-			errorLogs.Select(log => log.Message)
-				.Should().ContainSingle(msg => msg == $"Error occurred when sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent");
+			errorLogs.Should().ContainSingle().Which.Should()
+				.BeEquivalentTo(new LogEntry(
+					"Error occurred creating ID Crypt invitation",
+					LogEventLevel.Error,
+					typeof(RtgsPublisherException)));
+		}
+
+		[Fact]
+		public async Task ThenIdCryptServiceClientLogs()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+				.Should()
+				.ThrowAsync<Exception>();
+
+			using var _ = new AssertionScope();
+
+			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug);
+			debugLogs.Should().ContainSingle().Which
+				.Should().BeEquivalentTo(new LogEntry("Sending CreateConnectionInvitation request to ID Crypt Service", LogEventLevel.Debug));
+
+			var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Error);
+			errorLogs.Should().ContainSingle().Which
+				.Should().BeEquivalentTo(new LogEntry(
+					"Error occurred when sending CreateConnectionInvitation request to ID Crypt Service",
+					LogEventLevel.Error,
+					typeof(HttpRequestException)));
 		}
 	}
 
-	public class AndIdCryptGetPublicDidApiUnavailable : IDisposable, IClassFixture<GrpcServerFixture>
+	public sealed class AndShortTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 		private readonly GrpcServerFixture _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
 
+		private QueueableStatusCodeHttpHandler _idCryptServiceHttpHandler;
+		private IHost _clientHost;
 		private IRtgsConnectionBroker _rtgsConnectionBroker;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
-		private IHost _clientHost;
-		private StatusCodeHttpHandler _idCryptMessageHandler;
-
-		public AndIdCryptGetPublicDidApiUnavailable(GrpcServerFixture grpcServer)
-		{
-			_grpcServer = grpcServer;
-
-			SetupSerilogLogger();
-
-			SetupDependencies();
-
-			_serilogContext = TestCorrelator.CreateContext();
-		}
-
-		private static void SetupSerilogLogger() =>
-			Log.Logger = new LoggerConfiguration()
-				.MinimumLevel.Debug()
-				.MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-				.Enrich.FromLogContext()
-				.WriteTo.Console()
-				.WriteTo.TestCorrelator()
-				.CreateLogger();
-
-		private void SetupDependencies()
-		{
-			try
-			{
-				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-						TestData.ValidMessages.RtgsGlobalId,
-						_grpcServer.ServerUri,
-						new Uri("http://id-crypt-cloud-agent-api.com"),
-						"id-crypt-api-key",
-						new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
-					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
-					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
-					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
-					.Build();
-
-				_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
-					.Create()
-					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-					.WithServiceUnavailableResponse(GetPublicDid.Path)
-					.Build();
-
-				_clientHost = Host.CreateDefaultBuilder()
-					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
-					.ConfigureServices(services => services
-						.AddRtgsPublisher(rtgsSdkOptions)
-						.AddTestIdCryptHttpClient(_idCryptMessageHandler))
-					.UseSerilog()
-					.Build();
-
-				_rtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
-				_toRtgsMessageHandler = _grpcServer.Services.GetRequiredService<ToRtgsMessageHandler>();
-			}
-			catch (Exception)
-			{
-				Dispose();
-
-				throw;
-			}
-		}
-
-		public void Dispose()
-		{
-			_clientHost?.Dispose();
-
-			_grpcServer.Reset();
-		}
-
-		[Fact]
-		public async Task ThenExceptionIsThrown()
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler =>
-				handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
-			  .Should()
-			  .ThrowAsync<Exception>();
-		}
-
-		[Fact]
-		public async Task ThenMessageNotSent()
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler =>
-				handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
-			  .Should()
-			  .ThrowAsync<Exception>();
-
-			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-
-			receiver.Connections.Should().BeEmpty();
-		}
-
-		[Fact]
-		public async Task ThenLog()
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler =>
-				handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
-			  .Should()
-			  .ThrowAsync<Exception>();
-
-			var inviteRequestQueryParams = QueryHelpers.ParseQuery(
-				_idCryptMessageHandler.Requests[CreateInvitation.Path].Single().RequestUri!.Query);
-			var alias = inviteRequestQueryParams["alias"];
-
-			var expectedDebugLogs = new List<LogEntry>
-			{
-				new ($"Sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new ($"Sent CreateInvitation request with alias {alias} to ID Crypt Cloud Agent", LogEventLevel.Debug),
-				new ("Sending GetPublicDid request to ID Crypt Cloud Agent", LogEventLevel.Debug)
-			};
-
-			var expectedErrorLogMessage = "Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent";
-
-			using var _ = new AssertionScope();
-			var debugLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Debug);
-			debugLogs.Should().BeEquivalentTo(expectedDebugLogs);
-
-			var errorLogs = _serilogContext.ConnectionBrokerLogs(LogEventLevel.Error);
-			errorLogs.Should().ContainSingle().Which.Message.Should().Be(expectedErrorLogMessage);
-		}
-	}
-
-	public class AndShortTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
-	{
-		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
-
-		private readonly GrpcServerFixture _grpcServer;
-		private readonly ITestCorrelatorContext _serilogContext;
-
-		private IRtgsConnectionBroker _rtgsConnectionBroker;
-		private ToRtgsMessageHandler _toRtgsMessageHandler;
-		private IHost _clientHost;
 
 		public AndShortTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
 		{
@@ -537,27 +364,23 @@ public class GivenOpenConnection
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 						TestData.ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
-						new Uri("http://id-crypt-cloud-agent-api.com"),
-						"id-crypt-api-key",
-						new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+						new Uri("https://id-crypt-service"))
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
-					.Create()
-					.WithOkResponse(GetActiveConnectionWithAlias.HttpRequestResponseContext)
-					.WithOkResponse(SignDocument.HttpRequestResponseContext)
-					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
+					.CreateQueueable()
+					.WithOkResponse(CreateConnection.HttpRequestResponseContext)
+					.WithOkResponse(CreateConnection.HttpRequestResponseContext)
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 					.ConfigureServices(services => services
 						.AddRtgsPublisher(rtgsSdkOptions)
-						.AddTestIdCryptHttpClient(idCryptMessageHandler))
+						.AddTestIdCryptServiceHttpClient(_idCryptServiceHttpHandler))
 					.UseSerilog()
 					.Build();
 
@@ -684,41 +507,34 @@ public class GivenOpenConnection
 		}
 
 		[Fact]
-		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnSuccessAndConnectionId()
+		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgement_ThenReturnSuccess()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
 			var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
-			using var _ = new AssertionScope();
-
-			result.ConnectionId.Should().Be(CreateInvitation.Response.ConnectionId);
-			result.SendResult.Should().Be(SendResult.Success);
+			result.Should().Be(SendResult.Success);
 		}
 
 		[Fact]
-		public async Task WhenBankMessageApiReturnsUnsuccessfulAcknowledgement_ThenReturnRejectedAndConnectionIdIsNull()
+		public async Task WhenBankMessageApiReturnsUnsuccessfulAcknowledgement_ThenReturnRejected()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithFailure());
 
 			var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
-			using var _ = new AssertionScope();
-
-			result.ConnectionId.Should().BeNull();
-			result.SendResult.Should().Be(SendResult.Rejected);
+			result.Should().Be(SendResult.Rejected);
 		}
 
 		[Fact]
-		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgementTooLate_ThenReturnTimeoutAndConnectionIdIsNull()
+		public async Task WhenBankMessageApiReturnsSuccessfulAcknowledgementTooLate_ThenReturnTimeout()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1))));
 
 			var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
-			result.ConnectionId.Should().BeNull();
-			result.SendResult.Should().Be(SendResult.Timeout);
+			result.Should().Be(SendResult.Timeout);
 		}
 
 		[Fact]
@@ -730,8 +546,9 @@ public class GivenOpenConnection
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
-			errorLogs.Select(log => log.Message).Should()
-				.ContainSingle("Timed out waiting for IdCryptInvitationV1 acknowledgement from RTGS (SendIdCryptInvitationAsync)");
+			errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
+				"Timed out waiting for IdCryptInvitationV1 acknowledgement from RTGS (SendIdCryptInvitationToRtgsAsync)",
+				LogEventLevel.Error));
 		}
 
 		[Fact]
@@ -763,27 +580,24 @@ public class GivenOpenConnection
 
 			using var _ = new AssertionScope();
 
-			result1.ConnectionId.Should().Be(CreateInvitation.Response.ConnectionId);
-			result1.SendResult.Should().Be(SendResult.Success);
+			result1.Should().Be(SendResult.Success);
 
-			result2.ConnectionId.Should().BeNull();
-			result2.SendResult.Should().Be(SendResult.Timeout);
+			result2.Should().Be(SendResult.Timeout);
 		}
 
 		[Fact]
-		public async Task WhenBankMessageApiOnlyReturnsUnexpectedAcknowledgement_ThenReturnTimeoutAndConnectionIdIsNull()
+		public async Task WhenBankMessageApiOnlyReturnsUnexpectedAcknowledgement_ThenReturnTimeout()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnUnexpectedAcknowledgementWithSuccess());
 
 			var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
-			result.ConnectionId.Should().BeNull();
-			result.SendResult.Should().Be(SendResult.Timeout);
+			result.Should().Be(SendResult.Timeout);
 		}
 
 		[Fact]
-		public async Task WhenBankMessageApiReturnsUnexpectedAcknowledgementBeforeFailureAcknowledgement_ThenReturnRejectedAndConnectionIdIsNull()
+		public async Task WhenBankMessageApiReturnsUnexpectedAcknowledgementBeforeFailureAcknowledgement_ThenReturnRejected()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 			{
@@ -793,12 +607,11 @@ public class GivenOpenConnection
 
 			var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
-			result.ConnectionId.Should().BeNull();
-			result.SendResult.Should().Be(SendResult.Rejected);
+			result.Should().Be(SendResult.Rejected);
 		}
 
 		[Fact]
-		public async Task WhenBankMessageApiReturnsFailureAcknowledgementBeforeUnexpectedAcknowledgement_ThenReturnRejectedAndConnectionIdIsNull()
+		public async Task WhenBankMessageApiReturnsFailureAcknowledgementBeforeUnexpectedAcknowledgement_ThenReturnRejected()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 			{
@@ -808,8 +621,7 @@ public class GivenOpenConnection
 
 			var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
-			result.ConnectionId.Should().BeNull();
-			result.SendResult.Should().Be(SendResult.Rejected);
+			result.Should().Be(SendResult.Rejected);
 		}
 
 		[Fact]
@@ -824,19 +636,19 @@ public class GivenOpenConnection
 
 			var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
-			result.SendResult.Should().Be(SendResult.Success);
+			result.Should().Be(SendResult.Success);
 		}
 
 		[Fact]
 		public async Task WhenBankMessageApiReturnsSuccessForSecondMessageOnly_ThenDoNotTimeout()
 		{
 			var result1 = await _rtgsConnectionBroker.SendInvitationAsync();
-			result1.SendResult.Should().Be(SendResult.Timeout);
+			result1.Should().Be(SendResult.Timeout);
 
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
 			var result2 = await _rtgsConnectionBroker.SendInvitationAsync();
-			result2.SendResult.Should().Be(SendResult.Success);
+			result2.Should().Be(SendResult.Success);
 		}
 
 		[Fact]
@@ -851,19 +663,20 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
 			var result = await _rtgsConnectionBroker.SendInvitationAsync();
-			result.SendResult.Should().Be(SendResult.Success);
+			result.Should().Be(SendResult.Success);
 		}
 	}
 
-	public class AndLongTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
+	public sealed class AndLongTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(30);
 		private static readonly TimeSpan TestWaitForSendDuration = TimeSpan.FromSeconds(15);
 
 		private readonly GrpcServerFixture _grpcServer;
 
-		private IRtgsConnectionBroker _rtgsConnectionBroker;
+		private QueueableStatusCodeHttpHandler _idCryptServiceHttpHandler;
 		private IHost _clientHost;
+		private IRtgsConnectionBroker _rtgsConnectionBroker;
 
 		public AndLongTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
 		{
@@ -879,23 +692,21 @@ public class GivenOpenConnection
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 						TestData.ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
-						new Uri("http://id-crypt-cloud-agent-api.com"),
-						"id-crypt-api-key",
-						new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+						new Uri("https://id-crypt-service"))
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
-				var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
-					.Create()
-					.WithOkResponse(CreateInvitation.HttpRequestResponseContext)
-					.WithOkResponse(GetPublicDid.HttpRequestResponseContext)
+				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
+					.CreateQueueable()
+					.WithOkResponse(CreateConnection.HttpRequestResponseContext)
+					.WithOkResponse(CreateConnection.HttpRequestResponseContext)
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 					.ConfigureServices(services => services
 						.AddRtgsPublisher(rtgsSdkOptions)
-						.AddTestIdCryptHttpClient(idCryptMessageHandler))
+						.AddTestIdCryptServiceHttpClient(_idCryptServiceHttpHandler))
 					.Build();
 
 				_rtgsConnectionBroker = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();

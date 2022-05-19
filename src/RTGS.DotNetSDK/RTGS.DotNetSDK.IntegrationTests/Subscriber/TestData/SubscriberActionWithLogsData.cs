@@ -1,6 +1,4 @@
-﻿using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
-
-namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
+﻿namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 
 public class SubscriberActionWithLogsData : BaseSubscriberActionData
 {
@@ -110,17 +108,6 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),
 				new("BankPartnersResponseV1 message received from RTGS", LogEventLevel.Information),
-				new("RTGS Subscriber stopping", LogEventLevel.Information),
-				new("RTGS Subscriber stopped", LogEventLevel.Information)
-			});
-
-	public override ISubscriberAction<IdCryptInvitationConfirmationV1> IdCryptInvitationConfirmationV1 =>
-		new SubscriberActionWithLogs<IdCryptInvitationConfirmationV1>(
-			SubscriberActions.IdCryptInvitationConfirmationV1,
-			new List<LogEntry>
-			{
-				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("idcrypt.invitationconfirmation.v1 message received from RTGS", LogEventLevel.Information),
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});

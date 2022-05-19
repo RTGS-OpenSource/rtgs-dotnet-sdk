@@ -1,11 +1,14 @@
-﻿namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
+﻿using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.ValidMessages;
 
-public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServerFixture>
+namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
+
+public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
 
 	private readonly GrpcServerFixture _grpcServer;
 	private readonly ITestCorrelatorContext _serilogContext;
+
 	private IHost _clientHost;
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
@@ -37,9 +40,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
-					new Uri("http://id-crypt-cloud-agent-api.com"),
-					"id-crypt-api-key",
-					new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+					new Uri("https://id-crypt-service"))
 				.EnableMessageSigning()
 				.Build();
 
@@ -76,7 +77,8 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 		var signingHeaders = new Dictionary<string, string>
 		{
-			{ "alias", "alias" }
+			{ "alias", "alias" },
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -85,9 +87,11 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 		await _rtgsSubscriber.StopAsync();
 
-		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
-			.Should().ContainSingle().Which.Should().BeEquivalentTo(
-				new LogEntry($"Private signature not found on {subscriberAction.MessageIdentifier} message, yet was expected", LogEventLevel.Error));
+		_serilogContext
+			.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
+			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
+				$"Private signature not found on {subscriberAction.MessageIdentifier} message, yet was expected",
+				LogEventLevel.Error));
 	}
 
 	[Theory]
@@ -98,7 +102,8 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 		var signingHeaders = new Dictionary<string, string>
 		{
-			{ "pairwise-did-signature", "pairwise-did-signature" }
+			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -107,9 +112,40 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 		await _rtgsSubscriber.StopAsync();
 
-		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
-			.Should().ContainSingle().Which.Should().BeEquivalentTo(
-				new LogEntry($"Alias not found on {subscriberAction.MessageIdentifier} message, yet was expected", LogEventLevel.Error));
+		_serilogContext
+			.LogsFor(
+				$"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier",
+				LogEventLevel.Error)
+			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
+				$"Alias not found on {subscriberAction.MessageIdentifier} message, yet was expected",
+				LogEventLevel.Error));
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task AndPartnerRtgsGlobalIdHeaderMissing_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+
+		var signingHeaders = new Dictionary<string, string>
+		{
+			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "alias", "alias" }
+		};
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		_serilogContext
+			.LogsFor(
+				$"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier",
+				LogEventLevel.Error)
+			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
+				$"From RTGS Global ID not found on {subscriberAction.MessageIdentifier} message, yet was expected",
+				LogEventLevel.Error));
 	}
 
 	[Theory]
@@ -123,7 +159,8 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 		var signingHeaders = new Dictionary<string, string>
 		{
-			{ "pairwise-did-signature", "pairwise-did-signature" }
+			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -132,7 +169,8 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 		await _rtgsSubscriber.StopAsync();
 
-		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should().Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
+		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should()
+			.Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
 	}
 
 	[Theory]
@@ -146,6 +184,32 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 		var signingHeaders = new Dictionary<string, string>
 		{
+			{ "alias", "alias" },
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
+		};
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should()
+			.Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task AndPartnerRtgsGlobalIdHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		Exception raisedException = null;
+
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
+
+		var signingHeaders = new Dictionary<string, string>
+		{
+			{ "pairwise-did-signature", "pairwise-did-signature" },
 			{ "alias", "alias" }
 		};
 
@@ -155,7 +219,8 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 		await _rtgsSubscriber.StopAsync();
 
-		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should().Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
+		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should()
+			.Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
 	}
 
 	[Theory]
@@ -167,7 +232,8 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", string.Empty },
-			{ "alias", "alias" }
+			{ "alias", "alias" },
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -176,9 +242,11 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 		await _rtgsSubscriber.StopAsync();
 
-		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
-			.Should().ContainSingle().Which.Should().BeEquivalentTo(
-				new LogEntry($"Private signature not found on {subscriberAction.MessageIdentifier} message, yet was expected", LogEventLevel.Error));
+		_serilogContext
+			.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
+			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
+				$"Private signature not found on {subscriberAction.MessageIdentifier} message, yet was expected",
+				LogEventLevel.Error));
 	}
 
 	[Theory]
@@ -190,7 +258,8 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
-			{ "alias", string.Empty }
+			{ "alias", string.Empty },
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -200,8 +269,34 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		await _rtgsSubscriber.StopAsync();
 
 		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
-			.Should().ContainSingle().Which.Should().BeEquivalentTo(
-				new LogEntry($"Alias not found on {subscriberAction.MessageIdentifier} message, yet was expected", LogEventLevel.Error));
+			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
+				$"Alias not found on {subscriberAction.MessageIdentifier} message, yet was expected",
+				LogEventLevel.Error));
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task AndPartnerRtgsGlobalIdHeaderEmpty_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+
+		var signingHeaders = new Dictionary<string, string>
+		{
+			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "alias", "alias" },
+			{ "from-rtgs-global-id", string.Empty }
+		};
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
+			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
+				$"From RTGS Global ID not found on {subscriberAction.MessageIdentifier} message, yet was expected",
+				LogEventLevel.Error));
 	}
 
 	[Theory]
@@ -216,7 +311,8 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", string.Empty },
-			{ "alias", "alias" }
+			{ "alias", "alias" },
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -225,7 +321,8 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 		await _rtgsSubscriber.StopAsync();
 
-		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should().Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
+		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should()
+			.Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
 	}
 
 	[Theory]
@@ -240,7 +337,8 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
-			{ "alias", string.Empty }
+			{ "alias", string.Empty },
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -249,6 +347,33 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 		await _rtgsSubscriber.StopAsync();
 
-		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should().Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
+		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should()
+			.Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task AndPartnerRtgsGlobalIdHeaderHeaderEmpty_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		Exception raisedException = null;
+
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
+
+		var signingHeaders = new Dictionary<string, string>
+		{
+			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "alias", "alias" },
+			{ ValidMessages.RtgsGlobalId, string.Empty }
+		};
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should()
+			.Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
 	}
 }

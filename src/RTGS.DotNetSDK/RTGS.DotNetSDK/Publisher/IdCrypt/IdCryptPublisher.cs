@@ -22,13 +22,4 @@ internal class IdCryptPublisher : IIdCryptPublisher
 		var headers = new Dictionary<string, string> { { "bank-partner-rtgs-global-id", bankPartnerRtgsGlobalId } };
 		return _internalPublisher.SendMessageAsync(message, "idcrypt.invitation.tobank.v1", cancellationToken, headers);
 	}
-
-	public Task<SendResult> SendIdCryptInvitationConfirmationAsync(
-		IdCryptInvitationConfirmationV1 message,
-		string bankPartnerRtgsGlobalId,
-		CancellationToken cancellationToken)
-	{
-		var headers = new Dictionary<string, string> { { "bank-partner-rtgs-global-id", bankPartnerRtgsGlobalId } };
-		return _internalPublisher.SendMessageAsync(message, "idcrypt.invitationconfirmation.v1", cancellationToken, headers);
-	}
 }

@@ -6,11 +6,10 @@ internal class QueueableStatusCodeHttpHandler : DelegatingHandler
 {
 	private readonly Dictionary<string, Queue<MockHttpResponse>> _mockHttpResponses;
 
-	public Dictionary<string, IList<HttpRequestMessage>> Requests { get; }
+	public Dictionary<string, IList<HttpRequestMessage>> Requests { get; } = new();
 
 	public QueueableStatusCodeHttpHandler(Dictionary<string, Queue<MockHttpResponse>> mockHttpResponses)
 	{
-		Requests = new Dictionary<string, IList<HttpRequestMessage>>();
 		_mockHttpResponses = mockHttpResponses;
 	}
 

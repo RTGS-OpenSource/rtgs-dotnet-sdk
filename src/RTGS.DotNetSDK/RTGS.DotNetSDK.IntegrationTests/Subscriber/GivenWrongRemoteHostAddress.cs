@@ -2,7 +2,7 @@
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber;
 
-public class GivenWrongRemoteHostAddress : IAsyncDisposable
+public sealed class GivenWrongRemoteHostAddress : IAsyncDisposable
 {
 	private static readonly TimeSpan WaitForExceptionEventDuration = TimeSpan.FromSeconds(30);
 
@@ -19,9 +19,7 @@ public class GivenWrongRemoteHostAddress : IAsyncDisposable
 		var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 				TestData.ValidMessages.RtgsGlobalId,
 				new Uri("https://localhost:4567"),
-				new Uri("http://id-crypt-cloud-agent-api.com"),
-				"id-crypt-api-key",
-				new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+				new Uri("https://id-crypt-service"))
 			.Build();
 
 		_clientHost = Host.CreateDefaultBuilder()

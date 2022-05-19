@@ -1,161 +1,96 @@
 ﻿using Microsoft.Extensions.Logging;
+using RTGS.DotNetSDK.IdCrypt;
 using RTGS.DotNetSDK.Publisher.IdCrypt;
 using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
 using RTGS.DotNetSDK.Subscriber.Exceptions;
-using RTGS.IDCryptSDK.Connections;
-using RTGS.IDCryptSDK.Connections.Models;
-using RTGS.IDCryptSDK.Wallet;
+using RTGS.IDCrypt.Service.Contracts.Connection;
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers.Internal;
 
 internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitationRequestV1Handler
 {
 	private readonly ILogger<IdCryptCreateInvitationRequestV1Handler> _logger;
-	private readonly IConnectionsClient _connectionsClient;
-	private readonly IWalletClient _walletClient;
+	private readonly IIdCryptServiceClient _idCryptServiceClient;
 	private readonly IIdCryptPublisher _idCryptPublisher;
-	private IHandler<IdCryptCreateInvitationNotificationV1> _userHandler;
 
 	public IdCryptCreateInvitationRequestV1Handler(
 		ILogger<IdCryptCreateInvitationRequestV1Handler> logger,
-		IConnectionsClient connectionsClient,
-		IWalletClient walletClient,
+		IIdCryptServiceClient idCryptServiceClient,
 		IIdCryptPublisher idCryptPublisher)
 	{
 		_logger = logger;
-		_connectionsClient = connectionsClient;
-		_walletClient = walletClient;
+		_idCryptServiceClient = idCryptServiceClient;
 		_idCryptPublisher = idCryptPublisher;
 	}
 
-	public void SetUserHandler(IHandler<IdCryptCreateInvitationNotificationV1> userHandler) =>
-		_userHandler = userHandler;
-
 	public async Task HandleMessageAsync(IdCryptCreateInvitationRequestV1 createInvitationRequest)
 	{
-		if (_userHandler is null)
-		{
-			throw new RtgsSubscriberException(
-				$"User Handler not set in {nameof(IdCryptCreateInvitationRequestV1Handler)} when invoking {nameof(HandleMessageAsync)}(). " +
-				$"Ensure {nameof(SetUserHandler)}() has been called first.");
-		}
+		var invitation = await CreateIdCryptInvitationAsync();
 
-		var alias = Guid.NewGuid().ToString();
-
-		var invitation = await CreateIdCryptInvitationAsync(alias);
-		var agentPublicDid = await GetIdCryptAgentPublicDidAsync();
-
-		await SendInvitationToBankAsync(alias, invitation.Invitation, agentPublicDid, createInvitationRequest.BankPartnerRtgsGlobalId, default);
-
-		var invitationNotification = new IdCryptCreateInvitationNotificationV1
-		{
-			Alias = alias,
-			ConnectionId = invitation.ConnectionId,
-			BankPartnerRtgsGlobalId = createInvitationRequest.BankPartnerRtgsGlobalId
-		};
-
-		await _userHandler.HandleMessageAsync(invitationNotification);
+		await SendInvitationToBankAsync(invitation, createInvitationRequest.BankPartnerRtgsGlobalId);
 	}
 
-	private async Task<CreateInvitationResponse> CreateIdCryptInvitationAsync(string alias)
+	private async Task<CreateConnectionInvitationResponse> CreateIdCryptInvitationAsync()
 	{
-		const bool autoAccept = true;
-		const bool multiUse = false;
-		const bool usePublicDid = false;
-
 		try
 		{
-			_logger.LogDebug("Sending CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", alias);
+			var invitation = await _idCryptServiceClient.CreateConnectionInvitationAsync();
 
-			var response = await _connectionsClient.CreateInvitationAsync(
-				alias,
-				autoAccept,
-				multiUse,
-				usePublicDid);
-
-			_logger.LogDebug("Sent CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent", alias);
-
-			return response;
+			return invitation;
 		}
 		catch (Exception innerException)
 		{
 			var exception = new RtgsSubscriberException(
-				$"Error occurred when sending CreateInvitation request with alias {alias} to ID Crypt Cloud Agent",
+				"Error occurred creating ID Crypt invitation",
 				innerException);
 
 			_logger.LogError(
 				exception,
-				"Error occurred when sending CreateInvitation request with alias {Alias} to ID Crypt Cloud Agent",
-				alias);
-
-			throw exception;
-		}
-	}
-
-	private async Task<string> GetIdCryptAgentPublicDidAsync()
-	{
-		try
-		{
-			_logger.LogDebug("Sending GetPublicDid request to ID Crypt Cloud Agent");
-
-			var publicDid = await _walletClient.GetPublicDidAsync();
-
-			_logger.LogDebug("Sent GetPublicDid request to ID Crypt Cloud Agent");
-
-			return publicDid;
-		}
-		catch (Exception innerException)
-		{
-			const string errorMessage = "Error occurred when sending GetPublicDid request to ID Crypt Cloud Agent";
-
-			var exception = new RtgsSubscriberException(errorMessage, innerException);
-
-			_logger.LogError(exception, errorMessage);
+				"Error occurred when sending CreateConnectionInvitation request to ID Crypt Service for invitation from bank");
 
 			throw exception;
 		}
 	}
 
 	private async Task SendInvitationToBankAsync(
-		string alias,
-		ConnectionInvitation invitation,
-		string agentPublicDid,
-		string bankPartnerRtgsGlobalId,
-		CancellationToken cancellationToken)
+		CreateConnectionInvitationResponse invitation,
+		string bankPartnerRtgsGlobalId)
 	{
-		_logger.LogDebug("Sending Invitation with alias {Alias} to Bank {BankPartnerRtgsGlobalId}", alias, bankPartnerRtgsGlobalId);
+		var invitationAlias = invitation.Alias;
+
+		_logger.LogDebug("Sending Invitation with alias {Alias} to Bank {BankPartnerRtgsGlobalId}", invitationAlias, bankPartnerRtgsGlobalId);
 
 		var invitationMessage = new IdCryptInvitationV1
 		{
-			Alias = alias,
-			Id = invitation.Id,
-			Label = invitation.Label,
-			RecipientKeys = invitation.RecipientKeys,
-			ServiceEndpoint = invitation.ServiceEndpoint,
-			Type = invitation.Type,
-			AgentPublicDid = agentPublicDid
+			Alias = invitationAlias,
+			Id = invitation.Invitation.Id,
+			Label = invitation.Invitation.Label,
+			RecipientKeys = invitation.Invitation.RecipientKeys,
+			ServiceEndpoint = invitation.Invitation.ServiceEndpoint,
+			Type = invitation.Invitation.Type,
+			AgentPublicDid = invitation.AgentPublicDid
 		};
 
 		SendResult sendResult;
 		try
 		{
 			sendResult = await _idCryptPublisher
-				.SendIdCryptInvitationToBankAsync(invitationMessage, bankPartnerRtgsGlobalId, cancellationToken);
+				.SendIdCryptInvitationToBankAsync(invitationMessage, bankPartnerRtgsGlobalId, default);
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Exception occurred when sending IdCrypt Invitation with alias {Alias} to Bank {BankPartnerRtgsGlobalId}", alias, bankPartnerRtgsGlobalId);
+			_logger.LogError(ex, "Exception occurred when sending IdCrypt Invitation with alias {Alias} to Bank {BankPartnerRtgsGlobalId}", invitationAlias, bankPartnerRtgsGlobalId);
 			throw;
 		}
 
 		if (sendResult is not SendResult.Success)
 		{
-			_logger.LogError("Error occurred when sending IdCrypt Invitation with alias {Alias} to Bank {BankPartnerRtgsGlobalId}", alias, bankPartnerRtgsGlobalId);
+			_logger.LogError("Error occurred when sending IdCrypt Invitation with alias {Alias} to Bank {BankPartnerRtgsGlobalId}", invitationAlias, bankPartnerRtgsGlobalId);
 
 			throw new RtgsSubscriberException(
-				$"Error occurred when sending IdCrypt Invitation with alias {alias} to Bank {bankPartnerRtgsGlobalId}");
+				$"Error occurred when sending IdCrypt Invitation with alias {invitationAlias} to Bank {bankPartnerRtgsGlobalId}");
 		}
 
-		_logger.LogDebug("Sent Invitation with alias {Alias} to Bank {BankPartnerRtgsGlobalId}", alias, bankPartnerRtgsGlobalId);
+		_logger.LogDebug("Sent Invitation with alias {Alias} to Bank {BankPartnerRtgsGlobalId}", invitationAlias, bankPartnerRtgsGlobalId);
 	}
 }

@@ -1,6 +1,4 @@
-﻿using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
-
-namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
+﻿namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 
 public abstract class BaseSubscriberActionData : BaseActionData
 {
@@ -14,5 +12,4 @@ public abstract class BaseSubscriberActionData : BaseActionData
 	public abstract ISubscriberAction<EarmarkCompleteV1> EarmarkCompleteV1 { get; }
 	public abstract ISubscriberAction<EarmarkReleaseV1> EarmarkReleaseV1 { get; }
 	public abstract ISubscriberAction<BankPartnersResponseV1> BankPartnersResponseV1 { get; }
-	public abstract ISubscriberAction<IdCryptInvitationConfirmationV1> IdCryptInvitationConfirmationV1 { get; }
 }

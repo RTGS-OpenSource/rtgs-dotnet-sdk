@@ -24,15 +24,15 @@ public static class PublisherActionsWithNullMessages
 
 	public static readonly PublisherAction<PayawayCreationV1> PayawayCreate = new(
 		null,
-		(publisher, request, cancellationToken) => publisher.SendPayawayCreateAsync(request, "id-crypt-alias", cancellationToken));
+		(publisher, request, cancellationToken) => publisher.SendPayawayCreateAsync(request, "to-rtgs-global-id", cancellationToken));
 
 	public static readonly PublisherAction<PayawayConfirmationV1> PayawayConfirmation = new(
 		null,
-		(publisher, request, cancellationToken) => publisher.SendPayawayConfirmationAsync(request, "id-crypt-alias", cancellationToken));
+		(publisher, request, cancellationToken) => publisher.SendPayawayConfirmationAsync(request, "to-rtgs-global-id", cancellationToken));
 
 	public static readonly PublisherAction<PayawayRejectionV1> PayawayRejection = new(
 		null,
-		(publisher, request, cancellationToken) => publisher.SendPayawayRejectionAsync(request, "id-crypt-alias", cancellationToken));
+		(publisher, request, cancellationToken) => publisher.SendPayawayRejectionAsync(request, "to-rtgs-global-id", cancellationToken));
 
 	public static readonly PublisherAction<BankPartnersRequestV1> BankPartnersRequest = new(
 		null,

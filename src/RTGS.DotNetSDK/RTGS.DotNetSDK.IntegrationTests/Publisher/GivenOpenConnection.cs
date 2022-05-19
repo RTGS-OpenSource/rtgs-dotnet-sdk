@@ -7,7 +7,7 @@ namespace RTGS.DotNetSDK.IntegrationTests.Publisher;
 
 public class GivenOpenConnection
 {
-	public class AndShortTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
+	public sealed class AndShortTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
@@ -16,7 +16,7 @@ public class GivenOpenConnection
 
 		private IRtgsPublisher _rtgsPublisher;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
-		private StatusCodeHttpHandler _idCryptMessageHandler;
+		private StatusCodeHttpHandler _idCryptServiceMessageHandler;
 		private IHost _clientHost;
 
 		public AndShortTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
@@ -46,25 +46,22 @@ public class GivenOpenConnection
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 						TestData.ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
-						new Uri("http://id-crypt-cloud-agent-api.com"),
-						"id-crypt-api-key",
-						new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+						new Uri("https://id-crypt-service"))
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				_idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+				_idCryptServiceMessageHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
-					.WithOkResponse(GetActiveConnectionWithAlias.HttpRequestResponseContext)
-					.WithOkResponse(SignDocument.HttpRequestResponseContext)
+					.WithOkResponse(SignMessage.HttpRequestResponseContext)
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 					.ConfigureServices(services => services
 						.AddRtgsPublisher(rtgsSdkOptions)
-						.AddTestIdCryptHttpClient(_idCryptMessageHandler))
+						.AddTestIdCryptServiceHttpClient(_idCryptServiceMessageHandler))
 					.UseSerilog()
 					.Build();
 
@@ -318,7 +315,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1))));
 
-			var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
 			errorLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Error), options => options.WithStrictOrdering());
@@ -446,7 +443,7 @@ public class GivenOpenConnection
 		}
 	}
 
-	public class AndLongTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
+	public sealed class AndLongTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(30);
 		private static readonly TimeSpan TestWaitForSendDuration = TimeSpan.FromSeconds(15);
@@ -470,23 +467,20 @@ public class GivenOpenConnection
 				var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 						TestData.ValidMessages.RtgsGlobalId,
 						_grpcServer.ServerUri,
-						new Uri("http://id-crypt-cloud-agent-api.com"),
-						Guid.NewGuid().ToString(),
-						new Uri("http://id-crypt-cloud-agent-service-endpoint.com"))
+						new Uri("https://id-crypt-service"))
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
 				var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
-					.WithOkResponse(GetActiveConnectionWithAlias.HttpRequestResponseContext)
-					.WithOkResponse(SignDocument.HttpRequestResponseContext)
+					.WithOkResponse(SignMessage.HttpRequestResponseContext)
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 					.ConfigureServices(services => services
 						.AddRtgsPublisher(rtgsSdkOptions)
-						.AddTestIdCryptHttpClient(idCryptMessageHandler))
+						.AddTestIdCryptServiceHttpClient(idCryptMessageHandler))
 					.Build();
 
 				_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
