@@ -8,7 +8,7 @@ internal interface IIdCryptServiceClient
 {
 	public Task<CreateConnectionInvitationResponse> CreateConnectionInvitationAsync(CancellationToken cancellationToken = default);
 	public Task AcceptConnectionInvitationAsync(AcceptConnectionInvitationRequest request, CancellationToken cancellationToken = default);
-	public Task<SignMessageResponse> SignMessageAsync<T>(T message, CancellationToken cancellationToken = default);
+	public Task<SignMessageResponse> SignMessageAsync<T>(string toRtgsGlobalId, T message, CancellationToken cancellationToken = default);
 	public Task<VerifyPrivateSignatureResponse> VerifyMessageAsync<T>(
 		string rtgsGlobalId,
 		T message,

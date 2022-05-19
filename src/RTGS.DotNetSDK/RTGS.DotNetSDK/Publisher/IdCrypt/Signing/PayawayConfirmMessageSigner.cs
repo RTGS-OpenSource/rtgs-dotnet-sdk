@@ -14,6 +14,7 @@ internal class PayawayConfirmMessageSigner : ISignMessage<PayawayConfirmationV1>
 	}
 
 	public async Task<SignMessageResponse> SignAsync(
+		string toRtgsGlobalId,
 		PayawayConfirmationV1 message,
 		CancellationToken cancellationToken = default)
 	{
@@ -25,7 +26,7 @@ internal class PayawayConfirmMessageSigner : ISignMessage<PayawayConfirmationV1>
 			{ "amount", message.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Ntry[0]?.Amt?.Value }
 		};
 
-		var response = await _idCryptServiceClient.SignMessageAsync(documentToSign, cancellationToken);
+		var response = await _idCryptServiceClient.SignMessageAsync(toRtgsGlobalId, documentToSign, cancellationToken);
 
 		return response;
 	}

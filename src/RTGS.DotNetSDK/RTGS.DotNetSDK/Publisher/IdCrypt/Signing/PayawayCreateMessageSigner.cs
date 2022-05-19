@@ -14,12 +14,13 @@ internal class PayawayCreateMessageSigner : ISignMessage<PayawayCreationV1>
 	}
 
 	public async Task<SignMessageResponse> SignAsync(
+		string toRtgsGlobalId,
 		PayawayCreationV1 message,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(message);
 
-		var response = await _idCryptServiceClient.SignMessageAsync(message.FIToFICstmrCdtTrf, cancellationToken);
+		var response = await _idCryptServiceClient.SignMessageAsync(toRtgsGlobalId, message.FIToFICstmrCdtTrf, cancellationToken);
 
 		return response;
 	}

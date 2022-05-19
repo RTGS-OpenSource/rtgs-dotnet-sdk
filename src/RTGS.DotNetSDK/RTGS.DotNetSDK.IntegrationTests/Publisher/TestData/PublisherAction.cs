@@ -22,7 +22,7 @@ public class PublisherAction<TRequest> : IPublisherAction<TRequest>
 		Headers = headers;
 		SerialisedSignedDocument = signedDocument == null
 			? null
-			: JsonSerializer.Serialize(new { rtgsGlobalId = ValidMessages.RtgsGlobalId, message = signedDocument });
+			: JsonSerializer.Serialize(new { rtgsGlobalId = ValidMessages.ToRtgsGlobalId, message = signedDocument });
 	}
 
 	public string SerialisedSignedDocument { get; }

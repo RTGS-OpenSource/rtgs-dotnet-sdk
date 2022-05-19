@@ -14,6 +14,7 @@ internal class PayawayRejectMessageSigner : ISignMessage<PayawayRejectionV1>
 	}
 
 	public async Task<SignMessageResponse> SignAsync(
+		string toRtgsGlobalId,
 		PayawayRejectionV1 message,
 		CancellationToken cancellationToken = default)
 	{
@@ -21,7 +22,7 @@ internal class PayawayRejectMessageSigner : ISignMessage<PayawayRejectionV1>
 
 		var documentToSign = new Dictionary<string, object> { { "reason", message.MsgRjctn?.Rsn?.RsnDesc } };
 
-		var response = await _idCryptServiceClient.SignMessageAsync(documentToSign, cancellationToken);
+		var response = await _idCryptServiceClient.SignMessageAsync(toRtgsGlobalId, documentToSign, cancellationToken);
 
 		return response;
 	}
