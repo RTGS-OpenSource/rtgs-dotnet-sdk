@@ -22,11 +22,11 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		_logger = logger;
 	}
 
-	public async Task<CreateConnectionInvitationResponse> CreateConnectionAsync(CancellationToken cancellationToken = default)
+	public async Task<CreateConnectionInvitationResponse> CreateConnectionInvitationAsync(CancellationToken cancellationToken = default)
 	{
 		try
 		{
-			_logger.LogDebug("Sending CreateConnection request to ID Crypt Service");
+			_logger.LogDebug("Sending CreateConnectionInvitation request to ID Crypt Service");
 
 			var response = await _httpClient.PostAsync("api/Connection", null, cancellationToken);
 
@@ -37,33 +37,33 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 			var createConnectionInvitationResponse =
 				await JsonSerializer.DeserializeAsync<CreateConnectionInvitationResponse>(responseStream, cancellationToken: cancellationToken);
 
-			_logger.LogDebug("Sent CreateConnection request to ID Crypt Service");
+			_logger.LogDebug("Sent CreateConnectionInvitation request to ID Crypt Service");
 
 			return createConnectionInvitationResponse;
 		}
 		catch (Exception exception)
 		{
-			_logger.LogError(exception, "Error occurred when sending CreateConnection request to ID Crypt Service");
+			_logger.LogError(exception, "Error occurred when sending CreateConnectionInvitation request to ID Crypt Service");
 
 			throw;
 		}
 	}
 
-	public async Task AcceptConnectionAsync(AcceptConnectionInvitationRequest request, CancellationToken cancellationToken = default)
+	public async Task AcceptConnectionInvitationAsync(AcceptConnectionInvitationRequest request, CancellationToken cancellationToken = default)
 	{
 		try
 		{
-			_logger.LogDebug("Sending AcceptConnection request to ID Crypt Service");
+			_logger.LogDebug("Sending AcceptConnectionInvitation request to ID Crypt Service");
 
 			var response = await _httpClient.PostAsJsonAsync("api/Connection/Accept", request, cancellationToken);
 
 			response.EnsureSuccessStatusCode();
 
-			_logger.LogDebug("Sent AcceptConnection request to ID Crypt Service");
+			_logger.LogDebug("Sent AcceptConnectionInvitation request to ID Crypt Service");
 		}
 		catch (Exception exception)
 		{
-			_logger.LogError(exception, "Error occurred when sending AcceptConnection request to ID Crypt Service");
+			_logger.LogError(exception, "Error occurred when sending AcceptConnectionInvitation request to ID Crypt Service");
 
 			throw;
 		}

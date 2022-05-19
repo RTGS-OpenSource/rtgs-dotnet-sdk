@@ -39,7 +39,7 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 			_logger.LogDebug("Sending AcceptConnectionAsync request to ID Crypt Service for invitation from bank {FromRtgsGlobalId}",
 				fromRtgsGlobalId);
 
-			await _idCryptServiceClient.AcceptConnectionAsync(request);
+			await _idCryptServiceClient.AcceptConnectionInvitationAsync(request);
 
 			_logger.LogDebug("Sent AcceptConnectionAsync request to ID Crypt Service for invitation from bank {FromRtgsGlobalId}",
 				fromRtgsGlobalId);

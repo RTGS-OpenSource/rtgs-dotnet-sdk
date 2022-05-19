@@ -42,7 +42,7 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 	{
 		try
 		{
-			var invitation = await _idCryptServiceClient.CreateConnectionAsync();
+			var invitation = await _idCryptServiceClient.CreateConnectionInvitationAsync();
 
 			return invitation;
 		}

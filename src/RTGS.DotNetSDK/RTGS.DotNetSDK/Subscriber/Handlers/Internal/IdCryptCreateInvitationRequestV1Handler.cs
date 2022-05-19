@@ -34,7 +34,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 	{
 		try
 		{
-			var invitation = await _idCryptServiceClient.CreateConnectionAsync();
+			var invitation = await _idCryptServiceClient.CreateConnectionInvitationAsync();
 
 			return invitation;
 		}
@@ -46,7 +46,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 
 			_logger.LogError(
 				exception,
-				"Error occurred when sending CreateConnection request to ID Crypt Service for invitation from bank");
+				"Error occurred when sending CreateConnectionInvitation request to ID Crypt Service for invitation from bank");
 
 			throw exception;
 		}

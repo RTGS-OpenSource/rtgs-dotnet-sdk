@@ -6,8 +6,8 @@ namespace RTGS.DotNetSDK.IdCrypt;
 
 internal interface IIdCryptServiceClient
 {
-	public Task<CreateConnectionInvitationResponse> CreateConnectionAsync(CancellationToken cancellationToken = default);
-	public Task AcceptConnectionAsync(AcceptConnectionInvitationRequest request, CancellationToken cancellationToken = default);
+	public Task<CreateConnectionInvitationResponse> CreateConnectionInvitationAsync(CancellationToken cancellationToken = default);
+	public Task AcceptConnectionInvitationAsync(AcceptConnectionInvitationRequest request, CancellationToken cancellationToken = default);
 	public Task<SignMessageResponse> SignMessageAsync<T>(T message, CancellationToken cancellationToken = default);
 	public Task<VerifyPrivateSignatureResponse> VerifyMessageAsync<T>(
 		string rtgsGlobalId,

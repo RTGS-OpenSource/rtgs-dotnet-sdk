@@ -97,7 +97,7 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 
 		await _rtgsSubscriber.StopAsync();
 
-		_idCryptServiceHttpHandler.Requests.Should().ContainKey(VerifyMessageSuccessfully.Path);
+		_idCryptServiceHttpHandler.Requests.Should().ContainKey("/api/Verify");
 	}
 
 	[Theory]

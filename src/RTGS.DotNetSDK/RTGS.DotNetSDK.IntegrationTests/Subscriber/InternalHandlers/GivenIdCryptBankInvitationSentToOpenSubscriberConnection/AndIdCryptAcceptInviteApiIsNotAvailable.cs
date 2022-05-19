@@ -130,12 +130,12 @@ public sealed class AndIdCryptAcceptInviteApiIsNotAvailable : IDisposable, IClas
 
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug);
 		debugLogs.Should().ContainSingle()
-			.Which.Should().BeEquivalentTo(new LogEntry("Sending AcceptConnection request to ID Crypt Service", LogEventLevel.Debug));
+			.Which.Should().BeEquivalentTo(new LogEntry("Sending AcceptConnectionInvitation request to ID Crypt Service", LogEventLevel.Debug));
 
 		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Error);
 		errorLogs.Should().ContainSingle()
 			.Which.Should().BeEquivalentTo(new LogEntry(
-				"Error occurred when sending AcceptConnection request to ID Crypt Service",
+				"Error occurred when sending AcceptConnectionInvitation request to ID Crypt Service",
 				LogEventLevel.Error,
 				typeof(HttpRequestException)));
 	}
