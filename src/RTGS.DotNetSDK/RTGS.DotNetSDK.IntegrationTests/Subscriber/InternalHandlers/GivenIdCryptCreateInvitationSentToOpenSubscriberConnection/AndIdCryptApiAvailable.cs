@@ -98,8 +98,9 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
 
-		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "rtgs-global-id"
-																		&& header.Value == ValidMessages.RtgsGlobalId);
+		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header =>
+			header.Key == "rtgs-global-id"
+			&& header.Value == ValidMessages.RtgsGlobalId);
 	}
 
 	[Fact]
@@ -115,9 +116,9 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		using var _ = new AssertionScope();
 
-		_fromRtgsSender.Acknowledgements
-			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
-													   && acknowledgement.Success);
+		_fromRtgsSender.Acknowledgements.Should().ContainSingle(acknowledgement =>
+			acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
+			&& acknowledgement.Success);
 	}
 
 	[Fact]

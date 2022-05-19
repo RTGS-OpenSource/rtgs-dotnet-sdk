@@ -315,7 +315,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1))));
 
-			_ = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
 			errorLogs.Should().BeEquivalentTo(publisherAction.PublisherLogs(LogEventLevel.Error), options => options.WithStrictOrdering());

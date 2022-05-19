@@ -100,8 +100,9 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
 
-		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "rtgs-global-id"
-																		&& header.Value == ValidMessages.RtgsGlobalId);
+		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header =>
+			header.Key == "rtgs-global-id"
+			&& header.Value == ValidMessages.RtgsGlobalId);
 	}
 
 	[Fact]
@@ -115,9 +116,9 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
-		_fromRtgsSender.Acknowledgements
-			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
-													   && acknowledgement.Success);
+		_fromRtgsSender.Acknowledgements.Should().ContainSingle(acknowledgement =>
+			acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
+			&& acknowledgement.Success);
 	}
 
 	[Fact]
@@ -240,9 +241,17 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
+		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
+
 		await _rtgsSubscriber.StopAsync();
 
+		_idCryptServiceHttpHandler.Reset();
+
 		await _fromRtgsSender.SendAsync("idcrypt.invitation.tobank.v1", ValidMessages.IdCryptBankInvitationV1);
+
+		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
+
+		_idCryptServiceHttpHandler.Requests.Should().BeEmpty();
 	}
 
 	[Fact]
@@ -256,9 +265,17 @@ public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixtu
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
+		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
+
 		await _rtgsSubscriber.DisposeAsync();
 
+		_idCryptServiceHttpHandler.Reset();
+
 		await _fromRtgsSender.SendAsync("idcrypt.invitation.tobank.v1", ValidMessages.IdCryptBankInvitationV1);
+
+		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
+
+		_idCryptServiceHttpHandler.Requests.Should().BeEmpty();
 	}
 
 	[Fact]

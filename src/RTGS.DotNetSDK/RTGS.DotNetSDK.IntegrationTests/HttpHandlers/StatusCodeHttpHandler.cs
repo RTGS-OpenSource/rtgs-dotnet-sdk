@@ -2,6 +2,7 @@
 
 namespace RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 
+// TODO JLIQ - Change implementation to old queueable handler
 internal class StatusCodeHttpHandler : DelegatingHandler
 {
 	private readonly Dictionary<string, MockHttpResponse> _mockHttpResponses;
@@ -53,5 +54,9 @@ internal class StatusCodeHttpHandler : DelegatingHandler
 		_requestsSignal.Reset(_expectedRequestCount);
 	}
 
-	public void Reset() => _requestsSignal.Reset();
+	public void Reset()
+	{
+		Requests.Clear();
+		_requestsSignal.Reset();
+	}
 }

@@ -89,7 +89,5 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 			_logger.LogError(ex, "Exception occurred when sending Id Crypt Invitation with alias {Alias} to RTGS", invitationAlias);
 			throw;
 		}
-
-
 	}
 }

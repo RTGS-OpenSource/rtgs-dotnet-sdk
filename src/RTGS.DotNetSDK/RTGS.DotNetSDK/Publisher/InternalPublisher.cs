@@ -40,7 +40,6 @@ internal class InternalPublisher : IInternalPublisher
 		[CallerMemberName] string callingMethod = null) =>
 		SendMessageAsync(message, typeof(T).Name, cancellationToken, headers, callingMethod);
 
-
 	public async Task<SendResult> SendMessageAsync<T>(
 		T message,
 		string messageIdentifier,

@@ -137,12 +137,12 @@ public class AndIdCryptCreateInvitationApiIsNotAvailable : IDisposable, IClassFi
 
 		using var _ = new AssertionScope();
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug);
-		debugLogs.Should().ContainSingle()
-			.Which.Should().BeEquivalentTo(new LogEntry("Sending CreateConnection request to ID Crypt Service", LogEventLevel.Debug));
+		debugLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
+			"Sending CreateConnection request to ID Crypt Service",
+			LogEventLevel.Debug));
 
 		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Error);
-		errorLogs.Should().ContainSingle()
-			.Which.Should().BeEquivalentTo(new LogEntry(
+		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
 				"Error occurred when sending CreateConnection request to ID Crypt Service",
 				LogEventLevel.Error,
 				typeof(HttpRequestException)));

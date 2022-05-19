@@ -64,6 +64,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		catch (Exception exception)
 		{
 			_logger.LogError(exception, "Error occurred when sending AcceptConnection request to ID Crypt Service");
+
 			throw;
 		}
 	}
@@ -97,6 +98,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		catch (Exception exception)
 		{
 			_logger.LogError(exception, "Error occurred when sending SignMessage request to ID Crypt Service");
+
 			throw;
 		}
 	}
@@ -138,6 +140,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		catch (Exception exception)
 		{
 			_logger.LogError(exception, "Error occurred when sending VerifyMessage request to ID Crypt Service");
+
 			throw;
 		}
 	}

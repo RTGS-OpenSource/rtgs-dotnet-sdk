@@ -7,7 +7,7 @@ using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidM
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers.GivenIdCryptBankInvitationSentToOpenSubscriberConnection;
 
-public class AndIdCryptAcceptInviteApiIsNotAvailable : IDisposable, IClassFixture<GrpcServerFixture>
+public sealed class AndIdCryptAcceptInviteApiIsNotAvailable : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private readonly List<IHandler> _allTestHandlers = new AllTestHandlers().ToList();
 

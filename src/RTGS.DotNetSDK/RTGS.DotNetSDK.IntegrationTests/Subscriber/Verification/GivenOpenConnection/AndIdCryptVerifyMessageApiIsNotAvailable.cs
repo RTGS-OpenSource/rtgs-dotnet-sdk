@@ -5,7 +5,7 @@ using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
 
-public class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, IClassFixture<GrpcServerFixture>
+public sealed class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private readonly GrpcServerFixture _grpcServer;
 	private readonly ITestCorrelatorContext _serilogContext;
