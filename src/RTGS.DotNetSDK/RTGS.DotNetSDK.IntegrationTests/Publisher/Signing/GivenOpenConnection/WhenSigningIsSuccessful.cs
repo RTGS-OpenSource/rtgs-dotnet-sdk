@@ -4,7 +4,7 @@ using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.Signing.GivenOpenConnection;
 
-public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixture>
+public sealed class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 	private static readonly Uri IdCryptServiceUri = new("https://id-crypt-service");

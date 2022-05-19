@@ -1,6 +1,6 @@
 ﻿namespace RTGS.DotNetSDK.IntegrationTests.Publisher;
 
-public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServerFixture>
+public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 

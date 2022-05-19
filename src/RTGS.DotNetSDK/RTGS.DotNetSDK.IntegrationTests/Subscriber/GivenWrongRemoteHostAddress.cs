@@ -2,7 +2,7 @@
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber;
 
-public class GivenWrongRemoteHostAddress : IAsyncDisposable
+public sealed class GivenWrongRemoteHostAddress : IAsyncDisposable
 {
 	private static readonly TimeSpan WaitForExceptionEventDuration = TimeSpan.FromSeconds(30);
 

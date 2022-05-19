@@ -4,7 +4,7 @@ using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
 
-public class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFixture>
+public sealed class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private readonly GrpcServerFixture _grpcServer;
 	private readonly ITestCorrelatorContext _serilogContext;

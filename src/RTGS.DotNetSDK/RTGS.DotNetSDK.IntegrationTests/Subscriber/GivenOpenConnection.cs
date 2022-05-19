@@ -6,19 +6,20 @@ using RTGS.DotNetSDK.Subscriber.Handlers;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber;
 
-public class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
+public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(100);
 	private static readonly TimeSpan WaitForAcknowledgementsDuration = TimeSpan.FromMilliseconds(100);
 	private static readonly TimeSpan WaitForExceptionEventDuration = TimeSpan.FromMilliseconds(100);
 
 	private readonly GrpcServerFixture _grpcServer;
+	private readonly List<IHandler> _allTestHandlers;
 	private readonly ITestCorrelatorContext _serilogContext;
+
 	private IHost _clientHost;
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
-	private List<IHandler> _allTestHandlers;
-
+	
 	public GivenOpenConnection(GrpcServerFixture grpcServer)
 	{
 		_grpcServer = grpcServer;

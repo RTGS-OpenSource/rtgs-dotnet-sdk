@@ -6,7 +6,7 @@ using RTGS.IDCrypt.Service.Contracts.VerifyMessage;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
 
-public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixture>
+public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly Uri IdCryptServiceUri = new("https://id-crypt-service");
 

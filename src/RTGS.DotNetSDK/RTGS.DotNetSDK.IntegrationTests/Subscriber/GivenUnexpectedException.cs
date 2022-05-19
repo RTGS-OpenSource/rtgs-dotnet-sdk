@@ -4,7 +4,7 @@ using RTGS.DotNetSDK.Subscriber.Handlers;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber;
 
-public class GivenUnexpectedException : IAsyncDisposable
+public sealed class GivenUnexpectedException : IAsyncDisposable
 {
 	private static readonly TimeSpan WaitForExceptionDuration = TimeSpan.FromSeconds(30);
 

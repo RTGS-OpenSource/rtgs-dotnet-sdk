@@ -7,7 +7,7 @@ using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidM
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers.GivenIdCryptCreateInvitationSentToOpenSubscriberConnection;
 
-public class AndIdCryptCreateInvitationApiIsNotAvailable : IDisposable, IClassFixture<GrpcServerFixture>
+public sealed class AndIdCryptCreateInvitationApiIsNotAvailable : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1_000);
 

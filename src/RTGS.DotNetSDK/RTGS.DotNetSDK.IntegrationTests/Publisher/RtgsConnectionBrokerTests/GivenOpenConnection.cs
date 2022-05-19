@@ -10,7 +10,7 @@ namespace RTGS.DotNetSDK.IntegrationTests.Publisher.RtgsConnectionBrokerTests;
 
 public class GivenOpenConnection
 {
-	public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixture>
+	public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 		private static readonly Uri IdCryptServiceAddress = new("https://id-crypt-service");
@@ -178,7 +178,7 @@ public class GivenOpenConnection
 		}
 	}
 
-	public class AndIdCryptServiceCreateConnectionApiUnavailable : IDisposable, IClassFixture<GrpcServerFixture>
+	public sealed class AndIdCryptServiceCreateConnectionApiUnavailable : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
@@ -325,7 +325,7 @@ public class GivenOpenConnection
 		}
 	}
 
-	public class AndShortTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
+	public sealed class AndShortTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
@@ -686,7 +686,7 @@ public class GivenOpenConnection
 		}
 	}
 
-	public class AndLongTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
+	public sealed class AndLongTestWaitForAcknowledgementDuration : IDisposable, IClassFixture<GrpcServerFixture>
 	{
 		private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(30);
 		private static readonly TimeSpan TestWaitForSendDuration = TimeSpan.FromSeconds(15);

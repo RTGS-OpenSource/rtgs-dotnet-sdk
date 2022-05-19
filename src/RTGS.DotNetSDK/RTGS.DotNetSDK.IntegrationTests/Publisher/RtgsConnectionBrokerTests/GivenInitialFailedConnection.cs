@@ -4,7 +4,7 @@ using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.RtgsConnectionBrokerTests;
 
-public class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServerFixture>
+public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 

@@ -8,7 +8,7 @@ using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidM
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers.GivenIdCryptBankInvitationSentToOpenSubscriberConnection;
 
-public class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixture>
+public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan WaitForReceivedRequestDuration = TimeSpan.FromMilliseconds(5_000);
 	private static readonly TimeSpan WaitForSubscriberAcknowledgementDuration = TimeSpan.FromMilliseconds(100);

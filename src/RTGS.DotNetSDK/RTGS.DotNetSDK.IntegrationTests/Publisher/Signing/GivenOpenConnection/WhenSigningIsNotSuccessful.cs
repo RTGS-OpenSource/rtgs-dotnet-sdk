@@ -6,7 +6,7 @@ using RTGS.DotNetSDK.Publisher.Exceptions;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.Signing.GivenOpenConnection;
 
-public class WhenSigningIsNotSuccessful : IDisposable, IClassFixture<GrpcServerFixture>
+public sealed class WhenSigningIsNotSuccessful : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
