@@ -19,7 +19,7 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 	private IHost _clientHost;
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
-	
+
 	public GivenOpenConnection(GrpcServerFixture grpcServer)
 	{
 		_grpcServer = grpcServer;
