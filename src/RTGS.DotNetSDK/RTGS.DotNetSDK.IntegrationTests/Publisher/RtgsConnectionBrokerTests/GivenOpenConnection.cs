@@ -332,7 +332,7 @@ public class GivenOpenConnection
 		private readonly GrpcServerFixture _grpcServer;
 		private readonly ITestCorrelatorContext _serilogContext;
 
-		private StatusCodeHttpHandler _idCryptServiceHttpHandler;
+		private QueueableStatusCodeHttpHandler _idCryptServiceHttpHandler;
 		private IHost _clientHost;
 		private IRtgsConnectionBroker _rtgsConnectionBroker;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
@@ -371,7 +371,8 @@ public class GivenOpenConnection
 					.Build();
 
 				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
-					.Create()
+					.CreateQueueable()
+					.WithOkResponse(CreateConnection.HttpRequestResponseContext)
 					.WithOkResponse(CreateConnection.HttpRequestResponseContext)
 					.Build();
 
@@ -560,8 +561,6 @@ public class GivenOpenConnection
 		[Fact]
 		public async Task WhenSendingMultipleMessages_ThenOnlyOneConnection()
 		{
-			_idCryptServiceHttpHandler.SetExpectedRequestCount(2);
-
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnUnexpectedAcknowledgementWithSuccess());
 			await _rtgsConnectionBroker.SendInvitationAsync();
@@ -578,8 +577,6 @@ public class GivenOpenConnection
 		[Fact]
 		public async Task WhenSendingMultipleMessagesAndLastOneTimesOut_ThenDoNotSeePreviousSuccess()
 		{
-			_idCryptServiceHttpHandler.SetExpectedRequestCount(2);
-
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 			var result1 = await _rtgsConnectionBroker.SendInvitationAsync();
@@ -657,8 +654,6 @@ public class GivenOpenConnection
 		[Fact]
 		public async Task WhenBankMessageApiReturnsSuccessForSecondMessageOnly_ThenDoNotTimeout()
 		{
-			_idCryptServiceHttpHandler.SetExpectedRequestCount(2);
-
 			var result1 = await _rtgsConnectionBroker.SendInvitationAsync();
 			result1.SendResult.Should().Be(SendResult.Timeout);
 
@@ -672,8 +667,6 @@ public class GivenOpenConnection
 		public async Task WhenBankMessageApiThrowsExceptionForFirstMessage_ThenStillHandleSecondMessage()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ThrowRpcException(StatusCode.Unknown, "test"));
-
-			_idCryptServiceHttpHandler.SetExpectedRequestCount(2);
 
 			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
 				.Should()
@@ -693,7 +686,7 @@ public class GivenOpenConnection
 
 		private readonly GrpcServerFixture _grpcServer;
 
-		private StatusCodeHttpHandler _idCryptServiceHttpHandler;
+		private QueueableStatusCodeHttpHandler _idCryptServiceHttpHandler;
 		private IHost _clientHost;
 		private IRtgsConnectionBroker _rtgsConnectionBroker;
 
@@ -716,7 +709,8 @@ public class GivenOpenConnection
 					.Build();
 
 				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
-					.Create()
+					.CreateQueueable()
+					.WithOkResponse(CreateConnection.HttpRequestResponseContext)
 					.WithOkResponse(CreateConnection.HttpRequestResponseContext)
 					.Build();
 
@@ -759,8 +753,6 @@ public class GivenOpenConnection
 		[Fact]
 		public async Task WhenCancellationTokenIsCancelledBeforeSemaphoreIsEntered_ThenThrowOperationCancelled()
 		{
-			_idCryptServiceHttpHandler.SetExpectedRequestCount(2);
-
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
 			using var firstMessageReceivedSignal = new ManualResetEventSlim();

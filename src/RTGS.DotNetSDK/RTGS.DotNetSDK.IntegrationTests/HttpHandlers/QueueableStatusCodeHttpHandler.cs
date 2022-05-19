@@ -2,19 +2,15 @@
 
 namespace RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 
-// TODO JLIQ - Change implementation to old queueable handler
-internal class StatusCodeHttpHandler : DelegatingHandler
+internal class QueueableStatusCodeHttpHandler : DelegatingHandler
 {
-	private readonly Dictionary<string, MockHttpResponse> _mockHttpResponses;
-	private readonly CountdownEvent _requestsSignal;
+	private readonly Dictionary<string, Queue<MockHttpResponse>> _mockHttpResponses;
 
 	public Dictionary<string, IList<HttpRequestMessage>> Requests { get; } = new();
 
-	public StatusCodeHttpHandler(Dictionary<string, MockHttpResponse> mockHttpResponses)
+	public QueueableStatusCodeHttpHandler(Dictionary<string, Queue<MockHttpResponse>> mockHttpResponses)
 	{
 		_mockHttpResponses = mockHttpResponses;
-
-		_requestsSignal = new CountdownEvent(_mockHttpResponses.Count);
 	}
 
 	protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -27,7 +23,7 @@ internal class StatusCodeHttpHandler : DelegatingHandler
 		}
 		Requests[requestPath].Add(request);
 
-		var responseMock = _mockHttpResponses[requestPath];
+		var responseMock = _mockHttpResponses[requestPath].Dequeue();
 
 		var response = new HttpResponseMessage(responseMock.HttpStatusCode);
 
@@ -38,16 +34,6 @@ internal class StatusCodeHttpHandler : DelegatingHandler
 
 		response.RequestMessage = request;
 
-		_requestsSignal.Signal();
-
 		return Task.FromResult(response);
-	}
-
-	public void WaitForRequests(TimeSpan timeout) => _requestsSignal.Wait(timeout);
-
-	public void Reset()
-	{
-		Requests.Clear();
-		_requestsSignal.Reset();
 	}
 }

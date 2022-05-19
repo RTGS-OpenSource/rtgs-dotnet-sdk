@@ -11,7 +11,7 @@ public class GivenServerStops : IAsyncLifetime
 	private readonly GrpcTestServer _grpcServer;
 	private readonly ITestCorrelatorContext _serilogContext;
 
-	private StatusCodeHttpHandler _idCryptServiceHttpHandler;
+	private QueueableStatusCodeHttpHandler _idCryptServiceHttpHandler;
 	private IHost _clientHost;
 	private IRtgsConnectionBroker _rtgsConnectionBroker;
 	private ToRtgsMessageHandler _toRtgsMessageHandler;
@@ -49,7 +49,8 @@ public class GivenServerStops : IAsyncLifetime
 
 
 			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
-				.Create()
+				.CreateQueueable()
+				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
 				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
 				.Build();
 
@@ -87,8 +88,6 @@ public class GivenServerStops : IAsyncLifetime
 	public async Task WhenSendingMessage_ThenRpcExceptionOrIOExceptionThrown()
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-
-		_idCryptServiceHttpHandler.SetExpectedRequestCount(2);
 
 		var result = await _rtgsConnectionBroker.SendInvitationAsync();
 		result.SendResult.Should().Be(SendResult.Success);

@@ -9,7 +9,7 @@ public sealed class GivenMultipleOpenConnections : IDisposable, IClassFixture<Gr
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
 	private readonly GrpcServerFixture _grpcServer;
-	private StatusCodeHttpHandler _idCryptServiceHttpHandler;
+	private QueueableStatusCodeHttpHandler _idCryptServiceHttpHandler;
 	private IHost _clientHost;
 	private ToRtgsMessageHandler _toRtgsMessageHandler;
 
@@ -32,7 +32,11 @@ public sealed class GivenMultipleOpenConnections : IDisposable, IClassFixture<Gr
 				.Build();
 
 			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
-				.Create()
+				.CreateQueueable()
+				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
 				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
 				.Build();
 
@@ -70,8 +74,6 @@ public sealed class GivenMultipleOpenConnections : IDisposable, IClassFixture<Gr
 		var rtgsConnectionBroker3 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 		var rtgsConnectionBroker4 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 		var rtgsConnectionBroker5 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
-
-		_idCryptServiceHttpHandler.SetExpectedRequestCount(5);
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 		await rtgsConnectionBroker1.SendInvitationAsync();
