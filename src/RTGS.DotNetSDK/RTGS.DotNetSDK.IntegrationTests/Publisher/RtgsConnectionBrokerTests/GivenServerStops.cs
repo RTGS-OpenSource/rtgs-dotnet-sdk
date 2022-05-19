@@ -90,7 +90,7 @@ public class GivenServerStops : IAsyncLifetime
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
 		var result = await _rtgsConnectionBroker.SendInvitationAsync();
-		result.SendResult.Should().Be(SendResult.Success);
+		result.Should().Be(SendResult.Success);
 
 		await _grpcServer.StopAsync();
 

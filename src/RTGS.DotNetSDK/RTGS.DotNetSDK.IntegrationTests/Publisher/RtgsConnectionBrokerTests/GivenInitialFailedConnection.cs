@@ -94,6 +94,6 @@ public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<Gr
 
 		var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
-		result.SendResult.Should().Be(SendResult.Success);
+		result.Should().Be(SendResult.Success);
 	}
 }
