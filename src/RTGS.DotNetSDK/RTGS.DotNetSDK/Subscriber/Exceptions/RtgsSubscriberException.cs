@@ -1,8 +1,11 @@
-﻿namespace RTGS.DotNetSDK.Subscriber.Exceptions;
+﻿using System.Runtime.Serialization;
+
+namespace RTGS.DotNetSDK.Subscriber.Exceptions;
 
 /// <summary>
 /// Represents RTGS specific exceptions.
 /// </summary>
+[Serializable]
 public class RtgsSubscriberException : Exception
 {
 	/// <summary>
@@ -41,6 +44,20 @@ public class RtgsSubscriberException : Exception
 	public RtgsSubscriberException(string message, Exception inner)
 		: base(message, inner)
 	{
+	}
+
+	protected RtgsSubscriberException(SerializationInfo info, StreamingContext context)
+		: base(info, context)
+	{
+		MessageIdentifier = info.GetString("MessageIdentifier");
+	}
+
+	public new virtual void GetObjectData(SerializationInfo info, StreamingContext context)
+	{
+		base.GetObjectData(info, context);
+
+		info.AddValue(nameof(MessageIdentifier), MessageIdentifier, typeof(string));
+
 	}
 
 	/// <summary>

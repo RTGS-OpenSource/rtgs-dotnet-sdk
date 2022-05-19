@@ -1,8 +1,11 @@
-﻿namespace RTGS.DotNetSDK.Publisher.Exceptions;
+﻿using System.Runtime.Serialization;
+
+namespace RTGS.DotNetSDK.Publisher.Exceptions;
 
 /// <summary>
 /// Represents RTGS specific exceptions.
 /// </summary>
+[Serializable]
 public class RtgsPublisherException : Exception
 {
 	/// <summary>
@@ -29,6 +32,11 @@ public class RtgsPublisherException : Exception
 	/// <param name="inner">The inner exception.</param>
 	public RtgsPublisherException(string message, Exception inner)
 		: base(message, inner)
+	{
+	}
+
+	protected RtgsPublisherException(SerializationInfo info, StreamingContext context)
+		: base(info, context)
 	{
 	}
 }

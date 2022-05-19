@@ -37,7 +37,7 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 	public IEnumerable<IHandleMessageCommand> CreateAll(IReadOnlyCollection<IHandler> handlers) =>
 		_commandCreators.Select(creator => creator.Create(handlers.Concat(_internalHandlers).ToList()));
 
-	private class CommandCreator<TMessage, THandler, TMessageAdapter> : ICommandCreator
+	private sealed class CommandCreator<TMessage, THandler, TMessageAdapter> : ICommandCreator
 		where THandler : IHandler<TMessage>
 		where TMessageAdapter : IMessageAdapter<TMessage>
 	{
