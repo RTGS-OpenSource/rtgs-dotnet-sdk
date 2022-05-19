@@ -22,8 +22,9 @@ public class PublisherAction<TRequest> : IPublisherAction<TRequest>
 		Headers = headers;
 		SerialisedSignedDocument = signedDocument == null
 			? null
-			: JsonSerializer.Serialize(new { rtgsGlobalId = "partner-rtgs-global-id", message = signedDocument });
+			: JsonSerializer.Serialize(new { rtgsGlobalId = ValidMessages.RtgsGlobalId, message = signedDocument });
 	}
+
 	public string SerialisedSignedDocument { get; }
 
 	public TRequest Request { get; }

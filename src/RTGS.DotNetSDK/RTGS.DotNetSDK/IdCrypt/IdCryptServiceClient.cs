@@ -11,11 +11,14 @@ namespace RTGS.DotNetSDK.IdCrypt;
 internal class IdCryptServiceClient : IIdCryptServiceClient
 {
 	private readonly HttpClient _httpClient;
+	private readonly RtgsSdkOptions _options;
 	private readonly ILogger<IdCryptServiceClient> _logger;
 
-	public IdCryptServiceClient(HttpClient httpClient, ILogger<IdCryptServiceClient> logger)
+
+	public IdCryptServiceClient(HttpClient httpClient, RtgsSdkOptions options, ILogger<IdCryptServiceClient> logger)
 	{
 		_httpClient = httpClient;
+		_options = options;
 		_logger = logger;
 	}
 
@@ -65,7 +68,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		}
 	}
 
-	public async Task<SignMessageResponse> SignMessageAsync<T>(string rtgsGlobalId, T message, CancellationToken cancellationToken = default)
+	public async Task<SignMessageResponse> SignMessageAsync<T>(T message, CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -73,7 +76,11 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 
 			var document = JsonSerializer.SerializeToElement(message);
 
-			var request = new SignMessageRequest { RtgsGlobalId = rtgsGlobalId, Message = document };
+			var request = new SignMessageRequest
+			{
+				RtgsGlobalId = _options.RtgsGlobalId,
+				Message = document
+			};
 
 			var response = await _httpClient.PostAsJsonAsync("api/SignMessage", request, cancellationToken);
 

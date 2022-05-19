@@ -1,4 +1,6 @@
-﻿namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
+﻿using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.ValidMessages;
+
+namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
 
 public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServerFixture>
 {
@@ -76,7 +78,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "alias", "alias" },
-			{ "partner-rtgs-global-id", "partner-rtgs-global-id" }
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -99,7 +101,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
-			{ "partner-rtgs-global-id", "partner-rtgs-global-id" }
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -133,7 +135,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(
-				new LogEntry($"Partner RTGS Global ID not found on {subscriberAction.MessageIdentifier} message, yet was expected", LogEventLevel.Error));
+				new LogEntry($"From RTGS Global ID not found on {subscriberAction.MessageIdentifier} message, yet was expected", LogEventLevel.Error));
 	}
 
 	[Theory]
@@ -148,7 +150,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
-			{ "partner-rtgs-global-id", "partner-rtgs-global-id" }
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -172,7 +174,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "alias", "alias" },
-			{ "partner-rtgs-global-id", "partner-rtgs-global-id" }
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -218,7 +220,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		{
 			{ "pairwise-did-signature", string.Empty },
 			{ "alias", "alias" },
-			{ "partner-rtgs-global-id", "partner-rtgs-global-id" }
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -242,7 +244,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
 			{ "alias", string.Empty },
-			{ "partner-rtgs-global-id", "partner-rtgs-global-id" }
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -266,7 +268,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
 			{ "alias", "alias" },
-			{ "partner-rtgs-global-id", string.Empty }
+			{ "from-rtgs-global-id", string.Empty }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -277,7 +279,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 
 		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(
-				new LogEntry($"Partner RTGS Global ID not found on {subscriberAction.MessageIdentifier} message, yet was expected", LogEventLevel.Error));
+				new LogEntry($"From RTGS Global ID not found on {subscriberAction.MessageIdentifier} message, yet was expected", LogEventLevel.Error));
 	}
 
 	[Theory]
@@ -293,7 +295,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		{
 			{ "pairwise-did-signature", string.Empty },
 			{ "alias", "alias" },
-			{ "partner-rtgs-global-id", "partner-rtgs-global-id" }
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -318,7 +320,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
 			{ "alias", string.Empty },
-			{ "partner-rtgs-global-id", "partner-rtgs-global-id" }
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -343,7 +345,7 @@ public class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServer
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
 			{ "alias", "alias" },
-			{ "partner-rtgs-global-id", string.Empty }
+			{ ValidMessages.RtgsGlobalId, string.Empty }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);

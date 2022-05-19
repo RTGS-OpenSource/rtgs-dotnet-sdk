@@ -24,18 +24,18 @@ public static class PublisherActions
 
 	public static readonly PublisherAction<PayawayCreationV1> PayawayCreate = new(
 		ValidMessages.PayawayCreation,
-		(publisher, request, cancellationToken) => publisher.SendPayawayCreateAsync(request, "partner-rtgs-global-id", cancellationToken),
+		(publisher, request, cancellationToken) => publisher.SendPayawayCreateAsync(request, cancellationToken),
 		ValidMessages.SignedDocuments.PayawayCreateDocument);
 
 	public static readonly PublisherAction<PayawayConfirmationV1> PayawayConfirmation = new(
 		ValidMessages.PayawayConfirmation,
-		(publisher, request, cancellationToken) => publisher.SendPayawayConfirmationAsync(request, "partner-rtgs-global-id", cancellationToken),
+		(publisher, request, cancellationToken) => publisher.SendPayawayConfirmationAsync(request, cancellationToken),
 		ValidMessages.SignedDocuments.PayawayConfirmationDocument);
 
 	public static readonly PublisherAction<PayawayRejectionV1> PayawayRejection = new(
 		ValidMessages.PayawayRejection,
 		(publisher, request, cancellationToken) =>
-			publisher.SendPayawayRejectionAsync(request, "partner-rtgs-global-id", cancellationToken),
+			publisher.SendPayawayRejectionAsync(request, cancellationToken),
 		ValidMessages.SignedDocuments.PayawayRejectionDocument);
 
 	public static readonly PublisherAction<BankPartnersRequestV1> BankPartnersRequest = new(

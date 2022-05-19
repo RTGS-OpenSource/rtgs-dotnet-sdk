@@ -7,7 +7,7 @@ public static class SubscriberActions
 		{ "public-did-signature", "public-did-signature" },
 		{ "pairwise-did-signature", "pairwise-did-signature" },
 		{ "alias", "alias" },
-		{ "partner-rtgs-global-id", "partner-rtgs-global-id" }
+		{ "from-rtgs-global-id", "from-rtgs-global-id" }
 	};
 
 	public static readonly SubscriberAction<PayawayFundsV1> PayawayFundsV1 =

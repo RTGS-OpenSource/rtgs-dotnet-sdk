@@ -39,13 +39,13 @@ internal class PayawayFundsV1MessageVerifier : IVerifyMessage
 			_logger.LogError("Alias not found on {MessageIdentifier} message, yet was expected", MessageIdentifier);
 		}
 
-		if (!rtgsMessage.Headers.TryGetValue("partner-rtgs-global-id", out var partnerRtgsGlobalId)
-			|| string.IsNullOrEmpty(partnerRtgsGlobalId))
+		if (!rtgsMessage.Headers.TryGetValue("from-rtgs-global-id", out var fromRtgsGlobalId)
+			|| string.IsNullOrEmpty(fromRtgsGlobalId))
 		{
-			_logger.LogError("Partner RTGS Global ID not found on {MessageIdentifier} message, yet was expected", MessageIdentifier);
+			_logger.LogError("From RTGS Global ID not found on {MessageIdentifier} message, yet was expected", MessageIdentifier);
 		}
 
-		if (string.IsNullOrEmpty(privateSignature) || string.IsNullOrEmpty(alias) || string.IsNullOrEmpty(partnerRtgsGlobalId))
+		if (string.IsNullOrEmpty(privateSignature) || string.IsNullOrEmpty(alias) || string.IsNullOrEmpty(fromRtgsGlobalId))
 		{
 			throw new RtgsSubscriberException($"Unable to verify {MessageIdentifier} message due to missing headers.");
 		}
@@ -57,7 +57,7 @@ internal class PayawayFundsV1MessageVerifier : IVerifyMessage
 		VerifyPrivateSignatureResponse response;
 		try
 		{
-			response = await _idCryptServiceClient.VerifyMessageAsync(partnerRtgsGlobalId, message, privateSignature, alias, cancellationToken);
+			response = await _idCryptServiceClient.VerifyMessageAsync(fromRtgsGlobalId, message, privateSignature, alias, cancellationToken);
 		}
 		catch (Exception innerException)
 		{

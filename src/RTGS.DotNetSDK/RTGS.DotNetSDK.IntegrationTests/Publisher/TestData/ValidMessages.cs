@@ -8,7 +8,6 @@ public static class ValidMessages
 {
 	public const string RtgsGlobalId = "test-bank-rtgs-global-id";
 	public const string IdCryptAlias = "id-crypt-alias";
-	public const string PartnerRtgsGlobalId = "partner-rtgs-global-id";
 
 	public static readonly AtomicLockRequestV1 AtomicLockRequest = new()
 	{

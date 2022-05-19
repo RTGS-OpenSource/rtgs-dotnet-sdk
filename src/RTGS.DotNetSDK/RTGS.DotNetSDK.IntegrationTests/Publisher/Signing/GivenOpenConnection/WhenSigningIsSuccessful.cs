@@ -12,6 +12,7 @@ public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixt
 	private readonly GrpcServerFixture _grpcServer;
 	private readonly ITestCorrelatorContext _serilogContext;
 
+	private RtgsSdkOptions _rtgsSdkOptions;
 	private StatusCodeHttpHandler _idCryptServiceMessageHandler;
 	private IHost _clientHost;
 	private IRtgsPublisher _rtgsPublisher;
@@ -41,7 +42,7 @@ public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixt
 	{
 		try
 		{
-			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
+			_rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					IdCryptServiceUri)
@@ -59,7 +60,7 @@ public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixt
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 				.ConfigureServices(services => services
-					.AddRtgsPublisher(rtgsSdkOptions)
+					.AddRtgsPublisher(_rtgsSdkOptions)
 					.AddTestIdCryptServiceHttpClient(_idCryptServiceMessageHandler))
 				.UseSerilog()
 				.Build();
@@ -141,7 +142,7 @@ public class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcServerFixt
 			{ "pairwise-did-signature", SignMessage.Response.PairwiseDidSignature },
 			{ "public-did-signature", SignMessage.Response.PublicDidSignature },
 			{ "alias", TestData.ValidMessages.IdCryptAlias },
-			{ "partner-rtgs-global-id", TestData.ValidMessages.PartnerRtgsGlobalId },
+			{ "from-rtgs-global-id", _rtgsSdkOptions.RtgsGlobalId },
 		};
 
 		// using contain here because for some messages other headers are sent (e.g. rtgs-global-id)

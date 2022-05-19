@@ -143,7 +143,7 @@ public class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixtur
 
 		signDocumentRequest.Should().BeEquivalentTo(new VerifyPrivateSignatureRequest
 		{
-			RtgsGlobalId = subscriberAction.AdditionalHeaders["partner-rtgs-global-id"],
+			RtgsGlobalId = subscriberAction.AdditionalHeaders["from-rtgs-global-id"],
 			PrivateSignature = subscriberAction.AdditionalHeaders["pairwise-did-signature"],
 			Alias = subscriberAction.AdditionalHeaders["alias"]
 		}, options => options.Excluding(x => x.Message));
