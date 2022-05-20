@@ -11,7 +11,7 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 	private readonly IEnumerable<ICommandCreator> _commandCreators;
 	private readonly IReadOnlyCollection<IHandler> _internalHandlers;
 
-	public HandleMessageCommandsFactory(IEnumerable<IMessageAdapter> messageAdapters, IEnumerable<IHandler> internalHandlers)
+	public HandleMessageCommandsFactory(IEnumerable<IMessageAdapter> messageAdapters, IEnumerable<IInternalHandler> internalHandlers)
 	{
 		_internalHandlers = internalHandlers.ToList();
 		IEnumerable<IMessageAdapter> enumeratedMessageAdapters = messageAdapters.ToList();

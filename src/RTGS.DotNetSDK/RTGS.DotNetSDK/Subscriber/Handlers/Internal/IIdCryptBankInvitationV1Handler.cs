@@ -2,4 +2,4 @@
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers.Internal;
 
-internal interface IIdCryptBankInvitationV1Handler : IHandler<IdCryptBankInvitationV1> { }
+internal interface IIdCryptBankInvitationV1Handler : IInternalHandler<IdCryptBankInvitationV1> { }
