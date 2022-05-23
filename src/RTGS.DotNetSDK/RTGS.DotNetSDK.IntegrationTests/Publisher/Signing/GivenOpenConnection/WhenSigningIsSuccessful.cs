@@ -107,7 +107,7 @@ public sealed class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcSer
 
 		await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
-		_idCryptServiceMessageHandler.Requests.Should().ContainKey("/api/SignMessage");
+		_idCryptServiceMessageHandler.Requests.Should().ContainKey("/api/message/sign");
 	}
 
 	[Theory]

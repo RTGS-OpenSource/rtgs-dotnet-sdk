@@ -1,11 +1,11 @@
 ﻿using System.Text.Json;
-using RTGS.IDCrypt.Service.Contracts.SignMessage;
+using RTGS.IDCrypt.Service.Contracts.Message.Sign;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 internal class SignMessage
 {
-	public const string Path = "/api/SignMessage";
+	public const string Path = "/api/message/sign";
 
 	public static SignMessageResponse Response => new()
 	{

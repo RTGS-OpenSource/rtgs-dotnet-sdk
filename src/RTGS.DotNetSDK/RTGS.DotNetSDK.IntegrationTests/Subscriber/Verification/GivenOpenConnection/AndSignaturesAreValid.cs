@@ -2,7 +2,7 @@
 using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
-using RTGS.IDCrypt.Service.Contracts.VerifyMessage;
+using RTGS.IDCrypt.Service.Contracts.Message.Verify;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
 
@@ -97,7 +97,7 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 
 		await _rtgsSubscriber.StopAsync();
 
-		_idCryptServiceHttpHandler.Requests.Should().ContainKey("/api/Verify");
+		_idCryptServiceHttpHandler.Requests.Should().ContainKey("/api/message/verify");
 	}
 
 	[Theory]
@@ -139,9 +139,9 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 		var requestContent = await _idCryptServiceHttpHandler.Requests[VerifyMessageSuccessfully.Path]
 			.Single().Content!.ReadAsStringAsync();
 
-		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest>(requestContent);
+		var signDocumentRequest = JsonSerializer.Deserialize<VerifyRequest>(requestContent);
 
-		signDocumentRequest.Should().BeEquivalentTo(new VerifyPrivateSignatureRequest
+		signDocumentRequest.Should().BeEquivalentTo(new VerifyRequest
 		{
 			RtgsGlobalId = subscriberAction.AdditionalHeaders["from-rtgs-global-id"],
 			PrivateSignature = subscriberAction.AdditionalHeaders["pairwise-did-signature"],
@@ -166,7 +166,7 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 		var requestContent = await _idCryptServiceHttpHandler.Requests[VerifyMessageSuccessfully.Path]
 			.Single().Content!.ReadAsStringAsync();
 
-		var signDocumentRequest = JsonSerializer.Deserialize<VerifyPrivateSignatureRequest>(requestContent);
+		var signDocumentRequest = JsonSerializer.Deserialize<VerifyRequest>(requestContent);
 
 		var expectedMessage = JsonSerializer.SerializeToElement(action.Message.FIToFICstmrCdtTrf);
 

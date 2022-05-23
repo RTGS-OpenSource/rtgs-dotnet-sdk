@@ -3,8 +3,8 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using RTGS.IDCrypt.Service.Contracts.Connection;
-using RTGS.IDCrypt.Service.Contracts.SignMessage;
-using RTGS.IDCrypt.Service.Contracts.VerifyMessage;
+using RTGS.IDCrypt.Service.Contracts.Message.Sign;
+using RTGS.IDCrypt.Service.Contracts.Message.Verify;
 
 namespace RTGS.DotNetSDK.IdCrypt;
 
@@ -81,7 +81,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 				Message = document
 			};
 
-			var response = await _httpClient.PostAsJsonAsync("api/SignMessage", request, cancellationToken);
+			var response = await _httpClient.PostAsJsonAsync("api/message/sign", request, cancellationToken);
 
 			response.EnsureSuccessStatusCode();
 
@@ -101,7 +101,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		}
 	}
 
-	public async Task<VerifyPrivateSignatureResponse> VerifyMessageAsync<T>(
+	public async Task<VerifyResponse> VerifyMessageAsync<T>(
 		string rtgsGlobalId,
 		T message,
 		string privateSignature,
@@ -114,7 +114,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 
 			var document = JsonSerializer.SerializeToElement(message);
 
-			var request = new VerifyPrivateSignatureRequest
+			var request = new VerifyRequest
 			{
 				RtgsGlobalId = rtgsGlobalId,
 				Message = document,
@@ -122,14 +122,14 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 				Alias = alias
 			};
 
-			var response = await _httpClient.PostAsJsonAsync("api/Verify", request, cancellationToken);
+			var response = await _httpClient.PostAsJsonAsync("api/message/verify", request, cancellationToken);
 
 			response.EnsureSuccessStatusCode();
 
 			var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
 
 			var verifyPrivateSignatureResponse =
-				await JsonSerializer.DeserializeAsync<VerifyPrivateSignatureResponse>(responseStream, cancellationToken: cancellationToken);
+				await JsonSerializer.DeserializeAsync<VerifyResponse>(responseStream, cancellationToken: cancellationToken);
 
 			_logger.LogDebug("Sent VerifyMessage request to ID Crypt Service");
 

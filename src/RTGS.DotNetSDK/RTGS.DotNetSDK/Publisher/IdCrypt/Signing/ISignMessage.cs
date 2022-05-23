@@ -1,4 +1,4 @@
-﻿using RTGS.IDCrypt.Service.Contracts.SignMessage;
+﻿using RTGS.IDCrypt.Service.Contracts.Message.Sign;
 
 namespace RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 
