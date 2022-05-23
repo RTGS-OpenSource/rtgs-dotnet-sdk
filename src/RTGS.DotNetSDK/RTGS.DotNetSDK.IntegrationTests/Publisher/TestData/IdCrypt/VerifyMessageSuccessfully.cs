@@ -1,13 +1,13 @@
 ﻿using System.Text.Json;
-using RTGS.IDCrypt.Service.Contracts.VerifyMessage;
+using RTGS.IDCrypt.Service.Contracts.Message.Verify;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 internal static class VerifyMessageSuccessfully
 {
-	public const string Path = "/api/Verify";
+	public const string Path = "/api/message/verify";
 
-	public static VerifyPrivateSignatureResponse Response => new()
+	public static VerifyResponse Response => new()
 	{
 		Verified = true
 	};
