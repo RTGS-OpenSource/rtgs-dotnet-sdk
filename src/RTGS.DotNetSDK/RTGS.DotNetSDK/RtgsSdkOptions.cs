@@ -91,10 +91,10 @@ public record RtgsSdkOptions
 		/// </summary>
 		/// <param name="rtgsGlobalId">Organisation's unique identifier on the RTGS.global network.</param>
 		/// <param name="remoteHostAddress">Address of the RTGS gRPC server.</param>
-		/// <param name="idCryptServiceAddress">Address of the ID Crypt Service</param>
+		/// <param name="idCryptServiceAddress">Address of the ID Crypt Service.</param>
 		/// <returns><see cref="Builder"/></returns>
-		/// <exception cref="ArgumentNullException">Thrown if rtgsGlobalId, remoteHostAddress idCryptApiAddress, idCryptApiKey or idCryptEndpointAddress is null.</exception>
-		/// <exception cref="ArgumentException">Thrown if rtgsGlobalId or idCryptApiKey is white space.</exception>
+		/// <exception cref="ArgumentNullException">Thrown if rtgsGlobalId, remoteHostAddress or idCryptServiceAddress is null.</exception>
+		/// <exception cref="ArgumentException">Thrown if rtgsGlobalId is white space.</exception>
 		public static Builder CreateNew(
 			string rtgsGlobalId,
 			Uri remoteHostAddress,
