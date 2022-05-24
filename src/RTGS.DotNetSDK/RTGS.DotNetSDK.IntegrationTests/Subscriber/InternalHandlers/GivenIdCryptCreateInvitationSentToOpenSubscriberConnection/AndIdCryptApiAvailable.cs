@@ -213,8 +213,8 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 
 		var expectedLogs = new List<LogEntry>
 		{
-			new("Sending CreateConnectionInvitation request to ID Crypt Service", LogEventLevel.Debug),
-			new("Sent CreateConnectionInvitation request to ID Crypt Service", LogEventLevel.Debug)
+			new("Sending create connection invitation for bank request to ID Crypt Service", LogEventLevel.Debug),
+			new("Sent create connection invitation for bank request to ID Crypt Service", LogEventLevel.Debug)
 		};
 
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug);

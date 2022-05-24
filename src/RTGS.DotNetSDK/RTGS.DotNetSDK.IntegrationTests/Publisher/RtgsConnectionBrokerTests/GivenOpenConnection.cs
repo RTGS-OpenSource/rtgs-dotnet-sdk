@@ -133,8 +133,8 @@ public class GivenOpenConnection
 
 			var expectedDebugLogs = new List<LogEntry>
 			{
-				new("Sending CreateConnectionInvitation request to ID Crypt Service", LogEventLevel.Debug),
-				new("Sent CreateConnectionInvitation request to ID Crypt Service", LogEventLevel.Debug)
+				new("Sending create connection invitation for RTGS request to ID Crypt Service", LogEventLevel.Debug),
+				new("Sent create connection invitation for RTGS request to ID Crypt Service", LogEventLevel.Debug)
 			};
 
 			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug);
@@ -314,12 +314,12 @@ public class GivenOpenConnection
 
 			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug);
 			debugLogs.Should().ContainSingle().Which
-				.Should().BeEquivalentTo(new LogEntry("Sending CreateConnectionInvitation request to ID Crypt Service", LogEventLevel.Debug));
+				.Should().BeEquivalentTo(new LogEntry("Sending create connection invitation for RTGS request to ID Crypt Service", LogEventLevel.Debug));
 
 			var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Error);
 			errorLogs.Should().ContainSingle().Which
 				.Should().BeEquivalentTo(new LogEntry(
-					"Error occurred when sending CreateConnectionInvitation request to ID Crypt Service",
+					"Error occurred when sending create connection invitation for RTGS request to ID Crypt Service",
 					LogEventLevel.Error,
 					typeof(HttpRequestException)));
 		}

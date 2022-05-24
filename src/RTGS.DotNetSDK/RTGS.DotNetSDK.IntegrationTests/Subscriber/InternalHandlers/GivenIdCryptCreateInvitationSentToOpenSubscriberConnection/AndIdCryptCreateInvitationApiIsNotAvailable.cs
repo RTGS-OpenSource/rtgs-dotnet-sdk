@@ -116,7 +116,7 @@ public sealed class AndIdCryptCreateInvitationApiIsNotAvailable : IDisposable, I
 
 		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.Handlers.Internal.IdCryptCreateInvitationRequestV1Handler", LogEventLevel.Error);
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			"Error occurred when sending CreateConnectionInvitation request to ID Crypt Service for invitation from bank",
+			"Error occurred when sending create connection invitation for bank request to ID Crypt Service",
 			LogEventLevel.Error,
 			typeof(RtgsSubscriberException)));
 	}
@@ -138,12 +138,12 @@ public sealed class AndIdCryptCreateInvitationApiIsNotAvailable : IDisposable, I
 		using var _ = new AssertionScope();
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug);
 		debugLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			"Sending CreateConnectionInvitation request to ID Crypt Service",
+			"Sending create connection invitation for bank request to ID Crypt Service",
 			LogEventLevel.Debug));
 
 		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Error);
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-				"Error occurred when sending CreateConnectionInvitation request to ID Crypt Service",
+				"Error occurred when sending create connection invitation for bank request to ID Crypt Service",
 				LogEventLevel.Error,
 				typeof(HttpRequestException)));
 	}

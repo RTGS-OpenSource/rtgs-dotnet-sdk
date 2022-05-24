@@ -46,7 +46,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 
 			_logger.LogError(
 				exception,
-				"Error occurred when sending CreateConnectionInvitation request to ID Crypt Service for invitation from bank");
+				"Error occurred when sending create connection invitation for bank request to ID Crypt Service");
 
 			throw exception;
 		}

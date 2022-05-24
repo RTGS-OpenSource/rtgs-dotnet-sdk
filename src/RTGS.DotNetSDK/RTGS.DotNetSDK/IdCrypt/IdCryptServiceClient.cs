@@ -24,7 +24,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 	{
 		try
 		{
-			_logger.LogDebug("Sending CreateConnectionInvitation request to ID Crypt Service");
+			_logger.LogDebug("Sending create connection invitation for RTGS request to ID Crypt Service");
 
 			var response = await _httpClient.PostAsync("api/Connection/for-rtgs", null, cancellationToken);
 
@@ -35,13 +35,13 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 			var createConnectionInvitationResponse =
 				await JsonSerializer.DeserializeAsync<CreateConnectionInvitationResponse>(responseStream, cancellationToken: cancellationToken);
 
-			_logger.LogDebug("Sent CreateConnectionInvitation request to ID Crypt Service");
+			_logger.LogDebug("Sent create connection invitation for RTGS request to ID Crypt Service");
 
 			return createConnectionInvitationResponse;
 		}
 		catch (Exception exception)
 		{
-			_logger.LogError(exception, "Error occurred when sending CreateConnectionInvitation request to ID Crypt Service");
+			_logger.LogError(exception, "Error occurred when sending create connection invitation for RTGS request to ID Crypt Service");
 
 			throw;
 		}
@@ -52,7 +52,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 	{
 		try
 		{
-			_logger.LogDebug("Sending CreateConnectionInvitation request to ID Crypt Service");
+			_logger.LogDebug("Sending create connection invitation for bank request to ID Crypt Service");
 
 			var request = new CreateConnectionInvitationForBankRequest
 			{
@@ -68,13 +68,13 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 			var createConnectionInvitationResponse =
 				await JsonSerializer.DeserializeAsync<CreateConnectionInvitationResponse>(responseStream, cancellationToken: cancellationToken);
 
-			_logger.LogDebug("Sent CreateConnectionInvitation request to ID Crypt Service");
+			_logger.LogDebug("Sent create connection invitation for bank request to ID Crypt Service");
 
 			return createConnectionInvitationResponse;
 		}
 		catch (Exception exception)
 		{
-			_logger.LogError(exception, "Error occurred when sending CreateConnectionInvitation request to ID Crypt Service");
+			_logger.LogError(exception, "Error occurred when sending create connection invitation for bank request to ID Crypt Service");
 
 			throw;
 		}
