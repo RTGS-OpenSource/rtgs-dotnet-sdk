@@ -5,7 +5,6 @@ using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Publisher.Exceptions;
 using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
-using RTGS.IDCrypt.Service.Contracts.Connection;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.RtgsConnectionBrokerTests;
 
@@ -102,27 +101,6 @@ public class GivenOpenConnection
 				!.GetLeftPart(UriPartial.Authority);
 
 			actualApiUri.Should().BeEquivalentTo(IdCryptServiceAddress.GetLeftPart(UriPartial.Authority));
-		}
-
-		[Fact]
-		public async Task WhenCallingIdCryptService_ThenContentIsExpected()
-		{
-			_toRtgsMessageHandler.SetupForMessage(handler =>
-				handler.ReturnExpectedAcknowledgementWithSuccess());
-
-			await _rtgsConnectionBroker.SendInvitationAsync();
-
-			var actualContent = await _idCryptServiceHttpHandler.Requests[CreateConnectionForRtgs.Path]
-				.Single().Content!.ReadAsStringAsync();
-
-			var actualRequest = JsonSerializer.Deserialize<CreateConnectionInvitationRequest>(actualContent);
-
-			var expectedRequest = new CreateConnectionInvitationRequest
-			{
-				RtgsGlobalId = "rtgs-global-id"
-			};
-
-			actualRequest.Should().BeEquivalentTo(expectedRequest);
 		}
 
 		[Fact]

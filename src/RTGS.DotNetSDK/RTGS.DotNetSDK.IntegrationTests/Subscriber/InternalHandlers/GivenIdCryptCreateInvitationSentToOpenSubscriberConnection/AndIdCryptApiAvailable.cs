@@ -48,7 +48,7 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 	{
 		_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 			.Create()
-			.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
+			.WithOkResponse(CreateConnectionForBank.HttpRequestResponseContext)
 			.Build();
 
 		try
@@ -135,7 +135,7 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 		using var _ = new AssertionScope();
 
 		var actualApiUri = _idCryptServiceHttpHandler
-			.Requests[CreateConnectionForRtgs.Path]
+			.Requests[CreateConnectionForBank.Path]
 			.Single()
 			.RequestUri!
 			.GetLeftPart(UriPartial.Authority);
@@ -156,7 +156,7 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 
 		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
 
-		var alias = CreateConnectionForRtgs.Response.Alias;
+		var alias = CreateConnectionForBank.Response.Alias;
 		var bankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId;
 
 		var expectedLogs = new List<LogEntry>
@@ -282,7 +282,7 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 
 		await _rtgsSubscriber.StopAsync();
 
-		var alias = CreateConnectionForRtgs.Response.Alias;
+		var alias = CreateConnectionForBank.Response.Alias;
 		var bankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId;
 
 		var expectedDebugLogs = new List<LogEntry>
@@ -338,7 +338,7 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 
 		await _rtgsSubscriber.StopAsync();
 
-		var alias = CreateConnectionForRtgs.Response.Alias;
+		var alias = CreateConnectionForBank.Response.Alias;
 		var bankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId;
 
 		var expectedDebugLogs = new List<LogEntry>
