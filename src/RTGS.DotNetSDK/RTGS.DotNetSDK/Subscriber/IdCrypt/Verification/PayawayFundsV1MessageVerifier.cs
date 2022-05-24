@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Exceptions;
-using RTGS.IDCrypt.Service.Contracts.Message.Verify;
 using RTGS.Public.Messages.Subscriber;
 
 namespace RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
@@ -26,10 +25,9 @@ internal class PayawayFundsV1MessageVerifier : IVerifyMessage<PayawayFundsV1>
 	{
 		var messageToVerify = message?.FIToFICstmrCdtTrf;
 
-		VerifyResponse response;
 		try
 		{
-			response = await _idCryptServiceClient.VerifyMessageAsync(fromRtgsGlobalId, messageToVerify, privateSignature, alias, cancellationToken);
+			var response = await _idCryptServiceClient.VerifyMessageAsync(fromRtgsGlobalId, messageToVerify, privateSignature, alias, cancellationToken);
 			return response.Verified;
 		}
 		catch (Exception innerException)
