@@ -30,7 +30,7 @@ public class GivenWrongRemoteHostAddress
 
 		var rtgsConnectionBroker = clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 
-		await FluentActions.Awaiting(() => rtgsConnectionBroker.SendInvitationAsync())
+		await FluentActions.Awaiting(() => rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id"))
 			.Should().ThrowAsync<RpcException>();
 	}
 }

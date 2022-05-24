@@ -71,7 +71,7 @@ public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<Gr
 		receiver.ThrowOnConnection = true;
 
 		await FluentActions
-			.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+			.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id"))
 			.Should()
 			.ThrowAsync<Exception>();
 	}
@@ -84,7 +84,7 @@ public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<Gr
 		receiver.ThrowOnConnection = true;
 
 		await FluentActions
-			.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+			.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id"))
 			.Should()
 			.ThrowAsync<Exception>();
 
@@ -92,7 +92,7 @@ public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<Gr
 
 		receiver.ThrowOnConnection = false;
 
-		var result = await _rtgsConnectionBroker.SendInvitationAsync();
+		var result = await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 		result.Should().Be(SendResult.Success);
 	}

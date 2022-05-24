@@ -76,19 +76,19 @@ public sealed class GivenMultipleOpenConnections : IDisposable, IClassFixture<Gr
 		var rtgsConnectionBroker5 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsConnectionBroker1.SendInvitationAsync();
+		await rtgsConnectionBroker1.SendInvitationAsync("rtgs-global-id");
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsConnectionBroker2.SendInvitationAsync();
+		await rtgsConnectionBroker2.SendInvitationAsync("rtgs-global-id");
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsConnectionBroker3.SendInvitationAsync();
+		await rtgsConnectionBroker3.SendInvitationAsync("rtgs-global-id");
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsConnectionBroker4.SendInvitationAsync();
+		await rtgsConnectionBroker4.SendInvitationAsync("rtgs-global-id");
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsConnectionBroker5.SendInvitationAsync();
+		await rtgsConnectionBroker5.SendInvitationAsync("rtgs-global-id");
 
 		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 

@@ -5,6 +5,7 @@ using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Publisher.Exceptions;
 using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
+using RTGS.IDCrypt.Service.Contracts.Connection;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.RtgsConnectionBrokerTests;
 
@@ -93,7 +94,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			await _rtgsConnectionBroker.SendInvitationAsync();
+			await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			var actualApiUri = _idCryptServiceHttpHandler.Requests[CreateConnection.Path]
 				.Single()
@@ -104,12 +105,33 @@ public class GivenOpenConnection
 		}
 
 		[Fact]
+		public async Task WhenCallingIdCryptService_ThenContentIsExpected()
+		{
+			_toRtgsMessageHandler.SetupForMessage(handler =>
+				handler.ReturnExpectedAcknowledgementWithSuccess());
+
+			await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
+
+			var actualContent = await _idCryptServiceHttpHandler.Requests[CreateConnection.Path]
+				.Single().Content!.ReadAsStringAsync();
+
+			var actualRequest = JsonSerializer.Deserialize<CreateConnectionInvitationRequest>(actualContent);
+
+			var expectedRequest = new CreateConnectionInvitationRequest
+			{
+				RtgsGlobalId = "rtgs-global-id"
+			};
+
+			actualRequest.Should().BeEquivalentTo(expectedRequest);
+		}
+
+		[Fact]
 		public async Task WhenCallingIdCryptService_ThenConnectionBrokerLogs()
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			await _rtgsConnectionBroker.SendInvitationAsync();
+			await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			var alias = CreateConnection.Response.Alias;
 
@@ -129,7 +151,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			await _rtgsConnectionBroker.SendInvitationAsync();
+			await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			var expectedDebugLogs = new List<LogEntry>
 			{
@@ -146,7 +168,7 @@ public class GivenOpenConnection
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			await _rtgsConnectionBroker.SendInvitationAsync();
+			await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 			var receivedMessage = receiver.Connections
@@ -260,7 +282,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id"))
 				.Should()
 				.ThrowAsync<RtgsPublisherException>()
 				.WithMessage("Error occurred creating ID Crypt invitation")
@@ -273,7 +295,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id"))
 			  .Should()
 			  .ThrowAsync<Exception>();
 
@@ -288,7 +310,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id"))
 				.Should()
 				.ThrowAsync<Exception>();
 
@@ -306,7 +328,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id"))
 				.Should()
 				.ThrowAsync<Exception>();
 
@@ -408,7 +430,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			await _rtgsConnectionBroker.SendInvitationAsync();
+			await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			var expectedInformationLogs = new List<LogEntry>
 			{
@@ -435,7 +457,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithFailure());
 
-			await _rtgsConnectionBroker.SendInvitationAsync();
+			await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			var expectedInformationLogs = new List<LogEntry>
 			{
@@ -464,7 +486,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ThrowRpcException(StatusCode.Unavailable, "test"));
 
-			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id"))
 				.Should()
 				.ThrowAsync<RpcException>();
 
@@ -494,7 +516,7 @@ public class GivenOpenConnection
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			await _rtgsConnectionBroker.SendInvitationAsync();
+			await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
@@ -511,7 +533,7 @@ public class GivenOpenConnection
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			var result = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result = await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			result.Should().Be(SendResult.Success);
 		}
@@ -521,7 +543,7 @@ public class GivenOpenConnection
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithFailure());
 
-			var result = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result = await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			result.Should().Be(SendResult.Rejected);
 		}
@@ -532,7 +554,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1))));
 
-			var result = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result = await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			result.Should().Be(SendResult.Timeout);
 		}
@@ -543,7 +565,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1))));
 
-			await _rtgsConnectionBroker.SendInvitationAsync();
+			await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			var errorLogs = _serilogContext.PublisherLogs(LogEventLevel.Error);
 			errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
@@ -556,11 +578,11 @@ public class GivenOpenConnection
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnUnexpectedAcknowledgementWithSuccess());
-			await _rtgsConnectionBroker.SendInvitationAsync();
+			await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnUnexpectedAcknowledgementWithSuccess());
-			await _rtgsConnectionBroker.SendInvitationAsync();
+			await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 
@@ -572,11 +594,11 @@ public class GivenOpenConnection
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
-			var result1 = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result1 = await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1))));
-			var result2 = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result2 = await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			using var _ = new AssertionScope();
 
@@ -591,7 +613,7 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnUnexpectedAcknowledgementWithSuccess());
 
-			var result = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result = await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			result.Should().Be(SendResult.Timeout);
 		}
@@ -605,7 +627,7 @@ public class GivenOpenConnection
 				handler.ReturnExpectedAcknowledgementWithFailure();
 			});
 
-			var result = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result = await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			result.Should().Be(SendResult.Rejected);
 		}
@@ -619,7 +641,7 @@ public class GivenOpenConnection
 				handler.ReturnUnexpectedAcknowledgementWithSuccess();
 			});
 
-			var result = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result = await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			result.Should().Be(SendResult.Rejected);
 		}
@@ -634,7 +656,7 @@ public class GivenOpenConnection
 				handler.ReturnUnexpectedAcknowledgementWithFailure();
 			});
 
-			var result = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result = await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 
 			result.Should().Be(SendResult.Success);
 		}
@@ -642,12 +664,12 @@ public class GivenOpenConnection
 		[Fact]
 		public async Task WhenBankMessageApiReturnsSuccessForSecondMessageOnly_ThenDoNotTimeout()
 		{
-			var result1 = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result1 = await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 			result1.Should().Be(SendResult.Timeout);
 
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			var result2 = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result2 = await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 			result2.Should().Be(SendResult.Success);
 		}
 
@@ -656,13 +678,13 @@ public class GivenOpenConnection
 		{
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ThrowRpcException(StatusCode.Unknown, "test"));
 
-			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id"))
 				.Should()
 				.ThrowAsync<RpcException>();
 
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-			var result = await _rtgsConnectionBroker.SendInvitationAsync();
+			var result = await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
 			result.Should().Be(SendResult.Success);
 		}
 	}
@@ -734,7 +756,7 @@ public class GivenOpenConnection
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 			receiver.RegisterOnMessageReceived(() => cancellationTokenSource.Cancel());
 
-			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync(cancellationTokenSource.Token))
+			await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id", cancellationTokenSource.Token))
 				.Should().ThrowAsync<OperationCanceledException>();
 		}
 
@@ -750,7 +772,7 @@ public class GivenOpenConnection
 			// will hold on to the semaphore for a long time.
 			using var firstMessageCancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
 			var firstMessageTask = FluentActions
-				.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync(firstMessageCancellationTokenSource.Token))
+				.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id", firstMessageCancellationTokenSource.Token))
 				.Should()
 				.ThrowAsync<OperationCanceledException>();
 
@@ -760,7 +782,7 @@ public class GivenOpenConnection
 			// ...we can send the second message knowing it will be waiting due to the semaphore.
 			using var secondMessageCancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
 			var secondMessageTask = FluentActions
-				.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync(secondMessageCancellationTokenSource.Token))
+				.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id", secondMessageCancellationTokenSource.Token))
 				.Should()
 				.ThrowAsync<OperationCanceledException>();
 

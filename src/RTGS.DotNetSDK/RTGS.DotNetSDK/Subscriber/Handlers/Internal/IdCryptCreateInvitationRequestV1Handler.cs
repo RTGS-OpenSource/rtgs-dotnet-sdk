@@ -25,16 +25,16 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 
 	public async Task HandleMessageAsync(IdCryptCreateInvitationRequestV1 createInvitationRequest)
 	{
-		var invitation = await CreateIdCryptInvitationAsync();
+		var invitation = await CreateIdCryptInvitationAsync(createInvitationRequest.BankPartnerRtgsGlobalId);
 
 		await SendInvitationToBankAsync(invitation, createInvitationRequest.BankPartnerRtgsGlobalId);
 	}
 
-	private async Task<CreateConnectionInvitationResponse> CreateIdCryptInvitationAsync()
+	private async Task<CreateConnectionInvitationResponse> CreateIdCryptInvitationAsync(string toRtgsGlobalId)
 	{
 		try
 		{
-			var invitation = await _idCryptServiceClient.CreateConnectionInvitationAsync();
+			var invitation = await _idCryptServiceClient.CreateConnectionInvitationAsync(toRtgsGlobalId);
 
 			return invitation;
 		}

@@ -20,13 +20,18 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		_logger = logger;
 	}
 
-	public async Task<CreateConnectionInvitationResponse> CreateConnectionInvitationAsync(CancellationToken cancellationToken = default)
+	public async Task<CreateConnectionInvitationResponse> CreateConnectionInvitationAsync(string toRtgsGlobalId, CancellationToken cancellationToken = default)
 	{
 		try
 		{
 			_logger.LogDebug("Sending CreateConnectionInvitation request to ID Crypt Service");
 
-			var response = await _httpClient.PostAsync("api/Connection", null, cancellationToken);
+			var request = new CreateConnectionInvitationRequest
+			{
+				RtgsGlobalId = toRtgsGlobalId
+			};
+
+			var response = await _httpClient.PostAsJsonAsync("api/Connection", request, cancellationToken);
 
 			response.EnsureSuccessStatusCode();
 
