@@ -57,7 +57,6 @@ public class RtgsSubscriberException : Exception
 		base.GetObjectData(info, context);
 
 		info.AddValue(nameof(MessageIdentifier), MessageIdentifier, typeof(string));
-
 	}
 
 	/// <summary>

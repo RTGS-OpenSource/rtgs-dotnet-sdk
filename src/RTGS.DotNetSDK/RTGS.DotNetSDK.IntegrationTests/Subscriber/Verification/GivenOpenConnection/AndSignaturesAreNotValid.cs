@@ -91,14 +91,12 @@ public sealed class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcSe
 
 		await _rtgsSubscriber.StopAsync();
 
-		var errorLogs = _serilogContext.LogsFor(
-			$"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier",
-			LogEventLevel.Error);
+		var errorLogs = _serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.RtgsSubscriber", LogEventLevel.Error);
 
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			$"Verification of {subscriberAction.MessageIdentifier} message private signature failed",
+			$"Verification of {subscriberAction.MessageIdentifier} message failed.",
 			LogEventLevel.Error,
-			typeof(RtgsSubscriberException)));
+			typeof(VerificationFailedException)));
 	}
 
 	[Theory]
@@ -122,7 +120,7 @@ public sealed class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcSe
 
 		await _rtgsSubscriber.StopAsync();
 
-		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should().Be($"Verification of {subscriberAction.MessageIdentifier} message failed.");
+		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should().Be($"Verification of {subscriberAction.MessageIdentifier} message failed.");
 	}
 
 	[Theory]
@@ -142,8 +140,8 @@ public sealed class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcSe
 
 		var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			$"An error occurred while verifying a message (MessageIdentifier: {subscriberAction.MessageIdentifier})",
+			$"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.",
 			LogEventLevel.Error,
-			typeof(RtgsSubscriberException)));
+			typeof(VerificationFailedException)));
 	}
 }

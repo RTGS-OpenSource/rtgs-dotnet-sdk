@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Subscriber.Exceptions;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 using RTGS.DotNetSDK.Subscriber.Handlers;
-using RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
 using RTGS.DotNetSDK.Subscriber.Validators;
 using RTGS.Public.Payment.V4;
 
@@ -17,7 +16,6 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 	private readonly IHandlerValidator _handlerValidator;
 	private readonly IHandleMessageCommandsFactory _handleMessageCommandsFactory;
 
-	private readonly Dictionary<string, IVerifyMessage> _messageVerifiers;
 	private readonly SemaphoreSlim _startStopSignal = new(1);
 	private readonly SemaphoreSlim _disposingSignal = new(1);
 	private readonly SemaphoreSlim _processingSignal = new(1);
@@ -35,16 +33,13 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 		Payment.PaymentClient grpcClient,
 		RtgsSdkOptions options,
 		IHandlerValidator handlerValidator,
-		IHandleMessageCommandsFactory handleMessageCommandsFactory,
-		IEnumerable<IVerifyMessage> messageVerifiers)
+		IHandleMessageCommandsFactory handleMessageCommandsFactory)
 	{
 		_logger = logger;
 		_grpcClient = grpcClient;
 		_options = options;
 		_handlerValidator = handlerValidator;
 		_handleMessageCommandsFactory = handleMessageCommandsFactory;
-
-		_messageVerifiers = messageVerifiers.ToDictionary(verifier => verifier.MessageIdentifier, verifier => verifier);
 	}
 
 	public async Task StartAsync(IEnumerable<IHandler> handlers)
@@ -153,25 +148,14 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 			// The handler should be quick but we cannot guarantee that is the case so do this first.
 			await SendSuccessAcknowledgement(rtgsMessage.CorrelationId);
 
-			if (_options.UseMessageSigning)
-			{
-				try
-				{
-					await VerifyMessageSignature(rtgsMessage);
-				}
-				catch (Exception ex)
-				{
-					_logger.LogError(ex,
-						"An error occurred while verifying a message (MessageIdentifier: {MessageIdentifier})",
-						command.MessageIdentifier);
-
-					RaiseNonFatalExceptionOccurredEvent(ex);
-				}
-			}
-
 			try
 			{
 				await command.HandleAsync(rtgsMessage);
+			}
+			catch (VerificationFailedException ex)
+			{
+				_logger.LogError(ex, ex.Message);
+				RaiseNonFatalExceptionOccurredEvent(ex);
 			}
 			catch (Exception ex)
 			{
@@ -186,20 +170,6 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 
 			RaiseNonFatalExceptionOccurredEvent(ex);
 		}
-	}
-
-	private async Task VerifyMessageSignature(RtgsMessage rtgsMessage)
-	{
-		if (!_messageVerifiers.TryGetValue(rtgsMessage.MessageIdentifier, out var messageVerifier))
-		{
-			return;
-		}
-
-		_logger.LogInformation("Verifying {MessageIdentifier} message", rtgsMessage.MessageIdentifier);
-
-		await messageVerifier.VerifyMessageAsync(rtgsMessage);
-
-		_logger.LogInformation("Verified {MessageIdentifier} message", rtgsMessage.MessageIdentifier);
 	}
 
 	private void RaiseFatalExceptionOccurredEvent(Exception raisedException)

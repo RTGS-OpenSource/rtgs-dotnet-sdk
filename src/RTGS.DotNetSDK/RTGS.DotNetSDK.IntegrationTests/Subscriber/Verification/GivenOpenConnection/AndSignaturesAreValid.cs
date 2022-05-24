@@ -192,7 +192,8 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 
 		await _rtgsSubscriber.StopAsync();
 
-		var informationLogs = _serilogContext.SubscriberLogs(LogEventLevel.Information);
+		var informationLogs = _serilogContext.LogsForNamespace("RTGS.DotNetSDK.Subscriber", LogEventLevel.Information);
+
 		informationLogs.Should().BeEquivalentTo(subscriberAction.SubscriberLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
 	}
 }
