@@ -44,8 +44,6 @@ public class VerificationFailedException : RtgsSubscriberException
 		: base(message, inner)
 	{
 	}
-
-
 	protected VerificationFailedException(SerializationInfo info, StreamingContext context)
 		: base(info, context)
 	{
