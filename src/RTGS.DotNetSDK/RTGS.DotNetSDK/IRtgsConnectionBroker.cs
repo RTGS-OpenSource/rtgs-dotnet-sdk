@@ -10,5 +10,5 @@ public interface IRtgsConnectionBroker
 	/// </summary>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
-	Task<SendResult> SendInvitationAsync(string toRtgsGlobalId, CancellationToken cancellationToken = default);
+	Task<SendResult> SendInvitationAsync(CancellationToken cancellationToken = default);
 }

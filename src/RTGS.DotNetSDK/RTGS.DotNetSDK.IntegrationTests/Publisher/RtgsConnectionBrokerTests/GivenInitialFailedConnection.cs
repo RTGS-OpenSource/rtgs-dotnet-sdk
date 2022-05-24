@@ -34,8 +34,8 @@ public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<Gr
 
 			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 				.CreateQueueable()
-				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
-				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
@@ -71,7 +71,7 @@ public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<Gr
 		receiver.ThrowOnConnection = true;
 
 		await FluentActions
-			.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id"))
+			.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
 			.Should()
 			.ThrowAsync<Exception>();
 	}
@@ -84,7 +84,7 @@ public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<Gr
 		receiver.ThrowOnConnection = true;
 
 		await FluentActions
-			.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id"))
+			.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
 			.Should()
 			.ThrowAsync<Exception>();
 
@@ -92,7 +92,7 @@ public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<Gr
 
 		receiver.ThrowOnConnection = false;
 
-		var result = await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
+		var result = await _rtgsConnectionBroker.SendInvitationAsync();
 
 		result.Should().Be(SendResult.Success);
 	}

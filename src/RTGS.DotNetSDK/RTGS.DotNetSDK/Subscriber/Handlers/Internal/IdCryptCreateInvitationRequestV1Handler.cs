@@ -34,7 +34,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 	{
 		try
 		{
-			var invitation = await _idCryptServiceClient.CreateConnectionInvitationAsync(toRtgsGlobalId);
+			var invitation = await _idCryptServiceClient.CreateConnectionInvitationForBankAsync(toRtgsGlobalId);
 
 			return invitation;
 		}

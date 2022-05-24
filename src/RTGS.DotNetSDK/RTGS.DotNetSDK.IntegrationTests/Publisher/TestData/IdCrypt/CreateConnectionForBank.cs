@@ -3,9 +3,9 @@ using RTGS.IDCrypt.Service.Contracts.Connection;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
-internal static class CreateConnection
+internal static class CreateConnectionForBank
 {
-	public const string Path = "/api/Connection";
+	public const string Path = "/api/Connection/for-bank";
 
 	public static CreateConnectionInvitationResponse Response => new()
 	{

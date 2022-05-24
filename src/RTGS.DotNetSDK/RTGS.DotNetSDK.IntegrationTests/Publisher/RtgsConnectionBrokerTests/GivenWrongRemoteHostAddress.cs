@@ -17,7 +17,7 @@ public class GivenWrongRemoteHostAddress
 
 		var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 			.Create()
-			.WithOkResponse(CreateConnection.HttpRequestResponseContext)
+			.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
 			.Build();
 
 		using var clientHost = Host.CreateDefaultBuilder()
@@ -30,7 +30,7 @@ public class GivenWrongRemoteHostAddress
 
 		var rtgsConnectionBroker = clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 
-		await FluentActions.Awaiting(() => rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id"))
+		await FluentActions.Awaiting(() => rtgsConnectionBroker.SendInvitationAsync())
 			.Should().ThrowAsync<RpcException>();
 	}
 }

@@ -33,11 +33,11 @@ public sealed class GivenMultipleOpenConnections : IDisposable, IClassFixture<Gr
 
 			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 				.CreateQueueable()
-				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
-				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
-				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
-				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
-				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
@@ -76,19 +76,19 @@ public sealed class GivenMultipleOpenConnections : IDisposable, IClassFixture<Gr
 		var rtgsConnectionBroker5 = _clientHost.Services.GetRequiredService<IRtgsConnectionBroker>();
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsConnectionBroker1.SendInvitationAsync("rtgs-global-id");
+		await rtgsConnectionBroker1.SendInvitationAsync();
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsConnectionBroker2.SendInvitationAsync("rtgs-global-id");
+		await rtgsConnectionBroker2.SendInvitationAsync();
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsConnectionBroker3.SendInvitationAsync("rtgs-global-id");
+		await rtgsConnectionBroker3.SendInvitationAsync();
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsConnectionBroker4.SendInvitationAsync("rtgs-global-id");
+		await rtgsConnectionBroker4.SendInvitationAsync();
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsConnectionBroker5.SendInvitationAsync("rtgs-global-id");
+		await rtgsConnectionBroker5.SendInvitationAsync();
 
 		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 

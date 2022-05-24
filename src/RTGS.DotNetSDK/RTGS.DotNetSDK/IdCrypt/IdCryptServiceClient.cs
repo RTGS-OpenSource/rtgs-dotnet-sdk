@@ -20,7 +20,35 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		_logger = logger;
 	}
 
-	public async Task<CreateConnectionInvitationResponse> CreateConnectionInvitationAsync(string toRtgsGlobalId, CancellationToken cancellationToken = default)
+	public async Task<CreateConnectionInvitationResponse> CreateConnectionInvitationForRtgsAsync(CancellationToken cancellationToken = default)
+	{
+		try
+		{
+			_logger.LogDebug("Sending CreateConnectionInvitation request to ID Crypt Service");
+
+			var response = await _httpClient.PostAsync("api/Connection/for-rtgs", null, cancellationToken);
+
+			response.EnsureSuccessStatusCode();
+
+			var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+
+			var createConnectionInvitationResponse =
+				await JsonSerializer.DeserializeAsync<CreateConnectionInvitationResponse>(responseStream, cancellationToken: cancellationToken);
+
+			_logger.LogDebug("Sent CreateConnectionInvitation request to ID Crypt Service");
+
+			return createConnectionInvitationResponse;
+		}
+		catch (Exception exception)
+		{
+			_logger.LogError(exception, "Error occurred when sending CreateConnectionInvitation request to ID Crypt Service");
+
+			throw;
+		}
+	}
+
+
+	public async Task<CreateConnectionInvitationResponse> CreateConnectionInvitationForBankAsync(string toRtgsGlobalId, CancellationToken cancellationToken = default)
 	{
 		try
 		{
@@ -31,7 +59,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 				RtgsGlobalId = toRtgsGlobalId
 			};
 
-			var response = await _httpClient.PostAsJsonAsync("api/Connection", request, cancellationToken);
+			var response = await _httpClient.PostAsJsonAsync("api/Connection/for-bank", request, cancellationToken);
 
 			response.EnsureSuccessStatusCode();
 

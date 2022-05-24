@@ -22,20 +22,20 @@ internal class RtgsConnectionBroker : IRtgsConnectionBroker
 		_idCryptPublisher = idCryptPublisher;
 	}
 
-	public async Task<SendResult> SendInvitationAsync(string toRtgsGlobalId, CancellationToken cancellationToken = default)
+	public async Task<SendResult> SendInvitationAsync(CancellationToken cancellationToken = default)
 	{
-		var invitation = await CreateIdCryptInvitationAsync(toRtgsGlobalId);
+		var invitation = await CreateIdCryptInvitationAsync();
 
 		var sendToRtgsResult = await SendInvitationToRtgsAsync(invitation, cancellationToken);
 
 		return sendToRtgsResult;
 	}
 
-	private async Task<CreateConnectionInvitationResponse> CreateIdCryptInvitationAsync(string toRtgsGlobalId)
+	private async Task<CreateConnectionInvitationResponse> CreateIdCryptInvitationAsync()
 	{
 		try
 		{
-			var invitation = await _idCryptServiceClient.CreateConnectionInvitationAsync(toRtgsGlobalId);
+			var invitation = await _idCryptServiceClient.CreateConnectionInvitationForRtgsAsync();
 
 			return invitation;
 		}

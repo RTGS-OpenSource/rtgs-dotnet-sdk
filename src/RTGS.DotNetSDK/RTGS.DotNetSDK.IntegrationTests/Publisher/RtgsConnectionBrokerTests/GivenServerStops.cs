@@ -50,8 +50,8 @@ public class GivenServerStops : IAsyncLifetime
 
 			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 				.CreateQueueable()
-				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
-				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
@@ -89,12 +89,12 @@ public class GivenServerStops : IAsyncLifetime
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-		var result = await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
+		var result = await _rtgsConnectionBroker.SendInvitationAsync();
 		result.Should().Be(SendResult.Success);
 
 		await _grpcServer.StopAsync();
 
-		var exceptionAssertions = await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id"))
+		var exceptionAssertions = await FluentActions.Awaiting(() => _rtgsConnectionBroker.SendInvitationAsync())
 			.Should().ThrowAsync<Exception>();
 
 		// One of two exceptions can be thrown depending on how far along the call is.
@@ -108,7 +108,7 @@ public class GivenServerStops : IAsyncLifetime
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-		await _rtgsConnectionBroker.SendInvitationAsync("rtgs-global-id");
+		await _rtgsConnectionBroker.SendInvitationAsync();
 
 		await _grpcServer.StopAsync();
 

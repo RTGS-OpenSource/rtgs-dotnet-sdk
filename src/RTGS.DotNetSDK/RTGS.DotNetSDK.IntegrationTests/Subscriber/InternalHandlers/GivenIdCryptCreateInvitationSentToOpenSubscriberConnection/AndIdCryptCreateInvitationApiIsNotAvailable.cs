@@ -53,7 +53,7 @@ public sealed class AndIdCryptCreateInvitationApiIsNotAvailable : IDisposable, I
 
 			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
-				.WithServiceUnavailableResponse(CreateConnection.Path)
+				.WithServiceUnavailableResponse(CreateConnectionForRtgs.Path)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
