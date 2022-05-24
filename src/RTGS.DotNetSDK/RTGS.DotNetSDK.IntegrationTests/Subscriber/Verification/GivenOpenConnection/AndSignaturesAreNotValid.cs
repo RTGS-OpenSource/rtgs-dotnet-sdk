@@ -94,7 +94,7 @@ public sealed class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcSe
 		var errorLogs = _serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.RtgsSubscriber", LogEventLevel.Error);
 
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			$"An error occurred while validating a message (MessageIdentifier: {subscriberAction.MessageIdentifier})",
+			$"An error occurred while verifying a message (MessageIdentifier: {subscriberAction.MessageIdentifier})",
 			LogEventLevel.Error,
 			typeof(VerificationFailedException)));
 	}
@@ -164,7 +164,7 @@ public sealed class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcSe
 
 		var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			$"An error occurred while validating a message (MessageIdentifier: {subscriberAction.MessageIdentifier})",
+			$"An error occurred while verifying a message (MessageIdentifier: {subscriberAction.MessageIdentifier})",
 			LogEventLevel.Error,
 			typeof(VerificationFailedException)));
 	}
