@@ -1,7 +1,9 @@
-﻿using RTGS.DotNetSDK.IntegrationTests.Extensions;
+﻿using System.Text.Json;
+using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Handlers;
+using RTGS.IDCrypt.Service.Contracts.Connection;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers.GivenIdCryptCreateInvitationSentToOpenSubscriberConnection;
@@ -85,6 +87,31 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 		_clientHost?.Dispose();
 
 		_grpcServer.Reset();
+	}
+
+	[Fact]
+	public async Task WhenCallingIdCryptService_ThenContentIsExpected()
+	{
+		_toRtgsMessageHandler.SetupForMessage(handler =>
+			handler.ReturnExpectedAcknowledgementWithSuccess());
+
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
+
+		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
+
+		var actualContent = await _idCryptServiceHttpHandler.Requests[CreateConnectionForBank.Path]
+			.Single().Content!.ReadAsStringAsync();
+
+		var actualRequest = JsonSerializer.Deserialize<CreateConnectionInvitationRequest>(actualContent);
+
+		var expectedRequest = new CreateConnectionInvitationRequest
+		{
+			RtgsGlobalId = "RTGS:GB177550GB"
+		};
+
+		actualRequest.Should().BeEquivalentTo(expectedRequest);
 	}
 
 	[Fact]
