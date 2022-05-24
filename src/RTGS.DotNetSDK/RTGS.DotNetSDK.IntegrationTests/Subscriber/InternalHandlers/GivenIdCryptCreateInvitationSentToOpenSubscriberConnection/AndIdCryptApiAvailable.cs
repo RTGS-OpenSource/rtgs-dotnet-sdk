@@ -104,9 +104,9 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 		var actualContent = await _idCryptServiceHttpHandler.Requests[CreateConnectionForBank.Path]
 			.Single().Content!.ReadAsStringAsync();
 
-		var actualRequest = JsonSerializer.Deserialize<CreateConnectionInvitationRequest>(actualContent);
+		var actualRequest = JsonSerializer.Deserialize<CreateConnectionInvitationForBankRequest>(actualContent);
 
-		var expectedRequest = new CreateConnectionInvitationRequest
+		var expectedRequest = new CreateConnectionInvitationForBankRequest
 		{
 			RtgsGlobalId = "RTGS:GB177550GB"
 		};

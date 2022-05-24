@@ -54,7 +54,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		{
 			_logger.LogDebug("Sending CreateConnectionInvitation request to ID Crypt Service");
 
-			var request = new CreateConnectionInvitationRequest
+			var request = new CreateConnectionInvitationForBankRequest
 			{
 				RtgsGlobalId = toRtgsGlobalId
 			};
