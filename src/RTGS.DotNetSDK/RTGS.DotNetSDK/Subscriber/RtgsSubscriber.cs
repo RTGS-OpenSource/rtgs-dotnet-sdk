@@ -154,7 +154,7 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 			}
 			catch (VerificationFailedException ex)
 			{
-				_logger.LogError(ex, ex.Message);
+				_logger.LogError(ex, "An error occurred while validating a message (MessageIdentifier: {MessageIdentifier})", command.MessageIdentifier);
 				RaiseNonFatalExceptionOccurredEvent(ex);
 			}
 			catch (Exception ex)

@@ -94,7 +94,7 @@ public sealed class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcSe
 		var errorLogs = _serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.RtgsSubscriber", LogEventLevel.Error);
 
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			$"Verification of {subscriberAction.MessageIdentifier} message failed.",
+			$"An error occurred while validating a message (MessageIdentifier: {subscriberAction.MessageIdentifier})",
 			LogEventLevel.Error,
 			typeof(VerificationFailedException)));
 	}
@@ -125,6 +125,30 @@ public sealed class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcSe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task WhenVerifyingMessage_WithMissingHeaders_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		using var exceptionSignal = new ManualResetEventSlim();
+
+		Exception raisedException = null;
+
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) =>
+		{
+			raisedException = args.Exception;
+			exceptionSignal.Set();
+		};
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+
+		exceptionSignal.Wait();
+
+		await _rtgsSubscriber.StopAsync();
+
+		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should().Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task WhenVerifyingMessageAndVerifierThrows_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		using var exceptionSignal = new ManualResetEventSlim();
@@ -140,7 +164,7 @@ public sealed class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcSe
 
 		var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			$"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.",
+			$"An error occurred while validating a message (MessageIdentifier: {subscriberAction.MessageIdentifier})",
 			LogEventLevel.Error,
 			typeof(VerificationFailedException)));
 	}

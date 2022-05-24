@@ -1,4 +1,6 @@
-﻿namespace RTGS.DotNetSDK.Subscriber.Exceptions;
+﻿using System.Runtime.Serialization;
+
+namespace RTGS.DotNetSDK.Subscriber.Exceptions;
 
 /// <summary>
 /// Represents a failure in ID Crypt verification..
@@ -40,6 +42,12 @@ public class VerificationFailedException : RtgsSubscriberException
 	/// <param name="inner">The inner exception.</param>
 	public VerificationFailedException(string message, Exception inner)
 		: base(message, inner)
+	{
+	}
+
+
+	protected VerificationFailedException(SerializationInfo info, StreamingContext context)
+		: base(info, context)
 	{
 	}
 }
