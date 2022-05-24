@@ -91,14 +91,12 @@ public sealed class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcSe
 
 		await _rtgsSubscriber.StopAsync();
 
-		var errorLogs = _serilogContext.LogsFor(
-			$"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier",
-			LogEventLevel.Error);
+		var errorLogs = _serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.RtgsSubscriber", LogEventLevel.Error);
 
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			$"Verification of {subscriberAction.MessageIdentifier} message private signature failed",
+			$"An error occurred while verifying a message (MessageIdentifier: {subscriberAction.MessageIdentifier})",
 			LogEventLevel.Error,
-			typeof(RtgsSubscriberException)));
+			typeof(VerificationFailedException)));
 	}
 
 	[Theory]
@@ -122,7 +120,31 @@ public sealed class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcSe
 
 		await _rtgsSubscriber.StopAsync();
 
-		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should().Be($"Verification of {subscriberAction.MessageIdentifier} message failed.");
+		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should().Be($"Verification of {subscriberAction.MessageIdentifier} message failed.");
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task WhenVerifyingMessage_WithMissingHeaders_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		using var exceptionSignal = new ManualResetEventSlim();
+
+		Exception raisedException = null;
+
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) =>
+		{
+			raisedException = args.Exception;
+			exceptionSignal.Set();
+		};
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+
+		exceptionSignal.Wait();
+
+		await _rtgsSubscriber.StopAsync();
+
+		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should().Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
 	}
 
 	[Theory]
@@ -144,6 +166,6 @@ public sealed class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcSe
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
 			$"An error occurred while verifying a message (MessageIdentifier: {subscriberAction.MessageIdentifier})",
 			LogEventLevel.Error,
-			typeof(RtgsSubscriberException)));
+			typeof(VerificationFailedException)));
 	}
 }

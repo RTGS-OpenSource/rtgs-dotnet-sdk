@@ -104,19 +104,21 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<AtomicTransferFundsV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<MessageRejectV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<PayawayCompleteV1>>();
-		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<PayawayFundsV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<EarmarkFundsV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<EarmarkCompleteV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<EarmarkReleaseV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<BankPartnersResponseV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, IdCryptCreateInvitationRequestV1MessageAdapter>();
 		serviceCollection.AddTransient<IMessageAdapter, IdCryptBankInvitationV1MessageAdapter>();
+
+		serviceCollection.AddTransient<IMessageAdapter, DataVerifyingMessageAdapter<PayawayFundsV1>>();
+
 		serviceCollection.AddSingleton<IHandlerValidator, HandlerValidator>();
 
 		serviceCollection.AddTransient<IInternalHandler, IdCryptCreateInvitationRequestV1Handler>();
 		serviceCollection.AddTransient<IInternalHandler, IdCryptBankInvitationV1Handler>();
 
-		serviceCollection.AddSingleton<IVerifyMessage, PayawayFundsV1MessageVerifier>();
+		serviceCollection.AddSingleton<IVerifyMessage<PayawayFundsV1>, PayawayFundsV1MessageVerifier>();
 
 		serviceCollection.AddSingleton<IIdCryptPublisher, IdCryptPublisher>();
 		serviceCollection.AddSingleton<IInternalPublisher, InternalPublisher>();
