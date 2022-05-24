@@ -58,7 +58,7 @@ public class GivenOpenConnection
 
 				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
-					.WithOkResponse(CreateConnection.HttpRequestResponseContext)
+					.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()
@@ -95,7 +95,7 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var actualApiUri = _idCryptServiceHttpHandler.Requests[CreateConnection.Path]
+			var actualApiUri = _idCryptServiceHttpHandler.Requests[CreateConnectionForRtgs.Path]
 				.Single()
 				.RequestUri
 				!.GetLeftPart(UriPartial.Authority);
@@ -111,7 +111,7 @@ public class GivenOpenConnection
 
 			await _rtgsConnectionBroker.SendInvitationAsync();
 
-			var alias = CreateConnection.Response.Alias;
+			var alias = CreateConnectionForRtgs.Response.Alias;
 
 			var expectedDebugLogs = new List<LogEntry>
 			{
@@ -133,8 +133,8 @@ public class GivenOpenConnection
 
 			var expectedDebugLogs = new List<LogEntry>
 			{
-				new("Sending CreateConnectionInvitation request to ID Crypt Service", LogEventLevel.Debug),
-				new("Sent CreateConnectionInvitation request to ID Crypt Service", LogEventLevel.Debug)
+				new("Sending create connection invitation for RTGS request to ID Crypt Service", LogEventLevel.Debug),
+				new("Sent create connection invitation for RTGS request to ID Crypt Service", LogEventLevel.Debug)
 			};
 
 			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug);
@@ -158,7 +158,7 @@ public class GivenOpenConnection
 			receivedMessage.MessageIdentifier.Should().Be("idcrypt.invitation.tortgs.v1");
 			receivedMessage.CorrelationId.Should().NotBeNullOrEmpty();
 
-			var response = CreateConnection.Response;
+			var response = CreateConnectionForRtgs.Response;
 
 			var expectedMessageData = new IdCryptInvitationV1
 			{
@@ -225,7 +225,7 @@ public class GivenOpenConnection
 
 				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
-					.WithServiceUnavailableResponse(CreateConnection.Path)
+					.WithServiceUnavailableResponse(CreateConnectionForRtgs.Path)
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()
@@ -314,12 +314,12 @@ public class GivenOpenConnection
 
 			var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug);
 			debugLogs.Should().ContainSingle().Which
-				.Should().BeEquivalentTo(new LogEntry("Sending CreateConnectionInvitation request to ID Crypt Service", LogEventLevel.Debug));
+				.Should().BeEquivalentTo(new LogEntry("Sending create connection invitation for RTGS request to ID Crypt Service", LogEventLevel.Debug));
 
 			var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Error);
 			errorLogs.Should().ContainSingle().Which
 				.Should().BeEquivalentTo(new LogEntry(
-					"Error occurred when sending CreateConnectionInvitation request to ID Crypt Service",
+					"Error occurred when sending create connection invitation for RTGS request to ID Crypt Service",
 					LogEventLevel.Error,
 					typeof(HttpRequestException)));
 		}
@@ -372,8 +372,8 @@ public class GivenOpenConnection
 
 				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 					.CreateQueueable()
-					.WithOkResponse(CreateConnection.HttpRequestResponseContext)
-					.WithOkResponse(CreateConnection.HttpRequestResponseContext)
+					.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
+					.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()
@@ -698,8 +698,8 @@ public class GivenOpenConnection
 
 				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 					.CreateQueueable()
-					.WithOkResponse(CreateConnection.HttpRequestResponseContext)
-					.WithOkResponse(CreateConnection.HttpRequestResponseContext)
+					.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
+					.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
 					.Build();
 
 				_clientHost = Host.CreateDefaultBuilder()

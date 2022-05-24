@@ -1,7 +1,9 @@
-﻿using RTGS.DotNetSDK.IntegrationTests.Extensions;
+﻿using System.Text.Json;
+using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Handlers;
+using RTGS.IDCrypt.Service.Contracts.Connection;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers.GivenIdCryptCreateInvitationSentToOpenSubscriberConnection;
@@ -48,7 +50,7 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 	{
 		_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 			.Create()
-			.WithOkResponse(CreateConnection.HttpRequestResponseContext)
+			.WithOkResponse(CreateConnectionForBank.HttpRequestResponseContext)
 			.Build();
 
 		try
@@ -85,6 +87,31 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 		_clientHost?.Dispose();
 
 		_grpcServer.Reset();
+	}
+
+	[Fact]
+	public async Task WhenCallingIdCryptService_ThenContentIsExpected()
+	{
+		_toRtgsMessageHandler.SetupForMessage(handler =>
+			handler.ReturnExpectedAcknowledgementWithSuccess());
+
+		await _rtgsSubscriber.StartAsync(_allTestHandlers);
+
+		await _fromRtgsSender.SendAsync("idcrypt.createinvitation.v1", ValidMessages.IdCryptCreateInvitationRequestV1);
+
+		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
+
+		var actualContent = await _idCryptServiceHttpHandler.Requests[CreateConnectionForBank.Path]
+			.Single().Content!.ReadAsStringAsync();
+
+		var actualRequest = JsonSerializer.Deserialize<CreateConnectionInvitationForBankRequest>(actualContent);
+
+		var expectedRequest = new CreateConnectionInvitationForBankRequest
+		{
+			RtgsGlobalId = "RTGS:GB177550GB"
+		};
+
+		actualRequest.Should().BeEquivalentTo(expectedRequest);
 	}
 
 	[Fact]
@@ -135,7 +162,7 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 		using var _ = new AssertionScope();
 
 		var actualApiUri = _idCryptServiceHttpHandler
-			.Requests[CreateConnection.Path]
+			.Requests[CreateConnectionForBank.Path]
 			.Single()
 			.RequestUri!
 			.GetLeftPart(UriPartial.Authority);
@@ -156,7 +183,7 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 
 		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
 
-		var alias = CreateConnection.Response.Alias;
+		var alias = CreateConnectionForBank.Response.Alias;
 		var bankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId;
 
 		var expectedLogs = new List<LogEntry>
@@ -186,8 +213,8 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 
 		var expectedLogs = new List<LogEntry>
 		{
-			new("Sending CreateConnectionInvitation request to ID Crypt Service", LogEventLevel.Debug),
-			new("Sent CreateConnectionInvitation request to ID Crypt Service", LogEventLevel.Debug)
+			new("Sending create connection invitation for bank request to ID Crypt Service", LogEventLevel.Debug),
+			new("Sent create connection invitation for bank request to ID Crypt Service", LogEventLevel.Debug)
 		};
 
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug);
@@ -282,7 +309,7 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 
 		await _rtgsSubscriber.StopAsync();
 
-		var alias = CreateConnection.Response.Alias;
+		var alias = CreateConnectionForBank.Response.Alias;
 		var bankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId;
 
 		var expectedDebugLogs = new List<LogEntry>
@@ -338,7 +365,7 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 
 		await _rtgsSubscriber.StopAsync();
 
-		var alias = CreateConnection.Response.Alias;
+		var alias = CreateConnectionForBank.Response.Alias;
 		var bankPartnerRtgsGlobalId = ValidMessages.IdCryptCreateInvitationRequestV1.BankPartnerRtgsGlobalId;
 
 		var expectedDebugLogs = new List<LogEntry>

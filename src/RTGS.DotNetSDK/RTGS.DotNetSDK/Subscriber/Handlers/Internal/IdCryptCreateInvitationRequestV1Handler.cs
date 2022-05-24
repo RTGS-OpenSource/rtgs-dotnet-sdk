@@ -25,16 +25,16 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 
 	public async Task HandleMessageAsync(IdCryptCreateInvitationRequestV1 createInvitationRequest)
 	{
-		var invitation = await CreateIdCryptInvitationAsync();
+		var invitation = await CreateIdCryptInvitationAsync(createInvitationRequest.BankPartnerRtgsGlobalId);
 
 		await SendInvitationToBankAsync(invitation, createInvitationRequest.BankPartnerRtgsGlobalId);
 	}
 
-	private async Task<CreateConnectionInvitationResponse> CreateIdCryptInvitationAsync()
+	private async Task<CreateConnectionInvitationResponse> CreateIdCryptInvitationAsync(string toRtgsGlobalId)
 	{
 		try
 		{
-			var invitation = await _idCryptServiceClient.CreateConnectionInvitationAsync();
+			var invitation = await _idCryptServiceClient.CreateConnectionInvitationForBankAsync(toRtgsGlobalId);
 
 			return invitation;
 		}
@@ -46,7 +46,7 @@ internal class IdCryptCreateInvitationRequestV1Handler : IIdCryptCreateInvitatio
 
 			_logger.LogError(
 				exception,
-				"Error occurred when sending CreateConnectionInvitation request to ID Crypt Service for invitation from bank");
+				"Error occurred when sending create connection invitation for bank request to ID Crypt Service");
 
 			throw exception;
 		}

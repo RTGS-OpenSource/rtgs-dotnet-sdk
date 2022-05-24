@@ -50,8 +50,8 @@ public class GivenServerStops : IAsyncLifetime
 
 			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 				.CreateQueueable()
-				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
-				.WithOkResponse(CreateConnection.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
+				.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()

@@ -17,7 +17,7 @@ public class GivenWrongRemoteHostAddress
 
 		var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
 			.Create()
-			.WithOkResponse(CreateConnection.HttpRequestResponseContext)
+			.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
 			.Build();
 
 		using var clientHost = Host.CreateDefaultBuilder()
