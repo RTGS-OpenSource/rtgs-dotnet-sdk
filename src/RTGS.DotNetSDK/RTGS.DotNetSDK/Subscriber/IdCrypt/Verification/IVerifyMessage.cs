@@ -1,10 +1,11 @@
-﻿using RTGS.Public.Payment.V4;
+﻿namespace RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
 
-namespace RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
-
-internal interface IVerifyMessage
+internal interface IVerifyMessage<in TMessage>
 {
-	string MessageIdentifier { get; }
-
-	Task VerifyMessageAsync(RtgsMessage rtgsMessage, CancellationToken cancellationToken = default);
+	Task<bool> VerifyMessageAsync(
+		TMessage message,
+		string privateSignature,
+		string alias,
+		string fromRtgsGlobalId,
+		CancellationToken cancellationToken = default);
 }

@@ -88,7 +88,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 		await _rtgsSubscriber.StopAsync();
 
 		_serilogContext
-			.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
+			.LogsFor($"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter", LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
 				$"Private signature not found on {subscriberAction.MessageIdentifier} message, yet was expected",
 				LogEventLevel.Error));
@@ -114,7 +114,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		_serilogContext
 			.LogsFor(
-				$"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier",
+				$"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter",
 				LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
 				$"Alias not found on {subscriberAction.MessageIdentifier} message, yet was expected",
@@ -141,7 +141,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		_serilogContext
 			.LogsFor(
-				$"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier",
+				$"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter",
 				LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
 				$"From RTGS Global ID not found on {subscriberAction.MessageIdentifier} message, yet was expected",
@@ -169,7 +169,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		await _rtgsSubscriber.StopAsync();
 
-		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should()
+		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
 			.Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
 	}
 
@@ -194,7 +194,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		await _rtgsSubscriber.StopAsync();
 
-		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should()
+		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
 			.Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
 	}
 
@@ -219,7 +219,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		await _rtgsSubscriber.StopAsync();
 
-		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should()
+		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
 			.Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
 	}
 
@@ -243,7 +243,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 		await _rtgsSubscriber.StopAsync();
 
 		_serilogContext
-			.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
+			.LogsFor($"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter", LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
 				$"Private signature not found on {subscriberAction.MessageIdentifier} message, yet was expected",
 				LogEventLevel.Error));
@@ -268,7 +268,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		await _rtgsSubscriber.StopAsync();
 
-		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
+		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter", LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
 				$"Alias not found on {subscriberAction.MessageIdentifier} message, yet was expected",
 				LogEventLevel.Error));
@@ -293,7 +293,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		await _rtgsSubscriber.StopAsync();
 
-		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.{subscriberAction.MessageIdentifier}MessageVerifier", LogEventLevel.Error)
+		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter", LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
 				$"From RTGS Global ID not found on {subscriberAction.MessageIdentifier} message, yet was expected",
 				LogEventLevel.Error));
@@ -321,7 +321,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		await _rtgsSubscriber.StopAsync();
 
-		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should()
+		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
 			.Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
 	}
 
@@ -347,7 +347,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		await _rtgsSubscriber.StopAsync();
 
-		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should()
+		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
 			.Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
 	}
 
@@ -373,7 +373,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		await _rtgsSubscriber.StopAsync();
 
-		raisedException.Should().BeOfType<RtgsSubscriberException>().Which.Message.Should()
+		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
 			.Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
 	}
 }

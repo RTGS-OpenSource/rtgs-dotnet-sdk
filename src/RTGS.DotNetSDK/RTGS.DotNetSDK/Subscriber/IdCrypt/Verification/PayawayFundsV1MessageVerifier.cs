@@ -1,14 +1,11 @@
-﻿using System.Text.Json;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Exceptions;
-using RTGS.IDCrypt.Service.Contracts.Message.Verify;
 using RTGS.Public.Messages.Subscriber;
-using RTGS.Public.Payment.V4;
 
 namespace RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
 
-internal class PayawayFundsV1MessageVerifier : IVerifyMessage
+internal class PayawayFundsV1MessageVerifier : IVerifyMessage<PayawayFundsV1>
 {
 	private readonly IIdCryptServiceClient _idCryptServiceClient;
 	private readonly ILogger<PayawayFundsV1MessageVerifier> _logger;
@@ -19,45 +16,19 @@ internal class PayawayFundsV1MessageVerifier : IVerifyMessage
 		_logger = logger;
 	}
 
-	public string MessageIdentifier => nameof(PayawayFundsV1);
-
-	public async Task VerifyMessageAsync(
-		RtgsMessage rtgsMessage,
+	public async Task<bool> VerifyMessageAsync(
+		PayawayFundsV1 message,
+		string privateSignature,
+		string alias,
+		string fromRtgsGlobalId,
 		CancellationToken cancellationToken = default)
 	{
-		ArgumentNullException.ThrowIfNull(rtgsMessage);
+		var messageToVerify = message?.FIToFICstmrCdtTrf;
 
-		if (!rtgsMessage.Headers.TryGetValue("pairwise-did-signature", out var privateSignature)
-			|| string.IsNullOrEmpty(privateSignature))
-		{
-			_logger.LogError("Private signature not found on {MessageIdentifier} message, yet was expected", MessageIdentifier);
-		}
-
-		if (!rtgsMessage.Headers.TryGetValue("alias", out var alias)
-			|| string.IsNullOrEmpty(alias))
-		{
-			_logger.LogError("Alias not found on {MessageIdentifier} message, yet was expected", MessageIdentifier);
-		}
-
-		if (!rtgsMessage.Headers.TryGetValue("from-rtgs-global-id", out var fromRtgsGlobalId)
-			|| string.IsNullOrEmpty(fromRtgsGlobalId))
-		{
-			_logger.LogError("From RTGS Global ID not found on {MessageIdentifier} message, yet was expected", MessageIdentifier);
-		}
-
-		if (string.IsNullOrEmpty(privateSignature) || string.IsNullOrEmpty(alias) || string.IsNullOrEmpty(fromRtgsGlobalId))
-		{
-			throw new RtgsSubscriberException($"Unable to verify {MessageIdentifier} message due to missing headers.");
-		}
-
-		var payawayFundsMessage = JsonSerializer.Deserialize<PayawayFundsV1>(rtgsMessage.Data.Span);
-
-		var message = payawayFundsMessage?.FIToFICstmrCdtTrf;
-
-		VerifyResponse response;
 		try
 		{
-			response = await _idCryptServiceClient.VerifyMessageAsync(fromRtgsGlobalId, message, privateSignature, alias, cancellationToken);
+			var response = await _idCryptServiceClient.VerifyMessageAsync(fromRtgsGlobalId, messageToVerify, privateSignature, alias, cancellationToken);
+			return response.Verified;
 		}
 		catch (Exception innerException)
 		{
@@ -66,15 +37,6 @@ internal class PayawayFundsV1MessageVerifier : IVerifyMessage
 			var exception = new RtgsSubscriberException(errorMessage, innerException);
 
 			_logger.LogError(exception, errorMessage);
-
-			throw exception;
-		}
-
-		if (!response.Verified)
-		{
-			var exception = new RtgsSubscriberException($"Verification of {MessageIdentifier} message failed.");
-
-			_logger.LogError(exception, "Verification of {MessageIdentifier} message private signature failed", MessageIdentifier);
 
 			throw exception;
 		}

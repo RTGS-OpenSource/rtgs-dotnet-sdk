@@ -17,10 +17,16 @@ public static class ITestCorrelatorContextExtensions
 	public static IEnumerable<LogEntry> LogsFor(this ITestCorrelatorContext testCorrelatorContext, string sourceContext, LogEventLevel logEventLevel) =>
 		Logs(testCorrelatorContext, sourceContext, logEventLevel);
 
+	public static IEnumerable<LogEntry> LogsForNamespace(this ITestCorrelatorContext testCorrelatorContext, string @namespace, LogEventLevel logEventLevel) =>
+		Logs(testCorrelatorContext, logEventLevel, logEvent => GetSourceContext(logEvent).StartsWith(@namespace));
+
 	private static IEnumerable<LogEntry> Logs(ITestCorrelatorContext testCorrelatorContext, string sourceContext, LogEventLevel logEventLevel) =>
+		Logs(testCorrelatorContext, logEventLevel, logEvent => GetSourceContext(logEvent) == sourceContext);
+
+	private static IEnumerable<LogEntry> Logs(ITestCorrelatorContext testCorrelatorContext, LogEventLevel logEventLevel, Func<LogEvent, bool> expression) =>
 		TestCorrelator
 			.GetLogEventsFromContextGuid(testCorrelatorContext.Guid)
-			.Where(logEvent => GetSourceContext(logEvent) == sourceContext)
+			.Where(expression)
 			.Where(logEvent => logEvent.Level == logEventLevel)
 			.Select(logEvent =>
 			{
