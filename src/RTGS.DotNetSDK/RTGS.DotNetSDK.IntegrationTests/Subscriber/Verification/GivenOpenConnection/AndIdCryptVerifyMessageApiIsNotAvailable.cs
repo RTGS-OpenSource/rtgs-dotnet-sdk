@@ -43,7 +43,6 @@ public sealed class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, ICla
 					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("https://id-crypt-service"))
-				.EnableMessageSigning()
 				.Build();
 
 			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory

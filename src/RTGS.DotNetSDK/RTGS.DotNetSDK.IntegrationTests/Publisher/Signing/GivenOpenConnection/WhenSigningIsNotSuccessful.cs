@@ -48,7 +48,6 @@ public sealed class WhenSigningIsNotSuccessful : IDisposable, IClassFixture<Grpc
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 				.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
-				.EnableMessageSigning()
 				.Build();
 
 			var idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory

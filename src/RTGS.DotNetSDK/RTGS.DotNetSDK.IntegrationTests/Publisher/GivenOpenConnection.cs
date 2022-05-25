@@ -16,7 +16,7 @@ public class GivenOpenConnection
 
 		private IRtgsPublisher _rtgsPublisher;
 		private ToRtgsMessageHandler _toRtgsMessageHandler;
-		private StatusCodeHttpHandler _idCryptServiceMessageHandler;
+		private StatusCodeHttpHandler _idCryptServiceHttpHandler;
 		private IHost _clientHost;
 
 		public AndShortTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
@@ -52,7 +52,7 @@ public class GivenOpenConnection
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
 					.Build();
 
-				_idCryptServiceMessageHandler = StatusCodeHttpHandlerBuilderFactory
+				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
 					.WithOkResponse(SignMessage.HttpRequestResponseContext)
 					.Build();
@@ -61,7 +61,7 @@ public class GivenOpenConnection
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 					.ConfigureServices(services => services
 						.AddRtgsPublisher(rtgsSdkOptions)
-						.AddTestIdCryptServiceHttpClient(_idCryptServiceMessageHandler))
+						.AddTestIdCryptServiceHttpClient(_idCryptServiceHttpHandler))
 					.UseSerilog()
 					.Build();
 
@@ -329,6 +329,8 @@ public class GivenOpenConnection
 				handler.ReturnUnexpectedAcknowledgementWithSuccess());
 			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
+			_idCryptServiceHttpHandler.Reset();
+
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnUnexpectedAcknowledgementWithSuccess());
 			await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
@@ -345,6 +347,8 @@ public class GivenOpenConnection
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithSuccess());
 			var sendResult1 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
+
+			_idCryptServiceHttpHandler.Reset();
 
 			_toRtgsMessageHandler.SetupForMessage(handler =>
 				handler.ReturnExpectedAcknowledgementWithDelay(TestWaitForAcknowledgementDuration.Add(TimeSpan.FromSeconds(1))));
@@ -420,6 +424,8 @@ public class GivenOpenConnection
 			var sendResult1 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 			sendResult1.Should().Be(SendResult.Timeout);
 
+			_idCryptServiceHttpHandler.Reset();
+
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
 			var sendResult2 = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
@@ -436,6 +442,8 @@ public class GivenOpenConnection
 				.Should()
 				.ThrowAsync<RpcException>();
 
+			_idCryptServiceHttpHandler.Reset();
+
 			_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
 			var sendResult = await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
@@ -450,8 +458,9 @@ public class GivenOpenConnection
 
 		private readonly GrpcServerFixture _grpcServer;
 
-		private IRtgsPublisher _rtgsPublisher;
+		private StatusCodeHttpHandler _idCryptServiceHttpHandler;
 		private IHost _clientHost;
+		private IRtgsPublisher _rtgsPublisher;
 
 		public AndLongTestWaitForAcknowledgementDuration(GrpcServerFixture grpcServer)
 		{
@@ -471,7 +480,7 @@ public class GivenOpenConnection
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.Build();
 
-				var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 					.Create()
 					.WithOkResponse(SignMessage.HttpRequestResponseContext)
 					.Build();
@@ -480,7 +489,7 @@ public class GivenOpenConnection
 					.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 					.ConfigureServices(services => services
 						.AddRtgsPublisher(rtgsSdkOptions)
-						.AddTestIdCryptServiceHttpClient(idCryptMessageHandler))
+						.AddTestIdCryptServiceHttpClient(_idCryptServiceHttpHandler))
 					.Build();
 
 				_rtgsPublisher = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
@@ -532,6 +541,8 @@ public class GivenOpenConnection
 
 			// Once the server has received the first message we know the semaphore is in use...
 			firstMessageReceivedSignal.Wait(TestWaitForSendDuration);
+
+			_idCryptServiceHttpHandler.Reset();
 
 			// ...we can send the second message knowing it will be waiting due to the semaphore.
 			using var secondMessageCancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);
@@ -591,6 +602,8 @@ public class GivenOpenConnection
 
 			// Once the server has received the first message we know the semaphore is in use...
 			firstMessageReceivedSignal.Wait(TestWaitForSendDuration);
+
+			_idCryptServiceHttpHandler.Reset();
 
 			// ...we can send the second message knowing it will be waiting due to the semaphore.
 			using var secondMessageCancellationTokenSource = new CancellationTokenSource(TestWaitForSendDuration);

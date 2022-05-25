@@ -57,6 +57,8 @@ public class PublisherActionFailedAcknowledgementLogsData : BasePublisherActionD
 			PublisherActions.PayawayCreate,
 			new List<LogEntry>
 			{
+				new("Signing PayawayCreationV1 message", LogEventLevel.Information),
+				new("Signed PayawayCreationV1 message", LogEventLevel.Information),
 				new("Sending PayawayCreationV1 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Information),
 				new("Sent PayawayCreationV1 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Information),
 				new("Received PayawayCreationV1 acknowledgement (rejected) from RTGS (SendPayawayCreateAsync)", LogEventLevel.Error)
@@ -67,6 +69,8 @@ public class PublisherActionFailedAcknowledgementLogsData : BasePublisherActionD
 			PublisherActions.PayawayConfirmation,
 			new List<LogEntry>
 			{
+				new("Signing PayawayConfirmationV1 message", LogEventLevel.Information),
+				new("Signed PayawayConfirmationV1 message", LogEventLevel.Information),
 				new("Sending PayawayConfirmationV1 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
 				new("Sent PayawayConfirmationV1 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
 				new("Received PayawayConfirmationV1 acknowledgement (rejected) from RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Error)
@@ -77,6 +81,8 @@ public class PublisherActionFailedAcknowledgementLogsData : BasePublisherActionD
 			PublisherActions.PayawayRejection,
 			new List<LogEntry>
 			{
+				new("Signing PayawayRejectionV1 message", LogEventLevel.Information),
+				new("Signed PayawayRejectionV1 message", LogEventLevel.Information),
 				new("Sending PayawayRejectionV1 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information),
 				new("Sent PayawayRejectionV1 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information),
 				new("Received PayawayRejectionV1 acknowledgement (rejected) from RTGS (SendPayawayRejectionAsync)", LogEventLevel.Error)
