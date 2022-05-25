@@ -15,7 +15,7 @@ public class GivenWrongRemoteHostAddress
 				new Uri("https://id-crypt-service"))
 			.Build();
 
-		var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+		var idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 			.Create()
 			.WithOkResponse(CreateConnectionForRtgs.HttpRequestResponseContext)
 			.Build();
@@ -24,7 +24,7 @@ public class GivenWrongRemoteHostAddress
 			.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 			.ConfigureServices(services => services
 				.AddRtgsPublisher(rtgsSdkOptions)
-				.AddTestIdCryptServiceHttpClient(idCryptMessageHandler))
+				.AddTestIdCryptServiceHttpClient(idCryptServiceHttpHandler))
 			.UseSerilog()
 			.Build();
 

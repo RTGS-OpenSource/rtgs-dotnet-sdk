@@ -50,7 +50,7 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 					new Uri("https://id-crypt-service"))
 				.Build();
 
-			var idCryptMessageHandler = StatusCodeHttpHandlerBuilderFactory
+			var idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
 				.WithOkResponse(VerifyMessageSuccessfully.HttpRequestResponseContext)
 				.Build();
@@ -59,7 +59,7 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 				.ConfigureServices((_, services) => services
 					.AddRtgsSubscriber(rtgsSdkOptions)
-					.AddTestIdCryptServiceHttpClient(idCryptMessageHandler))
+					.AddTestIdCryptServiceHttpClient(idCryptServiceHttpHandler))
 				.UseSerilog()
 				.Build();
 
@@ -94,8 +94,9 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 		var handler = _allTestHandlers.GetHandler<TRequest>();
 		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header => header.Key == "rtgs-global-id"
-																		&& header.Value == TestData.ValidMessages.RtgsGlobalId);
+		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header =>
+			header.Key == "rtgs-global-id"
+			&& header.Value == TestData.ValidMessages.RtgsGlobalId);
 	}
 
 	[Theory]
@@ -110,9 +111,9 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 
 		using var _ = new AssertionScope();
 
-		_fromRtgsSender.Acknowledgements
-			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
-													   && acknowledgement.Success);
+		_fromRtgsSender.Acknowledgements.Should().ContainSingle(acknowledgement =>
+			acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
+			&& acknowledgement.Success);
 
 		var handler = _allTestHandlers.GetHandler<TMessage>();
 		handler.WaitForMessage(WaitForReceivedMessageDuration);
@@ -260,9 +261,9 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 
 		await _rtgsSubscriber.StopAsync();
 
-		_fromRtgsSender.Acknowledgements
-			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
-													   && !acknowledgement.Success);
+		_fromRtgsSender.Acknowledgements.Should().ContainSingle(acknowledgement =>
+			acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
+			&& !acknowledgement.Success);
 	}
 
 	[Fact]
@@ -314,9 +315,9 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 
 		await _rtgsSubscriber.StopAsync();
 
-		_fromRtgsSender.Acknowledgements
-			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
-													   && !acknowledgement.Success);
+		_fromRtgsSender.Acknowledgements.Should().ContainSingle(acknowledgement =>
+			acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
+			&& !acknowledgement.Success);
 	}
 
 	[Theory]
@@ -331,16 +332,16 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 			"cannot be handled",
 			TestData.ValidMessages.AtomicLockResponseV1);
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 		var handler = _allTestHandlers.GetHandler<TRequest>();
 		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
-		handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
-
 		await _rtgsSubscriber.StopAsync();
+
+		handler.ReceivedMessage.Should().BeEquivalentTo(subscriberAction.Message);
 	}
 
 	[Fact]
@@ -412,16 +413,19 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 		{
 			{ "public-did-signature", "public-did-signature" },
 			{ "pairwise-did-signature", "pairwise-did-signature" },
-			{ "alias", "alias" }
+			{ "alias", "alias" },
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(nameof(PayawayFundsV1), TestData.ValidMessages.PayawayFunds, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
+		var payawayFundsHandler = testHandlers.OfType<AllTestHandlers.TestPayawayFundsV1Handler>().Single();
+		payawayFundsHandler.WaitForMessage(WaitForReceivedMessageDuration);
+
 		await _rtgsSubscriber.StopAsync();
 
-		var payawayFundsHandler = testHandlers.OfType<AllTestHandlers.TestPayawayFundsV1Handler>().Single();
 		payawayFundsHandler.ReceivedMessage.Should().BeEquivalentTo(TestData.ValidMessages.PayawayFunds);
 	}
 
@@ -435,15 +439,16 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 
 		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
-		var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		var sentRtgsMessage = await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 		using var _ = new AssertionScope();
 
-		_fromRtgsSender.Acknowledgements
-			.Should().ContainSingle(acknowledgement => acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
-													   && acknowledgement.Success);
+		_fromRtgsSender.Acknowledgements.Should().ContainSingle(acknowledgement =>
+			acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
+			&& acknowledgement.Success);
+
 		var handler = _allTestHandlers.GetHandler<TRequest>();
 		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
@@ -489,7 +494,7 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 
 		await _fromRtgsSender.SendAsync("will-throw", TestData.ValidMessages.AtomicLockResponseV1);
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message);
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 

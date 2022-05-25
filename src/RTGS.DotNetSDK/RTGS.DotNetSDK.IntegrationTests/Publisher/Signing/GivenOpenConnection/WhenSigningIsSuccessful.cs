@@ -13,7 +13,7 @@ public sealed class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcSer
 	private readonly ITestCorrelatorContext _serilogContext;
 
 	private RtgsSdkOptions _rtgsSdkOptions;
-	private StatusCodeHttpHandler _idCryptServiceMessageHandler;
+	private StatusCodeHttpHandler _idCryptServiceHttpHandler;
 	private IHost _clientHost;
 	private IRtgsPublisher _rtgsPublisher;
 	private ToRtgsMessageHandler _toRtgsMessageHandler;
@@ -49,10 +49,9 @@ public sealed class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcSer
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 				.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 				.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
-				.EnableMessageSigning()
 				.Build();
 
-			_idCryptServiceMessageHandler = StatusCodeHttpHandlerBuilderFactory
+			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
 				.WithOkResponse(SignMessage.HttpRequestResponseContext)
 				.Build();
@@ -61,7 +60,7 @@ public sealed class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcSer
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 				.ConfigureServices(services => services
 					.AddRtgsPublisher(_rtgsSdkOptions)
-					.AddTestIdCryptServiceHttpClient(_idCryptServiceMessageHandler))
+					.AddTestIdCryptServiceHttpClient(_idCryptServiceHttpHandler))
 				.UseSerilog()
 				.Build();
 
@@ -91,7 +90,7 @@ public sealed class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcSer
 
 		await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
-		var actualApiUri = _idCryptServiceMessageHandler.Requests[SignMessage.Path]
+		var actualApiUri = _idCryptServiceHttpHandler.Requests[SignMessage.Path]
 			.Single()
 			.RequestUri
 			!.GetLeftPart(UriPartial.Authority);
@@ -107,7 +106,7 @@ public sealed class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcSer
 
 		await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
-		_idCryptServiceMessageHandler.Requests.Should().ContainKey("/api/message/sign");
+		_idCryptServiceHttpHandler.Requests.Should().ContainKey("/api/message/sign");
 	}
 
 	[Theory]
@@ -118,7 +117,7 @@ public sealed class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcSer
 
 		await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
-		var requestContent = await _idCryptServiceMessageHandler
+		var requestContent = await _idCryptServiceHttpHandler
 			.Requests[SignMessage.Path].Single()
 			.Content!.ReadAsStringAsync();
 

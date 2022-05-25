@@ -11,13 +11,11 @@ internal class DataVerifyingMessageAdapter<TMessage> : IMessageAdapter<TMessage>
 {
 	private readonly ILogger<DataVerifyingMessageAdapter<TMessage>> _logger;
 	private readonly IVerifyMessage<TMessage> _verifier;
-	private readonly RtgsSdkOptions _options;
 
-	public DataVerifyingMessageAdapter(ILogger<DataVerifyingMessageAdapter<TMessage>> logger, IVerifyMessage<TMessage> verifier, RtgsSdkOptions options)
+	public DataVerifyingMessageAdapter(ILogger<DataVerifyingMessageAdapter<TMessage>> logger, IVerifyMessage<TMessage> verifier)
 	{
 		_logger = logger;
 		_verifier = verifier;
-		_options = options;
 	}
 
 	public string MessageIdentifier => typeof(TMessage).Name;
@@ -28,10 +26,7 @@ internal class DataVerifyingMessageAdapter<TMessage> : IMessageAdapter<TMessage>
 
 		var deserializedMessage = JsonSerializer.Deserialize<TMessage>(rtgsMessage.Data.Span);
 
-		if (_options.UseMessageSigning)
-		{
-			await VerifyMessageAsync(rtgsMessage, deserializedMessage);
-		}
+		await VerifyMessageAsync(rtgsMessage, deserializedMessage);
 
 		await handler.HandleMessageAsync(deserializedMessage);
 	}

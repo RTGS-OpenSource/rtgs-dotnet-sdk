@@ -57,6 +57,8 @@ public class PublisherActionRpcExceptionLogsData : BasePublisherActionData
 			PublisherActions.PayawayCreate,
 			new List<LogEntry>
 			{
+				new("Signing PayawayCreationV1 message", LogEventLevel.Information),
+				new("Signed PayawayCreationV1 message", LogEventLevel.Information),
 				new("Sending PayawayCreationV1 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Information),
 				new("Sent PayawayCreationV1 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Information),
 				new("Error received when sending PayawayCreationV1 to RTGS (SendPayawayCreateAsync)", LogEventLevel.Error, typeof(RpcException))
@@ -67,6 +69,8 @@ public class PublisherActionRpcExceptionLogsData : BasePublisherActionData
 			PublisherActions.PayawayConfirmation,
 			new List<LogEntry>
 			{
+				new("Signing PayawayConfirmationV1 message", LogEventLevel.Information),
+				new("Signed PayawayConfirmationV1 message", LogEventLevel.Information),
 				new("Sending PayawayConfirmationV1 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
 				new("Sent PayawayConfirmationV1 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Information),
 				new("Error received when sending PayawayConfirmationV1 to RTGS (SendPayawayConfirmationAsync)", LogEventLevel.Error, typeof(RpcException))
@@ -77,6 +81,8 @@ public class PublisherActionRpcExceptionLogsData : BasePublisherActionData
 			PublisherActions.PayawayRejection,
 			new List<LogEntry>
 			{
+				new("Signing PayawayRejectionV1 message", LogEventLevel.Information),
+				new("Signed PayawayRejectionV1 message", LogEventLevel.Information),
 				new("Sending PayawayRejectionV1 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information),
 				new("Sent PayawayRejectionV1 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Information),
 				new("Error received when sending PayawayRejectionV1 to RTGS (SendPayawayRejectionAsync)", LogEventLevel.Error, typeof(RpcException))
