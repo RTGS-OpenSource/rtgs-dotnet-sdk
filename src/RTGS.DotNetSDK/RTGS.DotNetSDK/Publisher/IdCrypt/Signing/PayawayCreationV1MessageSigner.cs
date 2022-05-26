@@ -4,25 +4,23 @@ using RTGS.Public.Messages.Publisher;
 
 namespace RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 
-internal class PayawayRejectMessageSigner : ISignMessage<PayawayRejectionV1>
+internal class PayawayCreationV1MessageSigner : ISignMessage<PayawayCreationV1>
 {
 	private readonly IIdCryptServiceClient _idCryptServiceClient;
 
-	public PayawayRejectMessageSigner(IIdCryptServiceClient idCryptServiceClient)
+	public PayawayCreationV1MessageSigner(IIdCryptServiceClient idCryptServiceClient)
 	{
 		_idCryptServiceClient = idCryptServiceClient;
 	}
 
 	public async Task<SignMessageResponse> SignAsync(
 		string toRtgsGlobalId,
-		PayawayRejectionV1 message,
+		PayawayCreationV1 message,
 		CancellationToken cancellationToken = default)
 	{
 		ArgumentNullException.ThrowIfNull(message);
 
-		var documentToSign = new Dictionary<string, object> { { "reason", message.MsgRjctn?.Rsn?.RsnDesc } };
-
-		var response = await _idCryptServiceClient.SignMessageAsync(toRtgsGlobalId, documentToSign, cancellationToken);
+		var response = await _idCryptServiceClient.SignMessageAsync(toRtgsGlobalId, message.FIToFICstmrCdtTrf, cancellationToken);
 
 		return response;
 	}
