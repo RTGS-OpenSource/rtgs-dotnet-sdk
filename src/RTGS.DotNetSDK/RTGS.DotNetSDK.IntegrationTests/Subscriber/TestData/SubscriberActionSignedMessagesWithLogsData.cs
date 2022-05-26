@@ -16,9 +16,9 @@ public class SubscriberActionSignedMessagesWithLogsData : BaseSignedSubscriberAc
 		new()
 		{
 			new("RTGS Subscriber started", LogEventLevel.Information),
-			new($"{nameof(T)} message received from RTGS", LogEventLevel.Information),
-			new($"Verifying {nameof(T)} message", LogEventLevel.Information),
-			new($"Verified {nameof(T)} message", LogEventLevel.Information),
+			new($"{typeof(T).Name} message received from RTGS", LogEventLevel.Information),
+			new($"Verifying {typeof(T).Name} message", LogEventLevel.Information),
+			new($"Verified {typeof(T).Name} message", LogEventLevel.Information),
 			new("RTGS Subscriber stopping", LogEventLevel.Information),
 			new("RTGS Subscriber stopped", LogEventLevel.Information)
 		};
