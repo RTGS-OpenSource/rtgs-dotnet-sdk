@@ -109,6 +109,15 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 					_processingSignal.Release();
 				}
 			}
+
+			IsRunning = false;
+
+			if (!_isStopRequested)
+			{
+				var ex = new RtgsSubscriberException("Call completed unexpectedly");
+				_logger.LogError(ex, "The subscriber was not stopped but the call was unexpectedly completed");
+				RaiseFatalExceptionOccurredEvent(ex);
+			}
 		}
 		catch (RpcException ex)
 		{
