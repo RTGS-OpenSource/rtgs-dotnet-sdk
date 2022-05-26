@@ -20,7 +20,11 @@ internal class PayawayRejectMessageSigner : ISignMessage<PayawayRejectionV1>
 	{
 		ArgumentNullException.ThrowIfNull(message);
 
-		var documentToSign = new Dictionary<string, object> { { "reason", message.MsgRjctn?.Rsn?.RsnDesc } };
+		var documentToSign = new Dictionary<string, object>
+		{
+			{ "ref", message.MsgRjctn?.RltdRef.Ref },
+			{ "reason", message.MsgRjctn?.Rsn?.RjctgPtyRsn }
+		};
 
 		var response = await _idCryptServiceClient.SignMessageAsync(toRtgsGlobalId, documentToSign, cancellationToken);
 

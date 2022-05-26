@@ -116,7 +116,7 @@ public sealed class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, ICla
 
 		await _rtgsSubscriber.StopAsync();
 
-		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.Subscriber.IdCrypt.Verification.PayawayFundsV1MessageVerifier", LogEventLevel.Error);
+		var errorLogs = _serilogContext.LogsForNamespace("RTGS.DotNetSDK.Subscriber.IdCrypt.Verification", LogEventLevel.Error);
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
 			"Error occurred when sending VerifyMessage request to ID Crypt Service",
 			LogEventLevel.Error,

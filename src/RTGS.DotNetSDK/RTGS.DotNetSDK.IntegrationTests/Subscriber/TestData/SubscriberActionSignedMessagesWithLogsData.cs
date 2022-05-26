@@ -5,13 +5,21 @@ public class SubscriberActionSignedMessagesWithLogsData : BaseSignedSubscriberAc
 	public override ISubscriberAction<PayawayFundsV1> PayawayFundsV1 =>
 		new SubscriberActionWithLogs<PayawayFundsV1>(
 			SubscriberActions.PayawayFundsV1,
-			new List<LogEntry>
-			{
-				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("PayawayFundsV1 message received from RTGS", LogEventLevel.Information),
-				new("Verifying PayawayFundsV1 message", LogEventLevel.Information),
-				new("Verified PayawayFundsV1 message", LogEventLevel.Information),
-				new("RTGS Subscriber stopping", LogEventLevel.Information),
-				new("RTGS Subscriber stopped", LogEventLevel.Information)
-			});
+			StandardLogs<PayawayFundsV1>());
+
+	public override ISubscriberAction<MessageRejectV1> MessageRejectV1 =>
+		new SubscriberActionWithLogs<MessageRejectV1>(
+			SubscriberActions.MessageRejectV1,
+			StandardLogs<MessageRejectV1>());
+
+	private List<LogEntry> StandardLogs<T>() =>
+		new()
+		{
+			new("RTGS Subscriber started", LogEventLevel.Information),
+			new($"{nameof(T)} message received from RTGS", LogEventLevel.Information),
+			new($"Verifying {nameof(T)} message", LogEventLevel.Information),
+			new($"Verified {nameof(T)} message", LogEventLevel.Information),
+			new("RTGS Subscriber stopping", LogEventLevel.Information),
+			new("RTGS Subscriber stopped", LogEventLevel.Information)
+		};
 }

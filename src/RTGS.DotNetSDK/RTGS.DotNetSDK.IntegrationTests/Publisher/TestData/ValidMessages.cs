@@ -137,7 +137,7 @@ public static class ValidMessages
 		MsgRjctn = new Admi00200101
 		{
 			RltdRef = new MessageReference { Ref = "payaway-id" },
-			Rsn = new RejectionReason2 { RsnDesc = "Having a bad day" }
+			Rsn = new RejectionReason2 { RjctgPtyRsn = "Having a bad day" }
 		},
 		ToRtgsGlobalId = "RTGS:US67890USD"
 	};
@@ -148,7 +148,8 @@ public static class ValidMessages
 	{
 		public static readonly Dictionary<string, object> PayawayRejectionDocument = new()
 		{
-			{ "reason", PayawayRejection.MsgRjctn.Rsn.RsnDesc }
+			{ "ref", PayawayRejection.MsgRjctn.RltdRef.Ref },
+			{ "reason", PayawayRejection.MsgRjctn.Rsn.RjctgPtyRsn }
 		};
 
 		public static readonly Dictionary<string, object> PayawayConfirmationDocument = new()

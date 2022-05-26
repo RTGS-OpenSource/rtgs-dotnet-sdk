@@ -130,7 +130,7 @@ public class GivenUnstableOpenConnection : IAsyncLifetime
 
 	private async Task EnsureSubscriberIsRunning()
 	{
-		await _fromRtgsSender.SendAsync(nameof(MessageRejectV1), TestData.ValidMessages.MessageRejected);
+		await _fromRtgsSender.SendAsync(nameof(EarmarkCompleteV1), TestData.ValidMessages.EarmarkCompleteV1);
 
 		_rtgsSubscriber.IsRunning.Should().BeTrue();
 	}
