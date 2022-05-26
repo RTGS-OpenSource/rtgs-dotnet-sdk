@@ -56,9 +56,9 @@ public static class ServiceCollectionExtensions
 
 		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
 
-		serviceCollection.AddSingleton<ISignMessage<PayawayCreationV1>, PayawayCreateMessageSigner>();
-		serviceCollection.AddSingleton<ISignMessage<PayawayRejectionV1>, PayawayRejectMessageSigner>();
-		serviceCollection.AddSingleton<ISignMessage<PayawayConfirmationV1>, PayawayConfirmMessageSigner>();
+		serviceCollection.AddSingleton<ISignMessage<PayawayCreationV1>, PayawayCreationV1MessageSigner>();
+		serviceCollection.AddSingleton<ISignMessage<PayawayRejectionV1>, PayawayRejectionV1MessageSigner>();
+		serviceCollection.AddSingleton<ISignMessage<PayawayConfirmationV1>, PayawayConfirmationV1MessageSigner>();
 
 		serviceCollection
 			.AddHttpClient("IdCryptServiceClient", client =>

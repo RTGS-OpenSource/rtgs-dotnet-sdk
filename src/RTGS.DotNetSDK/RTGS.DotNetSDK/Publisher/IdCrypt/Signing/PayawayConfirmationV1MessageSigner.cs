@@ -4,11 +4,11 @@ using RTGS.Public.Messages.Publisher;
 
 namespace RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 
-internal class PayawayConfirmMessageSigner : ISignMessage<PayawayConfirmationV1>
+internal class PayawayConfirmationV1MessageSigner : ISignMessage<PayawayConfirmationV1>
 {
 	private readonly IIdCryptServiceClient _idCryptServiceClient;
 
-	public PayawayConfirmMessageSigner(IIdCryptServiceClient idCryptServiceClient)
+	public PayawayConfirmationV1MessageSigner(IIdCryptServiceClient idCryptServiceClient)
 	{
 		_idCryptServiceClient = idCryptServiceClient;
 	}
