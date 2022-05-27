@@ -1,12 +1,14 @@
 ﻿namespace RTGS.DotNetSDK.IntegrationTests.TestServer;
 
-public class GrpcServerFixture : IAsyncLifetime
+public class GrpcServerFixture : GrpcServerFixture<TestPaymentService> { }
+
+public class GrpcServerFixture<TPaymentService> : IAsyncLifetime where TPaymentService : class
 {
-	private readonly GrpcTestServer _server;
+	private readonly GrpcTestServer<TPaymentService> _server;
 
 	public GrpcServerFixture()
 	{
-		_server = new GrpcTestServer();
+		_server = new GrpcTestServer<TPaymentService>();
 	}
 
 	public Uri ServerUri { get; private set; }

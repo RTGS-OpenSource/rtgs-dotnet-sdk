@@ -114,8 +114,9 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 
 			if (!_isStopRequested)
 			{
-				var ex = new RtgsSubscriberException("Call completed unexpectedly");
-				_logger.LogError(ex, "The subscriber was not stopped but the call was unexpectedly completed");
+				const string message = "The call completed although stop was not requested";
+				var ex = new RtgsSubscriberException(message);
+				_logger.LogError(ex, message);
 				RaiseFatalExceptionOccurredEvent(ex);
 			}
 		}
