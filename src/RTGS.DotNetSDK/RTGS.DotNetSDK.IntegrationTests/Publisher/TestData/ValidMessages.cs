@@ -176,7 +176,10 @@ public static class ValidMessages
 
 		public static readonly Dictionary<string, object> PayawayConfirmationDocument = new()
 		{
-			{ "payawayId",  PayawayConfirmation.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Ntry[0]?.NtryDtls[0].TxDtls[0].Refs?.EndToEndId},
+			{
+				"payawayId",
+				PayawayConfirmation.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Ntry[0]?.NtryDtls[0].TxDtls[0].Refs?.EndToEndId
+			},
 			{ "iban", PayawayConfirmation.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Acct?.Id?.IBAN },
 			{ "amount", PayawayConfirmation.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Ntry[0]?.Amt?.Value }
 		};
