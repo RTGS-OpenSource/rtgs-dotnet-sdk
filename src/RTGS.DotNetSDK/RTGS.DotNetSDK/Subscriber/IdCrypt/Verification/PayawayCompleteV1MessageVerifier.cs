@@ -25,6 +25,7 @@ internal class PayawayCompleteV1MessageVerifier : IVerifyMessage<PayawayComplete
 	{
 		var messageToVerify = new Dictionary<string, object>
 		{
+			{ "payawayId", message.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Ntry[0]?.NtryDtls[0]?.TxDtls[0]?.Refs?.EndToEndId},
 			{ "iban", message.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Acct?.Id?.IBAN },
 			{ "amount", message.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Ntry[0]?.Amt?.Value }
 		};

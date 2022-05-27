@@ -126,7 +126,29 @@ public static class ValidMessages
 				{
 					AddtlNtfctnInf = "additional-notification-info",
 					Acct = new() { Id = new() { IBAN = "iban" } },
-					Ntry = new[] { new ReportEntry11 { Amt = new() { Value = 9.99m } } }
+					Ntry = new[]
+					{
+						new ReportEntry11
+						{
+							Amt = new() { Value = 9.99m },
+							NtryDtls = new[]
+							{
+								new EntryDetails10
+								{
+									TxDtls = new[]
+									{
+										new EntryTransaction11
+										{
+											Refs = new TransactionReferences6
+											{
+												EndToEndId = "end-to-end-id"
+											}
+										}
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -154,8 +176,9 @@ public static class ValidMessages
 
 		public static readonly Dictionary<string, object> PayawayConfirmationDocument = new()
 		{
-			{ "iban", PayawayConfirmation.BkToCstmrDbtCdtNtfctn.Ntfctn[0].Acct.Id.IBAN },
-			{ "amount", PayawayConfirmation.BkToCstmrDbtCdtNtfctn.Ntfctn[0].Ntry[0].Amt.Value }
+			{ "payawayId",  PayawayConfirmation.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Ntry[0]?.NtryDtls[0].TxDtls[0].Refs?.EndToEndId},
+			{ "iban", PayawayConfirmation.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Acct?.Id?.IBAN },
+			{ "amount", PayawayConfirmation.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Ntry[0]?.Amt?.Value }
 		};
 
 		public static readonly FIToFICustomerCreditTransferV10 PayawayCreateDocument = PayawayCreation.FIToFICstmrCdtTrf;

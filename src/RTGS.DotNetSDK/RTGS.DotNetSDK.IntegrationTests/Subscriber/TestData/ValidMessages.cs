@@ -1,4 +1,5 @@
 ﻿using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
+using RTGS.ISO20022.Messages.Camt_054_001.V09;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
 
@@ -23,29 +24,29 @@ public static class ValidMessages
 
 	internal static readonly PayawayCompleteV1 PayawayComplete = new()
 	{
-		BkToCstmrDbtCdtNtfctn = new ISO20022.Messages.Camt_054_001.V09.BankToCustomerDebitCreditNotificationV09
+		BkToCstmrDbtCdtNtfctn = new BankToCustomerDebitCreditNotificationV09
 		{
-			GrpHdr = new ISO20022.Messages.Camt_054_001.V09.GroupHeader81
-			{
-				MsgId = "message-id"
-			},
+			GrpHdr = new GroupHeader81 { MsgId = "message-id" },
 			Ntfctn = new[]
 			{
-				new ISO20022.Messages.Camt_054_001.V09.AccountNotification19
+				new AccountNotification19
 				{
+					Acct =
+						new CashAccount41 { Id = new AccountIdentification4Choice { IBAN = "iban" } },
 					Ntry = new[]
 					{
-						new ISO20022.Messages.Camt_054_001.V09.ReportEntry11
+						new ReportEntry11
 						{
+							Amt = new ActiveOrHistoricCurrencyAndAmount { Value = 5.99m },
 							NtryDtls = new[]
 							{
-								new ISO20022.Messages.Camt_054_001.V09.EntryDetails10
+								new EntryDetails10
 								{
 									TxDtls = new[]
 									{
-										new ISO20022.Messages.Camt_054_001.V09.EntryTransaction11
+										new EntryTransaction11
 										{
-											Refs = new ISO20022.Messages.Camt_054_001.V09.TransactionReferences6
+											Refs = new TransactionReferences6
 											{
 												EndToEndId = "end-to-end-id"
 											}
