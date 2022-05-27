@@ -7,7 +7,7 @@ public class GivenUnstableOpenConnection : IAsyncLifetime
 {
 	private static readonly TimeSpan WaitForExceptionDuration = TimeSpan.FromSeconds(30);
 
-	private readonly GrpcTestServer _server;
+	private readonly GrpcTestServer<TestPaymentService> _server;
 	private readonly IEnumerable<IHandler> _testHandlers;
 	private IHost _clientHost;
 	private FromRtgsSender _fromRtgsSender;
@@ -15,7 +15,7 @@ public class GivenUnstableOpenConnection : IAsyncLifetime
 
 	public GivenUnstableOpenConnection()
 	{
-		_server = new GrpcTestServer();
+		_server = new GrpcTestServer<TestPaymentService>();
 		_testHandlers = new AllTestHandlers().ToList();
 	}
 
@@ -69,8 +69,8 @@ public class GivenUnstableOpenConnection : IAsyncLifetime
 
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) =>
 		{
-			raisedExceptionSignal.Set();
 			raisedArgs = args;
+			raisedExceptionSignal.Set();
 		};
 
 		await _rtgsSubscriber.StartAsync(_testHandlers);
