@@ -12,7 +12,7 @@ public class SubscriberActionSignedMessagesWithLogsData : BaseSignedSubscriberAc
 			SubscriberActions.MessageRejectV1,
 			StandardLogs<MessageRejectV1>());
 
-	private List<LogEntry> StandardLogs<T>() =>
+	private static List<LogEntry> StandardLogs<T>() =>
 		new()
 		{
 			new("RTGS Subscriber started", LogEventLevel.Information),
