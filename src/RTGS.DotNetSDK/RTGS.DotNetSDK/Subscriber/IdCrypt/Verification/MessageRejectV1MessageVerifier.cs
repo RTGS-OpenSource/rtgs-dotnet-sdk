@@ -25,7 +25,7 @@ internal class MessageRejectV1MessageVerifier : IVerifyMessage<MessageRejectV1>
 	{
 		var messageToVerify = new Dictionary<string, object>
 		{
-			{ "ref", message.MsgRjctn?.RltdRef.Ref },
+			{ "ref", message.MsgRjctn?.RltdRef?.Ref },
 			{ "reason", message.MsgRjctn?.Rsn?.RjctgPtyRsn }
 		};
 
