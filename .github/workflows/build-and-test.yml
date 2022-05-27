@@ -19,7 +19,6 @@ on:
 env:
   SOLUTION_FOLDER: ./src/RTGS.DotNetSDK/
   SDK_FOLDER: ./src/RTGS.DotNetSDK/RTGS.DotNetSDK/
-  AZURE_ARTIFACTS_URL: https://pkgs.dev.azure.com/rtgs-global/RTGS-Global/_packaging/RTGS-Packages/nuget/v3/index.json
   NUGET_URL: https://api.nuget.org/v3/index.json
 
 jobs:
@@ -83,7 +82,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          source-url: ${{env.AZURE_ARTIFACTS_URL}}
+          source-url: ${{ secrets.AZURE_ARTIFACTS_URL }}
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
 
