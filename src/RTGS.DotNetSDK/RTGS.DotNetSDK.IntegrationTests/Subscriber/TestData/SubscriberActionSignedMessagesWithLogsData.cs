@@ -12,6 +12,11 @@ public class SubscriberActionSignedMessagesWithLogsData : BaseSignedSubscriberAc
 			SubscriberActions.MessageRejectV1,
 			StandardLogs<MessageRejectV1>());
 
+	public override ISubscriberAction<PayawayCompleteV1> PayawayCompleteV1 =>
+		new SubscriberActionWithLogs<PayawayCompleteV1>(
+			SubscriberActions.PayawayCompleteV1,
+			StandardLogs<PayawayCompleteV1>());
+
 	private static List<LogEntry> StandardLogs<T>() =>
 		new()
 		{

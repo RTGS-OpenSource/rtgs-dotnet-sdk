@@ -14,7 +14,7 @@ public static class SubscriberActions
 		new("PayawayFundsV1", ValidMessages.PayawayFunds, DefaultSigningHeaders);
 
 	public static readonly SubscriberAction<PayawayCompleteV1> PayawayCompleteV1 =
-		new("PayawayCompleteV1", ValidMessages.PayawayComplete);
+		new("PayawayCompleteV1", ValidMessages.PayawayComplete, DefaultSigningHeaders);
 
 	public static readonly SubscriberAction<MessageRejectV1> MessageRejectV1 =
 		new("MessageRejectV1", ValidMessages.MessageRejected, DefaultSigningHeaders);

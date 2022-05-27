@@ -7,4 +7,7 @@ public class SubscriberActionSignedMessagesData : BaseSignedSubscriberActionData
 
 	public override ISubscriberAction<MessageRejectV1> MessageRejectV1 =>
 		SubscriberActions.MessageRejectV1;
+
+	public override ISubscriberAction<PayawayCompleteV1> PayawayCompleteV1 =>
+		SubscriberActions.PayawayCompleteV1;
 }
