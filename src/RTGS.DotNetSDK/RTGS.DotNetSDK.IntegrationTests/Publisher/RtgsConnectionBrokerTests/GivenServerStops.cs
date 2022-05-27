@@ -8,7 +8,7 @@ public class GivenServerStops : IAsyncLifetime
 {
 	private static readonly TimeSpan TestWaitForAcknowledgementDuration = TimeSpan.FromSeconds(1);
 
-	private readonly GrpcTestServer _grpcServer;
+	private readonly GrpcTestServer<TestPaymentService> _grpcServer;
 	private readonly ITestCorrelatorContext _serilogContext;
 
 	private QueueableStatusCodeHttpHandler _idCryptServiceHttpHandler;
@@ -18,7 +18,7 @@ public class GivenServerStops : IAsyncLifetime
 
 	public GivenServerStops()
 	{
-		_grpcServer = new GrpcTestServer();
+		_grpcServer = new GrpcTestServer<TestPaymentService>();
 
 		SetupSerilogLogger();
 

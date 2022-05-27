@@ -109,6 +109,16 @@ internal sealed class RtgsSubscriber : IRtgsSubscriber
 					_processingSignal.Release();
 				}
 			}
+
+			IsRunning = false;
+
+			if (!_isStopRequested)
+			{
+				const string message = "The call completed although stop was not requested";
+				var ex = new RtgsSubscriberException(message);
+				_logger.LogError(ex, message);
+				RaiseFatalExceptionOccurredEvent(ex);
+			}
 		}
 		catch (RpcException ex)
 		{

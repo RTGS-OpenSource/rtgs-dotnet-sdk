@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace RTGS.DotNetSDK.IntegrationTests.TestServer;
 
-public sealed class GrpcTestServer : IDisposable
+public sealed class GrpcTestServer<TPaymentService> : IDisposable where TPaymentService : class
 {
 	private const int Port = 5100;
 
@@ -71,7 +71,7 @@ public sealed class GrpcTestServer : IDisposable
 		public static void Configure(IApplicationBuilder app)
 		{
 			app.UseRouting();
-			app.UseEndpoints(endpoints => endpoints.MapGrpcService<TestPaymentService>());
+			app.UseEndpoints(endpoints => endpoints.MapGrpcService<TPaymentService>());
 		}
 	}
 }
