@@ -67,7 +67,8 @@ public static class ValidMessages
 			RltdRef = new ISO20022.Messages.Admi_002_001.V01.MessageReference { Ref = "reference" },
 			Rsn = new ISO20022.Messages.Admi_002_001.V01.RejectionReason2
 			{
-				RjctnDtTm = new DateTime(2021, 12, 25)
+				RjctnDtTm = new DateTime(2021, 12, 25),
+				RjctgPtyRsn = "Not in the right head-space"
 			}
 		}
 	};

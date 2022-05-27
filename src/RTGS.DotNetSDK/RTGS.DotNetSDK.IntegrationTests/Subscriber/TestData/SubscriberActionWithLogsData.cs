@@ -26,7 +26,7 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 
 	public override ISubscriberAction<MessageRejectV1> MessageRejectedV1 =>
 		new SubscriberActionWithLogs<MessageRejectV1>(
-			SubscriberActions.MessageRejectedV1,
+			SubscriberActions.MessageRejectV1,
 			new List<LogEntry>
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),

@@ -9,7 +9,7 @@ public class SubscriberActionData : BaseSubscriberActionData
 		SubscriberActions.PayawayCompleteV1;
 
 	public override ISubscriberAction<MessageRejectV1> MessageRejectedV1 =>
-		SubscriberActions.MessageRejectedV1;
+		SubscriberActions.MessageRejectV1;
 
 	public override ISubscriberAction<AtomicLockResponseV1> AtomicLockResponseV1 =>
 		SubscriberActions.AtomicLockResponseV1;

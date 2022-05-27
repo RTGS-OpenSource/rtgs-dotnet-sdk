@@ -350,12 +350,12 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 		using var exceptionSignal = new ManualResetEventSlim();
 
 		var testHandlers = new AllTestHandlers()
-			.ThrowWhenMessageRejectV1Received(new OutOfMemoryException("test"));
+			.ThrowWhenEarmarkCompleteV1Received(new OutOfMemoryException("test"));
 
 		await _rtgsSubscriber.StartAsync(testHandlers);
 		_rtgsSubscriber.OnExceptionOccurred += (_, _) => exceptionSignal.Set();
 
-		await _fromRtgsSender.SendAsync(nameof(MessageRejectV1), TestData.ValidMessages.MessageRejected);
+		await _fromRtgsSender.SendAsync(nameof(EarmarkCompleteV1), TestData.ValidMessages.EarmarkCompleteV1);
 
 		exceptionSignal.Wait(WaitForExceptionEventDuration);
 
@@ -363,7 +363,7 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 		errorLogs.Should().BeEquivalentTo(new[]
 		{
 			new LogEntry(
-				"An error occurred while handling a message (MessageIdentifier: MessageRejectV1)",
+				"An error occurred while handling a message (MessageIdentifier: EarmarkCompleteV1)",
 				LogEventLevel.Error,
 				typeof(OutOfMemoryException))
 		});
@@ -378,7 +378,7 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 		var expectedRaisedException = new OutOfMemoryException("test");
 
 		var testHandlers = new AllTestHandlers()
-			.ThrowWhenMessageRejectV1Received(expectedRaisedException);
+			.ThrowWhenEarmarkCompleteV1Received(expectedRaisedException);
 
 		await _rtgsSubscriber.StartAsync(testHandlers);
 		_rtgsSubscriber.OnExceptionOccurred += (_, args) =>
@@ -387,7 +387,7 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 			exceptionSignal.Set();
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(MessageRejectV1), TestData.ValidMessages.MessageRejected);
+		await _fromRtgsSender.SendAsync(nameof(EarmarkCompleteV1), TestData.ValidMessages.EarmarkCompleteV1);
 
 		exceptionSignal.Wait(WaitForExceptionEventDuration);
 
@@ -400,7 +400,7 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 	public async Task WhenHandlerThrowsForFirstMessage_ThenSecondMessageIsHandled()
 	{
 		var testHandlers = new AllTestHandlers()
-			.ThrowWhenMessageRejectV1Received(new OutOfMemoryException("test"))
+			.ThrowWhenEarmarkCompleteV1Received(new OutOfMemoryException("test"))
 			.ToList();
 
 		await _rtgsSubscriber.StartAsync(testHandlers);

@@ -16,8 +16,8 @@ public static class SubscriberActions
 	public static readonly SubscriberAction<PayawayCompleteV1> PayawayCompleteV1 =
 		new("PayawayCompleteV1", ValidMessages.PayawayComplete);
 
-	public static readonly SubscriberAction<MessageRejectV1> MessageRejectedV1 =
-		new("MessageRejectV1", ValidMessages.MessageRejected);
+	public static readonly SubscriberAction<MessageRejectV1> MessageRejectV1 =
+		new("MessageRejectV1", ValidMessages.MessageRejected, DefaultSigningHeaders);
 
 	public static readonly SubscriberAction<AtomicLockResponseV1> AtomicLockResponseV1 =
 		new("AtomicLockResponseV1", ValidMessages.AtomicLockResponseV1);
