@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.Subscriber.Exceptions;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
+using RTGS.Public.Messages.Subscriber;
 using RTGS.Public.Payment.V4;
 
 namespace RTGS.DotNetSDK.Subscriber.Adapters;
@@ -26,7 +27,12 @@ internal class DataVerifyingMessageAdapter<TMessage> : IMessageAdapter<TMessage>
 
 		var deserializedMessage = JsonSerializer.Deserialize<TMessage>(rtgsMessage.Data.Span);
 
-		await VerifyMessageAsync(rtgsMessage, deserializedMessage);
+		// Intermediary solution until we have decided how to handle unsigned MessageRejectV1 messages from RTGS.Global
+		if (rtgsMessage.MessageIdentifier != nameof(MessageRejectV1) ||
+			rtgsMessage.Headers.ContainsKey("pairwise-did-signature"))
+		{
+			await VerifyMessageAsync(rtgsMessage, deserializedMessage);
+		}
 
 		await handler.HandleMessageAsync(deserializedMessage);
 	}
