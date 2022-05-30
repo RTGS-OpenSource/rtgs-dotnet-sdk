@@ -72,8 +72,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task AndPrivateDidHeaderMissing_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
-		// Hack - allow MessageRejectV1 messages that have not been signed to be handled.
-		// Temp solution to failing E2E tests - because some MessageRejectV1 messages are signed and some are not
+		// Intermediary solution until we have decided how to handle unsigned MessageRejectV1 messages from RTGS.Global
 		if (subscriberAction.MessageIdentifier == nameof(MessageRejectV1))
 		{
 			return;
@@ -183,8 +182,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task AndPrivateSignatureHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
-		// Hack - allow MessageRejectV1 messages that have not been signed to be handled.
-		// Temp solution to failing E2E tests - because some MessageRejectV1 messages are signed and some are not
+		// Intermediary solution until we have decided how to handle unsigned MessageRejectV1 messages from RTGS.Global
 		if (subscriberAction.MessageIdentifier == nameof(MessageRejectV1))
 		{
 			return;

@@ -27,8 +27,7 @@ internal class DataVerifyingMessageAdapter<TMessage> : IMessageAdapter<TMessage>
 
 		var deserializedMessage = JsonSerializer.Deserialize<TMessage>(rtgsMessage.Data.Span);
 
-		// Hack - allow MessageRejectV1 messages that have not been signed to be handled.
-		// Temp solution to failing E2E tests - because some MessageRejectV1 messages are signed and some are not
+		// Intermediary solution until we have decided how to handle unsigned MessageRejectV1 messages from RTGS.Global
 		if (rtgsMessage.MessageIdentifier != nameof(MessageRejectV1) ||
 			rtgsMessage.Headers.ContainsKey("pairwise-did-signature"))
 		{
