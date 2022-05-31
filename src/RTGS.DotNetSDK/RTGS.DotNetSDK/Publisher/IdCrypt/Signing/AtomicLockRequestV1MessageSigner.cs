@@ -4,11 +4,11 @@ using RTGS.Public.Messages.Publisher;
 
 namespace RTGS.DotNetSDK.Publisher.IdCrypt.Signing;
 
-internal class AtomicLocakRequestV1MessageSigner : ISignMessage<AtomicLockRequestV1>
+internal class AtomicLockRequestV1MessageSigner : ISignMessage<AtomicLockRequestV1>
 {
 	private readonly IIdCryptServiceClient _idCryptServiceClient;
 
-	public AtomicLocakRequestV1MessageSigner(IIdCryptServiceClient idCryptServiceClient)
+	public AtomicLockRequestV1MessageSigner(IIdCryptServiceClient idCryptServiceClient)
 	{
 		_idCryptServiceClient = idCryptServiceClient;
 	}
