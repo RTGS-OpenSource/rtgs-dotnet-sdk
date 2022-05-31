@@ -7,6 +7,8 @@ public class PublisherActionRpcExceptionLogsData : BasePublisherActionData
 			PublisherActions.AtomicLock,
 			new List<LogEntry>
 			{
+				new("Signing AtomicLockRequestV1 message", LogEventLevel.Information),
+				new("Signed AtomicLockRequestV1 message", LogEventLevel.Information),
 				new("Sending AtomicLockRequestV1 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
 				new("Sent AtomicLockRequestV1 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
 				new("Error received when sending AtomicLockRequestV1 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Error, typeof(RpcException))

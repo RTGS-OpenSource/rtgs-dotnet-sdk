@@ -19,7 +19,7 @@ public class GivenWrongRemoteHostAddress
 
 		var rtgsPublisher = clientHost.Services.GetRequiredService<IRtgsPublisher>();
 
-		await FluentActions.Awaiting(() => rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1()))
+		await FluentActions.Awaiting(() => rtgsPublisher.SendBankPartnersRequestAsync(new BankPartnersRequestV1()))
 			.Should().ThrowAsync<RpcException>();
 	}
 }

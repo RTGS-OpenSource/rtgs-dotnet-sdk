@@ -59,7 +59,7 @@ public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<Gr
 		receiver.ThrowOnConnection = true;
 
 		await FluentActions
-			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1()))
+			.Awaiting(() => _rtgsPublisher.SendBankPartnersRequestAsync(new BankPartnersRequestV1()))
 			.Should()
 			.ThrowAsync<Exception>();
 	}
@@ -72,7 +72,9 @@ public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<Gr
 		receiver.ThrowOnConnection = true;
 
 		await FluentActions
-			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1 { EndToEndId = new string('e', 100_000) }))
+			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(
+				new AtomicLockRequestV1 { EndToEndId = new string('e', 100_000) },
+				"to-rtgs-global-id"))
 			.Should()
 			.ThrowAsync<Exception>();
 	}
@@ -85,7 +87,7 @@ public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<Gr
 		receiver.ThrowOnConnection = true;
 
 		await FluentActions
-			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1()))
+			.Awaiting(() => _rtgsPublisher.SendBankPartnersRequestAsync(new BankPartnersRequestV1()))
 			.Should()
 			.ThrowAsync<Exception>();
 
@@ -93,7 +95,7 @@ public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<Gr
 
 		receiver.ThrowOnConnection = false;
 
-		var result = await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
+		var result = await _rtgsPublisher.SendBankPartnersRequestAsync(new BankPartnersRequestV1());
 
 		result.Should().Be(SendResult.Success);
 	}

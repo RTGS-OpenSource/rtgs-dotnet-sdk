@@ -11,8 +11,8 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 		_internalPublisher = internalPublisher;
 	}
 
-	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, cancellationToken);
+	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, string toRtgsGlobalId, CancellationToken cancellationToken = default) =>
+		_internalPublisher.SendMessageAsync(message, cancellationToken, toRtgsGlobalId: toRtgsGlobalId);
 
 	public Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequestV1 message, CancellationToken cancellationToken = default) =>
 		_internalPublisher.SendMessageAsync(message, cancellationToken);
