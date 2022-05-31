@@ -170,9 +170,9 @@ public static class ValidMessages
 	{
 		public static readonly Dictionary<string, object> AtomicLockRequestDocument = new()
 		{
-			{"creditorAmount", AtomicLockRequest.CdtrAmt},
-			{"creditorAgentAccount", AtomicLockRequest.CdtrAgntAcct},
-			{"debtorAccount", AtomicLockRequest.DbtrAcct}
+			{ "creditorAmount", AtomicLockRequest.CdtrAmt },
+			{ "creditorAgentAccount", AtomicLockRequest.CdtrAgntAcct },
+			{ "debtorAccount", AtomicLockRequest.DbtrAcct }
 		};
 
 		public static readonly Dictionary<string, object> PayawayRejectionDocument = new()
