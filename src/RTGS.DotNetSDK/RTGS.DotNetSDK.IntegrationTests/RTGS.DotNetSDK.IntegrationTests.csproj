@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 	</PropertyGroup>
@@ -6,6 +6,8 @@
 	  <Compile Include="..\RTGS.DotNetSDK\Publisher\IdCrypt\Messages\IdCryptBankInvitationV1.cs" Link="InternalMessages\IdCryptBankInvitationV1.cs" />
 	  <Compile Include="..\RTGS.DotNetSDK\Publisher\IdCrypt\Messages\IdCryptCreateInvitationRequestV1.cs" Link="InternalMessages\IdCryptCreateInvitationRequestV1.cs" />
 	  <Compile Include="..\RTGS.DotNetSDK\Publisher\IdCrypt\Messages\IdCryptInvitationV1.cs" Link="InternalMessages\IdCryptInvitationV1.cs" />
+	  <Compile Include="..\RTGS.DotNetSDK\Subscriber\InternalMessages\InitiatingBankEarmarkFundsV1.cs" Link="InternalMessages\InitiatingBankEarmarkFundsV1.cs" />
+	  <Compile Include="..\RTGS.DotNetSDK\Subscriber\InternalMessages\PartnerBankEarmarkFundsV1.cs" Link="InternalMessages\PartnerBankEarmarkFundsV1.cs" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="FluentAssertions" Version="6.5.0" />

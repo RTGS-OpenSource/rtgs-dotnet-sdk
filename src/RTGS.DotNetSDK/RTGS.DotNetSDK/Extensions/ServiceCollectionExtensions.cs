@@ -9,6 +9,7 @@ using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 using RTGS.DotNetSDK.Subscriber.Handlers.Internal;
 using RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
+using RTGS.DotNetSDK.Subscriber.InternalMessages;
 using RTGS.DotNetSDK.Subscriber.Validators;
 using RTGS.Public.Messages.Publisher;
 using RTGS.Public.Messages.Subscriber;
@@ -106,6 +107,9 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<AtomicTransferFundsV1>>();
 
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<EarmarkFundsV1>>();
+		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<InitiatingBankEarmarkFundsV1>>();
+		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<PartnerBankEarmarkFundsV1>>();
+
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<EarmarkCompleteV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<EarmarkReleaseV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<BankPartnersResponseV1>>();
@@ -120,6 +124,8 @@ public static class ServiceCollectionExtensions
 
 		serviceCollection.AddTransient<IInternalHandler, IdCryptCreateInvitationRequestV1Handler>();
 		serviceCollection.AddTransient<IInternalHandler, IdCryptBankInvitationV1Handler>();
+		serviceCollection.AddTransient<IInternalHandler, InitiatingBankEarmarkFundsV1Handler>();
+		serviceCollection.AddTransient<IInternalHandler, PartnerBankEarmarkFundsV1Handler>();
 
 		serviceCollection.AddSingleton<IVerifyMessage<PayawayFundsV1>, PayawayFundsV1MessageVerifier>();
 		serviceCollection.AddSingleton<IVerifyMessage<MessageRejectV1>, MessageRejectV1MessageVerifier>();

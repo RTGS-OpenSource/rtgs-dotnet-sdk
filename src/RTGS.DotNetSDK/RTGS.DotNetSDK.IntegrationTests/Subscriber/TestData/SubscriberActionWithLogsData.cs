@@ -68,17 +68,6 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
 
-	public override ISubscriberAction<EarmarkFundsV1> EarmarkFundsV1 =>
-		new SubscriberActionWithLogs<EarmarkFundsV1>(
-			SubscriberActions.EarmarkFundsV1,
-			new List<LogEntry>
-			{
-				new("RTGS Subscriber started", LogEventLevel.Information),
-				new("EarmarkFundsV1 message received from RTGS", LogEventLevel.Information),
-				new("RTGS Subscriber stopping", LogEventLevel.Information),
-				new("RTGS Subscriber stopped", LogEventLevel.Information)
-			});
-
 	public override ISubscriberAction<EarmarkCompleteV1> EarmarkCompleteV1 =>
 		new SubscriberActionWithLogs<EarmarkCompleteV1>(
 			SubscriberActions.EarmarkCompleteV1,

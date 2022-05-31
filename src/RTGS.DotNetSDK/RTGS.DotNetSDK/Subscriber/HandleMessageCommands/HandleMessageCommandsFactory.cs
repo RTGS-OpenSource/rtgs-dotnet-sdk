@@ -2,6 +2,7 @@
 using RTGS.DotNetSDK.Subscriber.Adapters;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.DotNetSDK.Subscriber.Handlers.Internal;
+using RTGS.DotNetSDK.Subscriber.InternalMessages;
 using RTGS.Public.Messages.Subscriber;
 
 namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
@@ -9,7 +10,7 @@ namespace RTGS.DotNetSDK.Subscriber.HandleMessageCommands;
 internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 {
 	private readonly IEnumerable<ICommandCreator> _commandCreators;
-	private readonly IReadOnlyCollection<IHandler> _internalHandlers;
+	private readonly IReadOnlyCollection<IInternalHandler> _internalHandlers;
 
 	public HandleMessageCommandsFactory(IEnumerable<IMessageAdapter> messageAdapters, IEnumerable<IInternalHandler> internalHandlers)
 	{
@@ -28,6 +29,20 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 			new CommandCreator<EarmarkCompleteV1, IEarmarkCompleteV1Handler, IMessageAdapter<EarmarkCompleteV1>>(enumeratedMessageAdapters),
 			new CommandCreator<EarmarkReleaseV1, IEarmarkReleaseV1Handler, IMessageAdapter<EarmarkReleaseV1>>(enumeratedMessageAdapters),
 			new CommandCreator<BankPartnersResponseV1, IBankPartnersResponseV1Handler, IMessageAdapter<BankPartnersResponseV1>>(enumeratedMessageAdapters),
+
+			new InternalCommandCreator<
+				InitiatingBankEarmarkFundsV1,
+				EarmarkFundsV1,
+				IInitiatingBankEarmarkFundsV1Handler,
+				IEarmarkFundsV1Handler,
+				IMessageAdapter<InitiatingBankEarmarkFundsV1>>(enumeratedMessageAdapters, _internalHandlers),
+
+			new InternalCommandCreator<
+				PartnerBankEarmarkFundsV1,
+				EarmarkFundsV1,
+				IPartnerBankEarmarkFundsV1Handler,
+				IEarmarkFundsV1Handler,
+				IMessageAdapter<PartnerBankEarmarkFundsV1>>(enumeratedMessageAdapters, _internalHandlers),
 
 			new CommandCreator<IdCryptCreateInvitationRequestV1, IIdCryptCreateInvitationRequestV1Handler, IMessageAdapter<IdCryptCreateInvitationRequestV1>>(enumeratedMessageAdapters),
 			new CommandCreator<IdCryptBankInvitationV1, IIdCryptBankInvitationV1Handler, IMessageAdapter<IdCryptBankInvitationV1>>(enumeratedMessageAdapters)
@@ -55,6 +70,33 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 			return new HandleMessageCommand<TMessage>(_messageAdapter, handler);
 		}
 	}
+
+	private class InternalCommandCreator<TReceivedMessage, THandledMessage, TInternalHandler, TUserHandler, TMessageAdapter> : ICommandCreator
+		where TInternalHandler : IInternalPassThroughHandler<TReceivedMessage, THandledMessage>
+		where TUserHandler : IHandler<THandledMessage>
+		where TMessageAdapter : IMessageAdapter<TReceivedMessage>
+	{
+		private readonly TMessageAdapter _messageAdapter;
+		private readonly IEnumerable<IInternalHandler> _internalHandlers;
+
+		public InternalCommandCreator(IEnumerable<IMessageAdapter> messageAdapters, IEnumerable<IInternalHandler> internalHandlers)
+		{
+			_messageAdapter = messageAdapters.OfType<TMessageAdapter>().Single();
+			_internalHandlers = internalHandlers;
+		}
+
+		public IHandleMessageCommand Create(IReadOnlyCollection<IHandler> userHandlers)
+		{
+			var internalHandler = _internalHandlers.OfType<TInternalHandler>().Single();
+
+			var userHandler = userHandlers.OfType<TUserHandler>().Single();
+
+			internalHandler.SetUserHandler(userHandler);
+
+			return new HandleMessageCommand<TReceivedMessage>(_messageAdapter, internalHandler);
+		}
+	}
+
 
 	private interface ICommandCreator
 	{

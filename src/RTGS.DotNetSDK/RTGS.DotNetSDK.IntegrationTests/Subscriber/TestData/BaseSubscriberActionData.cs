@@ -8,7 +8,6 @@ public abstract class BaseSubscriberActionData : BaseActionData
 	public abstract ISubscriberAction<AtomicLockResponseV1> AtomicLockResponseV1 { get; }
 	public abstract ISubscriberAction<AtomicTransferResponseV1> AtomicTransferResponseV1 { get; }
 	public abstract ISubscriberAction<AtomicTransferFundsV1> AtomicTransferFundsV1 { get; }
-	public abstract ISubscriberAction<EarmarkFundsV1> EarmarkFundsV1 { get; }
 	public abstract ISubscriberAction<EarmarkCompleteV1> EarmarkCompleteV1 { get; }
 	public abstract ISubscriberAction<EarmarkReleaseV1> EarmarkReleaseV1 { get; }
 	public abstract ISubscriberAction<BankPartnersResponseV1> BankPartnersResponseV1 { get; }
