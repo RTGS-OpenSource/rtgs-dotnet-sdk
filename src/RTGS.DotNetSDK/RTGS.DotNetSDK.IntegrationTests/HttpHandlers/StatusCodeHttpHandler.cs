@@ -49,4 +49,7 @@ internal class StatusCodeHttpHandler : DelegatingHandler
 		Requests.Clear();
 		_requestsSignal.Reset();
 	}
+
+	public void SetExpectedRequestCount(int count) =>
+		_requestsSignal.Reset(count);
 }

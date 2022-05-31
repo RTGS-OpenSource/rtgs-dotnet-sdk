@@ -71,19 +71,19 @@ public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcSe
 		var rtgsPublisher5 = _clientHost.Services.GetRequiredService<IRtgsPublisher>();
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsPublisher1.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
+		await rtgsPublisher1.SendBankPartnersRequestAsync(new BankPartnersRequestV1());
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsPublisher2.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
+		await rtgsPublisher2.SendBankPartnersRequestAsync(new BankPartnersRequestV1());
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsPublisher3.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
+		await rtgsPublisher3.SendBankPartnersRequestAsync(new BankPartnersRequestV1());
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsPublisher4.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
+		await rtgsPublisher4.SendBankPartnersRequestAsync(new BankPartnersRequestV1());
 
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
-		await rtgsPublisher5.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
+		await rtgsPublisher5.SendBankPartnersRequestAsync(new BankPartnersRequestV1());
 
 		var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
 

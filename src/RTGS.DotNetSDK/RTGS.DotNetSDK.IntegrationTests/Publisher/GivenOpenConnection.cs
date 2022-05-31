@@ -88,6 +88,8 @@ public class GivenOpenConnection
 		{
 			var atomicLockRequests = GenerateFiveUniqueAtomicLockRequests().ToList();
 
+			_idCryptServiceHttpHandler.SetExpectedRequestCount(5);
+
 			using var sendRequestsSignal = new ManualResetEventSlim();
 
 			var bigRequestTasks = atomicLockRequests
@@ -97,7 +99,7 @@ public class GivenOpenConnection
 
 					sendRequestsSignal.Wait();
 
-					await _rtgsPublisher.SendAtomicLockRequestAsync(request);
+					await _rtgsPublisher.SendAtomicLockRequestAsync(request, "to-rtgs-global-id");
 				})).ToArray();
 
 			sendRequestsSignal.Set();

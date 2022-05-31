@@ -168,6 +168,13 @@ public static class ValidMessages
 
 	public static class SignedDocuments
 	{
+		public static readonly Dictionary<string, object> AtomicLockRequestDocument = new()
+		{
+			{ "creditorAmount", AtomicLockRequest.CdtrAmt },
+			{ "creditorAgentAccount", AtomicLockRequest.CdtrAgntAcct },
+			{ "debtorAccount", AtomicLockRequest.DbtrAcct }
+		};
+
 		public static readonly Dictionary<string, object> PayawayRejectionDocument = new()
 		{
 			{ "ref", PayawayRejection.MsgRjctn.RltdRef.Ref },

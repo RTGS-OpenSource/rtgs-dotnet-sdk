@@ -7,6 +7,8 @@ public class PublisherActionFailedAcknowledgementLogsData : BasePublisherActionD
 			PublisherActions.AtomicLock,
 			new List<LogEntry>
 			{
+				new("Signing AtomicLockRequestV1 message", LogEventLevel.Information),
+				new("Signed AtomicLockRequestV1 message", LogEventLevel.Information),
 				new("Sending AtomicLockRequestV1 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
 				new("Sent AtomicLockRequestV1 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
 				new("Received AtomicLockRequestV1 acknowledgement (rejected) from RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Error)

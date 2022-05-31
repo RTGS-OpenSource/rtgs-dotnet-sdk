@@ -73,12 +73,12 @@ public class GivenServerStops : IAsyncLifetime
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-		var result = await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
+		var result = await _rtgsPublisher.SendBankPartnersRequestAsync(new BankPartnersRequestV1());
 		result.Should().Be(SendResult.Success);
 
 		await _grpcServer.StopAsync();
 
-		var exceptionAssertions = await FluentActions.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1()))
+		var exceptionAssertions = await FluentActions.Awaiting(() => _rtgsPublisher.SendBankPartnersRequestAsync(new BankPartnersRequestV1()))
 			.Should().ThrowAsync<Exception>();
 
 		// One of two exceptions can be thrown depending on how far along the call is.
@@ -92,7 +92,7 @@ public class GivenServerStops : IAsyncLifetime
 	{
 		_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
 
-		await _rtgsPublisher.SendAtomicLockRequestAsync(new AtomicLockRequestV1());
+		await _rtgsPublisher.SendBankPartnersRequestAsync(new BankPartnersRequestV1());
 
 		await _grpcServer.StopAsync();
 
