@@ -98,6 +98,20 @@ public static class ValidMessages
 		LckId = new Guid("6051b46f-a930-40fd-80ee-a08570900c87")
 	};
 
+	internal static readonly EarmarkFundsV1 EarmarkFundsV1 = new()
+	{
+		Amt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Value = 1 },
+		Acct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Nm = "name",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+			{
+				IBAN = "iban"
+			}
+		},
+		LckId = new Guid("ff1bee59-92ac-4183-939f-6c67e16f22fb")
+	};
+
 	internal static readonly PartnerBankEarmarkFundsV1 PartnerBankEarmarkFundsV1 = new()
 	{
 		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Value = 1 },
