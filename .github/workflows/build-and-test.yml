@@ -86,9 +86,8 @@ jobs:
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
 
-      - name: dotnet build and publish
+      - name: dotnet pack
         run: |
-          dotnet build --configuration Release ${{env.SOLUTION_FOLDER}}
           dotnet pack -c Release ${{env.SDK_FOLDER}}RTGS.DotNetSDK.csproj
 
       - name: 'dotnet publish'
@@ -108,9 +107,8 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
 
-      - name: dotnet build and publish
+      - name: dotnet pack
         run: |
-          dotnet build --configuration Release ${{env.SOLUTION_FOLDER}}
           dotnet pack -c Release ${{env.SDK_FOLDER}}RTGS.DotNetSDK.csproj
 
       - name: 'dotnet publish'
