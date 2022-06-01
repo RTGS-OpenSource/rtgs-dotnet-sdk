@@ -41,6 +41,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("https://id-crypt-service"))
+				.EnableMessageSigning()
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()

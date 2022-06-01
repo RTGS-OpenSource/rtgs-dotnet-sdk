@@ -20,6 +20,7 @@ public sealed class GivenWrongRemoteHostAddress : IAsyncDisposable
 				TestData.ValidMessages.RtgsGlobalId,
 				new Uri("https://localhost:4567"),
 				new Uri("https://id-crypt-service"))
+			.EnableMessageSigning()
 			.Build();
 
 		_clientHost = Host.CreateDefaultBuilder()

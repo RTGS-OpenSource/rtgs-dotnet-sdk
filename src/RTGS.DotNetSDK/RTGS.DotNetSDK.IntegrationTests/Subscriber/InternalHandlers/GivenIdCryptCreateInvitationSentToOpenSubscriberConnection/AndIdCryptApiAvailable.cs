@@ -60,6 +60,7 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 					_grpcServer.ServerUri,
 					IdCryptServiceUri)
 				.WaitForAcknowledgementDuration(WaitForPublisherAcknowledgementDuration)
+				.EnableMessageSigning()
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()

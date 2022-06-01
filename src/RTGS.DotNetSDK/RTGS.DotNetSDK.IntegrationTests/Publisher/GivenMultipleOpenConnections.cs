@@ -22,6 +22,7 @@ public class GivenMultipleOpenConnections : IAsyncLifetime, IClassFixture<GrpcSe
 					_grpcServer.ServerUri,
 					new Uri("https://id-crypt-service"))
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
+				.EnableMessageSigning()
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()

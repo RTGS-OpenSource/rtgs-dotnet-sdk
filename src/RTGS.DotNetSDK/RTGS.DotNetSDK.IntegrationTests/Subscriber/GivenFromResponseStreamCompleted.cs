@@ -31,6 +31,7 @@ public sealed class GivenFromResponseStreamCompleted : IClassFixture<GrpcServerF
 					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("https://id-crypt-service"))
+				.EnableMessageSigning()
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()

@@ -101,6 +101,11 @@ internal class InternalPublisher : IInternalPublisher
 	{
 		var signingHeaders = new Dictionary<string, string>();
 
+		if (!_options.UseMessageSigning)
+		{
+			return signingHeaders;
+		}
+
 		var messageSignerType = typeof(ISignMessage<TMessageType>);
 
 		var messageSigner = _serviceProvider

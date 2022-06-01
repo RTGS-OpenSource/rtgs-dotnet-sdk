@@ -47,6 +47,7 @@ public sealed class AndIdCryptAcceptInviteApiIsNotAvailable : IDisposable, IClas
 					ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("https://id-crypt-service"))
+				.EnableMessageSigning()
 				.Build();
 
 			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory

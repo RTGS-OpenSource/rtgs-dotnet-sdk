@@ -12,7 +12,8 @@ public record RtgsSdkOptions
 		WaitForAcknowledgementDuration = builder.WaitForAcknowledgementDurationValue;
 		KeepAlivePingDelay = builder.KeepAlivePingDelayValue;
 		KeepAlivePingTimeout = builder.KeepAlivePingTimeoutValue;
-		IdCryptServiceAddress = builder.IdCryptServiceAddress;
+		IdCryptServiceAddress = builder.IdCryptServiceAddressValue;
+		UseMessageSigning = builder.UseMessageSigningValue;
 	}
 
 	/// <summary>
@@ -47,6 +48,11 @@ public record RtgsSdkOptions
 	public Uri IdCryptServiceAddress { get; }
 
 	/// <summary>
+	/// Whether to use the message signing functionality (preview).
+	/// </summary>
+	public bool UseMessageSigning { get; }
+
+	/// <summary>
 	/// A builder for <see cref="RtgsSdkOptions"/>.
 	/// </summary>
 	public sealed class Builder
@@ -69,7 +75,7 @@ public record RtgsSdkOptions
 
 			RtgsGlobalIdValue = rtgsGlobalId;
 			RemoteHostAddressValue = remoteHostAddress;
-			IdCryptServiceAddress = idCryptServiceAddress;
+			IdCryptServiceAddressValue = idCryptServiceAddress;
 		}
 
 		internal string RtgsGlobalIdValue { get; }
@@ -77,7 +83,8 @@ public record RtgsSdkOptions
 		internal TimeSpan WaitForAcknowledgementDurationValue { get; private set; } = TimeSpan.FromSeconds(10);
 		internal TimeSpan KeepAlivePingDelayValue { get; private set; } = TimeSpan.FromSeconds(30);
 		internal TimeSpan KeepAlivePingTimeoutValue { get; private set; } = TimeSpan.FromSeconds(30);
-		internal Uri IdCryptServiceAddress { get; }
+		internal Uri IdCryptServiceAddressValue { get; }
+		internal bool UseMessageSigningValue { get; private set; }
 
 		/// <summary>
 		/// Creates a new instance of <see cref="Builder"/>.
@@ -133,6 +140,16 @@ public record RtgsSdkOptions
 			ThrowIfLessThanOneSecond(duration);
 
 			KeepAlivePingTimeoutValue = duration;
+			return this;
+		}
+
+		/// <summary>
+		/// Enables message signing (preview).
+		/// </summary>
+		/// <returns><see cref="Builder"/></returns>
+		public Builder EnableMessageSigning()
+		{
+			UseMessageSigningValue = true;
 			return this;
 		}
 
