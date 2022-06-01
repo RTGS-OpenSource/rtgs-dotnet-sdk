@@ -9,8 +9,6 @@ public sealed class GivenPartnerBankEarmarkFundsV1SentToOpenSubscriberConnection
 {
 	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1_000);
 	private static readonly TimeSpan WaitForSubscriberAcknowledgementDuration = TimeSpan.FromMilliseconds(100);
-	private static readonly TimeSpan WaitForPublisherAcknowledgementDuration = TimeSpan.FromMilliseconds(1_000);
-	private static readonly Uri IdCryptServiceUri = new("https://id-crypt-service");
 
 	private readonly List<IHandler> _allTestHandlers = new AllTestHandlers().ToList();
 
@@ -49,8 +47,7 @@ public sealed class GivenPartnerBankEarmarkFundsV1SentToOpenSubscriberConnection
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
 					ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
-					IdCryptServiceUri)
-				.WaitForAcknowledgementDuration(WaitForPublisherAcknowledgementDuration)
+					new("https://id-crypt-service"))
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
