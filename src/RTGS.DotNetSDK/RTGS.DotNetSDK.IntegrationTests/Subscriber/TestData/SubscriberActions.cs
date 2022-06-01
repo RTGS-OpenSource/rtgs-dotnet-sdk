@@ -28,9 +28,6 @@ public static class SubscriberActions
 	public static readonly SubscriberAction<AtomicTransferFundsV1> AtomicTransferFundsV1 =
 		new("AtomicTransferFundsV1", ValidMessages.AtomicTransferFundsV1);
 
-	public static readonly SubscriberAction<EarmarkFundsV1> EarmarkFundsV1 =
-		new("EarmarkFundsV1", ValidMessages.EarmarkFundsV1);
-
 	public static readonly SubscriberAction<EarmarkCompleteV1> EarmarkCompleteV1 =
 		new("EarmarkCompleteV1", ValidMessages.EarmarkCompleteV1);
 

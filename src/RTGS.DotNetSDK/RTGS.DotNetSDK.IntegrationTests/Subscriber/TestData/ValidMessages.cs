@@ -1,4 +1,5 @@
 ﻿using RTGS.DotNetSDK.Publisher.IdCrypt.Messages;
+using RTGS.DotNetSDK.Subscriber.InternalMessages;
 using RTGS.ISO20022.Messages.Camt_054_001.V09;
 
 namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData;
@@ -97,10 +98,18 @@ public static class ValidMessages
 		LckId = new Guid("6051b46f-a930-40fd-80ee-a08570900c87")
 	};
 
-	internal static readonly EarmarkFundsV1 EarmarkFundsV1 = new()
+	internal static readonly PartnerBankEarmarkFundsV1 PartnerBankEarmarkFundsV1 = new()
 	{
-		Amt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Value = 1 },
-		Acct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Value = 1 },
+		CdtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Nm = "name",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+			{
+				IBAN = "iban"
+			}
+		},
+		DbtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
 			Nm = "name",
 			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
@@ -111,6 +120,28 @@ public static class ValidMessages
 		LckId = new Guid("ff1bee59-92ac-4183-939f-6c67e16f22fb")
 	};
 
+	internal static readonly InitiatingBankEarmarkFundsV1 InitiatingBankEarmarkFundsV1 = new()
+	{
+		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Value = 1 },
+		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Value = 1 },
+		DbtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Nm = "name",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+			{
+				IBAN = "iban"
+			}
+		},
+		CdtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Nm = "name",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+			{
+				IBAN = "iban"
+			}
+		},
+		LckId = new Guid("ff1bee59-92ac-4183-939f-6c67e16f22fb")
+	};
 	internal static readonly EarmarkCompleteV1 EarmarkCompleteV1 = new()
 	{
 		LckId = new Guid("4584e888-bce6-41de-b100-8ca553ad097c")
