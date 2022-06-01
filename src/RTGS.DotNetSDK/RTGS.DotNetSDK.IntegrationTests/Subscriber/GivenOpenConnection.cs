@@ -48,6 +48,7 @@ public sealed class GivenOpenConnection : IDisposable, IClassFixture<GrpcServerF
 					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("https://id-crypt-service"))
+				.EnableMessageSigning()
 				.Build();
 
 			var idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory

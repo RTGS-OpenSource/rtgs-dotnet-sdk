@@ -45,6 +45,7 @@ public class GivenServerStops : IAsyncLifetime
 					serverUri,
 					new Uri("https://id-crypt-service"))
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
+				.EnableMessageSigning()
 				.Build();
 
 

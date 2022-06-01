@@ -12,11 +12,13 @@ internal class DataVerifyingMessageAdapter<TMessage> : IMessageAdapter<TMessage>
 {
 	private readonly ILogger<DataVerifyingMessageAdapter<TMessage>> _logger;
 	private readonly IVerifyMessage<TMessage> _verifier;
+	private readonly RtgsSdkOptions _options;
 
-	public DataVerifyingMessageAdapter(ILogger<DataVerifyingMessageAdapter<TMessage>> logger, IVerifyMessage<TMessage> verifier)
+	public DataVerifyingMessageAdapter(ILogger<DataVerifyingMessageAdapter<TMessage>> logger, IVerifyMessage<TMessage> verifier, RtgsSdkOptions options)
 	{
 		_logger = logger;
 		_verifier = verifier;
+		_options = options;
 	}
 
 	public string MessageIdentifier => typeof(TMessage).Name;
@@ -26,12 +28,15 @@ internal class DataVerifyingMessageAdapter<TMessage> : IMessageAdapter<TMessage>
 		ArgumentNullException.ThrowIfNull(rtgsMessage);
 
 		var deserializedMessage = JsonSerializer.Deserialize<TMessage>(rtgsMessage.Data.Span);
-
-		// Intermediary solution until we have decided how to handle unsigned MessageRejectV1 messages from RTGS.Global
-		if (rtgsMessage.MessageIdentifier != nameof(MessageRejectV1) ||
-			rtgsMessage.Headers.ContainsKey("pairwise-did-signature"))
+		
+		if (_options.UseMessageSigning)
 		{
-			await VerifyMessageAsync(rtgsMessage, deserializedMessage);
+			// Intermediary solution until we have decided how to handle unsigned MessageRejectV1 messages from RTGS.Global
+			if (rtgsMessage.MessageIdentifier != nameof(MessageRejectV1) ||
+			    rtgsMessage.Headers.ContainsKey("pairwise-did-signature"))
+			{
+				await VerifyMessageAsync(rtgsMessage, deserializedMessage);
+			}
 		}
 
 		await handler.HandleMessageAsync(deserializedMessage);
@@ -42,7 +47,7 @@ internal class DataVerifyingMessageAdapter<TMessage> : IMessageAdapter<TMessage>
 		_logger.LogInformation("Verifying {MessageIdentifier} message", rtgsMessage.MessageIdentifier);
 
 		if (!rtgsMessage.Headers.TryGetValue("pairwise-did-signature", out var privateSignature) ||
-			string.IsNullOrEmpty(privateSignature))
+		    string.IsNullOrEmpty(privateSignature))
 		{
 			_logger.LogError("Private signature not found on {MessageIdentifier} message, yet was expected",
 				MessageIdentifier);
@@ -54,7 +59,7 @@ internal class DataVerifyingMessageAdapter<TMessage> : IMessageAdapter<TMessage>
 		}
 
 		if (!rtgsMessage.Headers.TryGetValue("from-rtgs-global-id", out var fromRtgsGlobalId) ||
-			string.IsNullOrEmpty(fromRtgsGlobalId))
+		    string.IsNullOrEmpty(fromRtgsGlobalId))
 		{
 			_logger.LogError("From RTGS Global ID not found on {MessageIdentifier} message, yet was expected",
 				MessageIdentifier);

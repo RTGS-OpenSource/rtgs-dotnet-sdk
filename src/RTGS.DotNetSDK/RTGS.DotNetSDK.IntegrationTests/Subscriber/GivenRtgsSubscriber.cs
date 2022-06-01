@@ -17,10 +17,11 @@ public class GivenRtgsSubscriber : IAsyncLifetime, IClassFixture<GrpcServerFixtu
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-				TestData.ValidMessages.RtgsGlobalId,
-				_grpcServer.ServerUri,
-				new Uri("https://id-crypt-service"))
-			.Build();
+					TestData.ValidMessages.RtgsGlobalId,
+					_grpcServer.ServerUri,
+					new Uri("https://id-crypt-service"))
+				.EnableMessageSigning()
+				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())

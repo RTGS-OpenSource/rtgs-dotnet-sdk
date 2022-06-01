@@ -54,6 +54,7 @@ public class GivenOpenConnection
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
+					.EnableMessageSigning()
 					.Build();
 
 				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
@@ -221,6 +222,7 @@ public class GivenOpenConnection
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
+					.EnableMessageSigning()
 					.Build();
 
 				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
@@ -368,6 +370,7 @@ public class GivenOpenConnection
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
 					.KeepAlivePingDelay(TimeSpan.FromSeconds(30))
 					.KeepAlivePingTimeout(TimeSpan.FromSeconds(30))
+					.EnableMessageSigning()
 					.Build();
 
 				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
@@ -694,6 +697,7 @@ public class GivenOpenConnection
 						_grpcServer.ServerUri,
 						new Uri("https://id-crypt-service"))
 					.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
+					.EnableMessageSigning()
 					.Build();
 
 				_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory

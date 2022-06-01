@@ -29,6 +29,7 @@ public class GivenUnstableOpenConnection : IAsyncLifetime
 					TestData.ValidMessages.RtgsGlobalId,
 					serverUri,
 					new Uri("https://id-crypt-service"))
+				.EnableMessageSigning()
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()

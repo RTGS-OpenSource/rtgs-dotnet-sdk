@@ -29,6 +29,7 @@ public sealed class GivenMultipleOpenConnections : IDisposable, IClassFixture<Gr
 					_grpcServer.ServerUri,
 					new Uri("https://id-crypt-service"))
 				.WaitForAcknowledgementDuration(TestWaitForAcknowledgementDuration)
+				.EnableMessageSigning()
 				.Build();
 
 			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory

@@ -49,6 +49,7 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 					TestData.ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					IdCryptServiceUri)
+				.EnableMessageSigning()
 				.Build();
 
 			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory

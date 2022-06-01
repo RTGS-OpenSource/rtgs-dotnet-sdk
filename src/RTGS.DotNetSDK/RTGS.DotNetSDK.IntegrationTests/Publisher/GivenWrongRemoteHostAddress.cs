@@ -9,6 +9,7 @@ public class GivenWrongRemoteHostAddress
 				TestData.ValidMessages.RtgsGlobalId,
 				new Uri("https://localhost:4567"),
 				new Uri("https://id-crypt-service"))
+			.EnableMessageSigning()
 			.Build();
 
 		using var clientHost = Host.CreateDefaultBuilder()
