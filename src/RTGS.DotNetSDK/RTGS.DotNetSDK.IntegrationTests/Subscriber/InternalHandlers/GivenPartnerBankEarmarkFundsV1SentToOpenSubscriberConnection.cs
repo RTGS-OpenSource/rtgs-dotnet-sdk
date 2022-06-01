@@ -104,11 +104,8 @@ public sealed class GivenPartnerBankEarmarkFundsV1SentToOpenSubscriberConnection
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
-		using var _ = new AssertionScope();
-
 		_fromRtgsSender.Acknowledgements.Should().ContainSingle(acknowledgement =>
-			acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId
-			&& acknowledgement.Success);
+			acknowledgement.CorrelationId == sentRtgsMessage.CorrelationId && acknowledgement.Success);
 	}
 
 	[Fact]
@@ -121,7 +118,6 @@ public sealed class GivenPartnerBankEarmarkFundsV1SentToOpenSubscriberConnection
 		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
-
 
 		var handler = _allTestHandlers.GetHandler<EarmarkFundsV1>();
 		handler.WaitForMessage(WaitForReceivedMessageDuration);

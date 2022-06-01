@@ -25,7 +25,6 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 			new CommandCreator<AtomicLockResponseV1, IAtomicLockResponseV1Handler, IMessageAdapter<AtomicLockResponseV1>>(enumeratedMessageAdapters),
 			new CommandCreator<AtomicTransferResponseV1, IAtomicTransferResponseV1Handler, IMessageAdapter<AtomicTransferResponseV1>>(enumeratedMessageAdapters),
 			new CommandCreator<AtomicTransferFundsV1, IAtomicTransferFundsV1Handler, IMessageAdapter<AtomicTransferFundsV1>>(enumeratedMessageAdapters),
-			new CommandCreator<EarmarkFundsV1, IEarmarkFundsV1Handler, IMessageAdapter<EarmarkFundsV1>>(enumeratedMessageAdapters),
 			new CommandCreator<EarmarkCompleteV1, IEarmarkCompleteV1Handler, IMessageAdapter<EarmarkCompleteV1>>(enumeratedMessageAdapters),
 			new CommandCreator<EarmarkReleaseV1, IEarmarkReleaseV1Handler, IMessageAdapter<EarmarkReleaseV1>>(enumeratedMessageAdapters),
 			new CommandCreator<BankPartnersResponseV1, IBankPartnersResponseV1Handler, IMessageAdapter<BankPartnersResponseV1>>(enumeratedMessageAdapters),
@@ -72,7 +71,7 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 	}
 
 	private class InternalCommandCreator<TReceivedMessage, THandledMessage, TInternalHandler, TUserHandler, TMessageAdapter> : ICommandCreator
-		where TInternalHandler : IInternalPassThroughHandler<TReceivedMessage, THandledMessage>
+		where TInternalHandler : IInternalForwardingHandler<TReceivedMessage, THandledMessage>
 		where TUserHandler : IHandler<THandledMessage>
 		where TMessageAdapter : IMessageAdapter<TReceivedMessage>
 	{

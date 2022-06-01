@@ -3,6 +3,6 @@ using RTGS.Public.Messages.Subscriber;
 
 namespace RTGS.DotNetSDK.Subscriber.Handlers.Internal;
 
-internal interface IInitiatingBankEarmarkFundsV1Handler : IInternalPassThroughHandler<InitiatingBankEarmarkFundsV1, EarmarkFundsV1>
+internal interface IInitiatingBankEarmarkFundsV1Handler : IInternalForwardingHandler<InitiatingBankEarmarkFundsV1, EarmarkFundsV1>
 {
 }
