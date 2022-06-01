@@ -109,6 +109,7 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<InitiatingBankEarmarkFundsV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<PartnerBankEarmarkFundsV1>>();
 
+		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<EarmarkFundsV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<EarmarkCompleteV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<EarmarkReleaseV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, DataOnlyMessageAdapter<BankPartnersResponseV1>>();
