@@ -46,7 +46,7 @@ public record RtgsSdkOptions
 	/// Address of the ID Crypt Service.
 	/// </summary>
 	public Uri IdCryptServiceAddress { get; }
-	
+
 	/// <summary>
 	/// Whether to use the message signing functionality (preview).
 	/// </summary>
@@ -142,7 +142,7 @@ public record RtgsSdkOptions
 			KeepAlivePingTimeoutValue = duration;
 			return this;
 		}
-		
+
 		/// <summary>
 		/// Enables message signing (preview).
 		/// </summary>
