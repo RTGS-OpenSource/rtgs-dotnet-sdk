@@ -62,15 +62,15 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 			_messageAdapter = messageAdapters.OfType<TMessageAdapter>().Single();
 		}
 
-		public IHandleMessageCommand Create(IReadOnlyCollection<IHandler> handlers)
+		public IHandleMessageCommand Create(IReadOnlyCollection<IHandler> userHandlers)
 		{
-			var handler = handlers.OfType<THandler>().Single();
+			var handler = userHandlers.OfType<THandler>().Single();
 
 			return new HandleMessageCommand<TMessage>(_messageAdapter, handler);
 		}
 	}
 
-	private class InternalCommandCreator<TReceivedMessage, THandledMessage, TInternalHandler, TUserHandler, TMessageAdapter> : ICommandCreator
+	private sealed class InternalCommandCreator<TReceivedMessage, THandledMessage, TInternalHandler, TUserHandler, TMessageAdapter> : ICommandCreator
 		where TInternalHandler : IInternalForwardingHandler<TReceivedMessage, THandledMessage>
 		where TUserHandler : IHandler<THandledMessage>
 		where TMessageAdapter : IMessageAdapter<TReceivedMessage>
@@ -99,6 +99,6 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 
 	private interface ICommandCreator
 	{
-		IHandleMessageCommand Create(IReadOnlyCollection<IHandler> handlers);
+		IHandleMessageCommand Create(IReadOnlyCollection<IHandler> userHandlers);
 	}
 }
