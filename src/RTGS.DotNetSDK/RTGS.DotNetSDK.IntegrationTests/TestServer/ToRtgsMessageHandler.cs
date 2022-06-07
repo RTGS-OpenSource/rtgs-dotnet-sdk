@@ -8,14 +8,14 @@ public class ToRtgsMessageHandler
 {
 	private readonly ConcurrentQueue<IEnumerable<Func<RtgsMessage, Task<RtgsMessageAcknowledgement>>>> _acknowledgementGeneratorsQueue = new();
 
-	public async Task Handle(RtgsMessage message, IServerStreamWriter<RtgsMessageAcknowledgement> responseStream)
+	public async Task Handle(RtgsMessage message, IServerStreamWriter<RtgsMessageAcknowledgement> responseStream, CancellationToken cancellationToken)
 	{
 		if (_acknowledgementGeneratorsQueue.TryDequeue(out var acknowledgementGenerators))
 		{
 			foreach (var acknowledgementGenerator in acknowledgementGenerators)
 			{
 				var acknowledgement = await acknowledgementGenerator(message);
-				await responseStream.WriteAsync(acknowledgement);
+				await responseStream.WriteAsync(acknowledgement, cancellationToken);
 			}
 		}
 	}
