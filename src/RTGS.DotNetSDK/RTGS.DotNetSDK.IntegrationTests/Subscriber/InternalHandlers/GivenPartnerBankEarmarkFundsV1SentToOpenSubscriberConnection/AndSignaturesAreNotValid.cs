@@ -41,7 +41,7 @@ public sealed class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcSe
 		try
 		{
 			var rtgsSdkOptions = RtgsSdkOptions.Builder.CreateNew(
-					TestData.ValidMessages.RtgsGlobalId,
+					ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new Uri("https://id-crypt-service"))
 				.EnableMessageSigning()
