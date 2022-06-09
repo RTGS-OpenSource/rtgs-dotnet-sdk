@@ -31,7 +31,9 @@ internal class IdCryptBankInvitationV1Handler : IIdCryptBankInvitationV1Handler
 			Alias = invitation.Alias,
 			Label = invitation.Label,
 			RecipientKeys = invitation.RecipientKeys.ToArray(),
-			ServiceEndpoint = invitation.ServiceEndpoint
+			ServiceEndpoint = invitation.ServiceEndpoint,
+			AgentPublicDid = invitation.AgentPublicDid,
+			RtgsGlobalId = fromRtgsGlobalId
 		};
 
 		try
