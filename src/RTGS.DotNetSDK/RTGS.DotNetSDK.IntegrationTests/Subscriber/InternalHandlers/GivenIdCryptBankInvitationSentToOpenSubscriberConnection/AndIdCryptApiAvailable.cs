@@ -173,7 +173,9 @@ public sealed class AndIdCryptApiAvailable : IDisposable, IClassFixture<GrpcServ
 			Alias = invitation.Alias,
 			Label = invitation.Label,
 			RecipientKeys = invitation.RecipientKeys.ToArray(),
-			ServiceEndpoint = invitation.ServiceEndpoint
+			ServiceEndpoint = invitation.ServiceEndpoint,
+			AgentPublicDid = invitation.AgentPublicDid,
+			RtgsGlobalId = ValidMessages.IdCryptBankInvitationV1.FromRtgsGlobalId
 		};
 
 		actualRequestBody.Should().BeEquivalentTo(expectedRequestBody);
