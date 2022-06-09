@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System.Collections.Concurrent;
+using System.Net.Http;
 
 namespace RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 
@@ -7,7 +8,7 @@ internal class StatusCodeHttpHandler : DelegatingHandler
 	private readonly Dictionary<string, MockHttpResponse> _mockHttpResponses;
 	private readonly CountdownEvent _requestsSignal;
 
-	public Dictionary<string, IList<HttpRequestMessage>> Requests { get; } = new();
+	public ConcurrentDictionary<string, IList<HttpRequestMessage>> Requests { get; } = new();
 
 	public StatusCodeHttpHandler(Dictionary<string, MockHttpResponse> mockHttpResponses)
 	{

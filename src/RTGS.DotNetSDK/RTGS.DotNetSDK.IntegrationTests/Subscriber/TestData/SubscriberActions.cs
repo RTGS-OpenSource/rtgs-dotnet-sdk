@@ -2,7 +2,7 @@
 
 public static class SubscriberActions
 {
-	private static readonly Dictionary<string, string> DefaultSigningHeaders = new()
+	public static readonly Dictionary<string, string> DefaultSigningHeaders = new()
 	{
 		{ "public-did-signature", "public-did-signature" },
 		{ "pairwise-did-signature", "pairwise-did-signature" },
