@@ -14,6 +14,6 @@ internal class PartnerBankEarmarkFundsV1Handler : IPartnerBankEarmarkFundsV1Hand
 		{
 			LckId = message.LckId,
 			Amt = message.CdtrAmt,
-			Acct = message.CdtrAgntAcct
+			Acct = message.DbtrAgntAcct
 		});
 }

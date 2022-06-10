@@ -115,7 +115,7 @@ public static class ValidMessages
 	internal static readonly PartnerBankEarmarkFundsV1 PartnerBankEarmarkFundsV1 = new()
 	{
 		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Value = 1 },
-		CdtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		DbtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
 			Nm = "name",
 			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice

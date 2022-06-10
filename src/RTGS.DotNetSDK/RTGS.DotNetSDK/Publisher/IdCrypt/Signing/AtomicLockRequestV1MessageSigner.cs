@@ -23,8 +23,8 @@ internal class AtomicLockRequestV1MessageSigner : ISignMessage<AtomicLockRequest
 		var documentToSign = new Dictionary<string, object>
 		{
 			{ "creditorAmount", message.CdtrAmt },
-			{ "creditorAgentAccount", message.CdtrAgntAcct },
-			{ "debtorAccount", message.DbtrAcct }
+			{ "debtorAgentAccountIban", message.DbtrAgntAcct?.Id?.IBAN },
+			{ "debtorAccountIban", message.DbtrAcct?.Id?.IBAN }
 		};
 
 		var response = await _idCryptServiceClient.SignMessageAsync(toRtgsGlobalId, documentToSign, cancellationToken);
