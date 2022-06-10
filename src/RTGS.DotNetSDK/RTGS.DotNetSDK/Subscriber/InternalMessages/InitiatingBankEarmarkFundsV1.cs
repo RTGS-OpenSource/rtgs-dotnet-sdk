@@ -6,7 +6,7 @@ internal record InitiatingBankEarmarkFundsV1
 {
 	public Guid LckId { get; init; }
 
-	public CashAccount40 CdtrAgntAcct { get; init; }
+	public CashAccount40 DbtrAgntAcct { get; init; }
 
 	public CashAccount40 DbtrAcct { get; init; }
 
