@@ -1,13 +1,12 @@
-﻿using System.Net.Http;
-using RTGS.DotNetSDK.IntegrationTests.Extensions;
+﻿using RTGS.DotNetSDK.IntegrationTests.Extensions;
 using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
 using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.InternalMessages;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
-namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers.GivenPartnerBankEarmarkFundsV1SentToOpenSubscriberConnection;
+namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers.GivenInitiatingBankEarmarkFundsV1SentToOpenSubscriberConnection;
 
-public sealed class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, IClassFixture<GrpcServerFixture>
+public sealed class AndSignaturesAreNotValid : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private readonly GrpcServerFixture _grpcServer;
 	private readonly ITestCorrelatorContext _serilogContext;
@@ -17,7 +16,7 @@ public sealed class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, ICla
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
 
-	public AndIdCryptVerifyMessageApiIsNotAvailable(GrpcServerFixture grpcServer)
+	public AndSignaturesAreNotValid(GrpcServerFixture grpcServer)
 	{
 		_grpcServer = grpcServer;
 
@@ -50,7 +49,7 @@ public sealed class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, ICla
 
 			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
-				.WithServiceUnavailableResponse(VerifyMessageUnsuccessfully.Path)
+				.WithOkResponse(VerifyOwnMessageUnsuccessfully.HttpRequestResponseContext)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
@@ -80,6 +79,28 @@ public sealed class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, ICla
 	}
 
 	[Fact]
+	public async Task WhenVerifyingMessage_ThenLogError()
+	{
+		using var exceptionSignal = new ManualResetEventSlim();
+
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+		_rtgsSubscriber.OnExceptionOccurred += (_, _) => exceptionSignal.Set();
+
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
+
+		exceptionSignal.Wait();
+
+		await _rtgsSubscriber.StopAsync();
+
+		var errorLogs = _serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.RtgsSubscriber", LogEventLevel.Error);
+
+		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
+			$"An error occurred while verifying a message (MessageIdentifier: InitiatingBankEarmarkFundsV1)",
+			LogEventLevel.Error,
+			typeof(VerificationFailedException)));
+	}
+
+	[Fact]
 	public async Task WhenVerifyingMessage_ThenRaiseExceptionEvent()
 	{
 		using var exceptionSignal = new ManualResetEventSlim();
@@ -93,62 +114,33 @@ public sealed class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, ICla
 			exceptionSignal.Set();
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
 
 		exceptionSignal.Wait();
 
 		await _rtgsSubscriber.StopAsync();
 
-		raisedException.Should().BeOfType<RtgsSubscriberException>()
-			.Which.Message.Should().Be("Error occurred when sending VerifyMessage request to ID Crypt Service");
+		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should().Be($"Verification of InitiatingBankEarmarkFundsV1 message failed.");
 	}
 
 	[Fact]
-	public async Task WhenVerifyingMessage_ThenHandlerLogs()
+	public async Task WhenVerifyingMessageAndVerifierThrows_ThenLogError()
 	{
 		using var exceptionSignal = new ManualResetEventSlim();
 
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 		_rtgsSubscriber.OnExceptionOccurred += (_, _) => exceptionSignal.Set();
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
 
 		exceptionSignal.Wait();
 
 		await _rtgsSubscriber.StopAsync();
 
-		var errorLogs = _serilogContext.LogsForNamespace("RTGS.DotNetSDK.Subscriber.IdCrypt.Verification", LogEventLevel.Error);
+		var errorLogs = _serilogContext.SubscriberLogs(LogEventLevel.Error);
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			"Error occurred when sending VerifyMessage request to ID Crypt Service",
+			$"An error occurred while verifying a message (MessageIdentifier: InitiatingBankEarmarkFundsV1)",
 			LogEventLevel.Error,
-			typeof(RtgsSubscriberException)));
-	}
-
-	[Fact]
-	public async Task WhenVerifyingMessage_ThenIdCryptServiceClientLogs()
-	{
-		using var exceptionSignal = new ManualResetEventSlim();
-
-		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
-		_rtgsSubscriber.OnExceptionOccurred += (_, _) => exceptionSignal.Set();
-
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
-
-		exceptionSignal.Wait();
-
-		await _rtgsSubscriber.StopAsync();
-
-		using var _ = new AssertionScope();
-
-		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug);
-		debugLogs.Should().ContainSingle()
-			.Which.Should().BeEquivalentTo(new LogEntry("Sending VerifyMessage request to ID Crypt Service", LogEventLevel.Debug));
-
-		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Error);
-		errorLogs.Should().ContainSingle()
-			.Which.Should().BeEquivalentTo(new LogEntry(
-				"Error occurred when sending VerifyMessage request to ID Crypt Service",
-				LogEventLevel.Error,
-				typeof(HttpRequestException)));
+			typeof(VerificationFailedException)));
 	}
 }

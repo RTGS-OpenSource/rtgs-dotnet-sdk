@@ -16,4 +16,8 @@ internal interface IIdCryptServiceClient
 		string privateSignature,
 		string alias,
 		CancellationToken cancellationToken = default);
+	public Task<VerifyOwnMessageResponse> VerifyOwnMessageAsync<T>(
+		T message,
+		string publicSignature,
+		CancellationToken cancellationToken = default);
 }

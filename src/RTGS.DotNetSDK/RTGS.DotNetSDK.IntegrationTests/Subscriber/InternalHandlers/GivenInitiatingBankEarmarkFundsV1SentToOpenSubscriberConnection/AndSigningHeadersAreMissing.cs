@@ -1,7 +1,7 @@
 ﻿using RTGS.DotNetSDK.Subscriber.InternalMessages;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
-namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers.GivenPartnerBankEarmarkFundsV1SentToOpenSubscriberConnection;
+namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers.GivenInitiatingBankEarmarkFundsV1SentToOpenSubscriberConnection;
 
 public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServerFixture>
 {
@@ -82,7 +82,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -91,7 +91,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 		_serilogContext
 			.LogsFor($"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter", LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-				$"Private signature not found on PartnerBankEarmarkFundsV1 message, yet was expected",
+				$"Private signature not found on InitiatingBankEarmarkFundsV1 message, yet was expected",
 				LogEventLevel.Error));
 	}
 
@@ -107,7 +107,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -118,7 +118,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 				$"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter",
 				LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-				$"Alias not found on PartnerBankEarmarkFundsV1 message, yet was expected",
+				$"Alias not found on InitiatingBankEarmarkFundsV1 message, yet was expected",
 				LogEventLevel.Error));
 	}
 
@@ -134,7 +134,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 			{ "alias", "alias" }
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -145,7 +145,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 				$"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter",
 				LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-				$"From RTGS Global ID not found on PartnerBankEarmarkFundsV1 message, yet was expected",
+				$"From RTGS Global ID not found on InitiatingBankEarmarkFundsV1 message, yet was expected",
 				LogEventLevel.Error));
 	}
 
@@ -162,7 +162,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -173,7 +173,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 				$"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter",
 				LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-				$"Public signature not found on PartnerBankEarmarkFundsV1 message, yet was expected",
+				$"Public signature not found on InitiatingBankEarmarkFundsV1 message, yet was expected",
 				LogEventLevel.Error));
 	}
 
@@ -192,14 +192,14 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
 		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
-			.Be($"Unable to verify PartnerBankEarmarkFundsV1 message due to missing headers.");
+			.Be($"Unable to verify InitiatingBankEarmarkFundsV1 message due to missing headers.");
 	}
 
 	[Fact]
@@ -217,14 +217,14 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
 		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
-			.Be($"Unable to verify PartnerBankEarmarkFundsV1 message due to missing headers.");
+			.Be($"Unable to verify InitiatingBankEarmarkFundsV1 message due to missing headers.");
 	}
 
 	[Fact]
@@ -242,14 +242,14 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 			{ "alias", "alias" }
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
 		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
-			.Be($"Unable to verify PartnerBankEarmarkFundsV1 message due to missing headers.");
+			.Be($"Unable to verify InitiatingBankEarmarkFundsV1 message due to missing headers.");
 	}
 
 	[Fact]
@@ -267,14 +267,14 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
 		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
-			.Be($"Unable to verify PartnerBankEarmarkFundsV1 message due to missing headers.");
+			.Be($"Unable to verify InitiatingBankEarmarkFundsV1 message due to missing headers.");
 	}
 	[Fact]
 	public async Task AndPrivateDidHeaderEmpty_WhenVerifyingMessage_ThenLogError()
@@ -289,7 +289,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -298,7 +298,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 		_serilogContext
 			.LogsFor($"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter", LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-				$"Private signature not found on PartnerBankEarmarkFundsV1 message, yet was expected",
+				$"Private signature not found on InitiatingBankEarmarkFundsV1 message, yet was expected",
 				LogEventLevel.Error));
 	}
 
@@ -315,7 +315,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -323,7 +323,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter", LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-				$"Alias not found on PartnerBankEarmarkFundsV1 message, yet was expected",
+				$"Alias not found on InitiatingBankEarmarkFundsV1 message, yet was expected",
 				LogEventLevel.Error));
 	}
 
@@ -340,7 +340,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 			{ "from-rtgs-global-id", string.Empty }
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -348,7 +348,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter", LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-				$"From RTGS Global ID not found on PartnerBankEarmarkFundsV1 message, yet was expected",
+				$"From RTGS Global ID not found on InitiatingBankEarmarkFundsV1 message, yet was expected",
 				LogEventLevel.Error));
 	}
 
@@ -365,7 +365,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -373,7 +373,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter", LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-				$"Public signature not found on PartnerBankEarmarkFundsV1 message, yet was expected",
+				$"Public signature not found on InitiatingBankEarmarkFundsV1 message, yet was expected",
 				LogEventLevel.Error));
 	}
 
@@ -393,14 +393,14 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
 		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
-			.Be($"Unable to verify PartnerBankEarmarkFundsV1 message due to missing headers.");
+			.Be($"Unable to verify InitiatingBankEarmarkFundsV1 message due to missing headers.");
 	}
 
 	[Fact]
@@ -419,14 +419,14 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
 		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
-			.Be($"Unable to verify PartnerBankEarmarkFundsV1 message due to missing headers.");
+			.Be($"Unable to verify InitiatingBankEarmarkFundsV1 message due to missing headers.");
 	}
 
 	[Fact]
@@ -445,14 +445,14 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 			{ "from-rtgs-global-id", string.Empty }
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
 		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
-			.Be($"Unable to verify PartnerBankEarmarkFundsV1 message due to missing headers.");
+			.Be($"Unable to verify InitiatingBankEarmarkFundsV1 message due to missing headers.");
 	}
 
 	[Fact]
@@ -471,13 +471,13 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, signingHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, signingHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
 		await _rtgsSubscriber.StopAsync();
 
 		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
-			.Be($"Unable to verify PartnerBankEarmarkFundsV1 message due to missing headers.");
+			.Be($"Unable to verify InitiatingBankEarmarkFundsV1 message due to missing headers.");
 	}
 }

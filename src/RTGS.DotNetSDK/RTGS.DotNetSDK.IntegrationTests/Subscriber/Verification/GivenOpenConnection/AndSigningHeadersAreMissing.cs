@@ -1,6 +1,4 @@
-﻿using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.ValidMessages;
-
-namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
+﻿namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.Verification.GivenOpenConnection;
 
 public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<GrpcServerFixture>
 {
@@ -83,6 +81,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		var signingHeaders = new Dictionary<string, string>
 		{
+			{ "public-did-signature", "public-did-signature" },
 			{ "alias", "alias" },
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
@@ -108,6 +107,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		var signingHeaders = new Dictionary<string, string>
 		{
+			{ "public-did-signature", "public-did-signature" },
 			{ "pairwise-did-signature", "pairwise-did-signature" },
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
@@ -136,6 +136,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "public-did-signature", "public-did-signature" },
 			{ "alias", "alias" }
 		};
 
@@ -156,6 +157,33 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task AndPublicDidSignatureHeaderMissing_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+
+		var signingHeaders = new Dictionary<string, string>
+		{
+			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "alias", "alias" },
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
+		};
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		_serilogContext
+			.LogsFor(
+				$"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter",
+				LogEventLevel.Error)
+			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
+				$"Public signature not found on {subscriberAction.MessageIdentifier} message, yet was expected",
+				LogEventLevel.Error));
+	}
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task AndAliasHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		Exception raisedException = null;
@@ -166,6 +194,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "public-did-signature", "public-did-signature" },
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
@@ -196,6 +225,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 		var signingHeaders = new Dictionary<string, string>
 		{
+			{ "public-did-signature", "public-did-signature" },
 			{ "alias", "alias" },
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
@@ -222,7 +252,34 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "public-did-signature", "public-did-signature" },
 			{ "alias", "alias" }
+		};
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
+			.Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task AndPublicDidSignatureHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		Exception raisedException = null;
+
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
+
+		var signingHeaders = new Dictionary<string, string>
+		{
+			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "alias", "alias" },
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
@@ -244,6 +301,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", string.Empty },
+			{ "public-did-signature", "public-did-signature" },
 			{ "alias", "alias" },
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
@@ -270,6 +328,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "public-did-signature", "public-did-signature" },
 			{ "alias", string.Empty },
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
@@ -295,6 +354,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "public-did-signature", "public-did-signature" },
 			{ "alias", "alias" },
 			{ "from-rtgs-global-id", string.Empty }
 		};
@@ -313,6 +373,32 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task AndPublicDidSignatureHeaderEmpty_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+
+		var signingHeaders = new Dictionary<string, string>
+		{
+			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "public-did-signature", string.Empty},
+			{ "alias", "alias" },
+			{ "from-rtgs-global-id", "from-rtgs-global-id" }
+		};
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		_serilogContext.LogsFor($"RTGS.DotNetSDK.Subscriber.Adapters.DataVerifyingMessageAdapter", LogEventLevel.Error)
+			.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
+				$"Public signature not found on {subscriberAction.MessageIdentifier} message, yet was expected",
+				LogEventLevel.Error));
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
 	public async Task AndPrivateSignatureHeaderEmpty_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		Exception raisedException = null;
@@ -323,6 +409,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", string.Empty },
+			{ "public-did-signature", "public-did-signature"},
 			{ "alias", "alias" },
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
@@ -349,6 +436,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "public-did-signature", "public-did-signature"},
 			{ "alias", string.Empty },
 			{ "from-rtgs-global-id", "from-rtgs-global-id" }
 		};
@@ -375,8 +463,36 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 		var signingHeaders = new Dictionary<string, string>
 		{
 			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "public-did-signature", "public-did-signature"},
 			{ "alias", "alias" },
-			{ ValidMessages.RtgsGlobalId, string.Empty }
+			{ "from-rtgs-global-id" , string.Empty }
+		};
+
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);
+
+		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
+
+		await _rtgsSubscriber.StopAsync();
+
+		raisedException.Should().BeOfType<VerificationFailedException>().Which.Message.Should()
+			.Be($"Unable to verify {subscriberAction.MessageIdentifier} message due to missing headers.");
+	}
+
+	[Theory]
+	[ClassData(typeof(SubscriberActionSignedMessagesData))]
+	public async Task AndPublicDidSignatureHeaderHeaderEmpty_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	{
+		Exception raisedException = null;
+
+		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+		_rtgsSubscriber.OnExceptionOccurred += (_, args) => raisedException = args.Exception;
+
+		var signingHeaders = new Dictionary<string, string>
+		{
+			{ "pairwise-did-signature", "pairwise-did-signature" },
+			{ "public-did-signature", string.Empty},
+			{ "alias", "alias" },
+			{ "from-rtgs-global-id" , "from-rtgs-global-id" }
 		};
 
 		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, signingHeaders);

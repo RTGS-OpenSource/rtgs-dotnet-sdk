@@ -53,6 +53,13 @@ internal class DataVerifyingMessageAdapter<TMessage> : IMessageAdapter<TMessage>
 				MessageIdentifier);
 		}
 
+		if (!rtgsMessage.Headers.TryGetValue("public-did-signature", out var publicSignature) ||
+			string.IsNullOrEmpty(publicSignature))
+		{
+			_logger.LogError("Public signature not found on {MessageIdentifier} message, yet was expected",
+				MessageIdentifier);
+		}
+
 		if (!rtgsMessage.Headers.TryGetValue("alias", out var alias) || string.IsNullOrEmpty(alias))
 		{
 			_logger.LogError("Alias not found on {MessageIdentifier} message, yet was expected", MessageIdentifier);
@@ -65,13 +72,13 @@ internal class DataVerifyingMessageAdapter<TMessage> : IMessageAdapter<TMessage>
 				MessageIdentifier);
 		}
 
-		if (string.IsNullOrEmpty(privateSignature) || string.IsNullOrEmpty(alias) || string.IsNullOrEmpty(fromRtgsGlobalId))
+		if (string.IsNullOrEmpty(privateSignature) || string.IsNullOrEmpty(publicSignature) || string.IsNullOrEmpty(alias) || string.IsNullOrEmpty(fromRtgsGlobalId))
 		{
 			throw new VerificationFailedException(
 				$"Unable to verify {MessageIdentifier} message due to missing headers.");
 		}
 
-		var verified = await _verifier.VerifyMessageAsync(deserializedMessage, privateSignature, alias, fromRtgsGlobalId,
+		var verified = await _verifier.VerifyMessageAsync(deserializedMessage, privateSignature, publicSignature, alias, fromRtgsGlobalId,
 			cancellationToken: default);
 
 		if (!verified)
