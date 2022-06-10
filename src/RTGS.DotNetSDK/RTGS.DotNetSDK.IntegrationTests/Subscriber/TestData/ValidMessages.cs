@@ -146,7 +146,7 @@ public static class ValidMessages
 				IBAN = "iban"
 			}
 		},
-		CdtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		DbtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
 			Nm = "name",
 			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
