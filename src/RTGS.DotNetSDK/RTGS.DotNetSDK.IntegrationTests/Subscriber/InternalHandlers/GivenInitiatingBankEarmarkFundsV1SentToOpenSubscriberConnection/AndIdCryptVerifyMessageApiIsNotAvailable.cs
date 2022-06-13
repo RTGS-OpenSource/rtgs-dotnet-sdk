@@ -5,7 +5,7 @@ using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.InternalMessages;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
-namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers.GivenPartnerBankEarmarkFundsV1SentToOpenSubscriberConnection;
+namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers.GivenInitiatingBankEarmarkFundsV1SentToOpenSubscriberConnection;
 
 public sealed class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, IClassFixture<GrpcServerFixture>
 {
@@ -50,7 +50,7 @@ public sealed class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, ICla
 
 			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
 				.Create()
-				.WithServiceUnavailableResponse(VerifyMessageUnsuccessfully.Path)
+				.WithServiceUnavailableResponse(VerifyOwnMessageUnsuccessfully.Path)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
@@ -93,14 +93,14 @@ public sealed class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, ICla
 			exceptionSignal.Set();
 		};
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
 
 		exceptionSignal.Wait();
 
 		await _rtgsSubscriber.StopAsync();
 
 		raisedException.Should().BeOfType<RtgsSubscriberException>()
-			.Which.Message.Should().Be("Error occurred when sending VerifyMessage request to ID Crypt Service");
+			.Which.Message.Should().Be("Error occurred when sending VerifyOwnMessageAsync request to ID Crypt Service");
 	}
 
 	[Fact]
@@ -111,7 +111,7 @@ public sealed class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, ICla
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 		_rtgsSubscriber.OnExceptionOccurred += (_, _) => exceptionSignal.Set();
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
 
 		exceptionSignal.Wait();
 
@@ -119,7 +119,7 @@ public sealed class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, ICla
 
 		var errorLogs = _serilogContext.LogsForNamespace("RTGS.DotNetSDK.Subscriber.IdCrypt.Verification", LogEventLevel.Error);
 		errorLogs.Should().ContainSingle().Which.Should().BeEquivalentTo(new LogEntry(
-			"Error occurred when sending VerifyMessage request to ID Crypt Service",
+			"Error occurred when sending VerifyOwnMessageAsync request to ID Crypt Service",
 			LogEventLevel.Error,
 			typeof(RtgsSubscriberException)));
 	}
@@ -132,7 +132,7 @@ public sealed class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, ICla
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 		_rtgsSubscriber.OnExceptionOccurred += (_, _) => exceptionSignal.Set();
 
-		await _fromRtgsSender.SendAsync(nameof(PartnerBankEarmarkFundsV1), ValidMessages.PartnerBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
 
 		exceptionSignal.Wait();
 
@@ -142,12 +142,12 @@ public sealed class AndIdCryptVerifyMessageApiIsNotAvailable : IDisposable, ICla
 
 		var debugLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug);
 		debugLogs.Should().ContainSingle()
-			.Which.Should().BeEquivalentTo(new LogEntry("Sending VerifyMessage request to ID Crypt Service", LogEventLevel.Debug));
+			.Which.Should().BeEquivalentTo(new LogEntry("Sending VerifyOwnMessageRequest request to ID Crypt Service", LogEventLevel.Debug));
 
 		var errorLogs = _serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Error);
 		errorLogs.Should().ContainSingle()
 			.Which.Should().BeEquivalentTo(new LogEntry(
-				"Error occurred when sending VerifyMessage request to ID Crypt Service",
+				"Error occurred when sending VerifyOwnMessageRequest request to ID Crypt Service",
 				LogEventLevel.Error,
 				typeof(HttpRequestException)));
 	}

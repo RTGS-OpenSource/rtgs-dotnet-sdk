@@ -156,6 +156,8 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 		var handler = _allTestHandlers.OfType<AllTestHandlers.TestHandler<EarmarkFundsV1>>().Single();
 		handler.WaitForMessage(WaitForReceivedMessageDuration);
 
+		await _rtgsSubscriber.StopAsync();
+
 		var informationLogs = _serilogContext.LogsForNamespace("RTGS.DotNetSDK.Subscriber", LogEventLevel.Information);
 		var expectedLogs = new List<LogEntry>
 		{
@@ -166,7 +168,7 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 			new("RTGS Subscriber stopping", LogEventLevel.Information),
 			new("RTGS Subscriber stopped", LogEventLevel.Information)
 		};
-		await _rtgsSubscriber.StopAsync();
+
 		informationLogs.Should().BeEquivalentTo(expectedLogs, options => options.WithStrictOrdering());
 	}
 

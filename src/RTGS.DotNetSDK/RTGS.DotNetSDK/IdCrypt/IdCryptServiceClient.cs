@@ -13,7 +13,6 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 	private readonly HttpClient _httpClient;
 	private readonly ILogger<IdCryptServiceClient> _logger;
 
-
 	public IdCryptServiceClient(HttpClient httpClient, ILogger<IdCryptServiceClient> logger)
 	{
 		_httpClient = httpClient;
@@ -46,7 +45,6 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 			throw;
 		}
 	}
-
 
 	public async Task<CreateConnectionInvitationResponse> CreateConnectionInvitationForBankAsync(string toRtgsGlobalId, CancellationToken cancellationToken = default)
 	{
@@ -171,6 +169,41 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		catch (Exception exception)
 		{
 			_logger.LogError(exception, "Error occurred when sending VerifyMessage request to ID Crypt Service");
+
+			throw;
+		}
+	}
+
+	public async Task<VerifyOwnMessageResponse> VerifyOwnMessageAsync<T>(T message, string publicSignature, CancellationToken cancellationToken = default)
+	{
+		try
+		{
+			_logger.LogDebug("Sending VerifyOwnMessageRequest request to ID Crypt Service");
+
+			var document = JsonSerializer.SerializeToElement(message);
+
+			var request = new VerifyOwnMessageRequest
+			{
+				Message = document,
+				PublicSignature = publicSignature
+			};
+
+			var response = await _httpClient.PostAsJsonAsync("api/message/verify/own", request, cancellationToken);
+
+			response.EnsureSuccessStatusCode();
+
+			var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
+
+			var verifyResponse =
+				await JsonSerializer.DeserializeAsync<VerifyOwnMessageResponse>(responseStream, cancellationToken: cancellationToken);
+
+			_logger.LogDebug("Sent VerifyOwnMessageRequest request to ID Crypt Service");
+
+			return verifyResponse;
+		}
+		catch (Exception exception)
+		{
+			_logger.LogError(exception, "Error occurred when sending VerifyOwnMessageRequest request to ID Crypt Service");
 
 			throw;
 		}

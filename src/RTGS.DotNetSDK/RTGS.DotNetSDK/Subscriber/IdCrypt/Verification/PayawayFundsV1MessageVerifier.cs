@@ -19,6 +19,7 @@ internal class PayawayFundsV1MessageVerifier : IVerifyMessage<PayawayFundsV1>
 	public async Task<bool> VerifyMessageAsync(
 		PayawayFundsV1 message,
 		string privateSignature,
+		string publicSignature,
 		string alias,
 		string fromRtgsGlobalId,
 		CancellationToken cancellationToken = default)

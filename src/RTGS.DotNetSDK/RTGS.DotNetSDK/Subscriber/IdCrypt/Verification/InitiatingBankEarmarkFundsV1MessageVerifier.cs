@@ -5,19 +5,19 @@ using RTGS.DotNetSDK.Subscriber.InternalMessages;
 
 namespace RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
 
-internal class PartnerBankEarmarkFundsV1MessageVerifier : IVerifyMessage<PartnerBankEarmarkFundsV1>
+internal class InitiatingBankEarmarkFundsV1MessageVerifier : IVerifyMessage<InitiatingBankEarmarkFundsV1>
 {
 	private readonly IIdCryptServiceClient _idCryptServiceClient;
-	private readonly ILogger<PartnerBankEarmarkFundsV1MessageVerifier> _logger;
+	private readonly ILogger<InitiatingBankEarmarkFundsV1MessageVerifier> _logger;
 
-	public PartnerBankEarmarkFundsV1MessageVerifier(IIdCryptServiceClient idCryptServiceClient, ILogger<PartnerBankEarmarkFundsV1MessageVerifier> logger)
+	public InitiatingBankEarmarkFundsV1MessageVerifier(IIdCryptServiceClient idCryptServiceClient, ILogger<InitiatingBankEarmarkFundsV1MessageVerifier> logger)
 	{
 		_idCryptServiceClient = idCryptServiceClient;
 		_logger = logger;
 	}
 
 	public async Task<bool> VerifyMessageAsync(
-		PartnerBankEarmarkFundsV1 message,
+		InitiatingBankEarmarkFundsV1 message,
 		string privateSignature,
 		string publicSignature,
 		string alias,
@@ -33,12 +33,12 @@ internal class PartnerBankEarmarkFundsV1MessageVerifier : IVerifyMessage<Partner
 
 		try
 		{
-			var response = await _idCryptServiceClient.VerifyMessageAsync(fromRtgsGlobalId, messageToVerify, privateSignature, alias, cancellationToken);
+			var response = await _idCryptServiceClient.VerifyOwnMessageAsync(messageToVerify, publicSignature, cancellationToken);
 			return response.Verified;
 		}
 		catch (Exception innerException)
 		{
-			const string errorMessage = "Error occurred when sending VerifyMessage request to ID Crypt Service";
+			const string errorMessage = "Error occurred when sending VerifyOwnMessageAsync request to ID Crypt Service";
 
 			var exception = new RtgsSubscriberException(errorMessage, innerException);
 

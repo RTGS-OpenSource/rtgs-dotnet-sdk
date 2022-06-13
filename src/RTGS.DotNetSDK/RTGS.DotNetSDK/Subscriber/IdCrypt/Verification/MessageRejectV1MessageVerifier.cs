@@ -19,6 +19,7 @@ internal class MessageRejectV1MessageVerifier : IVerifyMessage<MessageRejectV1>
 	public async Task<bool> VerifyMessageAsync(
 		MessageRejectV1 message,
 		string privateSignature,
+		string publicSignature,
 		string alias,
 		string fromRtgsGlobalId,
 		CancellationToken cancellationToken = default)

@@ -1,11 +1,13 @@
 ﻿using RTGS.DotNetSDK.IntegrationTests.Extensions;
+using RTGS.DotNetSDK.IntegrationTests.HttpHandlers;
+using RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Handlers;
 using RTGS.DotNetSDK.Subscriber.InternalMessages;
 using ValidMessages = RTGS.DotNetSDK.IntegrationTests.Subscriber.TestData.ValidMessages;
 
-namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers;
+namespace RTGS.DotNetSDK.IntegrationTests.Subscriber.InternalHandlers.GivenInitiatingBankEarmarkFundsV1SentToOpenSubscriberConnection;
 
-public sealed class GivenInitiatingBankEarmarkFundsV1SentToOpenSubscriberConnection : IDisposable, IClassFixture<GrpcServerFixture>
+public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServerFixture>
 {
 	private static readonly TimeSpan WaitForReceivedMessageDuration = TimeSpan.FromMilliseconds(1_000);
 	private static readonly TimeSpan WaitForSubscriberAcknowledgementDuration = TimeSpan.FromMilliseconds(100);
@@ -19,8 +21,9 @@ public sealed class GivenInitiatingBankEarmarkFundsV1SentToOpenSubscriberConnect
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
 	private ToRtgsMessageHandler _toRtgsMessageHandler;
+	private StatusCodeHttpHandler _idCryptServiceHttpHandler;
 
-	public GivenInitiatingBankEarmarkFundsV1SentToOpenSubscriberConnection(GrpcServerFixture grpcServer)
+	public AndSignaturesAreValid(GrpcServerFixture grpcServer)
 	{
 		_grpcServer = grpcServer;
 
@@ -48,12 +51,19 @@ public sealed class GivenInitiatingBankEarmarkFundsV1SentToOpenSubscriberConnect
 					ValidMessages.RtgsGlobalId,
 					_grpcServer.ServerUri,
 					new("https://id-crypt-service"))
+				.EnableMessageSigning()
+				.Build();
+
+			_idCryptServiceHttpHandler = StatusCodeHttpHandlerBuilderFactory
+				.Create()
+				.WithOkResponse(VerifyOwnMessageSuccessfully.HttpRequestResponseContext)
 				.Build();
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
 				.ConfigureServices((_, services) => services
-					.AddRtgsSubscriber(rtgsSdkOptions))
+					.AddRtgsSubscriber(rtgsSdkOptions)
+					.AddTestIdCryptServiceHttpClient(_idCryptServiceHttpHandler))
 				.UseSerilog()
 				.Build();
 
@@ -83,7 +93,7 @@ public sealed class GivenInitiatingBankEarmarkFundsV1SentToOpenSubscriberConnect
 
 		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
-		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
 
 		_fromRtgsSender.RequestHeaders.Should().ContainSingle(header =>
 			header.Key == "rtgs-global-id"
@@ -97,7 +107,7 @@ public sealed class GivenInitiatingBankEarmarkFundsV1SentToOpenSubscriberConnect
 
 		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
-		var sentRtgsMessage = await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1);
+		var sentRtgsMessage = await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
@@ -112,7 +122,7 @@ public sealed class GivenInitiatingBankEarmarkFundsV1SentToOpenSubscriberConnect
 
 		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
-		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
@@ -136,17 +146,22 @@ public sealed class GivenInitiatingBankEarmarkFundsV1SentToOpenSubscriberConnect
 
 		await _rtgsSubscriber.StartAsync(_allTestHandlers);
 
-		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1);
+		await _fromRtgsSender.SendAsync(nameof(InitiatingBankEarmarkFundsV1), ValidMessages.InitiatingBankEarmarkFundsV1, SubscriberActions.DefaultSigningHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForSubscriberAcknowledgementDuration);
 
+		var handler = _allTestHandlers.OfType<AllTestHandlers.TestHandler<EarmarkFundsV1>>().Single();
+		handler.WaitForMessage(WaitForReceivedMessageDuration);
+
 		await _rtgsSubscriber.StopAsync();
 
-		var informationLogs = _serilogContext.SubscriberLogs(LogEventLevel.Information);
+		var informationLogs = _serilogContext.LogsForNamespace("RTGS.DotNetSDK.Subscriber", LogEventLevel.Information);
 		var expectedLogs = new List<LogEntry>
 		{
 			new("RTGS Subscriber started", LogEventLevel.Information),
 			new("InitiatingBankEarmarkFundsV1 message received from RTGS", LogEventLevel.Information),
+			new("Verifying InitiatingBankEarmarkFundsV1 message", LogEventLevel.Information),
+			new("Verified InitiatingBankEarmarkFundsV1 message", LogEventLevel.Information),
 			new("RTGS Subscriber stopping", LogEventLevel.Information),
 			new("RTGS Subscriber stopped", LogEventLevel.Information)
 		};
