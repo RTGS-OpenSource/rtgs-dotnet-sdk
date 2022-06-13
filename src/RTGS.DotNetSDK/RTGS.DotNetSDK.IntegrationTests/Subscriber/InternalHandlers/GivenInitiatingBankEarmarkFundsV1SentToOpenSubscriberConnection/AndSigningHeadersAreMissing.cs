@@ -123,7 +123,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 	}
 
 	[Fact]
-	public async Task AndPartnerRtgsGlobalIdHeaderMissing_WhenVerifyingMessage_ThenLogError()
+	public async Task AndFromRtgsGlobalIdHeaderMissing_WhenVerifyingMessage_ThenLogError()
 	{
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
@@ -228,7 +228,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 	}
 
 	[Fact]
-	public async Task AndPartnerRtgsGlobalIdHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent()
+	public async Task AndFromRtgsGlobalIdHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent()
 	{
 		Exception raisedException = null;
 
@@ -328,7 +328,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 	}
 
 	[Fact]
-	public async Task AndPartnerRtgsGlobalIdHeaderEmpty_WhenVerifyingMessage_ThenLogError()
+	public async Task AndFromRtgsGlobalIdHeaderEmpty_WhenVerifyingMessage_ThenLogError()
 	{
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
@@ -430,7 +430,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 	}
 
 	[Fact]
-	public async Task AndPartnerRtgsGlobalIdHeaderHeaderEmpty_WhenVerifyingMessage_ThenRaiseExceptionEvent()
+	public async Task AndFromRtgsGlobalIdHeaderHeaderEmpty_WhenVerifyingMessage_ThenRaiseExceptionEvent()
 	{
 		Exception raisedException = null;
 

@@ -69,7 +69,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task AndPrivateDidHeaderMissing_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndPairwiseDidHeaderMissing_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		// Intermediary solution until we have decided how to handle unsigned MessageRejectV1 messages from RTGS.Global
 		if (subscriberAction.MessageIdentifier == nameof(MessageRejectV1))
@@ -129,7 +129,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task AndPartnerRtgsGlobalIdHeaderMissing_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndFromRtgsGlobalIdHeaderMissing_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
@@ -210,7 +210,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task AndPrivateSignatureHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndPairwiseSignatureHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		// Intermediary solution until we have decided how to handle unsigned MessageRejectV1 messages from RTGS.Global
 		if (subscriberAction.MessageIdentifier == nameof(MessageRejectV1))
@@ -242,7 +242,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task AndPartnerRtgsGlobalIdHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndFromRtgsGlobalIdHeaderMissing_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		Exception raisedException = null;
 
@@ -294,7 +294,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task AndPrivateDidHeaderEmpty_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndPairwiseDidHeaderEmpty_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
@@ -347,7 +347,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task AndPartnerRtgsGlobalIdHeaderEmpty_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndFromRtgsGlobalIdHeaderEmpty_WhenVerifyingMessage_ThenLogError<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
@@ -399,7 +399,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task AndPrivateSignatureHeaderEmpty_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndPairwiseSignatureHeaderEmpty_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		Exception raisedException = null;
 
@@ -453,7 +453,7 @@ public sealed class AndSigningHeadersAreMissing : IDisposable, IClassFixture<Grp
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task AndPartnerRtgsGlobalIdHeaderHeaderEmpty_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
+	public async Task AndFromRtgsGlobalIdHeaderHeaderEmpty_WhenVerifyingMessage_ThenRaiseExceptionEvent<TMessage>(SubscriberAction<TMessage> subscriberAction)
 	{
 		Exception raisedException = null;
 

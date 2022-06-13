@@ -21,8 +21,7 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 	private FromRtgsSender _fromRtgsSender;
 	private IRtgsSubscriber _rtgsSubscriber;
 	private ToRtgsMessageHandler _toRtgsMessageHandler;
-	private StatusCodeHttpHandler _idCryptServiceHttpHandler
-		;
+	private StatusCodeHttpHandler _idCryptServiceHttpHandler;
 
 	public AndSignaturesAreValid(GrpcServerFixture grpcServer)
 	{
@@ -59,7 +58,6 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 				.Create()
 				.WithOkResponse(VerifyOwnMessageSuccessfully.HttpRequestResponseContext)
 				.Build();
-
 
 			_clientHost = Host.CreateDefaultBuilder()
 				.ConfigureAppConfiguration(configuration => configuration.Sources.Clear())
