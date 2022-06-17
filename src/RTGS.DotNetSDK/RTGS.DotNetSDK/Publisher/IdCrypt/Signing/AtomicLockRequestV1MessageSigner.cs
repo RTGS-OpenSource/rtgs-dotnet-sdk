@@ -14,7 +14,6 @@ internal class AtomicLockRequestV1MessageSigner : ISignMessage<AtomicLockRequest
 	}
 
 	public async Task<SignMessageResponse> SignAsync(
-		string toRtgsGlobalId,
 		AtomicLockRequestV1 message,
 		CancellationToken cancellationToken = default)
 	{
@@ -27,7 +26,7 @@ internal class AtomicLockRequestV1MessageSigner : ISignMessage<AtomicLockRequest
 			{ "debtorAccountIban", message.DbtrAcct?.Id?.IBAN }
 		};
 
-		var response = await _idCryptServiceClient.SignMessageAsync(toRtgsGlobalId, documentToSign, cancellationToken);
+		var response = await _idCryptServiceClient.SignMessageAsync(message.BkPrtnrRtgsGlobalId, documentToSign, cancellationToken);
 
 		return response;
 	}

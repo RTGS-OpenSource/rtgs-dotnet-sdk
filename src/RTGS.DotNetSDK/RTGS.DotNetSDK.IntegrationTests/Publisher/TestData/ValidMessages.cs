@@ -12,7 +12,7 @@ public static class ValidMessages
 
 	public static readonly AtomicLockRequestV1 AtomicLockRequest = new()
 	{
-		BkPrtnrRtgsGlobalId = "RTGS:GB12345GBP",
+		BkPrtnrRtgsGlobalId = ToRtgsGlobalId,
 		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
 		{
 			Ccy = "GBP",
@@ -90,6 +90,7 @@ public static class ValidMessages
 
 	public static readonly PayawayCreationV1 PayawayCreation = new()
 	{
+		ToRtgsGlobalId = ToRtgsGlobalId,
 		FIToFICstmrCdtTrf = new FIToFICustomerCreditTransferV10()
 		{
 			GrpHdr = new GroupHeader96 { MsgId = "message-id" },
@@ -117,6 +118,7 @@ public static class ValidMessages
 
 	public static readonly PayawayConfirmationV1 PayawayConfirmation = new()
 	{
+		ToRtgsGlobalId = ToRtgsGlobalId,
 		BkToCstmrDbtCdtNtfctn = new BankToCustomerDebitCreditNotificationV09()
 		{
 			GrpHdr = new GroupHeader81 { MsgId = "message-id" },
@@ -161,7 +163,7 @@ public static class ValidMessages
 			RltdRef = new MessageReference { Ref = "payaway-id" },
 			Rsn = new RejectionReason2 { RjctgPtyRsn = "Having a bad day" }
 		},
-		ToRtgsGlobalId = "RTGS:US67890USD"
+		ToRtgsGlobalId = ToRtgsGlobalId
 	};
 
 	public static readonly BankPartnersRequestV1 BankPartnersRequest = new();

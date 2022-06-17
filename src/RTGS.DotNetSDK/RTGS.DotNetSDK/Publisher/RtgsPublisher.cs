@@ -11,8 +11,8 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 		_internalPublisher = internalPublisher;
 	}
 
-	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, string toRtgsGlobalId, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, cancellationToken, toRtgsGlobalId: toRtgsGlobalId);
+	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, CancellationToken cancellationToken = default) =>
+		_internalPublisher.SendMessageAsync(message, cancellationToken);
 
 	public Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequestV1 message, CancellationToken cancellationToken = default) =>
 		_internalPublisher.SendMessageAsync(message, cancellationToken);
@@ -26,14 +26,14 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 	public Task<SendResult> SendUpdateLedgerRequestAsync(UpdateLedgerRequestV1 message, CancellationToken cancellationToken = default) =>
 		_internalPublisher.SendMessageAsync(message, cancellationToken);
 
-	public Task<SendResult> SendPayawayCreateAsync(PayawayCreationV1 message, string toRtgsGlobalId, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, cancellationToken, toRtgsGlobalId: toRtgsGlobalId);
+	public Task<SendResult> SendPayawayCreateAsync(PayawayCreationV1 message, CancellationToken cancellationToken = default) =>
+		_internalPublisher.SendMessageAsync(message, cancellationToken);
 
-	public Task<SendResult> SendPayawayConfirmationAsync(PayawayConfirmationV1 message, string toRtgsGlobalId, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, cancellationToken, toRtgsGlobalId: toRtgsGlobalId);
+	public Task<SendResult> SendPayawayConfirmationAsync(PayawayConfirmationV1 message, CancellationToken cancellationToken = default) =>
+		_internalPublisher.SendMessageAsync(message, cancellationToken);
 
-	public Task<SendResult> SendPayawayRejectionAsync(PayawayRejectionV1 message, string toRtgsGlobalId, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, cancellationToken, toRtgsGlobalId: toRtgsGlobalId);
+	public Task<SendResult> SendPayawayRejectionAsync(PayawayRejectionV1 message, CancellationToken cancellationToken = default) =>
+		_internalPublisher.SendMessageAsync(message, cancellationToken);
 
 	public Task<SendResult> SendBankPartnersRequestAsync(BankPartnersRequestV1 message, CancellationToken cancellationToken = default) =>
 		_internalPublisher.SendMessageAsync(message, cancellationToken);
