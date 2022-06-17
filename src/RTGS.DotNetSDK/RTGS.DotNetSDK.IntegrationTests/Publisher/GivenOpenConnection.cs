@@ -96,11 +96,12 @@ public class GivenOpenConnection
 			var bigRequestTasks = atomicLockRequests
 				.Select(request => Task.Run(async () =>
 				{
-					_toRtgsMessageHandler.SetupForMessage(handler => handler.ReturnExpectedAcknowledgementWithSuccess());
+					_toRtgsMessageHandler.SetupForMessage(handler =>
+						handler.ReturnExpectedAcknowledgementWithSuccess());
 
 					sendRequestsSignal.Wait();
 
-					await _rtgsPublisher.SendAtomicLockRequestAsync(request, "to-rtgs-global-id");
+					await _rtgsPublisher.SendAtomicLockRequestAsync(request);
 				})).ToArray();
 
 			sendRequestsSignal.Set();
@@ -109,18 +110,40 @@ public class GivenOpenConnection
 			allCompleted.Should().BeTrue();
 
 			var receiver = _grpcServer.Services.GetRequiredService<ToRtgsReceiver>();
-			receiver.Connections.Single().Requests.Select(request => JsonSerializer.Deserialize<AtomicLockRequestV1>(request.Data.Span))
-				.Should().BeEquivalentTo(atomicLockRequests, options => options.ComparingByMembers<AtomicLockRequestV1>());
+			receiver.Connections.Single().Requests.Select(request =>
+					JsonSerializer.Deserialize<AtomicLockRequestV1>(request.Data.Span))
+				.Should().BeEquivalentTo(atomicLockRequests,
+					options => options.ComparingByMembers<AtomicLockRequestV1>());
 
 			IEnumerable<AtomicLockRequestV1> GenerateFiveUniqueAtomicLockRequests()
 			{
 				// We need writing to the stream to take a significant amount of time to ensure race condition.
 				// Using a long end to end id is one way of achieving this.
-				yield return new AtomicLockRequestV1 { EndToEndId = new string('a', 100_000) };
-				yield return new AtomicLockRequestV1 { EndToEndId = new string('b', 100_000) };
-				yield return new AtomicLockRequestV1 { EndToEndId = new string('c', 100_000) };
-				yield return new AtomicLockRequestV1 { EndToEndId = new string('d', 100_000) };
-				yield return new AtomicLockRequestV1 { EndToEndId = new string('e', 100_000) };
+				yield return new AtomicLockRequestV1
+				{
+					BkPrtnrRtgsGlobalId = "to-rtgs-global-id",
+					EndToEndId = new string('a', 100_000)
+				};
+				yield return new AtomicLockRequestV1
+				{
+					BkPrtnrRtgsGlobalId = "to-rtgs-global-id",
+					EndToEndId = new string('b', 100_000)
+				};
+				yield return new AtomicLockRequestV1
+				{
+					BkPrtnrRtgsGlobalId = "to-rtgs-global-id",
+					EndToEndId = new string('c', 100_000)
+				};
+				yield return new AtomicLockRequestV1
+				{
+					BkPrtnrRtgsGlobalId = "to-rtgs-global-id",
+					EndToEndId = new string('d', 100_000)
+				};
+				yield return new AtomicLockRequestV1
+				{
+					BkPrtnrRtgsGlobalId = "to-rtgs-global-id",
+					EndToEndId = new string('e', 100_000)
+				};
 			}
 		}
 

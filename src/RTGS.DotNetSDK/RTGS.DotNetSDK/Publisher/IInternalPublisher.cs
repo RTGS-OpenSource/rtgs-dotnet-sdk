@@ -8,7 +8,6 @@ internal interface IInternalPublisher : IAsyncDisposable
 		TMessage message,
 		CancellationToken cancellationToken,
 		Dictionary<string, string> headers = null,
-		string toRtgsGlobalId = null,
 		[CallerMemberName] string callingMethod = null);
 
 	Task<SendResult> SendMessageAsync<TMessage>(
@@ -16,6 +15,5 @@ internal interface IInternalPublisher : IAsyncDisposable
 		string messageIdentifier,
 		CancellationToken cancellationToken,
 		Dictionary<string, string> headers = null,
-		string toRtgsGlobalId = null,
 		[CallerMemberName] string callingMethod = null);
 }

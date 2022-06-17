@@ -74,8 +74,11 @@ public sealed class GivenInitialFailedConnection : IDisposable, IClassFixture<Gr
 
 		await FluentActions
 			.Awaiting(() => _rtgsPublisher.SendAtomicLockRequestAsync(
-				new AtomicLockRequestV1 { EndToEndId = new string('e', 100_000) },
-				"to-rtgs-global-id"))
+				new AtomicLockRequestV1
+				{
+					BkPrtnrRtgsGlobalId = "to-rtgs-global-id",
+					EndToEndId = new string('e', 100_000)
+				}))
 			.Should()
 			.ThrowAsync<Exception>();
 	}

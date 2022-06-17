@@ -4,7 +4,7 @@ public static class PublisherActions
 {
 	public static readonly PublisherAction<AtomicLockRequestV1> AtomicLock = new(
 		ValidMessages.AtomicLockRequest,
-		(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, "to-rtgs-global-id", cancellationToken),
+		(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, cancellationToken),
 		ValidMessages.SignedDocuments.AtomicLockRequestDocument);
 
 	public static readonly PublisherAction<AtomicTransferRequestV1> AtomicTransfer = new(
@@ -25,18 +25,18 @@ public static class PublisherActions
 
 	public static readonly PublisherAction<PayawayCreationV1> PayawayCreate = new(
 		ValidMessages.PayawayCreation,
-		(publisher, request, cancellationToken) => publisher.SendPayawayCreateAsync(request, "to-rtgs-global-id", cancellationToken),
+		(publisher, request, cancellationToken) => publisher.SendPayawayCreateAsync(request, cancellationToken),
 		ValidMessages.SignedDocuments.PayawayCreateDocument);
 
 	public static readonly PublisherAction<PayawayConfirmationV1> PayawayConfirmation = new(
 		ValidMessages.PayawayConfirmation,
-		(publisher, request, cancellationToken) => publisher.SendPayawayConfirmationAsync(request, "to-rtgs-global-id", cancellationToken),
+		(publisher, request, cancellationToken) => publisher.SendPayawayConfirmationAsync(request, cancellationToken),
 		ValidMessages.SignedDocuments.PayawayConfirmationDocument);
 
 	public static readonly PublisherAction<PayawayRejectionV1> PayawayRejection = new(
 		ValidMessages.PayawayRejection,
 		(publisher, request, cancellationToken) =>
-			publisher.SendPayawayRejectionAsync(request, "to-rtgs-global-id", cancellationToken),
+			publisher.SendPayawayRejectionAsync(request, cancellationToken),
 		ValidMessages.SignedDocuments.PayawayRejectionDocument);
 
 	public static readonly PublisherAction<BankPartnersRequestV1> BankPartnersRequest = new(

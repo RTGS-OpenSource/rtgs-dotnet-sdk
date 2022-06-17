@@ -11,10 +11,9 @@ public interface IRtgsPublisher
 	/// Sends an <see cref="AtomicLockRequestV1"/> to initiate a transaction.
 	/// </summary>
 	/// <param name="message">The <see cref="AtomicLockRequestV1"/> message</param>
-	/// <param name="toRtgsGlobalId">The RTGS Global ID of the recipient bank</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
-	Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, string toRtgsGlobalId, CancellationToken cancellationToken = default);
+	Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Sends an <see cref="AtomicTransferRequestV1"/> to invoke transfer of funds.
@@ -52,28 +51,25 @@ public interface IRtgsPublisher
 	/// Sends a <see cref="PayawayCreationV1"/> request.
 	/// </summary>
 	/// <param name="message">The <see cref="PayawayCreationV1"/> message</param>
-	/// <param name="toRtgsGlobalId">The RTGS Global ID of the recipient bank</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
-	Task<SendResult> SendPayawayCreateAsync(PayawayCreationV1 message, string toRtgsGlobalId, CancellationToken cancellationToken = default);
+	Task<SendResult> SendPayawayCreateAsync(PayawayCreationV1 message, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Sends a <see cref="PayawayConfirmationV1"/> request.
 	/// </summary>
 	/// <param name="message">The <see cref="PayawayConfirmationV1"/>  message</param>
-	/// <param name="toRtgsGlobalId">The RTGS Global ID of the recipient bank</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
-	Task<SendResult> SendPayawayConfirmationAsync(PayawayConfirmationV1 message, string toRtgsGlobalId, CancellationToken cancellationToken = default);
+	Task<SendResult> SendPayawayConfirmationAsync(PayawayConfirmationV1 message, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Sends a <see cref="PayawayRejectionV1"/> request.
 	/// </summary>
 	/// <param name="message">The <see cref="PayawayRejectionV1"/> rejection message</param>
-	/// <param name="toRtgsGlobalId">The RTGS Global ID of the recipient bank</param>
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
-	Task<SendResult> SendPayawayRejectionAsync(PayawayRejectionV1 message, string toRtgsGlobalId, CancellationToken cancellationToken = default);
+	Task<SendResult> SendPayawayRejectionAsync(PayawayRejectionV1 message, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	/// Sends a <see cref="BankPartnersRequestV1"/> request.
