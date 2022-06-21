@@ -19,7 +19,7 @@ internal class PayawayCreationV1MessageSigner : ISignMessage<PayawayCreationV1>
 	{
 		ArgumentNullException.ThrowIfNull(message);
 
-		var response = await _idCryptServiceClient.SignMessageAsync(message.ToRtgsGlobalId, message.FIToFICstmrCdtTrf, cancellationToken);
+		var response = await _idCryptServiceClient.SignMessageForBankAsync(message.ToRtgsGlobalId, message.FIToFICstmrCdtTrf, cancellationToken);
 
 		return response;
 	}

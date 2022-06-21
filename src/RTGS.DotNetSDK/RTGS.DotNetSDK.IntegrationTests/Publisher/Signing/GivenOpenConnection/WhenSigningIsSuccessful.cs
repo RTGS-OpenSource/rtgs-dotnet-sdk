@@ -107,7 +107,7 @@ public sealed class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcSer
 
 		await publisherAction.InvokeSendDelegateAsync(_rtgsPublisher);
 
-		_idCryptServiceHttpHandler.Requests.Should().ContainKey("/api/message/sign");
+		_idCryptServiceHttpHandler.Requests.Should().ContainKey("/api/message/sign/for-bank");
 	}
 
 	[Theory]
@@ -186,8 +186,8 @@ public sealed class WhenSigningIsSuccessful : IDisposable, IClassFixture<GrpcSer
 
 		var expectedDebugLogs = new List<LogEntry>
 		{
-			new("Sending SignMessage request to ID Crypt Service", LogEventLevel.Debug),
-			new("Sent SignMessage request to ID Crypt Service", LogEventLevel.Debug)
+			new("Sending SignMessageForBank request to ID Crypt Service", LogEventLevel.Debug),
+			new("Sent SignMessageForBank request to ID Crypt Service", LogEventLevel.Debug)
 		};
 
 		_serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug)

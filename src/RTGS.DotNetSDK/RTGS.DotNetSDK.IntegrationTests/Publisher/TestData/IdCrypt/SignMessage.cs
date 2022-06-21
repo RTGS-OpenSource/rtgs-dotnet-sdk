@@ -5,7 +5,7 @@ namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 internal class SignMessage
 {
-	public const string Path = "/api/message/sign";
+	public const string Path = "/api/message/sign/for-bank";
 
 	public static SignMessageResponse Response => new()
 	{

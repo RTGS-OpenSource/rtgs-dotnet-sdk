@@ -25,7 +25,7 @@ internal class PayawayRejectionV1MessageSigner : ISignMessage<PayawayRejectionV1
 			{ "reason", message.MsgRjctn?.Rsn?.RjctgPtyRsn }
 		};
 
-		var response = await _idCryptServiceClient.SignMessageAsync(message.ToRtgsGlobalId, documentToSign, cancellationToken);
+		var response = await _idCryptServiceClient.SignMessageForBankAsync(message.ToRtgsGlobalId, documentToSign, cancellationToken);
 
 		return response;
 	}

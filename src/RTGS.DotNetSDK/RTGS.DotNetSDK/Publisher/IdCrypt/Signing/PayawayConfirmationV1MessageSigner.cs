@@ -26,7 +26,7 @@ internal class PayawayConfirmationV1MessageSigner : ISignMessage<PayawayConfirma
 			{ "amount", message.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Ntry[0]?.Amt?.Value }
 		};
 
-		var response = await _idCryptServiceClient.SignMessageAsync(message.ToRtgsGlobalId, documentToSign, cancellationToken);
+		var response = await _idCryptServiceClient.SignMessageForBankAsync(message.ToRtgsGlobalId, documentToSign, cancellationToken);
 
 		return response;
 	}
