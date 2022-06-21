@@ -12,7 +12,7 @@ internal interface IIdCryptServiceClient
 
 	public Task AcceptConnectionInvitationAsync(AcceptConnectionInvitationRequest request, CancellationToken cancellationToken = default);
 
-	public Task<SignMessageResponse> SignMessageAsync<T>(string toRtgsGlobalId, T message, CancellationToken cancellationToken = default);
+	public Task<SignMessageResponse> SignMessageForBankAsync<T>(string toRtgsGlobalId, T message, CancellationToken cancellationToken = default);
 
 	public Task<VerifyResponse> VerifyMessageAsync<T>(
 		string rtgsGlobalId,

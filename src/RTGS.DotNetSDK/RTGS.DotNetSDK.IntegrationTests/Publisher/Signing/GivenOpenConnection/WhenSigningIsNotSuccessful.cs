@@ -147,10 +147,10 @@ public sealed class WhenSigningIsNotSuccessful : IDisposable, IClassFixture<Grpc
 
 		_serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Debug)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(
-				new LogEntry("Sending SignMessage request to ID Crypt Service", LogEventLevel.Debug));
+				new LogEntry("Sending SignMessageForBank request to ID Crypt Service", LogEventLevel.Debug));
 
 		_serilogContext.LogsFor("RTGS.DotNetSDK.IdCrypt.IdCryptServiceClient", LogEventLevel.Error)
 			.Should().ContainSingle().Which.Should().BeEquivalentTo(
-				new LogEntry("Error occurred when sending SignMessage request to ID Crypt Service", LogEventLevel.Error, typeof(HttpRequestException)));
+				new LogEntry("Error occurred when sending SignMessageForBank request to ID Crypt Service", LogEventLevel.Error, typeof(HttpRequestException)));
 	}
 }

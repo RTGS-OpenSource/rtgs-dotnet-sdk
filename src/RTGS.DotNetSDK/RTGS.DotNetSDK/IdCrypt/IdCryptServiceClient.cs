@@ -98,21 +98,21 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		}
 	}
 
-	public async Task<SignMessageResponse> SignMessageAsync<T>(string toRtgsGlobalId, T message, CancellationToken cancellationToken = default)
+	public async Task<SignMessageResponse> SignMessageForBankAsync<T>(string toRtgsGlobalId, T message, CancellationToken cancellationToken = default)
 	{
 		try
 		{
-			_logger.LogDebug("Sending SignMessage request to ID Crypt Service");
+			_logger.LogDebug("Sending SignMessageForBank request to ID Crypt Service");
 
 			var document = JsonSerializer.SerializeToElement(message);
 
-			var request = new SignMessageRequest
+			var request = new SignMessageForBankRequest
 			{
 				RtgsGlobalId = toRtgsGlobalId,
 				Message = document
 			};
 
-			var response = await _httpClient.PostAsJsonAsync("api/message/sign", request, cancellationToken);
+			var response = await _httpClient.PostAsJsonAsync("api/message/sign/for-bank", request, cancellationToken);
 
 			response.EnsureSuccessStatusCode();
 
@@ -120,13 +120,13 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 
 			var signMessageResponse = await JsonSerializer.DeserializeAsync<SignMessageResponse>(responseStream, cancellationToken: cancellationToken);
 
-			_logger.LogDebug("Sent SignMessage request to ID Crypt Service");
+			_logger.LogDebug("Sent SignMessageForBank request to ID Crypt Service");
 
 			return signMessageResponse;
 		}
 		catch (Exception exception)
 		{
-			_logger.LogError(exception, "Error occurred when sending SignMessage request to ID Crypt Service");
+			_logger.LogError(exception, "Error occurred when sending SignMessageForBank request to ID Crypt Service");
 
 			throw;
 		}

@@ -26,7 +26,7 @@ internal class AtomicLockRequestV1MessageSigner : ISignMessage<AtomicLockRequest
 			{ "debtorAccountIban", message.DbtrAcct?.Id?.IBAN }
 		};
 
-		var response = await _idCryptServiceClient.SignMessageAsync(message.BkPrtnrRtgsGlobalId, documentToSign, cancellationToken);
+		var response = await _idCryptServiceClient.SignMessageForBankAsync(message.BkPrtnrRtgsGlobalId, documentToSign, cancellationToken);
 
 		return response;
 	}
