@@ -5,7 +5,7 @@ namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 internal static class CreateConnectionForRtgs
 {
-	public const string Path = "/api/Connection/for-rtgs";
+	public const string Path = "/api/rtgs-connection/create";
 
 	public static CreateConnectionInvitationResponse Response => new()
 	{
