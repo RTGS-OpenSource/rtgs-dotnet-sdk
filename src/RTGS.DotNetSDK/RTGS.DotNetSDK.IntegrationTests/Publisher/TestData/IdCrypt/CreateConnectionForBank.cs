@@ -5,7 +5,7 @@ namespace RTGS.DotNetSDK.IntegrationTests.Publisher.TestData.IdCrypt;
 
 internal static class CreateConnectionForBank
 {
-	public const string Path = "/api/Connection/for-bank";
+	public const string Path = "/api/bank-connection/create";
 
 	public static CreateConnectionInvitationResponse Response => new()
 	{

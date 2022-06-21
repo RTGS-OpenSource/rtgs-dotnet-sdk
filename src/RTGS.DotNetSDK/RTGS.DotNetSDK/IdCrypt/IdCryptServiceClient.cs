@@ -25,7 +25,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		{
 			_logger.LogDebug("Sending create connection invitation for RTGS request to ID Crypt Service");
 
-			var response = await _httpClient.PostAsync("api/Connection/for-rtgs", null, cancellationToken);
+			var response = await _httpClient.PostAsync("api/rtgs-connection/create", null, cancellationToken);
 
 			response.EnsureSuccessStatusCode();
 
@@ -57,7 +57,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 				RtgsGlobalId = toRtgsGlobalId
 			};
 
-			var response = await _httpClient.PostAsJsonAsync("api/Connection/for-bank", request, cancellationToken);
+			var response = await _httpClient.PostAsJsonAsync("api/bank-connection/create", request, cancellationToken);
 
 			response.EnsureSuccessStatusCode();
 
@@ -84,7 +84,7 @@ internal class IdCryptServiceClient : IIdCryptServiceClient
 		{
 			_logger.LogDebug("Sending AcceptConnectionInvitation request to ID Crypt Service");
 
-			var response = await _httpClient.PostAsJsonAsync("api/Connection/Accept", request, cancellationToken);
+			var response = await _httpClient.PostAsJsonAsync("api/bank-connection/accept", request, cancellationToken);
 
 			response.EnsureSuccessStatusCode();
 
