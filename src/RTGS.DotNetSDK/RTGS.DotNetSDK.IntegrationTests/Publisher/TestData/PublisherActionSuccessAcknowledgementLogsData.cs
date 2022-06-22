@@ -19,6 +19,8 @@ public class PublisherActionSuccessAcknowledgementLogsData : BasePublisherAction
 			PublisherActions.AtomicTransfer,
 			new List<LogEntry>
 			{
+				new("Signing AtomicTransferRequestV1 message", LogEventLevel.Information),
+				new("Signed AtomicTransferRequestV1 message", LogEventLevel.Information),
 				new("Sending AtomicTransferRequestV1 to RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Information),
 				new("Sent AtomicTransferRequestV1 to RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Information),
 				new("Received AtomicTransferRequestV1 acknowledgement (acknowledged) from RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Information)
