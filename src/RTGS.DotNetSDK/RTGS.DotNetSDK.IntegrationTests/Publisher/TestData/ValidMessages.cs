@@ -197,7 +197,7 @@ public static class ValidMessages
 		public static readonly Dictionary<string, object> AtomicTransferRequestDocument = new()
 		{
 			{ "creditTransfer", AtomicTransferRequest.FIToFICstmrCdtTrf },
-			{ "lockId", AtomicTransferRequest.LckId},
+			{ "lockId", AtomicTransferRequest.LckId }
 		};
 
 		public static readonly FIToFICustomerCreditTransferV10 PayawayCreateDocument = PayawayCreation.FIToFICstmrCdtTrf;
