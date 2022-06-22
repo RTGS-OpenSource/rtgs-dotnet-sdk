@@ -22,7 +22,7 @@ internal class AtomicTransferRequestV1MessageSigner : ISignMessage<AtomicTransfe
 		var documentToSign = new Dictionary<string, object>
 		{
 			{ "creditTransfer", message.FIToFICstmrCdtTrf },
-			{ "lockId", message.LckId},
+			{ "lockId", message.LckId }
 		};
 
 		var response = await _idCryptServiceClient.SignMessageForBankAsync(message.ToRtgsGlobalId, documentToSign, cancellationToken);
