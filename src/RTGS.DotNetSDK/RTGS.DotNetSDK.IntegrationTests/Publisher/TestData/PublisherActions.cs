@@ -9,7 +9,8 @@ public static class PublisherActions
 
 	public static readonly PublisherAction<AtomicTransferRequestV1> AtomicTransfer = new(
 		ValidMessages.AtomicTransferRequest,
-		(publisher, request, cancellationToken) => publisher.SendAtomicTransferRequestAsync(request, cancellationToken));
+		(publisher, request, cancellationToken) => publisher.SendAtomicTransferRequestAsync(request, cancellationToken),
+		ValidMessages.SignedDocuments.AtomicTransferRequestDocument);
 
 	public static readonly PublisherAction<EarmarkConfirmationV1> EarmarkConfirmation = new(
 		ValidMessages.EarmarkConfirmation,

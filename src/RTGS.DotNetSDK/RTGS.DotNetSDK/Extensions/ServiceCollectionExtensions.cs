@@ -58,7 +58,7 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddTransient<IRtgsConnectionBroker, RtgsConnectionBroker>();
 
 		serviceCollection.AddSingleton<ISignMessage<AtomicLockRequestV1>, AtomicLockRequestV1MessageSigner>();
-
+		serviceCollection.AddSingleton<ISignMessage<AtomicTransferRequestV1>, AtomicTransferRequestV1MessageSigner>();
 		serviceCollection.AddSingleton<ISignMessage<PayawayCreationV1>, PayawayCreationV1MessageSigner>();
 		serviceCollection.AddSingleton<ISignMessage<PayawayRejectionV1>, PayawayRejectionV1MessageSigner>();
 		serviceCollection.AddSingleton<ISignMessage<PayawayConfirmationV1>, PayawayConfirmationV1MessageSigner>();

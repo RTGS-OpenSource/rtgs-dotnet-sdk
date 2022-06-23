@@ -53,6 +53,7 @@ public static class ValidMessages
 
 	public static readonly AtomicTransferRequestV1 AtomicTransferRequest = new()
 	{
+		ToRtgsGlobalId = ToRtgsGlobalId,
 		FIToFICstmrCdtTrf = new FIToFICustomerCreditTransferV10
 		{
 			GrpHdr = new GroupHeader96 { MsgId = "message-id" },
@@ -191,6 +192,12 @@ public static class ValidMessages
 			},
 			{ "iban", PayawayConfirmation.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Acct?.Id?.IBAN },
 			{ "amount", PayawayConfirmation.BkToCstmrDbtCdtNtfctn?.Ntfctn[0]?.Ntry[0]?.Amt?.Value }
+		};
+
+		public static readonly Dictionary<string, object> AtomicTransferRequestDocument = new()
+		{
+			{ "creditTransfer", AtomicTransferRequest.FIToFICstmrCdtTrf },
+			{ "lockId", AtomicTransferRequest.LckId }
 		};
 
 		public static readonly FIToFICustomerCreditTransferV10 PayawayCreateDocument = PayawayCreation.FIToFICstmrCdtTrf;

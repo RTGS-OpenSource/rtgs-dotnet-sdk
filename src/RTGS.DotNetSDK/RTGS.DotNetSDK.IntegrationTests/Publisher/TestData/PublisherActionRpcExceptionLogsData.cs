@@ -19,6 +19,8 @@ public class PublisherActionRpcExceptionLogsData : BasePublisherActionData
 			PublisherActions.AtomicTransfer,
 			new List<LogEntry>
 			{
+				new("Signing AtomicTransferRequestV1 message", LogEventLevel.Information),
+				new("Signed AtomicTransferRequestV1 message", LogEventLevel.Information),
 				new("Sending AtomicTransferRequestV1 to RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Information),
 				new("Sent AtomicTransferRequestV1 to RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Information),
 				new("Error received when sending AtomicTransferRequestV1 to RTGS (SendAtomicTransferRequestAsync)", LogEventLevel.Error, typeof(RpcException))
