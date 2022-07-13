@@ -14,6 +14,10 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, CancellationToken cancellationToken = default) =>
 		_internalPublisher.SendMessageAsync(message, cancellationToken);
 
+	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV2 message,
+		CancellationToken cancellationToken = default) =>
+		_internalPublisher.SendMessageAsync(message, cancellationToken);
+
 	public Task<SendResult> SendAtomicTransferRequestAsync(AtomicTransferRequestV1 message, CancellationToken cancellationToken = default) =>
 		_internalPublisher.SendMessageAsync(message, cancellationToken);
 
@@ -36,9 +40,5 @@ internal sealed class RtgsPublisher : IRtgsPublisher
 		_internalPublisher.SendMessageAsync(message, cancellationToken);
 
 	public Task<SendResult> SendBankPartnersRequestAsync(BankPartnersRequestV1 message, CancellationToken cancellationToken = default) =>
-		_internalPublisher.SendMessageAsync(message, cancellationToken);
-
-	public Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV2 message,
-		CancellationToken cancellationToken = default) =>
 		_internalPublisher.SendMessageAsync(message, cancellationToken);
 }

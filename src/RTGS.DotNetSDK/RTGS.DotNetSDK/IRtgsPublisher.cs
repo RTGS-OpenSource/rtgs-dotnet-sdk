@@ -16,6 +16,15 @@ public interface IRtgsPublisher
 	Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV1 message, CancellationToken cancellationToken = default);
 
 	/// <summary>
+	/// Sends a <see cref="AtomicLockRequestV2"/> request.
+	/// </summary>
+	/// <param name="message">The <see cref="AtomicLockRequestV2"/> message</param>
+	/// <param name="cancellationToken">A cancellation token</param>
+	/// <returns>The result of the operation</returns>
+	Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV2 message,
+		CancellationToken cancellationToken = default);
+
+	/// <summary>
 	/// Sends an <see cref="AtomicTransferRequestV1"/> to invoke transfer of funds.
 	/// </summary>
 	/// <param name="message">The <see cref="AtomicTransferRequestV1"/> message</param>
@@ -78,13 +87,4 @@ public interface IRtgsPublisher
 	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The result of the operation</returns>
 	Task<SendResult> SendBankPartnersRequestAsync(BankPartnersRequestV1 message, CancellationToken cancellationToken = default);
-
-	/// <summary>
-	/// Sends a <see cref="AtomicLockRequestV2"/> request.
-	/// </summary>
-	/// <param name="message">The <see cref="AtomicLockRequestV2"/> message</param>
-	/// <param name="cancellationToken">A cancellation token</param>
-	/// <returns>The result of the operation</returns>
-	Task<SendResult> SendAtomicLockRequestAsync(AtomicLockRequestV2 message,
-		CancellationToken cancellationToken = default);
 }

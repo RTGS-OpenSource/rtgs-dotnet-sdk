@@ -46,6 +46,6 @@ public static class PublisherActions
 
 	public static readonly PublisherAction<AtomicLockRequestV2> AtomicLockV2 = new(
 		ValidMessages.AtomicLockRequestV2,
-		(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, cancellationToken), 
+		(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, cancellationToken),
 		ValidMessages.SignedDocuments.AtomicLockRequestDocumentV2);
 }
