@@ -21,14 +21,20 @@ internal class AtomicLockRequestV2MessageSigner : ISignMessage<AtomicLockRequest
 
 		var documentToSign = new Dictionary<string, object>
 		{
-			{ "creditorAmount", message.CdtrAmt },
-			{ "debtorAgentAccountIban", message.DbtrAgntAcct?.Id?.IBAN },
-			{ "debtorAccountIban", message.DbtrAcct?.Id?.IBAN },
-			{ "creditorAccountIban", message.CdtrAcct?.Id?.IBAN },
-			{ "creditorAgentAccountIban", message.CdtrAgntAcct?.Id?.IBAN }
+			{"creditorAmount", message.CdtrAmt},
+			{"debtorAgentAccountIban", message.DbtrAgntAcct?.Id?.IBAN},
+			{"debtorAgentAccountOtherId", message.DbtrAgntAcct?.Id?.Othr?.Id},
+			{"debtorAccountIban", message.DbtrAcct?.Id?.IBAN},
+			{"debtorAccountOtherId", message.DbtrAcct?.Id?.Othr?.Id},
+			{"creditorAccountIban", message.CdtrAcct?.Id?.IBAN},
+			{"creditorAccountOtherId", message.CdtrAcct?.Id?.Othr?.Id},
+			{"creditorAgentAccountIban", message.CdtrAgntAcct?.Id?.IBAN},
+			{"creditorAgentAccountOtherId", message.CdtrAgntAcct?.Id?.Othr?.Id}
 		};
 
-		var response = await _idCryptServiceClient.SignMessageForBankAsync(message.BkPrtnrRtgsGlobalId, documentToSign, cancellationToken);
+		var response =
+			await _idCryptServiceClient.SignMessageForBankAsync(message.BkPrtnrRtgsGlobalId, documentToSign,
+				cancellationToken);
 
 		return response;
 	}
