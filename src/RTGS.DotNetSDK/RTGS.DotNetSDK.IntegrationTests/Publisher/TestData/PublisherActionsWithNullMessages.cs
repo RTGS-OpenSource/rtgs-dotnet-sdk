@@ -37,7 +37,7 @@ public static class PublisherActionsWithNullMessages
 	public static readonly PublisherAction<BankPartnersRequestV1> BankPartnersRequest = new(
 		null,
 		(publisher, request, cancellationToken) => publisher.SendBankPartnersRequestAsync(request, cancellationToken));
-	
+
 	public static readonly PublisherAction<AtomicLockRequestV2> AtomicLockV2 = new(
 		null,
 		(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, cancellationToken));

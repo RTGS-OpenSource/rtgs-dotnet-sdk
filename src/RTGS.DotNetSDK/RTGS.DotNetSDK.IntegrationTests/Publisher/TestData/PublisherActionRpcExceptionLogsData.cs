@@ -101,7 +101,7 @@ public class PublisherActionRpcExceptionLogsData : BasePublisherActionData
 				new("Sent BankPartnersRequestV1 to RTGS (SendBankPartnersRequestAsync)", LogEventLevel.Information),
 				new("Error received when sending BankPartnersRequestV1 to RTGS (SendBankPartnersRequestAsync)", LogEventLevel.Error, typeof(RpcException))
 			});
-	
+
 	public override IPublisherAction<AtomicLockRequestV2> AtomicLockV2 =>
 		new PublisherActionWithLogs<AtomicLockRequestV2>(
 			PublisherActions.AtomicLockV2,

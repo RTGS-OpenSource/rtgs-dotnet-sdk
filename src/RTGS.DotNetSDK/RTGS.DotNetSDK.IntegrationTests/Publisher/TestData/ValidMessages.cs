@@ -177,7 +177,7 @@ public static class ValidMessages
 			{ "debtorAgentAccountIban", AtomicLockRequest.DbtrAgntAcct.Id.IBAN },
 			{ "debtorAccountIban", AtomicLockRequest.DbtrAcct.Id.IBAN }
 		};
-		
+
 		public static readonly Dictionary<string, object> AtomicLockRequestDocumentV2 = new()
 		{
 			{ "creditorAmount", AtomicLockRequest.CdtrAmt },
@@ -211,7 +211,7 @@ public static class ValidMessages
 
 		public static readonly FIToFICustomerCreditTransferV10 PayawayCreateDocument = PayawayCreation.FIToFICstmrCdtTrf;
 	}
-	
+
 	public static readonly AtomicLockRequestV2 AtomicLockRequestV2 = new()
 	{
 		BkPrtnrRtgsGlobalId = ToRtgsGlobalId,
