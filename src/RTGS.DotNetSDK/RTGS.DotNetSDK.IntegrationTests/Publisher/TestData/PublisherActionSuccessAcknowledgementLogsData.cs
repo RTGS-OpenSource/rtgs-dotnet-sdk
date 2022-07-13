@@ -101,4 +101,16 @@ public class PublisherActionSuccessAcknowledgementLogsData : BasePublisherAction
 				new("Sent BankPartnersRequestV1 to RTGS (SendBankPartnersRequestAsync)", LogEventLevel.Information),
 				new("Received BankPartnersRequestV1 acknowledgement (acknowledged) from RTGS (SendBankPartnersRequestAsync)", LogEventLevel.Information)
 			});
+	
+	public override IPublisherAction<AtomicLockRequestV2> AtomicLockV2 =>
+		new PublisherActionWithLogs<AtomicLockRequestV2>(
+			PublisherActions.AtomicLockV2,
+			new List<LogEntry>
+			{
+				new("Signing AtomicLockRequestV2 message", LogEventLevel.Information),
+				new("Signed AtomicLockRequestV2 message", LogEventLevel.Information),
+				new("Sending AtomicLockRequestV2 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
+				new("Sent AtomicLockRequestV2 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
+				new("Received AtomicLockRequestV2 acknowledgement (acknowledged) from RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information)
+			});
 }

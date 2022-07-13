@@ -11,4 +11,5 @@ public class PublisherActionData : BasePublisherActionData
 	public override IPublisherAction<PayawayConfirmationV1> PayawayConfirmation => PublisherActions.PayawayConfirmation;
 	public override IPublisherAction<PayawayRejectionV1> PayawayRejection => PublisherActions.PayawayRejection;
 	public override IPublisherAction<BankPartnersRequestV1> BankPartnersRequest => PublisherActions.BankPartnersRequest;
+	public override IPublisherAction<AtomicLockRequestV2> AtomicLockV2 => PublisherActions.AtomicLockV2;
 }

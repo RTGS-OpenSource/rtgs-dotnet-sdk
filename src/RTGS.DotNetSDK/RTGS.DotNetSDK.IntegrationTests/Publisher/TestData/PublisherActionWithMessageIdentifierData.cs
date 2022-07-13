@@ -11,4 +11,5 @@ public class PublisherActionWithMessageIdentifierData : BasePublisherActionData
 	public override IPublisherAction<PayawayConfirmationV1> PayawayConfirmation => new PublisherActionWithMessageIdentifier<PayawayConfirmationV1>(PublisherActions.PayawayConfirmation, "PayawayConfirmationV1");
 	public override IPublisherAction<PayawayRejectionV1> PayawayRejection => new PublisherActionWithMessageIdentifier<PayawayRejectionV1>(PublisherActions.PayawayRejection, "PayawayRejectionV1");
 	public override IPublisherAction<BankPartnersRequestV1> BankPartnersRequest => new PublisherActionWithMessageIdentifier<BankPartnersRequestV1>(PublisherActions.BankPartnersRequest, "BankPartnersRequestV1", false);
+	public override IPublisherAction<AtomicLockRequestV2> AtomicLockV2 => new PublisherActionWithMessageIdentifier<AtomicLockRequestV2>(PublisherActions.AtomicLockV2, "AtomicLockRequestV2");
 }

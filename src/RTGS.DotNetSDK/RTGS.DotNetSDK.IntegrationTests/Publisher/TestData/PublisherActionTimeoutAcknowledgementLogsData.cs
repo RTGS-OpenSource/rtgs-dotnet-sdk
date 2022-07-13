@@ -73,4 +73,12 @@ public class PublisherActionTimeoutAcknowledgementLogsData : BasePublisherAction
 			{
 					new("Timed out waiting for BankPartnersRequestV1 acknowledgement from RTGS (SendBankPartnersRequestAsync)", LogEventLevel.Error)
 			});
+	
+	public override IPublisherAction<AtomicLockRequestV2> AtomicLockV2 =>
+		new PublisherActionWithLogs<AtomicLockRequestV2>(
+			PublisherActions.AtomicLockV2,
+			new List<LogEntry>
+			{
+				new("Timed out waiting for AtomicLockRequestV2 acknowledgement from RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Error)
+			});
 }

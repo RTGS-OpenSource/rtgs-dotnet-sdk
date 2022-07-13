@@ -11,4 +11,5 @@ public abstract class BasePublisherActionData : BaseActionData
 	public abstract IPublisherAction<PayawayConfirmationV1> PayawayConfirmation { get; }
 	public abstract IPublisherAction<PayawayRejectionV1> PayawayRejection { get; }
 	public abstract IPublisherAction<BankPartnersRequestV1> BankPartnersRequest { get; }
+	public abstract IPublisherAction<AtomicLockRequestV2> AtomicLockV2 { get; }
 }

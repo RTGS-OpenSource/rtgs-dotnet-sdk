@@ -177,6 +177,15 @@ public static class ValidMessages
 			{ "debtorAgentAccountIban", AtomicLockRequest.DbtrAgntAcct.Id.IBAN },
 			{ "debtorAccountIban", AtomicLockRequest.DbtrAcct.Id.IBAN }
 		};
+		
+		public static readonly Dictionary<string, object> AtomicLockRequestDocumentV2 = new()
+		{
+			{ "creditorAmount", AtomicLockRequest.CdtrAmt },
+			{ "debtorAgentAccountIban", AtomicLockRequest.DbtrAgntAcct.Id.IBAN },
+			{ "debtorAccountIban", AtomicLockRequest.DbtrAcct.Id.IBAN },
+			{ "creditorAccountIban", AtomicLockRequest.CdtrAcct.Id.IBAN },
+			{ "creditorAgentAccountIban", AtomicLockRequest.CdtrAgntAcct.Id.IBAN }
+		};
 
 		public static readonly Dictionary<string, object> PayawayRejectionDocument = new()
 		{
@@ -202,4 +211,35 @@ public static class ValidMessages
 
 		public static readonly FIToFICustomerCreditTransferV10 PayawayCreateDocument = PayawayCreation.FIToFICstmrCdtTrf;
 	}
+	
+	public static readonly AtomicLockRequestV2 AtomicLockRequestV2 = new()
+	{
+		BkPrtnrRtgsGlobalId = ToRtgsGlobalId,
+		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
+		{
+			Ccy = "GBP",
+			Value = 1.23m
+		},
+		DbtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Ccy = "USD",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00DEBTORACCOUNT" }
+		},
+		DbtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Ccy = "GBP",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00DEBTORAGENTACCOUNT" }
+		},
+		CdtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Ccy = "GBP",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00CREDITORACCOUNT" }
+		},
+		CdtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Ccy = "USD",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00CREDITORAGENTACCOUNT" }
+		},
+		EndToEndId = "end-to-end-id"
+	};
 }
