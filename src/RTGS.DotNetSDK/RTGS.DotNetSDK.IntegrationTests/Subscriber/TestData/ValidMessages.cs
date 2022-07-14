@@ -230,8 +230,8 @@ public static class ValidMessages
 	internal static readonly AtomicLockApproveV2 AtomicLockApproveV2 = new()
 	{
 		LckId = Guid.NewGuid(),
-		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount {Ccy = "GBP", Value = 1.23m},
-		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount {Ccy = "GBP", Value = 1.23m},
+		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Ccy = "GBP", Value = 1.23m },
+		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Ccy = "GBP", Value = 1.23m },
 		DbtrAcct =
 			new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 			{

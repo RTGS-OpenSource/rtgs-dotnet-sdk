@@ -9,13 +9,13 @@ internal class AtomicLockApproveV2MessageVerifier : IVerifyMessage<AtomicLockApp
 {
 	private readonly IIdCryptServiceClient _idCryptServiceClient;
 	private readonly ILogger<PayawayFundsV1MessageVerifier> _logger;
-	
+
 	public AtomicLockApproveV2MessageVerifier(IIdCryptServiceClient idCryptServiceClient, ILogger<PayawayFundsV1MessageVerifier> logger)
 	{
 		_idCryptServiceClient = idCryptServiceClient;
 		_logger = logger;
 	}
-	
+
 	public async Task<bool> VerifyMessageAsync(
 		AtomicLockApproveV2 message,
 		string privateSignature,
@@ -36,7 +36,7 @@ internal class AtomicLockApproveV2MessageVerifier : IVerifyMessage<AtomicLockApp
 			{"creditorAgentAccountIban", message.CdtrAgntAcct?.Id?.IBAN},
 			{"creditorAgentAccountOtherId", message.CdtrAgntAcct?.Id?.Othr?.Id}
 		};
-		
+
 		try
 		{
 			var response = await _idCryptServiceClient.VerifyMessageAsync(fromRtgsGlobalId, messageToVerify, privateSignature, alias, cancellationToken);

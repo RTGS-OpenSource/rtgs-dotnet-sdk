@@ -7,6 +7,6 @@ public abstract class BaseSignedSubscriberActionData : BaseActionData
 	public abstract ISubscriberAction<MessageRejectV1> MessageRejectV1 { get; }
 
 	public abstract ISubscriberAction<PayawayCompleteV1> PayawayCompleteV1 { get; }
-	
-	public abstract ISubscriberAction<AtomicLockApproveV2>  AtomicLockApproveV2 { get; }
+
+	public abstract ISubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2 { get; }
 }
