@@ -113,7 +113,7 @@ public class PublisherActionSuccessAcknowledgementLogsData : BasePublisherAction
 				new("Sent AtomicLockRequestV2 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
 				new("Received AtomicLockRequestV2 acknowledgement (acknowledged) from RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information)
 			});
-	
+
 	public override IPublisherAction<AtomicLockRequestV2> AtomicLockV2OtherId =>
 		new PublisherActionWithLogs<AtomicLockRequestV2>(
 			PublisherActions.AtomicLockV2OtherId,

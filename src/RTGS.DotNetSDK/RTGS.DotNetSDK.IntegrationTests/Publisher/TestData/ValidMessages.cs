@@ -93,7 +93,7 @@ public static class ValidMessages
 		},
 		EndToEndId = "end-to-end-id"
 	};
-	
+
 	public static readonly AtomicLockRequestV2 AtomicLockRequestV2OtherId = new()
 	{
 		BkPrtnrRtgsGlobalId = ToRtgsGlobalId,
@@ -276,7 +276,7 @@ public static class ValidMessages
 			{ "creditorAgentAccountIban", AtomicLockRequestV2IBAN.CdtrAgntAcct.Id.IBAN },
 			{ "creditorAgentAccountOtherId", null }
 		};
-		
+
 		public static readonly Dictionary<string, object> AtomicLockRequestDocumentV2OtherId = new()
 		{
 			{ "creditorAmount", AtomicLockRequestV2OtherId.CdtrAmt },

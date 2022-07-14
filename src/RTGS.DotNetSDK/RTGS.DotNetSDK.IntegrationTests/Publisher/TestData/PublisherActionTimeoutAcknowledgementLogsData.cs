@@ -81,7 +81,7 @@ public class PublisherActionTimeoutAcknowledgementLogsData : BasePublisherAction
 			{
 				new("Timed out waiting for AtomicLockRequestV2 acknowledgement from RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Error)
 			});
-	
+
 	public override IPublisherAction<AtomicLockRequestV2> AtomicLockV2OtherId =>
 		new PublisherActionWithLogs<AtomicLockRequestV2>(
 			PublisherActions.AtomicLockV2OtherId,
