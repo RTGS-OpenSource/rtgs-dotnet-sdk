@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using RTGS.DotNetSDK.IdCrypt;
 using RTGS.DotNetSDK.Subscriber.Exceptions;
+using RTGS.Public.Messages.Subscriber;
 
 namespace RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
 
