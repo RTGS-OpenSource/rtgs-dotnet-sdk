@@ -44,8 +44,13 @@ public static class PublisherActions
 		ValidMessages.BankPartnersRequest,
 		(publisher, request, cancellationToken) => publisher.SendBankPartnersRequestAsync(request, cancellationToken));
 
-	public static readonly PublisherAction<AtomicLockRequestV2> AtomicLockV2 = new(
-		ValidMessages.AtomicLockRequestV2,
+	public static readonly PublisherAction<AtomicLockRequestV2> AtomicLockV2IBAN = new(
+		ValidMessages.AtomicLockRequestV2IBAN,
 		(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, cancellationToken),
-		ValidMessages.SignedDocuments.AtomicLockRequestDocumentV2);
+		ValidMessages.SignedDocuments.AtomicLockRequestDocumentV2IBAN);
+	
+	public static readonly PublisherAction<AtomicLockRequestV2> AtomicLockV2OtherId = new(
+		ValidMessages.AtomicLockRequestV2OtherId,
+		(publisher, request, cancellationToken) => publisher.SendAtomicLockRequestAsync(request, cancellationToken),
+		ValidMessages.SignedDocuments.AtomicLockRequestDocumentV2OtherId);
 }

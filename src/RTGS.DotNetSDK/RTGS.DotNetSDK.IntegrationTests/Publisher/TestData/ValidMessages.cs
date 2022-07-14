@@ -51,7 +51,7 @@ public static class ValidMessages
 		EndToEndId = "end-to-end-id"
 	};
 
-	public static readonly AtomicLockRequestV2 AtomicLockRequestV2 = new()
+	public static readonly AtomicLockRequestV2 AtomicLockRequestV2IBAN = new()
 	{
 		BkPrtnrRtgsGlobalId = ToRtgsGlobalId,
 		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
@@ -64,7 +64,49 @@ public static class ValidMessages
 			Ccy = "USD",
 			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
 			{
-				IBAN = "XX00DEBTORACCOUNT",
+				IBAN = "XX00DEBTORACCOUNT"
+			}
+		},
+		DbtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Ccy = "GBP",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+			{
+				IBAN = "XX00DEBTORAGENTACCOUNT"
+			}
+		},
+		CdtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Ccy = "GBP",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+			{
+				IBAN = "XX00CREDITORACCOUNT"
+			}
+		},
+		CdtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Ccy = "USD",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+			{
+				IBAN = "XX00CREDITORAGENTACCOUNT"
+			}
+		},
+		EndToEndId = "end-to-end-id"
+	};
+	
+	public static readonly AtomicLockRequestV2 AtomicLockRequestV2OtherId = new()
+	{
+		BkPrtnrRtgsGlobalId = ToRtgsGlobalId,
+		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount
+		{
+			Ccy = "GBP",
+			Value = 1.23m
+		},
+		DbtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Ccy = "USD",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+			{
 				Othr = new ISO20022.Messages.Pacs_008_001.V10.GenericAccountIdentification1 { Id = "AAAA-BB-CC-123" }
 			}
 		},
@@ -73,7 +115,6 @@ public static class ValidMessages
 			Ccy = "GBP",
 			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
 			{
-				IBAN = "XX00DEBTORAGENTACCOUNT",
 				Othr = new ISO20022.Messages.Pacs_008_001.V10.GenericAccountIdentification1 { Id = "BBBB-BB-CC-123" }
 			}
 		},
@@ -82,7 +123,6 @@ public static class ValidMessages
 			Ccy = "GBP",
 			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
 			{
-				IBAN = "XX00CREDITORACCOUNT",
 				Othr = new ISO20022.Messages.Pacs_008_001.V10.GenericAccountIdentification1 { Id = "CCCC-BB-CC-123" }
 			}
 		},
@@ -91,7 +131,6 @@ public static class ValidMessages
 			Ccy = "USD",
 			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
 			{
-				IBAN = "XX00CREDITORAGENTACCOUNT",
 				Othr = new ISO20022.Messages.Pacs_008_001.V10.GenericAccountIdentification1 { Id = "DDDD-BB-CC-123" }
 			}
 		},
@@ -225,17 +264,30 @@ public static class ValidMessages
 			{ "debtorAccountIban", AtomicLockRequest.DbtrAcct.Id.IBAN }
 		};
 
-		public static readonly Dictionary<string, object> AtomicLockRequestDocumentV2 = new()
+		public static readonly Dictionary<string, object> AtomicLockRequestDocumentV2IBAN = new()
 		{
-			{ "creditorAmount", AtomicLockRequestV2.CdtrAmt },
-			{ "debtorAgentAccountIban", AtomicLockRequestV2.DbtrAgntAcct.Id.IBAN },
-			{ "debtorAgentAccountOtherId", AtomicLockRequestV2.DbtrAgntAcct.Id.Othr.Id },
-			{ "debtorAccountIban", AtomicLockRequestV2.DbtrAcct.Id.IBAN },
-			{ "debtorAccountOtherId", AtomicLockRequestV2.DbtrAcct.Id.Othr.Id },
-			{ "creditorAccountIban", AtomicLockRequestV2.CdtrAcct.Id.IBAN },
-			{ "creditorAccountOtherId", AtomicLockRequestV2.CdtrAcct.Id.Othr.Id },
-			{ "creditorAgentAccountIban", AtomicLockRequestV2.CdtrAgntAcct.Id.IBAN },
-			{ "creditorAgentAccountOtherId", AtomicLockRequestV2.CdtrAgntAcct.Id.Othr.Id }
+			{ "creditorAmount", AtomicLockRequestV2IBAN.CdtrAmt },
+			{ "debtorAgentAccountIban", AtomicLockRequestV2IBAN.DbtrAgntAcct.Id.IBAN },
+			{ "debtorAgentAccountOtherId", null },
+			{ "debtorAccountIban", AtomicLockRequestV2IBAN.DbtrAcct.Id.IBAN },
+			{ "debtorAccountOtherId", null },
+			{ "creditorAccountIban", AtomicLockRequestV2IBAN.CdtrAcct.Id.IBAN },
+			{ "creditorAccountOtherId", null },
+			{ "creditorAgentAccountIban", AtomicLockRequestV2IBAN.CdtrAgntAcct.Id.IBAN },
+			{ "creditorAgentAccountOtherId", null }
+		};
+		
+		public static readonly Dictionary<string, object> AtomicLockRequestDocumentV2OtherId = new()
+		{
+			{ "creditorAmount", AtomicLockRequestV2OtherId.CdtrAmt },
+			{ "debtorAgentAccountIban", null },
+			{ "debtorAgentAccountOtherId", AtomicLockRequestV2OtherId.DbtrAgntAcct.Id.Othr.Id },
+			{ "debtorAccountIban", null },
+			{ "debtorAccountOtherId", AtomicLockRequestV2OtherId.DbtrAcct.Id.Othr.Id },
+			{ "creditorAccountIban", null },
+			{ "creditorAccountOtherId", AtomicLockRequestV2OtherId.CdtrAcct.Id.Othr.Id },
+			{ "creditorAgentAccountIban", null },
+			{ "creditorAgentAccountOtherId", AtomicLockRequestV2OtherId.CdtrAgntAcct.Id.Othr.Id }
 		};
 
 		public static readonly Dictionary<string, object> PayawayRejectionDocument = new()

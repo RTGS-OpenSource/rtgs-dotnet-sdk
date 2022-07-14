@@ -102,9 +102,21 @@ public class PublisherActionFailedAcknowledgementLogsData : BasePublisherActionD
 				new("Received BankPartnersRequestV1 acknowledgement (rejected) from RTGS (SendBankPartnersRequestAsync)", LogEventLevel.Error)
 			});
 
-	public override IPublisherAction<AtomicLockRequestV2> AtomicLockV2 =>
+	public override IPublisherAction<AtomicLockRequestV2> AtomicLockV2IBAN =>
 		new PublisherActionWithLogs<AtomicLockRequestV2>(
-			PublisherActions.AtomicLockV2,
+			PublisherActions.AtomicLockV2IBAN,
+			new List<LogEntry>
+			{
+				new("Signing AtomicLockRequestV2 message", LogEventLevel.Information),
+				new("Signed AtomicLockRequestV2 message", LogEventLevel.Information),
+				new("Sending AtomicLockRequestV2 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
+				new("Sent AtomicLockRequestV2 to RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Information),
+				new("Received AtomicLockRequestV2 acknowledgement (rejected) from RTGS (SendAtomicLockRequestAsync)", LogEventLevel.Error)
+			});
+	
+	public override IPublisherAction<AtomicLockRequestV2> AtomicLockV2OtherId =>
+		new PublisherActionWithLogs<AtomicLockRequestV2>(
+			PublisherActions.AtomicLockV2OtherId,
 			new List<LogEntry>
 			{
 				new("Signing AtomicLockRequestV2 message", LogEventLevel.Information),

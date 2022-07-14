@@ -7,5 +7,6 @@ public abstract class BaseSignedPublisherActionData : BaseActionData
 	public abstract IPublisherAction<PayawayCreationV1> PayawayCreate { get; }
 	public abstract IPublisherAction<PayawayRejectionV1> PayawayReject { get; }
 	public abstract IPublisherAction<PayawayConfirmationV1> PayawayConfirm { get; }
-	public abstract IPublisherAction<AtomicLockRequestV2> AtomicLockV2 { get; }
+	public abstract IPublisherAction<AtomicLockRequestV2> AtomicLockV2IBAN { get; }
+	public abstract IPublisherAction<AtomicLockRequestV2> AtomicLockV2OtherId { get; }
 }
