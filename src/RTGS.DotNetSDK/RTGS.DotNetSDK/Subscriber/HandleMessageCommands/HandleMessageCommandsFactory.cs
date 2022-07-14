@@ -46,7 +46,8 @@ internal class HandleMessageCommandsFactory : IHandleMessageCommandsFactory
 				IMessageAdapter<PartnerBankEarmarkFundsV1>>(enumeratedMessageAdapters, _internalHandlers),
 
 			new CommandCreator<IdCryptCreateInvitationRequestV1, IIdCryptCreateInvitationRequestV1Handler, IMessageAdapter<IdCryptCreateInvitationRequestV1>>(enumeratedMessageAdapters),
-			new CommandCreator<IdCryptBankInvitationV1, IIdCryptBankInvitationV1Handler, IMessageAdapter<IdCryptBankInvitationV1>>(enumeratedMessageAdapters)
+			new CommandCreator<IdCryptBankInvitationV1, IIdCryptBankInvitationV1Handler, IMessageAdapter<IdCryptBankInvitationV1>>(enumeratedMessageAdapters),
+			new CommandCreator<AtomicLockApproveV2, IAtomicLockApproveV2Handler, IMessageAdapter<AtomicLockApproveV2>>(enumeratedMessageAdapters)
 		};
 	}
 

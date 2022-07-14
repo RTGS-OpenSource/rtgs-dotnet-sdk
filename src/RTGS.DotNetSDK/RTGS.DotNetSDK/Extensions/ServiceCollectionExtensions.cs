@@ -118,6 +118,7 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddTransient<IMessageAdapter, DataVerifyingMessageAdapter<PayawayCompleteV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, DataVerifyingMessageAdapter<PartnerBankEarmarkFundsV1>>();
 		serviceCollection.AddTransient<IMessageAdapter, DataVerifyingMessageAdapter<InitiatingBankEarmarkFundsV1>>();
+		serviceCollection.AddTransient<IMessageAdapter, DataVerifyingMessageAdapter<AtomicLockApproveV2>>();
 
 		serviceCollection.AddSingleton<IHandlerValidator, HandlerValidator>();
 
@@ -131,6 +132,7 @@ public static class ServiceCollectionExtensions
 		serviceCollection.AddSingleton<IVerifyMessage<PayawayCompleteV1>, PayawayCompleteV1MessageVerifier>();
 		serviceCollection.AddSingleton<IVerifyMessage<PartnerBankEarmarkFundsV1>, PartnerBankEarmarkFundsV1MessageVerifier>();
 		serviceCollection.AddSingleton<IVerifyMessage<InitiatingBankEarmarkFundsV1>, InitiatingBankEarmarkFundsV1MessageVerifier>();
+		serviceCollection.AddSingleton<IVerifyMessage<AtomicLockApproveV2>, AtomicLockApproveV2MessageVerifier>();
 
 		serviceCollection.AddSingleton<IIdCryptPublisher, IdCryptPublisher>();
 		serviceCollection.AddSingleton<IInternalPublisher, InternalPublisher>();

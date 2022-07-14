@@ -111,4 +111,15 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 				new("RTGS Subscriber stopping", LogEventLevel.Information),
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
+
+	public override ISubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2 =>
+		new SubscriberActionWithLogs<AtomicLockApproveV2>(
+			SubscriberActions.AtomicLockApproveV2,
+			new List<LogEntry>
+			{
+				new("RTGS Subscriber started", LogEventLevel.Information),
+				new("AtomicLockApproveV2 message received from RTGS", LogEventLevel.Information),
+				new("RTGS Subscriber stopping", LogEventLevel.Information),
+				new("RTGS Subscriber stopped", LogEventLevel.Information)
+			});
 }

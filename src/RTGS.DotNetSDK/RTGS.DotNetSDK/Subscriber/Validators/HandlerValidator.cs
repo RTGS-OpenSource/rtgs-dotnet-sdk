@@ -16,7 +16,8 @@ internal class HandlerValidator : IHandlerValidator
 		typeof(IEarmarkReleaseV1Handler),
 		typeof(IMessageRejectV1Handler),
 		typeof(IPayawayFundsV1Handler),
-		typeof(IPayawayCompleteV1Handler)
+		typeof(IPayawayCompleteV1Handler),
+		typeof(IAtomicLockApproveV2Handler)
 	};
 
 	public void Validate(IReadOnlyList<IHandler> handlers)

@@ -226,4 +226,61 @@ public static class ValidMessages
 			AgentPublicDid = "df3d191f-3b15-4e16-a021-09579bbbc642"
 		}
 	};
+
+	internal static readonly AtomicLockApproveV2 AtomicLockApproveV2 = new()
+	{
+		LckId = Guid.NewGuid(),
+		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount {Ccy = "GBP", Value = 1.23m},
+		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount {Ccy = "GBP", Value = 1.23m},
+		DbtrAcct =
+			new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+			{
+				Ccy = "USD",
+				Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+				{
+					IBAN = "XX00DEBTORACCOUNT",
+					Othr = new ISO20022.Messages.Pacs_008_001.V10.GenericAccountIdentification1
+					{
+						Id = "AAAA-BB-CC-123"
+					}
+				}
+			},
+		DbtrAgntAcct =
+			new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+			{
+				Ccy = "GBP",
+				Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+				{
+					IBAN = "XX00DEBTORAGENTACCOUNT",
+					Othr = new ISO20022.Messages.Pacs_008_001.V10.GenericAccountIdentification1
+					{
+						Id = "BBBB-BB-CC-123"
+					}
+				}
+			},
+		CdtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Ccy = "GBP",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+			{
+				IBAN = "XX00CREDITORACCOUNT",
+				Othr = new ISO20022.Messages.Pacs_008_001.V10.GenericAccountIdentification1
+				{
+					Id = "CCCC-BB-CC-123"
+				}
+			}
+		},
+		CdtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
+		{
+			Ccy = "USD",
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice
+			{
+				IBAN = "XX00CREDITORAGENTACCOUNT",
+				Othr = new ISO20022.Messages.Pacs_008_001.V10.GenericAccountIdentification1
+				{
+					Id = "DDDD-BB-CC-123"
+				}
+			}
+		}
+	};
 }

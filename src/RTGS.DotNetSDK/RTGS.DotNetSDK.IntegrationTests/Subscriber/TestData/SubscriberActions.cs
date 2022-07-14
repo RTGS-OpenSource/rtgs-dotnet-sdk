@@ -39,4 +39,7 @@ public static class SubscriberActions
 
 	public static readonly SubscriberAction<BankPartnersResponseV1> BankPartnersResponseV1 =
 		new("BankPartnersResponseV1", ValidMessages.BankPartnersResponseV1);
+
+	public static readonly SubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2 =
+		new("AtomicLockApproveV2", ValidMessages.AtomicLockApproveV2, DefaultSigningHeaders);
 }

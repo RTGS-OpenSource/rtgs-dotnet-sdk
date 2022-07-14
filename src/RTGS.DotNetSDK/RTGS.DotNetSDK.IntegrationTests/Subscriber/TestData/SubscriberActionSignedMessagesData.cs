@@ -10,4 +10,7 @@ public class SubscriberActionSignedMessagesData : BaseSignedSubscriberActionData
 
 	public override ISubscriberAction<PayawayCompleteV1> PayawayCompleteV1 =>
 		SubscriberActions.PayawayCompleteV1;
+
+	public override ISubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2 =>
+		SubscriberActions.AtomicLockApproveV2;
 }

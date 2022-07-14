@@ -17,6 +17,11 @@ public class SubscriberActionSignedMessagesWithLogsData : BaseSignedSubscriberAc
 			SubscriberActions.PayawayCompleteV1,
 			StandardLogs<PayawayCompleteV1>());
 
+	public override ISubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2 =>
+		new SubscriberActionWithLogs<AtomicLockApproveV2>(
+			SubscriberActions.AtomicLockApproveV2,
+			StandardLogs<AtomicLockApproveV2>());
+
 	private static List<LogEntry> StandardLogs<T>() =>
 		new()
 		{
