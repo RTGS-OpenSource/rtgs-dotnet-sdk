@@ -112,9 +112,20 @@ public class SubscriberActionWithLogsData : BaseSubscriberActionData
 				new("RTGS Subscriber stopped", LogEventLevel.Information)
 			});
 
-	public override ISubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2 =>
+	public override ISubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2IBAN =>
 		new SubscriberActionWithLogs<AtomicLockApproveV2>(
-			SubscriberActions.AtomicLockApproveV2,
+			SubscriberActions.AtomicLockApproveV2IBAN,
+			new List<LogEntry>
+			{
+				new("RTGS Subscriber started", LogEventLevel.Information),
+				new("AtomicLockApproveV2 message received from RTGS", LogEventLevel.Information),
+				new("RTGS Subscriber stopping", LogEventLevel.Information),
+				new("RTGS Subscriber stopped", LogEventLevel.Information)
+			});
+
+	public override ISubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2OtherId =>
+		new SubscriberActionWithLogs<AtomicLockApproveV2>(
+			SubscriberActions.AtomicLockApproveV2OtherId,
 			new List<LogEntry>
 			{
 				new("RTGS Subscriber started", LogEventLevel.Information),

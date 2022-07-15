@@ -8,9 +8,9 @@ namespace RTGS.DotNetSDK.Subscriber.IdCrypt.Verification;
 internal class AtomicLockApproveV2MessageVerifier : IVerifyMessage<AtomicLockApproveV2>
 {
 	private readonly IIdCryptServiceClient _idCryptServiceClient;
-	private readonly ILogger<PayawayFundsV1MessageVerifier> _logger;
+	private readonly ILogger<AtomicLockApproveV2MessageVerifier> _logger;
 
-	public AtomicLockApproveV2MessageVerifier(IIdCryptServiceClient idCryptServiceClient, ILogger<PayawayFundsV1MessageVerifier> logger)
+	public AtomicLockApproveV2MessageVerifier(IIdCryptServiceClient idCryptServiceClient, ILogger<AtomicLockApproveV2MessageVerifier> logger)
 	{
 		_idCryptServiceClient = idCryptServiceClient;
 		_logger = logger;
@@ -26,7 +26,7 @@ internal class AtomicLockApproveV2MessageVerifier : IVerifyMessage<AtomicLockApp
 	{
 		var messageToVerify = new Dictionary<string, object>
 		{
-			{"creditorAmount", message.CdtrAmt},
+			{"creditorAmount", message.CdtrAmt.Value},
 			{"debtorAgentAccountIban", message.DbtrAgntAcct?.Id?.IBAN},
 			{"debtorAgentAccountOtherId", message.DbtrAgntAcct?.Id?.Othr?.Id},
 			{"debtorAccountIban", message.DbtrAcct?.Id?.IBAN},

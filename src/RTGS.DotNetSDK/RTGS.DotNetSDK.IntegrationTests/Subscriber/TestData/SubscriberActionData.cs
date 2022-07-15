@@ -32,6 +32,9 @@ public class SubscriberActionData : BaseSubscriberActionData
 	public override ISubscriberAction<BankPartnersResponseV1> BankPartnersResponseV1 =>
 		SubscriberActions.BankPartnersResponseV1;
 
-	public override ISubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2 =>
-		SubscriberActions.AtomicLockApproveV2;
+	public override ISubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2IBAN =>
+		SubscriberActions.AtomicLockApproveV2IBAN;
+
+	public override ISubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2OtherId =>
+		SubscriberActions.AtomicLockApproveV2OtherId;
 }

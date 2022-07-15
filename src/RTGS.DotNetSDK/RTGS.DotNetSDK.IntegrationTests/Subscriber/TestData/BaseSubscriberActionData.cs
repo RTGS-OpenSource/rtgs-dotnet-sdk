@@ -12,5 +12,6 @@ public abstract class BaseSubscriberActionData : BaseActionData
 	public abstract ISubscriberAction<EarmarkCompleteV1> EarmarkCompleteV1 { get; }
 	public abstract ISubscriberAction<EarmarkReleaseV1> EarmarkReleaseV1 { get; }
 	public abstract ISubscriberAction<BankPartnersResponseV1> BankPartnersResponseV1 { get; }
-	public abstract ISubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2 { get; }
+	public abstract ISubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2IBAN { get; }
+	public abstract ISubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2OtherId { get; }
 }
