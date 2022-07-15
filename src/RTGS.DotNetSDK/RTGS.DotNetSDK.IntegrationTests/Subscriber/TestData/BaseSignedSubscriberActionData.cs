@@ -8,4 +8,7 @@ public abstract class BaseSignedSubscriberActionData : BaseActionData
 
 	public abstract ISubscriberAction<PayawayCompleteV1> PayawayCompleteV1 { get; }
 
+	public abstract ISubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2IBAN { get; }
+
+	public abstract ISubscriberAction<AtomicLockApproveV2> AtomicLockApproveV2OtherId { get; }
 }

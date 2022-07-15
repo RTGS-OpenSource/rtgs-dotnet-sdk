@@ -36,7 +36,7 @@
 		</PackageReference>
 		<PackageReference Include="RTGS.IDCrypt.Service.Contracts" Version="0.0.11" />
 		<PackageReference Include="RTGS.ISO20022.Messages" Version="1.0.68" />
-		<PackageReference Include="RTGS.Public.Messages" Version="1.0.28592" />
+		<PackageReference Include="RTGS.Public.Messages" Version="1.0.29049" />
 		<PackageReference Include="RTGS.Public.Payment.Client" Version="4.0.71" />
 	</ItemGroup>
 

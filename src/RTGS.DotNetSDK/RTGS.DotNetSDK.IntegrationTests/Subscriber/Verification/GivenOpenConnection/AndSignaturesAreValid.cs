@@ -89,7 +89,8 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 	{
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message,
+			subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -102,11 +103,13 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenCallingVerifyMessage_ThenBaseAddressIsExpected<TRequest>(SubscriberAction<TRequest> subscriberAction)
+	public async Task WhenCallingVerifyMessage_ThenBaseAddressIsExpected<TRequest>(
+		SubscriberAction<TRequest> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message,
+			subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -124,11 +127,13 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesData))]
-	public async Task WhenCallingVerifyMessage_ThenBodyIsExpected<TRequest>(SubscriberAction<TRequest> subscriberAction)
+	public async Task WhenCallingVerifyMessage_ThenBodyIsExpected<TRequest, TVerifyMessage>(
+		VerifiableSubscriberAction<TRequest, TVerifyMessage> subscriberAction)
 	{
 		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message,
+			subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -141,49 +146,32 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 
 		var signDocumentRequest = JsonSerializer.Deserialize<VerifyRequest>(requestContent);
 
-		signDocumentRequest.Should().BeEquivalentTo(new VerifyRequest
-		{
-			RtgsGlobalId = subscriberAction.AdditionalHeaders["from-rtgs-global-id"],
-			PrivateSignature = subscriberAction.AdditionalHeaders["pairwise-did-signature"],
-			Alias = subscriberAction.AdditionalHeaders["alias"]
-		}, options => options.Excluding(x => x.Message));
-	}
+		using var _ = new AssertionScope();
 
-	[Fact]
-	public async Task WhenCallingVerifyMessageForPayawayFundsV1_ThenMessageContentsAreInBody()
-	{
-		await _rtgsSubscriber.StartAsync(new AllTestHandlers());
+		signDocumentRequest.Should().BeEquivalentTo(
+			new VerifyRequest
+			{
+				RtgsGlobalId = subscriberAction.AdditionalHeaders["from-rtgs-global-id"],
+				PrivateSignature = subscriberAction.AdditionalHeaders["pairwise-did-signature"],
+				Alias = subscriberAction.AdditionalHeaders["alias"]
+			}, options => options.Excluding(x => x.Message));
 
-		SubscriberAction<PayawayFundsV1> action = SubscriberActions.PayawayFundsV1;
-		await _fromRtgsSender.SendAsync(action.MessageIdentifier, action.Message, action.AdditionalHeaders);
-
-		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
-
-		_idCryptServiceHttpHandler.WaitForRequests(WaitForReceivedRequestDuration);
-
-		await _rtgsSubscriber.StopAsync();
-
-		var requestContent = await _idCryptServiceHttpHandler.Requests[VerifyMessageSuccessfully.Path]
-			.Single().Content!.ReadAsStringAsync();
-
-		var signDocumentRequest = JsonSerializer.Deserialize<VerifyRequest>(requestContent);
-
-		var expectedMessage = JsonSerializer.SerializeToElement(action.Message.FIToFICstmrCdtTrf);
-
-		signDocumentRequest!.Message.Should().BeEquivalentTo(
-			expectedMessage,
-			options => options.ComparingByMembers<JsonElement>());
+		var expectedMessage = JsonSerializer.Serialize(subscriberAction.VerifyMessage);
+		var actualMessage = JsonSerializer.Serialize(signDocumentRequest!.Message);
+		actualMessage!.Should().BeEquivalentTo(expectedMessage);
 	}
 
 	[Theory]
 	[ClassData(typeof(SubscriberActionSignedMessagesWithLogsData))]
-	public async Task WhenMessageReceived_ThenLogInformation<TMessage>(SubscriberActionWithLogs<TMessage> subscriberAction)
+	public async Task WhenMessageReceived_ThenLogInformation<TMessage>(
+		SubscriberActionWithLogs<TMessage> subscriberAction)
 	{
 		var allHandlers = new AllTestHandlers();
 
 		await _rtgsSubscriber.StartAsync(allHandlers);
 
-		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message, subscriberAction.AdditionalHeaders);
+		await _fromRtgsSender.SendAsync(subscriberAction.MessageIdentifier, subscriberAction.Message,
+			subscriberAction.AdditionalHeaders);
 
 		_fromRtgsSender.WaitForAcknowledgements(WaitForAcknowledgementsDuration);
 
@@ -194,6 +182,7 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 
 		var informationLogs = _serilogContext.LogsForNamespace("RTGS.DotNetSDK.Subscriber", LogEventLevel.Information);
 
-		informationLogs.Should().BeEquivalentTo(subscriberAction.SubscriberLogs(LogEventLevel.Information), options => options.WithStrictOrdering());
+		informationLogs.Should().BeEquivalentTo(subscriberAction.SubscriberLogs(LogEventLevel.Information),
+			options => options.WithStrictOrdering());
 	}
 }
