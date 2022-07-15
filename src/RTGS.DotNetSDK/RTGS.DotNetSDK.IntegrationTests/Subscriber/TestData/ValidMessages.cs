@@ -15,7 +15,7 @@ public static class ValidMessages
 	{
 		FIToFICstmrCdtTrf = new FIToFICustomerCreditTransferV10
 		{
-			GrpHdr = new GroupHeader96 {MsgId = "message-id"},
+			GrpHdr = new GroupHeader96 { MsgId = "message-id" },
 			CdtTrfTxInf = new[]
 			{
 				new CreditTransferTransaction50
@@ -28,7 +28,7 @@ public static class ValidMessages
 
 	internal static readonly FIToFICustomerCreditTransferV10 PayawayFundsVerifiable = new()
 	{
-		GrpHdr = new GroupHeader96 {MsgId = "message-id"},
+		GrpHdr = new GroupHeader96 { MsgId = "message-id" },
 		CdtTrfTxInf = new[]
 		{
 			new CreditTransferTransaction50
@@ -42,7 +42,7 @@ public static class ValidMessages
 	{
 		BkToCstmrDbtCdtNtfctn = new BankToCustomerDebitCreditNotificationV09
 		{
-			GrpHdr = new GroupHeader81 {MsgId = "message-id"},
+			GrpHdr = new GroupHeader81 { MsgId = "message-id" },
 			Ntfctn = new[]
 			{
 				new AccountNotification19
@@ -88,10 +88,11 @@ public static class ValidMessages
 	{
 		MsgRjctn = new ISO20022.Messages.Admi_002_001.V01.Admi00200101
 		{
-			RltdRef = new ISO20022.Messages.Admi_002_001.V01.MessageReference {Ref = "reference"},
+			RltdRef = new ISO20022.Messages.Admi_002_001.V01.MessageReference { Ref = "reference" },
 			Rsn = new ISO20022.Messages.Admi_002_001.V01.RejectionReason2
 			{
-				RjctnDtTm = new DateTime(2021, 12, 25), RjctgPtyRsn = "Not in the right head-space"
+				RjctnDtTm = new DateTime(2021, 12, 25),
+				RjctgPtyRsn = "Not in the right head-space"
 			}
 		}
 	};
@@ -105,7 +106,7 @@ public static class ValidMessages
 	internal static readonly AtomicLockResponseV1 AtomicLockResponseV1 = new()
 	{
 		LckId = Guid.Parse("9e4d8f43-eb2e-4408-9461-0aba281792af"),
-		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount {Ccy = "GBP", Value = 1.99m}
+		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Ccy = "GBP", Value = 1.99m }
 	};
 
 	internal static readonly AtomicTransferResponseV1 AtomicTransferResponseV1 = new()
@@ -123,45 +124,45 @@ public static class ValidMessages
 
 	internal static readonly EarmarkFundsV1 EarmarkFundsV1 = new()
 	{
-		Amt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount {Value = 1},
+		Amt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Value = 1 },
 		Acct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
 			Nm = "name",
-			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice {IBAN = "iban"}
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "iban" }
 		},
 		LckId = new Guid("ff1bee59-92ac-4183-939f-6c67e16f22fb")
 	};
 
 	internal static readonly PartnerBankEarmarkFundsV1 PartnerBankEarmarkFundsV1 = new()
 	{
-		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount {Value = 1},
+		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Value = 1 },
 		DbtrAgntAcct =
 			new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 			{
 				Nm = "name",
-				Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice {IBAN = "iban"}
+				Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "iban" }
 			},
 		DbtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
 			Nm = "name",
-			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice {IBAN = "iban"}
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "iban" }
 		},
 		LckId = new Guid("ff1bee59-92ac-4183-939f-6c67e16f22fb")
 	};
 
 	internal static readonly InitiatingBankEarmarkFundsV1 InitiatingBankEarmarkFundsV1 = new()
 	{
-		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount {Value = 1},
-		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount {Value = 1},
+		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Value = 1 },
+		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Value = 1 },
 		DbtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
 			Nm = "name",
-			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice {IBAN = "iban"}
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "iban" }
 		},
 		DbtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
 			Nm = "name",
-			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice {IBAN = "iban"}
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "iban" }
 		},
 		LckId = new Guid("ff1bee59-92ac-4183-939f-6c67e16f22fb")
 	};
@@ -181,7 +182,7 @@ public static class ValidMessages
 		DbtrAcct =
 			new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 			{
-				Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice {IBAN = "iban1"}
+				Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "iban1" }
 			},
 		BkPrtnrs = new List<BankPartnersResponseV1.BankPartner>
 		{
@@ -228,7 +229,7 @@ public static class ValidMessages
 		{
 			Alias = "385ba215-7d4e-4cdc-a7a7-f14955741e70",
 			Label = "the-label",
-			RecipientKeys = new[] {"df3d191f-3b15-4e16-a021-09579bbbc642"},
+			RecipientKeys = new[] { "df3d191f-3b15-4e16-a021-09579bbbc642" },
 			Id = "b705d4b8-0ef3-4ba6-8857-b3456f4ed63f",
 			Type = "the-type",
 			ServiceEndpoint = "https://the-service-endpoint",
@@ -239,8 +240,8 @@ public static class ValidMessages
 	internal static readonly AtomicLockApproveV2 AtomicLockApproveV2IBAN = new()
 	{
 		LckId = Guid.NewGuid(),
-		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount {Ccy = "GBP", Value = 1.23m},
-		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount {Ccy = "GBP", Value = 1.23m},
+		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Ccy = "GBP", Value = 1.23m },
+		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Ccy = "GBP", Value = 1.23m },
 		DbtrAcct =
 			new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 			{
@@ -262,7 +263,7 @@ public static class ValidMessages
 		CdtrAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
 			Ccy = "GBP",
-			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice {IBAN = "XX00CREDITORACCOUNT"}
+			Id = new ISO20022.Messages.Pacs_008_001.V10.AccountIdentification4Choice { IBAN = "XX00CREDITORACCOUNT" }
 		},
 		CdtrAgntAcct = new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 		{
@@ -290,8 +291,8 @@ public static class ValidMessages
 	internal static readonly AtomicLockApproveV2 AtomicLockApproveV2OtherId = new()
 	{
 		LckId = Guid.NewGuid(),
-		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount {Ccy = "GBP", Value = 1.23m},
-		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount {Ccy = "GBP", Value = 1.23m},
+		CdtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Ccy = "GBP", Value = 1.23m },
+		DbtrAmt = new ISO20022.Messages.Pacs_008_001.V10.ActiveCurrencyAndAmount { Ccy = "GBP", Value = 1.23m },
 		DbtrAcct =
 			new ISO20022.Messages.Pacs_008_001.V10.CashAccount40
 			{
