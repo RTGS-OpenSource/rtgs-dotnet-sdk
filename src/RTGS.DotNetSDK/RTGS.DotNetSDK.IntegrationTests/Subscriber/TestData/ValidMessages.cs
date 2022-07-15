@@ -26,7 +26,7 @@ public static class ValidMessages
 		}
 	};
 
-	internal static readonly FIToFICustomerCreditTransferV10 PaywayFundsVerifiable = new()
+	internal static readonly FIToFICustomerCreditTransferV10 PayawayFundsVerifiable = new()
 	{
 		GrpHdr = new GroupHeader96 {MsgId = "message-id"},
 		CdtTrfTxInf = new[]

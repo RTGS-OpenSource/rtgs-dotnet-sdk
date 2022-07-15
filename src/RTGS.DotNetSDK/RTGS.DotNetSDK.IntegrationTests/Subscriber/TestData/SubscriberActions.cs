@@ -13,7 +13,7 @@ public static class SubscriberActions
 	};
 
 	public static readonly VerifiableSubscriberAction<PayawayFundsV1, FIToFICustomerCreditTransferV10> PayawayFundsV1 =
-		new("PayawayFundsV1", ValidMessages.PayawayFunds, ValidMessages.PaywayFundsVerifiable, DefaultSigningHeaders);
+		new("PayawayFundsV1", ValidMessages.PayawayFunds, ValidMessages.PayawayFundsVerifiable, DefaultSigningHeaders);
 
 	public static readonly VerifiableSubscriberAction<PayawayCompleteV1, Dictionary<string, object>> PayawayCompleteV1 =
 		new("PayawayCompleteV1", ValidMessages.PayawayComplete, ValidMessages.PayawayCompleteVerifiable,

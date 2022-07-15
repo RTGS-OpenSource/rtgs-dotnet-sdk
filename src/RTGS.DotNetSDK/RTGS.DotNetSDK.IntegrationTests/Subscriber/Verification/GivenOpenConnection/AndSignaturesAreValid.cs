@@ -146,6 +146,8 @@ public sealed class AndSignaturesAreValid : IDisposable, IClassFixture<GrpcServe
 
 		var signDocumentRequest = JsonSerializer.Deserialize<VerifyRequest>(requestContent);
 
+		using var _ = new AssertionScope();
+
 		signDocumentRequest.Should().BeEquivalentTo(
 			new VerifyRequest
 			{
