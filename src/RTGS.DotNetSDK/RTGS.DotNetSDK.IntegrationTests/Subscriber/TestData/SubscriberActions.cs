@@ -6,10 +6,10 @@ public static class SubscriberActions
 {
 	public static readonly Dictionary<string, string> DefaultSigningHeaders = new()
 	{
-		{"public-did-signature", "public-did-signature"},
-		{"pairwise-did-signature", "pairwise-did-signature"},
-		{"alias", "alias"},
-		{"from-rtgs-global-id", "from-rtgs-global-id"}
+		{ "public-did-signature", "public-did-signature" },
+		{ "pairwise-did-signature", "pairwise-did-signature" },
+		{ "alias", "alias" },
+		{ "from-rtgs-global-id", "from-rtgs-global-id" }
 	};
 
 	public static readonly VerifiableSubscriberAction<PayawayFundsV1, FIToFICustomerCreditTransferV10> PayawayFundsV1 =

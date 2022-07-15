@@ -79,7 +79,7 @@ public static class ValidMessages
 
 	internal static readonly Dictionary<string, object> PayawayCompleteVerifiable = new()
 	{
-		{ "payawayId", "end-to-end-id"},
+		{ "payawayId", "end-to-end-id" },
 		{ "iban", "iban" },
 		{ "amount", 5.99m }
 	};
@@ -100,7 +100,7 @@ public static class ValidMessages
 	internal static readonly Dictionary<string, object> MessageRejectedVerifiable = new()
 	{
 		{ "ref", "reference" },
-		{ "reason",  "Not in the right head-space" }
+		{ "reason", "Not in the right head-space" }
 	};
 
 	internal static readonly AtomicLockResponseV1 AtomicLockResponseV1 = new()
@@ -277,15 +277,15 @@ public static class ValidMessages
 
 	internal static readonly Dictionary<string, object> AtomicLockApproveV2IBANVerifiable = new()
 	{
-		{"creditorAmount", 1.23m},
-		{"debtorAgentAccountIban", "XX00DEBTORAGENTACCOUNT"},
-		{"debtorAgentAccountOtherId", null},
-		{"debtorAccountIban", "XX00DEBTORACCOUNT"},
-		{"debtorAccountOtherId", null},
-		{"creditorAccountIban", "XX00CREDITORACCOUNT"},
-		{"creditorAccountOtherId", null},
-		{"creditorAgentAccountIban", "XX00CREDITORAGENTACCOUNT"},
-		{"creditorAgentAccountOtherId", null}
+		{ "creditorAmount", 1.23m },
+		{ "debtorAgentAccountIban", "XX00DEBTORAGENTACCOUNT" },
+		{ "debtorAgentAccountOtherId", null },
+		{ "debtorAccountIban", "XX00DEBTORACCOUNT" },
+		{ "debtorAccountOtherId", null },
+		{ "creditorAccountIban", "XX00CREDITORACCOUNT" },
+		{ "creditorAccountOtherId", null },
+		{ "creditorAgentAccountIban", "XX00CREDITORAGENTACCOUNT" },
+		{ "creditorAgentAccountOtherId", null }
 	};
 
 	internal static readonly AtomicLockApproveV2 AtomicLockApproveV2OtherId = new()
@@ -343,14 +343,14 @@ public static class ValidMessages
 
 	internal static readonly Dictionary<string, object> AtomicLockApproveV2OtherIdVerifiable = new()
 	{
-		{"creditorAmount", 1.23m},
-		{"debtorAgentAccountIban", null},
-		{"debtorAgentAccountOtherId", "BBBB-BB-CC-123"},
-		{"debtorAccountIban", null},
-		{"debtorAccountOtherId", "AAAA-BB-CC-123"},
-		{"creditorAccountIban", null},
-		{"creditorAccountOtherId", "CCCC-BB-CC-123"},
-		{"creditorAgentAccountIban", null},
-		{"creditorAgentAccountOtherId", "DDDD-BB-CC-123"}
+		{ "creditorAmount", 1.23m },
+		{ "debtorAgentAccountIban", null },
+		{ "debtorAgentAccountOtherId", "BBBB-BB-CC-123" },
+		{ "debtorAccountIban", null },
+		{ "debtorAccountOtherId", "AAAA-BB-CC-123" },
+		{ "creditorAccountIban", null },
+		{ "creditorAccountOtherId", "CCCC-BB-CC-123" },
+		{ "creditorAgentAccountIban", null },
+		{ "creditorAgentAccountOtherId", "DDDD-BB-CC-123" }
 	};
 }
