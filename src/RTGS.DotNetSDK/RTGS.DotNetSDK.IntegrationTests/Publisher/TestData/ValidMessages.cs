@@ -266,7 +266,7 @@ public static class ValidMessages
 
 		public static readonly Dictionary<string, object> AtomicLockRequestDocumentV2IBAN = new()
 		{
-			{ "creditorAmount", AtomicLockRequestV2IBAN.CdtrAmt },
+			{ "creditorAmount", AtomicLockRequestV2IBAN.CdtrAmt.Value },
 			{ "debtorAgentAccountIban", AtomicLockRequestV2IBAN.DbtrAgntAcct.Id.IBAN },
 			{ "debtorAgentAccountOtherId", null },
 			{ "debtorAccountIban", AtomicLockRequestV2IBAN.DbtrAcct.Id.IBAN },
@@ -279,7 +279,7 @@ public static class ValidMessages
 
 		public static readonly Dictionary<string, object> AtomicLockRequestDocumentV2OtherId = new()
 		{
-			{ "creditorAmount", AtomicLockRequestV2OtherId.CdtrAmt },
+			{ "creditorAmount", AtomicLockRequestV2OtherId.CdtrAmt.Value },
 			{ "debtorAgentAccountIban", null },
 			{ "debtorAgentAccountOtherId", AtomicLockRequestV2OtherId.DbtrAgntAcct.Id.Othr.Id },
 			{ "debtorAccountIban", null },
