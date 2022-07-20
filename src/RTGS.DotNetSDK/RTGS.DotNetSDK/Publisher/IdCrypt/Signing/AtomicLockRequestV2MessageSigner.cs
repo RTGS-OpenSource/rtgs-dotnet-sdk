@@ -21,7 +21,7 @@ internal class AtomicLockRequestV2MessageSigner : ISignMessage<AtomicLockRequest
 
 		var documentToSign = new Dictionary<string, object>
 		{
-			{"creditorAmount", message.CdtrAmt},
+			{"creditorAmount", message.CdtrAmt.Value},
 			{"debtorAgentAccountIban", message.DbtrAgntAcct?.Id?.IBAN},
 			{"debtorAgentAccountOtherId", message.DbtrAgntAcct?.Id?.Othr?.Id},
 			{"debtorAccountIban", message.DbtrAcct?.Id?.IBAN},
